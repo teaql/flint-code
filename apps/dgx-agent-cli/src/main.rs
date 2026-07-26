@@ -89,13 +89,33 @@ async fn main() -> Result<()> {
                 "Profile loaded"
             );
 
-            // TODO: Load evaluation plan, iterate test cases, run pipeline
-            tracing::warn!("Evaluation suite execution not yet implemented");
-            eprintln!("✗ Evaluation suite execution not yet implemented.");
-            eprintln!("  Plan: {}", plan.display());
-            eprintln!("  Profile: {} ({})", model_profile.model.name, profile.display());
-            eprintln!("  Output: {}", output.display());
-            std::process::exit(1);
+            // Load evaluation plan, iterate test cases, run pipeline
+            let suite_plan = pipeline::suite::SuitePlan::load(&plan)?;
+            let base_dir = plan.parent().unwrap_or(std::path::Path::new("."));
+            
+            let result = pipeline::suite::run_suite(
+                &suite_plan,
+                &model_profile,
+                &output,
+                base_dir,
+            ).await?;
+
+            std::fs::create_dir_all(&output)?;
+            let run_id = format!("{}-{}", result.suite_name, chrono::Utc::now().format("%Y%m%d-%H%M%S"));
+            
+            let report_types: Vec<&str> = report.split(',').collect();
+            if report_types.contains(&"json") {
+                let json_path = output.join(format!("{}.json", run_id));
+                std::fs::write(&json_path, serde_json::to_string_pretty(&result)?)?;
+            }
+            if report_types.contains(&"markdown") {
+                let md_path = output.join(format!("{}.md", run_id));
+                std::fs::write(&md_path, pipeline::suite::format_suite_markdown(&result))?;
+            }
+            
+            if result.failed > 0 {
+                std::process::exit(1);
+            }
         }
 
         Commands::Health { profile } => {

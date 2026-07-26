@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<business_project>
+  <object_type internal_type="Company" display_name="Company" _module_key="sample-service">
+    <property name="name" type="string" required="true" />
+    <property name="founded" type="int" />
+    <children type="Department" name="departmentList" />
+  </object_type>
+  <object_type internal_type="Department" display_name="Department" _module_key="sample-service">
+    <property name="name" type="string" required="true" />
+    <property name="budget" type="money" />
+    <container type="Company" name="company" />
+  </object_type>
+</business_project>

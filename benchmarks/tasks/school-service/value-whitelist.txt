@@ -1,0 +1,14 @@
+# Allowed property types
+string
+int
+long_string
+date
+date_time
+money
+bool
+double
+image
+
+# Allowed relationship types
+children
+container
