@@ -136,10 +136,33 @@ async fn main() -> Result<()> {
             let model_profile = model_vllm::profile::ModelProfile::load(&profile)?;
             tracing::info!(model = %model_profile.model.name, "Profile loaded");
 
-            // TODO: Load task package, create run controller, execute pipeline
-            tracing::warn!("Single task execution not yet implemented");
-            eprintln!("✗ Single task execution not yet implemented.");
-            std::process::exit(1);
+            let max_repairs = model_profile.run.max_repairs;
+            let run_id = format!("run-{}", chrono::Utc::now().format("%Y%m%d-%H%M%S"));
+
+            let (side_effect_tx, mut side_effect_rx) = tokio::sync::mpsc::channel(32);
+            let (mut controller, event_tx) = agent_core::run_controller::RunController::new(run_id.clone(), max_repairs, side_effect_tx);
+
+            let mut executor = pipeline::executor::PipelineExecutor::new(model_profile, event_tx, output.clone(), run_id);
+            executor.load_task_from_path(&task).await;
+
+            let controller_task = tokio::spawn(async move {
+                controller.run_to_completion().await;
+                controller
+            });
+
+            while let Some(effect) = side_effect_rx.recv().await {
+                executor.handle(effect).await;
+            }
+
+            let controller = controller_task.await;
+            
+            if let agent_core::state::PipelineState::Completed = controller.unwrap().state.state {
+                eprintln!("✓ Task completed successfully.");
+                std::process::exit(0);
+            } else {
+                eprintln!("✗ Task failed.");
+                std::process::exit(1);
+            }
         }
     }
 

@@ -36,34 +36,85 @@ pub async fn run(app: &mut App) -> Result<()> {
     result
 }
 
+use futures::StreamExt;
+
 async fn event_loop(
     terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
     app: &mut App,
 ) -> Result<()> {
+    let mut reader = crossterm::event::EventStream::new();
     loop {
         terminal.draw(|f| draw(f, app))?;
 
-        if event::poll(Duration::from_millis(100))? {
-            if let Event::Key(key) = event::read()? {
-                match key.code {
-                    KeyCode::Char('q') => app.should_quit = true,
-                    KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                        app.should_quit = true;
+        tokio::select! {
+            // 1. Terminal events
+            maybe_event = reader.next() => {
+                if let Some(Ok(Event::Key(key))) = maybe_event {
+                    match key.code {
+                        KeyCode::Char('q') => app.should_quit = true,
+                        KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                            app.should_quit = true;
+                        }
+                        KeyCode::Char('g') => app.view = View::Pipeline,
+                        KeyCode::Char('v') => app.view = View::Diagnostics,
+                        KeyCode::Char('d') => app.view = View::Candidate,
+                        KeyCode::Char('t') => app.view = View::Task,
+                        KeyCode::Char('?') => {
+                            app.view = if app.view == View::Help { View::Pipeline } else { View::Help };
+                        }
+                        KeyCode::Char('j') | KeyCode::Down => {
+                            app.scroll_offset = app.scroll_offset.saturating_add(1);
+                        }
+                        KeyCode::Char('k') | KeyCode::Up => {
+                            app.scroll_offset = app.scroll_offset.saturating_sub(1);
+                        }
+                        // Dummy hotkey to load a task for testing
+                        KeyCode::Char('r') => {
+                            let _ = app.start_task(std::path::Path::new("tasks/dummy")).await;
+                        }
+                        _ => {}
                     }
-                    KeyCode::Char('g') => app.view = View::Pipeline,
-                    KeyCode::Char('v') => app.view = View::Diagnostics,
-                    KeyCode::Char('d') => app.view = View::Candidate,
-                    KeyCode::Char('t') => app.view = View::Task,
-                    KeyCode::Char('?') => {
-                        app.view = if app.view == View::Help { View::Pipeline } else { View::Help };
+                }
+            }
+            
+            // 2. Events from Executor (proxy)
+            Some(event) = async {
+                if let Some(rx) = app.proxy_event_rx.as_mut() {
+                    rx.recv().await
+                } else {
+                    std::future::pending().await
+                }
+            } => {
+                // Update UI from event
+                match &event {
+                    agent_core::event::RunEvent::ModelCompleted(res) => {
+                        app.token_prompt += res.usage.prompt_tokens;
+                        app.token_completion += res.usage.completion_tokens;
                     }
-                    KeyCode::Char('j') | KeyCode::Down => {
-                        app.scroll_offset = app.scroll_offset.saturating_add(1);
-                    }
-                    KeyCode::Char('k') | KeyCode::Up => {
-                        app.scroll_offset = app.scroll_offset.saturating_sub(1);
+                    agent_core::event::RunEvent::ValidationCompleted(res) => {
+                        app.diagnostics = res.diagnostic.clone();
                     }
                     _ => {}
+                }
+                
+                if let Some(tx) = app.controller_event_tx.as_mut() {
+                    let _ = tx.send(event).await;
+                }
+            }
+            
+            // 3. Process controller (reduces events and emits side effects)
+            Some(effect) = async {
+                if let Some(controller) = app.controller.as_mut() {
+                    controller.process_next().await
+                } else {
+                    std::future::pending().await
+                }
+            } => {
+                if let Some(exec) = app.executor.as_mut() {
+                    exec.handle(effect).await;
+                    if let Some(cand) = exec.candidate() {
+                        app.candidate = cand.to_string();
+                    }
                 }
             }
         }
@@ -94,7 +145,7 @@ fn draw(f: &mut Frame, app: &App) {
 }
 
 fn draw_header(f: &mut Frame, app: &App, area: Rect) {
-    let in_flight = if app.run.state.is_active() { "1" } else { "0" };
+    let in_flight = if app.run_state().state.is_active() { "1" } else { "0" };
     let header = Line::from(vec![
         Span::styled(" DGX Agent", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
         Span::raw(" ─ Model: "),
@@ -116,20 +167,20 @@ fn draw_header(f: &mut Frame, app: &App, area: Rect) {
 }
 
 fn draw_run_info(f: &mut Frame, app: &App, area: Rect) {
-    let state_color = match &app.run.state {
+    let state_color = match &app.run_state().state {
         agent_core::state::PipelineState::Completed => Color::Green,
         agent_core::state::PipelineState::Failed { .. } => Color::Red,
         agent_core::state::PipelineState::Cancelled => Color::Yellow,
-        _ if app.run.state.is_active() => Color::Cyan,
+        _ if app.run_state().state.is_active() => Color::Cyan,
         _ => Color::Gray,
     };
 
-    let run_name = app.run.task_name.as_deref().unwrap_or(&app.run.run_id);
+    let run_name = app.run_state().task_name.as_deref().unwrap_or(&app.run_state().run_id);
     let line = Line::from(vec![
         Span::raw(" Run: "),
         Span::styled(run_name, Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
         Span::raw("  │  State: "),
-        Span::styled(app.run.state.label(), Style::default().fg(state_color).add_modifier(Modifier::BOLD)),
+        Span::styled(app.run_state().state.label(), Style::default().fg(state_color).add_modifier(Modifier::BOLD)),
     ]);
     let block = Block::default().borders(Borders::LEFT | Borders::RIGHT);
     f.render_widget(Paragraph::new(line).block(block), area);
@@ -168,7 +219,7 @@ fn draw_pipeline(f: &mut Frame, app: &App, area: Rect) {
             };
 
             // Find timing for this stage
-            let timing = app.run.timings.iter().find(|t| {
+            let timing = app.run_state().timings.iter().find(|t| {
                 t.stage.contains(&name.to_lowercase().replace(' ', "_"))
             });
             let time_str = timing

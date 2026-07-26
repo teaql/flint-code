@@ -7,7 +7,8 @@ use agent_core::reducer::SideEffect;
 use agent_core::run_controller::RunController;
 use model_vllm::profile::ModelProfile;
 use tokio::sync::mpsc;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use pipeline::executor::PipelineExecutor;
 
 /// Active view in the TUI
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -23,7 +24,8 @@ pub enum View {
 /// TUI application state
 pub struct App {
     pub profile: ModelProfile,
-    pub run: RunState,
+    pub controller: Option<RunController>,
+    pub dummy_run: RunState,
     pub view: View,
     pub should_quit: bool,
     pub candidate: String,
@@ -32,18 +34,17 @@ pub struct App {
     pub token_prompt: u32,
     pub token_completion: u32,
     pub scroll_offset: u16,
-    pub event_tx: Option<mpsc::Sender<RunEvent>>,
-    pub side_effect_rx: Option<mpsc::Receiver<SideEffect>>,
+    pub proxy_event_rx: Option<mpsc::Receiver<RunEvent>>,
+    pub controller_event_tx: Option<mpsc::Sender<RunEvent>>,
+    pub executor: Option<PipelineExecutor>,
 }
 
 impl App {
     pub fn new() -> Result<Self> {
-        // Load the default profile
         let profile_path = PathBuf::from("profiles/dgx-spark-nemotron-3-super-64k.toml");
         let profile = if profile_path.exists() {
             ModelProfile::load(&profile_path)?
         } else {
-            // Minimal default if profile file not found
             toml::from_str(include_str!("../../../profiles/dgx-spark-nemotron-3-super-64k.toml"))?
         };
 
@@ -53,7 +54,8 @@ impl App {
 
         Ok(Self {
             profile,
-            run,
+            controller: None,
+            dummy_run: run,
             view: View::Pipeline,
             should_quit: false,
             candidate: String::new(),
@@ -62,17 +64,43 @@ impl App {
             token_prompt: 0,
             token_completion: 0,
             scroll_offset: 0,
-            event_tx: None,
-            side_effect_rx: None,
+            proxy_event_rx: None,
+            controller_event_tx: None,
+            executor: None,
         })
     }
 
-    /// Get pipeline stage statuses for display
+    pub async fn start_task(&mut self, task_path: &Path) -> Result<()> {
+        let max_repairs = self.profile.run.max_repairs;
+        let run_id = format!("run-{}", chrono::Utc::now().format("%Y%m%d-%H%M%S"));
+        
+        let (side_effect_tx, _side_effect_rx) = mpsc::channel(32);
+        let (controller, controller_event_tx) = RunController::new(run_id.clone(), max_repairs, side_effect_tx);
+        
+        let (proxy_event_tx, proxy_event_rx) = mpsc::channel(64);
+        
+        let runs_root = PathBuf::from("runs");
+        let mut executor = PipelineExecutor::new(self.profile.clone(), proxy_event_tx, runs_root, run_id);
+        executor.load_task_from_path(task_path).await;
+        
+        self.proxy_event_rx = Some(proxy_event_rx);
+        self.controller_event_tx = Some(controller_event_tx);
+        self.controller = Some(controller);
+        self.executor = Some(executor);
+        
+        Ok(())
+    }
+
+    pub fn run_state(&self) -> &RunState {
+        self.controller.as_ref().map(|c| &c.state).unwrap_or(&self.dummy_run)
+    }
+
     pub fn stage_statuses(&self) -> Vec<(&str, StageStatus)> {
+        let run = self.run_state();
         let stages = [
             "Preflight", "Generate", "Local Gate", "TeaQL", "Build", "Test",
         ];
-        let current = self.run.state.label();
+        let current = run.state.label();
         let mut result = Vec::new();
         let mut past_current = false;
 
@@ -83,8 +111,7 @@ impl App {
                 result.push((stage, StageStatus::Active));
                 past_current = true;
             } else {
-                // Check if we have timing for this stage
-                let completed = self.run.timings.iter().any(|t| {
+                let completed = run.timings.iter().any(|t| {
                     t.stage.contains(&stage.to_lowercase().replace(' ', "_"))
                         && t.completed.is_some()
                 });

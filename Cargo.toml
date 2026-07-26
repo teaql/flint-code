@@ -10,6 +10,7 @@ members = [
     "crates/tool-runner",
     "crates/validation",
     "crates/artifact-store",
+    "crates/pipeline",
 ]
 
 [workspace.package]
@@ -27,6 +28,7 @@ workspace-guard = { path = "crates/workspace-guard" }
 tool-runner = { path = "crates/tool-runner" }
 validation = { path = "crates/validation" }
 artifact-store = { path = "crates/artifact-store" }
+pipeline = { path = "crates/pipeline" }
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }
