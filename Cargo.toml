@@ -1,0 +1,70 @@
+[package]
+name = "teaql-dgx-spark-agent"
+version = "0.1.0"
+edition = "2024"
+description = "TeaQL Coding Agent for NVIDIA DGX Spark — Ratatui TUI with 64K context budget"
+license = "MIT"
+repository = "https://github.com/teaql/teaql-dgx-spark-agent"
+
+[dependencies]
+# TUI framework
+ratatui = "0.29"
+crossterm = { version = "0.28", features = ["event-stream"] }
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1"
+futures = "0.3"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+# HTTP client for LLM API calls
+reqwest = { version = "0.12", features = ["json", "stream"] }
+
+# Error handling
+anyhow = "1"
+thiserror = "2"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
+
+# File system watching
+notify = "7"
+
+# Syntax highlighting
+syntect = "5"
+
+# Process management (for cargo-teaql, etc.)
+portable-pty = "0.8"
+
+# Clipboard
+arboard = "3"
+
+# Time
+chrono = "0.4"
+
+# UUID for session/run tracking
+uuid = { version = "1", features = ["v4"] }
+
+# Token counting (tiktoken-compatible)
+tiktoken-rs = "0.6"
+
+# Glob pattern matching
+glob = "0.3"
+
+# Directories for config/data paths
+dirs = "6"
+
+# Unicode width for TUI text layout
+unicode-width = "0.2"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
