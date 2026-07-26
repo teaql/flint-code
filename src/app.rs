@@ -63,7 +63,9 @@ impl App {
             config.llm_endpoint.clone(),
             config.model_name.clone(),
             config.temperature,
-            config.max_output_tokens,
+            config.top_p,
+            config.max_completion_tokens,
+            config.model_timeout_secs,
         );
         let workspace = WorkspaceState::new(config.workspace_root.clone());
 
@@ -186,7 +188,9 @@ impl App {
                         self.config.llm_endpoint.clone(),
                         self.config.model_name.clone(),
                         self.config.temperature,
-                        self.config.max_output_tokens,
+                        self.config.top_p,
+                        self.config.max_completion_tokens,
+                        self.config.model_timeout_secs,
                     );
                     self.status = AgentStatus::ContextWarning(format!("Model: {}", model));
                 }
@@ -261,8 +265,8 @@ Workspace: {}
 Model: {}
 Version: cargo-teaql {}
 "#,
-        config.max_context_window,
-        config.max_context_window,
+        config.total_context_window(),
+        config.max_prompt_tokens,
         config.context_budget,
         config.workspace_root.display(),
         config.model_name,

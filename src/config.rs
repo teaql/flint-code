@@ -1,43 +1,71 @@
 //! Agent configuration with DGX Spark context budget management.
+//!
+//! Supports environment variable overrides:
+//! - `DGX_AGENT_BASE_URL` → `llm_endpoint`
+//! - `DGX_AGENT_MODEL` → `model_name`
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
-/// DGX Spark has a 64K token limit. We reserve headroom for safety.
-const DEFAULT_CONTEXT_BUDGET: usize = 48_000;
-const DEFAULT_MAX_CONTEXT: usize = 64_000;
-const DEFAULT_RESERVED_TOKENS: usize = 8_000;
-const DEFAULT_MAX_OUTPUT_TOKENS: usize = 8_000;
+/// DGX Spark context budget defaults (nemotron-3-super profile)
+const DEFAULT_MAX_PROMPT_TOKENS: usize = 48_000;
+const DEFAULT_MAX_COMPLETION_TOKENS: usize = 4_096;
+const DEFAULT_SAFETY_TOKENS: usize = 8_192;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AgentConfig {
-    /// Total context window of the target model (DGX Spark local models)
-    pub max_context_window: usize,
-    /// Tokens reserved for system prompt + agent instructions
-    pub reserved_tokens: usize,
-    /// Max tokens for model output
-    pub max_output_tokens: usize,
-    /// Effective context budget = max_context_window - reserved - max_output
+    // ── Context budget ──────────────────────────────────────────────
+    /// Max tokens the model accepts as prompt input
+    pub max_prompt_tokens: usize,
+    /// Max tokens the model can generate in one completion
+    pub max_completion_tokens: usize,
+    /// Safety margin reserved to avoid overflow
+    pub safety_tokens: usize,
+    /// Effective context budget (auto-calculated)
+    ///   = max_prompt_tokens − safety_tokens
     pub context_budget: usize,
-    /// LLM endpoint (local DGX Spark NIM endpoint)
+
+    // ── LLM connection ──────────────────────────────────────────────
+    /// LLM endpoint — override with `DGX_AGENT_BASE_URL` env var
     pub llm_endpoint: String,
-    /// Model name to use
+    /// Model name — override with `DGX_AGENT_MODEL` env var
     pub model_name: String,
-    /// Temperature
+
+    // ── Sampling ────────────────────────────────────────────────────
     pub temperature: f32,
-    /// Workspace root path
+    pub top_p: f32,
+
+    // ── Model behavior ──────────────────────────────────────────────
+    /// Enable thinking/reasoning mode (chain-of-thought)
+    pub thinking: bool,
+    /// Model request timeout in seconds
+    pub model_timeout_secs: u64,
+    /// Max repair attempts on compilation/test failure
+    pub max_repairs: usize,
+    /// Max concurrent model requests (DGX Spark = 1)
+    pub model_request_concurrency: usize,
+
+    // ── Workspace ───────────────────────────────────────────────────
     pub workspace_root: PathBuf,
-    /// TeaQL agent-kit path
     pub agent_kit_path: Option<PathBuf>,
-    /// cargo-teaql version requirement
+
+    // ── TeaQL ───────────────────────────────────────────────────────
     pub cargo_teaql_version: String,
-    /// Enable token usage display
+
+    // ── UI ───────────────────────────────────────────────────────────
     pub show_token_usage: bool,
-    /// Auto-compact context when budget exceeded
     pub auto_compact: bool,
-    /// Theme
     pub theme: ThemeConfig,
+
+    // ── Legacy aliases kept for backward compat ─────────────────────
+    /// Alias for max_prompt_tokens + safety_tokens + max_completion_tokens
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_context_window: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reserved_tokens: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_output_tokens: Option<usize>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -48,13 +76,18 @@ pub struct ThemeConfig {
 impl Default for AgentConfig {
     fn default() -> Self {
         Self {
-            max_context_window: DEFAULT_MAX_CONTEXT,
-            reserved_tokens: DEFAULT_RESERVED_TOKENS,
-            max_output_tokens: DEFAULT_MAX_OUTPUT_TOKENS,
-            context_budget: DEFAULT_CONTEXT_BUDGET,
+            max_prompt_tokens: DEFAULT_MAX_PROMPT_TOKENS,
+            max_completion_tokens: DEFAULT_MAX_COMPLETION_TOKENS,
+            safety_tokens: DEFAULT_SAFETY_TOKENS,
+            context_budget: DEFAULT_MAX_PROMPT_TOKENS - DEFAULT_SAFETY_TOKENS,
             llm_endpoint: "http://localhost:8000/v1".to_string(),
-            model_name: "meta/llama-3.1-70b-instruct".to_string(),
-            temperature: 0.1,
+            model_name: "nemotron-3-super".to_string(),
+            temperature: 0.0,
+            top_p: 1.0,
+            thinking: false,
+            model_timeout_secs: 300,
+            max_repairs: 1,
+            model_request_concurrency: 1,
             workspace_root: PathBuf::from("."),
             agent_kit_path: None,
             cargo_teaql_version: "2.0.8".to_string(),
@@ -63,6 +96,9 @@ impl Default for AgentConfig {
             theme: ThemeConfig {
                 name: "spark".to_string(),
             },
+            max_context_window: None,
+            reserved_tokens: None,
+            max_output_tokens: None,
         }
     }
 }
@@ -78,17 +114,34 @@ impl AgentConfig {
 
     pub fn load_or_create() -> Result<Self> {
         let path = Self::config_path()?;
-        if path.exists() {
+        let mut config = if path.exists() {
             let content = std::fs::read_to_string(&path)?;
-            let mut config: Self = toml::from_str(&content)?;
-            config.recalculate_budget();
-            Ok(config)
+            toml::from_str(&content)?
         } else {
             let config = Self::default();
             let content = toml::to_string_pretty(&config)?;
             std::fs::write(&path, content)?;
-            Ok(config)
+            config
+        };
+
+        // Environment variable overrides (not persisted)
+        if let Ok(url) = std::env::var("DGX_AGENT_BASE_URL") {
+            config.llm_endpoint = format!("{}/v1", url.trim_end_matches('/'));
         }
+        if let Ok(model) = std::env::var("DGX_AGENT_MODEL") {
+            config.model_name = model;
+        }
+
+        // Migrate legacy fields
+        if let Some(max_output) = config.max_output_tokens {
+            config.max_completion_tokens = max_output;
+        }
+        if let Some(reserved) = config.reserved_tokens {
+            config.safety_tokens = reserved;
+        }
+
+        config.recalculate_budget();
+        Ok(config)
     }
 
     pub fn save(&self) -> Result<()> {
@@ -98,15 +151,19 @@ impl AgentConfig {
         Ok(())
     }
 
-    /// Recalculate effective context budget from window size and reservations
+    /// Recalculate effective context budget
     pub fn recalculate_budget(&mut self) {
-        self.context_budget = self.max_context_window
-            .saturating_sub(self.reserved_tokens)
-            .saturating_sub(self.max_output_tokens);
+        self.context_budget = self.max_prompt_tokens
+            .saturating_sub(self.safety_tokens);
     }
 
     /// Check if adding `additional_tokens` would exceed the budget
     pub fn would_exceed_budget(&self, current_tokens: usize, additional_tokens: usize) -> bool {
         current_tokens + additional_tokens > self.context_budget
+    }
+
+    /// Total context window (for display purposes)
+    pub fn total_context_window(&self) -> usize {
+        self.max_prompt_tokens + self.max_completion_tokens
     }
 }

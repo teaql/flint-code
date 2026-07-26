@@ -7,6 +7,7 @@ use anyhow::Result;
 use futures::StreamExt;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 use tokio::sync::mpsc;
 
 use crate::context::ApiMessage;
@@ -17,6 +18,7 @@ pub struct LlmClient {
     endpoint: String,
     model: String,
     temperature: f32,
+    top_p: f32,
     max_tokens: usize,
 }
 
@@ -25,6 +27,7 @@ struct ChatRequest {
     model: String,
     messages: Vec<ApiMessage>,
     temperature: f32,
+    top_p: f32,
     max_tokens: usize,
     stream: bool,
 }
@@ -76,12 +79,25 @@ pub enum LlmEvent {
 }
 
 impl LlmClient {
-    pub fn new(endpoint: String, model: String, temperature: f32, max_tokens: usize) -> Self {
+    pub fn new(
+        endpoint: String,
+        model: String,
+        temperature: f32,
+        top_p: f32,
+        max_tokens: usize,
+        timeout_secs: u64,
+    ) -> Self {
+        let client = Client::builder()
+            .timeout(Duration::from_secs(timeout_secs))
+            .build()
+            .unwrap_or_else(|_| Client::new());
+
         Self {
-            client: Client::new(),
+            client,
             endpoint,
             model,
             temperature,
+            top_p,
             max_tokens,
         }
     }
@@ -97,6 +113,7 @@ impl LlmClient {
             model: self.model.clone(),
             messages,
             temperature: self.temperature,
+            top_p: self.top_p,
             max_tokens: self.max_tokens,
             stream: true,
         };
@@ -170,6 +187,7 @@ impl LlmClient {
             model: self.model.clone(),
             messages,
             temperature: self.temperature,
+            top_p: self.top_p,
             max_tokens: self.max_tokens,
             stream: false,
         };
