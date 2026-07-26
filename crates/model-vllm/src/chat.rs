@@ -1,0 +1,72 @@
+use serde::{Deserialize, Serialize};
+
+/// Chat message for API requests
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatMessage {
+    pub role: String,
+    pub content: String,
+}
+
+/// Chat completion request
+#[derive(Debug, Clone, Serialize)]
+pub struct ChatRequest {
+    pub model: String,
+    pub messages: Vec<ChatMessage>,
+    pub temperature: f32,
+    pub top_p: f32,
+    pub max_tokens: u32,
+    pub stream: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chat_template_kwargs: Option<ChatTemplateKwargs>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatTemplateKwargs {
+    pub enable_thinking: bool,
+}
+
+/// Chat completion response
+#[derive(Debug, Clone, Deserialize)]
+pub struct ChatResponse {
+    pub id: Option<String>,
+    pub choices: Vec<ChatChoice>,
+    pub usage: Option<ChatUsage>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ChatChoice {
+    pub index: u32,
+    pub message: Option<ChatMessageContent>,
+    pub delta: Option<ChatDelta>,
+    pub finish_reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ChatMessageContent {
+    pub role: Option<String>,
+    pub content: Option<String>,
+    /// Reasoning content (for thinking mode)
+    pub reasoning_content: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ChatDelta {
+    pub role: Option<String>,
+    pub content: Option<String>,
+    pub reasoning_content: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ChatUsage {
+    pub prompt_tokens: u32,
+    pub completion_tokens: u32,
+    pub total_tokens: u32,
+}
+
+/// Streaming chunk
+#[derive(Debug, Clone, Deserialize)]
+pub struct StreamChunk {
+    pub id: Option<String>,
+    pub choices: Vec<ChatChoice>,
+    pub usage: Option<ChatUsage>,
+}

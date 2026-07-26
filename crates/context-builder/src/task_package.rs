@@ -1,0 +1,136 @@
+use anyhow::{Context, Result};
+use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
+
+/// Represents a loaded task package directory.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TaskPackageData {
+    pub name: String,
+    pub root: PathBuf,
+    pub task_content: String,
+    pub grammar_example: Option<String>,
+    pub value_whitelist: Option<String>,
+    pub acceptance_spec: Option<serde_json::Value>,
+    pub workspace_manifest: Option<WorkspaceManifest>,
+    pub tool_policy: Option<ToolPolicy>,
+}
+
+/// Workspace manifest: controls which files the agent can access.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WorkspaceManifest {
+    #[serde(default)]
+    pub readable: Vec<String>,
+    #[serde(default)]
+    pub writable: Vec<String>,
+    #[serde(default)]
+    pub denied: Vec<String>,
+    #[serde(default = "default_max_single_file_bytes")]
+    pub max_single_file_bytes: u64,
+    #[serde(default = "default_max_total_read_bytes")]
+    pub max_total_read_bytes: u64,
+    #[serde(default)]
+    pub recursive_discovery: bool,
+}
+
+fn default_max_single_file_bytes() -> u64 { 180_000 }
+fn default_max_total_read_bytes() -> u64 { 500_000 }
+
+/// Tool policy: controls which commands can be executed.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolPolicy {
+    #[serde(default)]
+    pub allowed_commands: Vec<CommandTemplate>,
+    #[serde(default = "default_false")]
+    pub allow_shell: bool,
+    #[serde(default = "default_false")]
+    pub allow_network: bool,
+}
+
+fn default_false() -> bool { false }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CommandTemplate {
+    pub template: String,
+    pub description: String,
+    #[serde(default)]
+    pub allowed_args: Vec<String>,
+}
+
+impl TaskPackageData {
+    /// Load a task package from a directory.
+    pub fn load(dir: &Path) -> Result<Self> {
+        let name = dir
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_else(|| "unknown".to_string());
+
+        let task_file = dir.join("task.md");
+        let task_content = std::fs::read_to_string(&task_file)
+            .with_context(|| format!("Failed to read task.md from {}", dir.display()))?;
+
+        let grammar_example = read_optional(dir, "grammar-example.xml")?;
+        let value_whitelist = read_optional(dir, "value-whitelist.txt")?;
+
+        let acceptance_spec = if dir.join("acceptance.json").exists() {
+            let content = std::fs::read_to_string(dir.join("acceptance.json"))?;
+            Some(serde_json::from_str(&content)?)
+        } else {
+            None
+        };
+
+        let workspace_manifest = if dir.join("workspace-manifest.toml").exists() {
+            let content = std::fs::read_to_string(dir.join("workspace-manifest.toml"))?;
+            Some(toml::from_str(&content)?)
+        } else {
+            None
+        };
+
+        let tool_policy = if dir.join("tool-policy.toml").exists() {
+            let content = std::fs::read_to_string(dir.join("tool-policy.toml"))?;
+            Some(toml::from_str(&content)?)
+        } else {
+            None
+        };
+
+        Ok(Self {
+            name,
+            root: dir.to_path_buf(),
+            task_content,
+            grammar_example,
+            value_whitelist,
+            acceptance_spec,
+            workspace_manifest,
+            tool_policy,
+        })
+    }
+
+    /// List all files present in this task package
+    pub fn files(&self) -> Vec<PathBuf> {
+        let mut files = vec![self.root.join("task.md")];
+        if self.grammar_example.is_some() {
+            files.push(self.root.join("grammar-example.xml"));
+        }
+        if self.value_whitelist.is_some() {
+            files.push(self.root.join("value-whitelist.txt"));
+        }
+        if self.acceptance_spec.is_some() {
+            files.push(self.root.join("acceptance.json"));
+        }
+        if self.workspace_manifest.is_some() {
+            files.push(self.root.join("workspace-manifest.toml"));
+        }
+        if self.tool_policy.is_some() {
+            files.push(self.root.join("tool-policy.toml"));
+        }
+        files
+    }
+}
+
+fn read_optional(dir: &Path, filename: &str) -> Result<Option<String>> {
+    let path = dir.join(filename);
+    if path.exists() {
+        Ok(Some(std::fs::read_to_string(&path)?))
+    } else {
+        Ok(None)
+    }
+}
