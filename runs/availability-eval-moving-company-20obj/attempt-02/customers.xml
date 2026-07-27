@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="moving_company_management"
+      chinese_name="搬家公司管理"
+      english_name="Moving Company Management"
+      name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="root">
+  
+  <private_customer _name="PrivateCustomer"
+                    _module="CustomerManagement"
+                    _module_key="customers"
+                    name="John Doe"
+                    email="john.doe@example.com"
+                    phone="+1234567890"
+                    address="123 Main St, Anytown, USA"
+                    create_time="createTime()"
+                    update_time="updateTime()"/>
+  
+  <corporate_customer _name="CorporateCustomer"
+                      _module="CustomerManagement"
+                      _module_key="customers"
+                      name="Acme Corporation"
+                      contact_person="Jane Smith"
+                      email="jane.smith@acme.com"
+                      phone="+1987654321"
+                      address="456 Business Ave, Metropolis, USA"
+                      tax_id="TAX123456789"
+                      create_time="createTime()"
+                      update_time="updateTime()"/>
+  
+  <customer_contact _name="CustomerContact"
+                    _module="CustomerManagement"
+                    _module_key="customers"
+                    first_name="Alice"
+                    last_name="Johnson"
+                    email="alice.johnson@example.com"
+                    phone="+1122334455"
+                    relationship="Spouse"
+                    private_customer="private_customer()"
+                    corporate_customer="corporate_customer()"
+                    create_time="createTime()
+                    update_time="updateTime()"/>
+  
+  <billing_information _name="BillingInformation"
+                       _module="CustomerManagement"
+                       _module_key="customers"
+                       billing_address="789 Invoice Rd, Billing City, USA"
+                       payment_method="Credit Card"
+                       account_number="ACC987654321"
+                       private_customer="private_customer()"
+                       corporate_customer="corporate_customer()"
+                       create_time="createTime()
+                       update_time="updateTime()"/>
+  
+  <customer_history _name="CustomerHistory"
+                    _module="CustomerManagement"
+                    _module_key="customers"
+                    interaction_date="2024-01-15"
+                    interaction_type="Service Inquiry"
+                    notes="Customer inquired about long-distance moving services"
+                    private_customer="private_customer()"
+                    corporate_customer="corporate_customer()"
+                    create_time="createTime()
+                    update_time="updateTime()"/>
+</root>

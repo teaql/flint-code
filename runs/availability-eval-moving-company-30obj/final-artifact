@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="moving_company_management"
+      chinese_name="搬家公司管理"
+      english_name="Moving Company Management"
+      name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="root">
+  
+  <_include file="operations.xml" />
+  <_include file="employees.xml" />
+  <_include file="customers.xml" />
+  <_include file="products_services.xml" />
+  <_include file="marketing_sales.xml" />
+  <_include file="finance_accounting.xml" />
+  <_include file="asset_management.xml" />
+  <_include file="admin_compliance.xml" />
+  <_include file="platform_modules.xml" />
+</root>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="moving_company_management"
+      chinese_name="搬家公司管理"
+      english_name="Moving Company Management"
+      name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="root">
+  
+  <payment _name="Payment"
+             _module="Finance"
+             _module_key="finance"
+             amount="150.00"
+             payment_date="createTime()"
+             payment_method="Credit Card"
+             status="Completed"
+             invoice="invoice()"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+             
+  <invoice _name="Invoice"
+               _module="Finance"
+               _module_key="finance"
+               invoice_number="INV-2024-001"
+               issue_date="createTime()"
+               due_date="2024-12-31"
+               total_amount="300.00"
+               status="Sent"
+               customer="customer()"
+               create_time="createTime()"
+               update_time="updateTime()"/>
+               
+  <expense _name="Expense"
+               _module="Finance"
+               _module_key="finance"
+               description="Fuel costs"
+               amount="75.50"
+               expense_date="createTime()"
+               category="Transportation"
+               vendor="Shell"
+               create_time="createTime()"
+               update_time="updateTime()"/>
+               
+  <vat_record _name="VatRecord"
+                  _module="Finance"
+                  _module_key="finance"
+                  vat_amount="30.00"
+                  taxable_amount="150.00"
+                  vat_rate="0.20"
+                  period_start="2024-01-01"
+                  period_end="2024-01-31"
+                  filing_status="Pending"
+                  create_time="createTime()"
+                  update_time="updateTime()"/>
+                  
+  <financial_summary _name="FinancialSummary"
+                         _module="Finance"
+                         _module_key="finance"
+                         period="Monthly"
+                         start_date="2024-01-01"
+                         end_date="2024-01-31"
+                         total_revenue="5000.00"
+                         total_expenses="3000.00"
+                         net_profit="2000.00"
+                         create_time="createTime()"
+                         update_time="updateTime()"/>
+</root>

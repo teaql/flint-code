@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<moving_event _name="MovingEvent"
+              _module="Operations"
+              _module_key="operations"
+              name="string"
+              scheduled_date="string"
+              actual_start_time="string"
+              actual_end_time="string"
+              status="string"
+              customer="customer()"
+              create_time="createTime()"
+              update_time="updateTime()"/>
+
+<route _name="Route"
+       _module="Operations"
+       _module_key="operations"
+       name="string"
+       origin_address="address()"
+       destination_address="address()"
+       distance_km="0.0"
+       estimated_duration_minutes="0"
+       create_time="createTime()"
+       update_time="updateTime()"/>
+
+<time_slot _name="TimeSlot"
+           _module="Operations"
+           _module_key="operations"
+           start_time="string"
+           end_time="string"
+           is_available="false"
+           moving_event="moving_event()"
+           create_time="createTime()"
+           update_time="updateTime()"/>
+
+<fulfillment_event _name="FulfillmentEvent"
+                   _module="Operations"
+                   _module_key="operations"
+                   event_type="string"
+                   description="string"
+                   occurred_at="string"
+                   moving_event="moving_event()"
+                   create_time="createTime()"
+                   update_time="updateTime()"/>
+
+<address _name="Address"
+         _module="Operations"
+         _module_key="operations"
+         street_line_1="string"
+         street_line_2="string"
+         city="string"
+         state_province="string"
+         postal_code="string"
+         country="string"
+         latitude="0.0"
+         longitude="0.0"
+         create_time="createTime()"
+         update_time="updateTime()"/>

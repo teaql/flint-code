@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="moving_company_management"
+      chinese_name="搬家公司管理"
+      english_name="Moving Company Management"
+      name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="root">
+  
+  <contract _name="Contract"
+            _module="Administration"
+            _module_key="admin"
+            title="Service Agreement"
+            start_date="2024-01-01"
+            end_date="2024-12-31"
+            customer="customer()"
+            create_time="createTime()"
+            update_time="updateTime()"/>
+            
+  <insurance _name="Insurance"
+             _module="Administration"
+             _module_key="admin"
+             policy_number="POL123456"
+             provider="SafeCover Inc."
+             coverage_amount="1000000.00"
+             expiry_date="2025-01-01"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+             
+  <document_storage _name="DocumentStorage"
+                    _module="Administration"
+                    _module_key="admin"
+                    file_name="contract_scan.pdf"
+                    file_type="application/pdf"
+                    uploaded_by="user()"
+                    create_time="createTime()"
+                    update_time="updateTime()"/>
+                    
+  <audit_log _name="AuditLog"
+             _module="Administration"
+             _module_key="admin"
+             action="UPDATED"
+             entity_type="Contract"
+             entity_id="123"
+             performed_by="user()"
+             timestamp="createTime()"
+             _audit_mask_fields="password_hash,secret"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+</root>

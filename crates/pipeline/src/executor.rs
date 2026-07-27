@@ -173,7 +173,7 @@ impl PipelineExecutor {
             ).ok();
         }
 
-        match self.client.chat(messages).await {
+        match self.client.chat(messages.clone()).await {
             Ok(result) => {
                 // Save candidate
                 self.candidate = Some(result.content.clone());
@@ -181,6 +181,41 @@ impl PipelineExecutor {
                     artifacts.save_candidate(attempt, &result.content).ok();
                     artifacts.save_attempt_file(attempt, "response.json", &result).ok();
                 }
+
+                // MULTI-STEP LOOP: Generate included files
+                let includes = extract_includes(&result.content);
+                for file in includes {
+                    info!(attempt, file = %file, "Generating included file");
+                    let mut sub_messages = messages.clone();
+                    sub_messages.push(ChatMessage {
+                        role: "assistant".to_string(),
+                        content: result.content.clone(),
+                    });
+                    sub_messages.push(ChatMessage {
+                        role: "user".to_string(),
+                        content: format!("Please provide the contents of {}. Output ONLY the raw XML, nothing else. Do not use markdown blocks, just the raw XML text.", file),
+                    });
+                    
+                    match self.client.chat(sub_messages).await {
+                        Ok(sub_result) => {
+                            let clean_content = sub_result.content
+                                .trim()
+                                .strip_prefix("```xml").unwrap_or(&sub_result.content)
+                                .strip_prefix("```").unwrap_or(&sub_result.content)
+                                .strip_suffix("```").unwrap_or(&sub_result.content)
+                                .trim()
+                                .to_string();
+                                
+                            if let Some(artifacts) = &self.artifacts {
+                                artifacts.save_attempt_raw(attempt, &file, &clean_content).ok();
+                            }
+                        }
+                        Err(e) => {
+                            tracing::warn!("Failed to generate included file {}: {}", file, e);
+                        }
+                    }
+                }
+
                 self.send(RunEvent::ModelCompleted(result)).await;
             }
             Err(err) => {
@@ -235,10 +270,22 @@ impl PipelineExecutor {
     }
 
     async fn domain_validate(&mut self, attempt: u8) {
-        // Domain validation would run TeaQL evaluate or other validators.
-        // For now, pass through if no domain validator is configured.
-        info!(attempt, "Domain validation — no validator configured, passing");
-        let result = validation::pass(3, "domain", 0.0);
+        let result = if let Some(artifacts) = &self.artifacts {
+            // Write the candidate to a temporary model.xml in the attempt dir
+            let attempt_dir = artifacts.create_attempt(attempt).unwrap_or_else(|_| artifacts.root.clone());
+            let model_path = attempt_dir.join("main.xml");
+            if let Some(c) = &self.candidate {
+                std::fs::write(&model_path, c).ok();
+            }
+            
+            info!(attempt, path = %attempt_dir.display(), "Running domain validation");
+            validation::domain::validate_domain(&attempt_dir)
+        } else {
+            // Fallback if no artifacts dir (shouldn't happen in normal runs)
+            info!(attempt, "Domain validation skipped — no artifact dir");
+            validation::pass(3, "domain", 0.0)
+        };
+
         if let Some(artifacts) = &self.artifacts {
             artifacts.save_attempt_file(attempt, "domain-validation.json", &result).ok();
         }
@@ -359,4 +406,30 @@ impl PipelineExecutor {
         // Will be used when building repair messages
         // For now this is a placeholder for richer repair context
     }
+}
+
+fn extract_includes(content: &str) -> Vec<String> {
+    let mut includes = Vec::new();
+    let mut start = 0;
+    while let Some(idx) = content[start..].find("<_include file=\"") {
+        let open_quote = start + idx + 16;
+        if let Some(close_quote) = content[open_quote..].find('"') {
+            includes.push(content[open_quote..open_quote + close_quote].to_string());
+            start = open_quote + close_quote + 1;
+        } else {
+            break;
+        }
+    }
+    // Also handle single quotes just in case
+    start = 0;
+    while let Some(idx) = content[start..].find("<_include file='") {
+        let open_quote = start + idx + 16;
+        if let Some(close_quote) = content[open_quote..].find('\'') {
+            includes.push(content[open_quote..open_quote + close_quote].to_string());
+            start = open_quote + close_quote + 1;
+        } else {
+            break;
+        }
+    }
+    includes
 }

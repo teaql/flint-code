@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="administration_compliance"
+      chinese_name="管理与合规"
+      english_name="Administration & Compliance"
+      name="administration-compliance"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="administration_compliance">
+  
+  <contract _name="Contract"
+            _module="Administration & Compliance"
+            _module_key="administration_compliance"
+            name="Summer Move Contract 2024"
+            contract_number="CT-2024-001"
+            start_date="2024-05-01"
+            end_date="2024-08-31"
+            customer="customer()"
+            create_time="createTime()"
+            update_time="updateTime()"/>
+            
+  <insurance _name="Insurance"
+             _module="Administration & Compliance"
+             _module_key="administration_compliance"
+             policy_number="INS-2024-001"
+             provider="SafeMove Insurance"
+             coverage_amount="1000000.00"
+             premium="2500.00"
+             start_date="2024-01-01"
+             end_date="2024-12-31"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+             
+  <document_storage _name="DocumentStorage"
+                    _module="Administration & Compliance"
+                    _module_key="administration_compliance"
+                    file_name="moving_license.pdf"
+                    file_type="application/pdf"
+                    file_size="102400"
+                    upload_date="2024-01-15"
+                    document_type="license"
+                    related_contract="contract()"
+                    create_time="createTime()"
+                    update_time="updateTime()"/>
+                    
+  <audit_log _name="AuditLog"
+             _module="Administration & Compliance"
+             _module_key="administration_compliance"
+             action="CREATE"
+             entity_type="moving_event"
+             entity_id="12345"
+             performed_by="user()"
+             changes='{"field": "status", "old": "pending", "new": "confirmed"}'
+             create_time="createTime()"
+             _audit_mask_fields="password_hash,secret"/>
+</root>

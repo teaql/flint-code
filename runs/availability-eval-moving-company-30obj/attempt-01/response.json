@@ -1,0 +1,12 @@
+{
+  "content": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root alias_model_name=\"moving_company_management\"\n      chinese_name=\"搬家公司管理\"\n      english_name=\"Moving Company Management\"\n      name=\"moving-company-service\"\n      cfg_mask_china_mobile=\"false\"\n      data_service=\"sqlite\"\n      org=\"doublechaintech\"\n      _module_key=\"root\">\n  \n  <_include file=\"operations.xml\" />\n  <_include file=\"employees.xml\" />\n  <_include file=\"customers.xml\" />\n  <_include file=\"products_services.xml\" />\n  <_include file=\"marketing_sales.xml\" />\n  <_include file=\"finance.xml\" />\n  <_include file=\"asset_management.xml\" />\n  <_include file=\"administration_compliance.xml\" />\n  <_include file=\"platform_modules.xml\" />\n</root>",
+  "reasoning_content": null,
+  "finish_reason": "stop",
+  "usage": {
+    "prompt_tokens": 1101,
+    "completion_tokens": 193,
+    "total_tokens": 1294
+  },
+  "elapsed_secs": 13.031690843,
+  "http_status": 200
+}

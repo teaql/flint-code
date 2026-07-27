@@ -8,3 +8,5 @@ Generate a KSML XML model with exactly 1 object:
 ## Requirements
 - Output a single complete XML document
 - Follow the grammar example structure exactly
+
+CRITICAL: You MUST generate EXACTLY 2 business objects (e.g. Greeting and GreetingType). Do NOT generate just one object, or it will fail validation.

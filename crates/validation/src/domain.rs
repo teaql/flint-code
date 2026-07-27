@@ -2,10 +2,45 @@
 
 use agent_core::event::ValidationResult;
 use std::path::Path;
+use std::process::Command;
+
+/// Run cargo teaql evaluate on the given input file or directory
+pub fn validate_domain(input_path: &Path) -> ValidationResult {
+    let start = std::time::Instant::now();
+    
+    let output = Command::new("cargo")
+        .arg("teaql")
+        .arg("--input")
+        .arg(input_path)
+        .arg("evaluate")
+        .output();
+        
+    let elapsed = start.elapsed().as_secs_f64();
+    
+    match output {
+        Ok(out) => {
+            let stdout = String::from_utf8_lossy(&out.stdout);
+            let stderr = String::from_utf8_lossy(&out.stderr);
+            let combined = format!("{}\n{}", stdout, stderr);
+            let mut result = parse_teaql_output(&combined);
+            result.elapsed_secs = elapsed;
+            
+            // If the command failed but we didn't parse any errors, add a generic error
+            if !out.status.success() && result.error_count == 0 {
+                result.error_count = 1;
+                result.passed = false;
+                result.actionable_errors.push(format!("Command failed with exit code: {:?}", out.status.code()));
+            }
+            result
+        }
+        Err(e) => {
+            super::fail(3, "domain", vec![e.to_string()], e.to_string(), elapsed)
+        }
+    }
+}
 
 /// Parse TeaQL evaluate output to extract error/warning/suggestion counts.
 pub fn parse_teaql_output(output: &str) -> ValidationResult {
-    let start = std::time::Instant::now();
     let mut errors = Vec::new();
     let mut error_count: u32 = 0;
     let mut warning_count: u32 = 0;
@@ -33,7 +68,6 @@ pub fn parse_teaql_output(output: &str) -> ValidationResult {
         }
     }
 
-    let elapsed = start.elapsed().as_secs_f64();
     ValidationResult {
         level: 3,
         level_name: "domain".to_string(),
@@ -43,7 +77,7 @@ pub fn parse_teaql_output(output: &str) -> ValidationResult {
         suggestion_count,
         actionable_errors: errors,
         diagnostic: output.to_string(),
-        elapsed_secs: elapsed,
+        elapsed_secs: 0.0,
     }
 }
 

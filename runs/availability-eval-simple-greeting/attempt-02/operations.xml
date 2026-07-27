@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<operations>  
+  <operation _name="sayHello"
+             _module="Core"
+             _module_key="core"
+             name="Say Hello"
+             description="Returns a greeting message"
+             return_type="Greeting"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+</operations>

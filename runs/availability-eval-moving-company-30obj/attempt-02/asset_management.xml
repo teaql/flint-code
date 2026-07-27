@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="asset_management"
+      chinese_name="资产管理"
+      english_name="Asset Management"
+      name="asset-management"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="asset_management">
+  
+  <vehicle _name="Vehicle"
+             _module="Asset Management"
+             _module_key="asset_management"
+             license_plate="ABC123"
+             vehicle_type="Truck"
+             capacity_kg="5000"
+             purchase_date="2020-01-15"
+             status="Active"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+             
+  <equipment _name="Equipment"
+               _module="Asset Management"
+               _module_key="asset_management"
+               name="Dolly"
+               equipment_type="Moving Equipment"
+               serial_number="DL001"
+               purchase_date="2021-03-10"
+               status="In Service"
+               create_time="createTime()"
+               update_time="updateTime()"/>
+               
+  <consumable _name="Consumable"
+                _module="Asset Management"
+                _module_key="asset_management"
+                name="Moving Blanket"
+                item_type="Protective Gear"
+                quantity_on_hand="100"
+                unit_cost="15.50"
+                reorder_level="20"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+                
+  <maintenance_schedule _name="Maintenance Schedule"
+                          _module="Asset Management"
+                          _module_key="asset_management"
+                          vehicle="vehicle()"
+                          equipment="equipment()"
+                          maintenance_type="Oil Change"
+                          scheduled_date="2024-06-15"
+                          completed_date="2024-06-10"
+                          status="Completed"
+                          create_time="createTime()"
+                          update_time="updateTime()"/>
+</root>

@@ -10,11 +10,11 @@
 //! | L5 | Build (cargo check) | Truncated compiler errors |
 //! | L6 | Test (cargo test) | Failed assertions |
 
-mod transport;
-mod parse;
-mod acceptance;
-mod domain;
-mod build;
+pub mod transport;
+pub mod parse;
+pub mod acceptance;
+pub mod domain;
+pub mod build;
 
 pub use transport::*;
 pub use parse::*;

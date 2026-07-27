@@ -1,0 +1,12 @@
+{
+  "content": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root alias_model_name=\"school_service\"\n      chinese_name=\"学校服务\"\n      english_name=\"School Service\"\n      name=\"school-service\"\n      cfg_mask_china_mobile=\"false\"\n      data_service=\"sqlite\"\n      org=\"doublechaintech\"\n      _module_key=\"root\">\n  \n  <school _name=\"School\"\n            _module=\"Core\"\n            _module_key=\"core\"\n            name=\"Green Valley School\"\n            address=\"123 Education Lane\"\n            established_year=\"2005\"\n            create_time=\"createTime()\"\n            update_time=\"updateTime()\"/>\n  \n  <teacher _name=\"Teacher\"\n             _module=\"Core\"\n             _module_key=\"core\"\n             name=\"John Smith\"\n             subject=\"Mathematics\"\n             employee_id=\"EMP001\"\n             school=\"school()\"\n             create_time=\"createTime()\"\n             update_time=\"updateTime()\"/>\n             \n  <student _name=\"Student\"\n             _module=\"Core\"\n             _module_key=\"core\"\n             name=\"Emily Davis\"\n             grade=\"10\"\n             enrollment_date=\"2023-09-01\"\n             school=\"school()\"\n             create_time=\"createTime()\"\n             update_time=\"updateTime()\"/>\n</root>",
+  "reasoning_content": null,
+  "finish_reason": "stop",
+  "usage": {
+    "prompt_tokens": 714,
+    "completion_tokens": 283,
+    "total_tokens": 997
+  },
+  "elapsed_secs": 18.370224984,
+  "http_status": 200
+}

@@ -41,7 +41,9 @@ impl VllmClient {
 
     /// Check if the model service is healthy
     pub async fn health_check(&self) -> Result<bool> {
-        let url = format!("{}/models", self.profile.resolve_endpoint());
+        let base = self.profile.resolve_endpoint();
+        let base = base.trim_end_matches('/');
+        let url = format!("{}/v1/models", base);
         let resp = self.client
             .get(&url)
             .timeout(Duration::from_secs(self.profile.timeouts.health_secs))

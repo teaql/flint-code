@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<employees _name="Employees"
+             _module="Employees & Payroll"
+             _module_key="employees">
+  
+  <staff_registry _name="StaffRegistry"
+                  _module="Employees & Payroll"
+                  _module_key="employees"
+                  employee_id="STAFF001"
+                  first_name="John"
+                  last_name="Doe"
+                  email="john.doe@company.com"
+                  phone="+1234567890"
+                  hire_date="2020-01-15"
+                  create_time="createTime()"
+                  update_time="updateTime()"
+                  _audit_mask_fields="password_hash"/>
+                  
+  <job_assignments _name="JobAssignments"
+                   _module="Employees & Payroll"
+                   _module_key="employees"
+                   assignment_code="JASS001"
+                   assigned_date="2023-06-01"
+                   start_time="08:00"
+                   end_time="17:00"
+                   staff="staff_registry()"
+                   moving_event="moving_event()"
+                   create_time="createTime()"
+                   update_time="updateTime()"/>
+                   
+  <worked_hours _name="WorkedHours"
+                _module="Employees & Payroll"
+                _module_key="employees"
+                hours_worked="8.5"
+                work_date="2023-06-15"
+                staff="staff_registry()"
+                job_assignment="job_assignments()"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+                
+  <payroll_calculations _name="PayrollCalculations"
+                        _module="Employees & Payroll"
+                        _module_key="employees"
+                        pay_period_start="2023-06-01"
+                        pay_period_end="2023-06-30"
+                        gross_pay="2500.00"
+                        tax_deduction="500.00"
+                        net_pay="2000.00"
+                        staff="staff_registry()"
+                        create_time="createTime()"
+                        update_time="updateTime()"
+                        _audit_mask_fields="bank_account_number,tax_id"/>
+                        
+  <bonuses _name="Bonuses"
+           _module="Employees & Payroll"
+           _module_key="employees"
+           bonus_amount="500.00"
+           bonus_type="Performance"
+           awarded_date="2023-06-30"
+           staff="staff_registry()"
+           payroll_calculation="payroll_calculations()"
+           create_time="createTime()"
+           update_time="updateTime()"/>
+           
+  <leave_tracking _name="LeaveTracking"
+                  _module="Employees & Payroll"
+                  _module_key="employees"
+                  leave_type="Vacation"
+                  start_date="2023-07-01"
+                  end_date="2023-07-07"
+                  days_requested="5"
+                  staff="staff_registry()"
+                  approved_by="staff_registry()"
+                  create_time="createTime()"
+                  update_time="updateTime()"/>
+</employees>

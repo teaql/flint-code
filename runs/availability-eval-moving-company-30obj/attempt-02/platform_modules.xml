@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="moving_company_management"
+      chinese_name="搬家公司管理"
+      english_name="Moving Company Management"
+      name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="root">
+  
+  <user _name="User"
+            _module="Platform"
+            _module_key="platform"
+            username="admin"
+            email="admin@company.com"
+            password_hash="hashed_password"
+            _audit_mask_fields="password_hash"
+            create_time="createTime()"
+            update_time="updateTime()"/>
+              
+  <role _name="Role"
+            _module="Platform"
+            _module_key="platform"
+            name="Administrator"
+            description="Full system access"
+            create_time="createTime()"
+            update_time="updateTime()"/>
+              
+  <permission _name="Permission"
+                  _module="Platform"
+                  _module_key="platform"
+                  name="manage_users"
+                  description="Can create, update, delete users"
+                  create_time="createTime()"
+                  update_time="updateTime()"/>
+              
+  <user_role _name="UserRole"
+                 _module="Platform"
+                 _module_key="platform"
+                 user="user()"
+                 role="role()"
+                 assigned_at="createTime()"
+                 create_time="createTime()"
+                 update_time="updateTime()"/>
+              
+  <role_permission _name="RolePermission"
+                       _module="Platform"
+                       _module_key="platform"
+                       role="role()"
+                       permission="permission()"
+                       granted_at="createTime()"
+                       create_time="createTime()"
+                       update_time="updateTime()"/>
+              
+  <authentication_log _name="AuthenticationLog"
+                          _module="Platform"
+                          _module_key="platform"
+                          user="user()"
+                          login_time="loginTime()"
+                          ip_address="192.168.1.100"
+                          success="true"
+                          auth_method="magic_link"
+                          create_time="createTime()"
+                          update_time="updateTime()"/>
+              
+  <activity_log _name="ActivityLog"
+                    _module="Platform"
+                    _module_key="platform"
+                    user="user()"
+                    action="updated_profile"
+                    entity_type="user"
+                    entity_id="12345"
+                    changes_json="{'field': 'value'}"
+                    timestamp="activityTime()"
+                    create_time="createTime()"
+                    update_time="updateTime()"/>
+              
+  <notification _name="Notification"
+                    _module="Platform"
+                    _module_key="platform"
+                    recipient="user()"
+                    title="Payment Due"
+                    message="Your invoice is due in 3 days"
+                    notification_type="email"
+                    is_read="false"
+                    sent_at="sendTime()"
+                    create_time="createTime()"
+                    update_time="updateTime()"/>
+              
+  <api_endpoint _name="ApiEndpoint"
+                    _module="Platform"
+                    _module_key="platform"
+                    path="/api/v1/moves"
+                    method="GET"
+                    description="Retrieve moving events"
+                    is_active="true"
+                    version="v1"
+                    create_time="createTime()"
+                    update_time="updateTime()"/>
+              
+  <webhook _name="Webhook"
+               _module="Platform"
+               _module_key="platform"
+               name="invoice_paid"
+               url="https://hooks.example.com/invoice"
+               event_type="invoice.payment_succeeded"
+               is_active="true"
+               secret_key="webhook_secret"
+               _audit_mask_fields="secret_key"
+               create_time="createTime()
+update_time="updateTime()"/>
+</root>

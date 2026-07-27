@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="simple_greeting_model"
+      chinese_name="简单问候模型"
+      english_name="Simple Greeting Model"
+      name="simple-greeting-model"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="root">
+  
+  <Greeting _name="Greeting"
+            _module="Core"
+            _module_key="core"
+            message="Hello, World!"
+            language="en"
+            create_time="createTime()"
+            update_time="updateTime()"/>
+            
+  <GreetingType _name="GreetingType"
+                _module="Core"
+                _module_key="core"
+                type="formal"
+                description="Standard formal greeting"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+</root>

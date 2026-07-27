@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="moving_company_management"
+      chinese_name="搬家公司管理"
+      english_name="Moving Company Management"
+      name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="root">
+  
+  <payment _name="Payment"
+             _module="Finance"
+             _module_key="finance"
+             amount="1500.00"
+             payment_date="createTime()"
+             payment_method="Credit Card"
+             status="Completed"
+             invoice="invoice()"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+             
+  <invoice _name="Invoice"
+             _module="Finance"
+             _module_key="finance"
+             invoice_number="INV-2024-001"
+             issue_date="createTime()"
+             due_date="2024-12-31"
+             total_amount="2000.00"
+             tax_amount="300.00"
+             status="Sent"
+             customer="customer()"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+             
+  <expense _name="Expense"
+             _module="Finance"
+             _module_key="finance"
+             description="Fuel costs"
+             amount="120.50"
+             expense_date="createTime()"
+             category="Vehicle"
+             vendor="Shell"
+             create_time="createTime()
+             update_time="updateTime()"/>
+</root>

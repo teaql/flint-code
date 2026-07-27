@@ -125,17 +125,28 @@ pub async fn run_suite(
         executor.load_task_from_path(&task_path).await;
 
         // Run controller and executor concurrently
-        let controller_handle = tokio::spawn(async move {
+        let mut controller_handle = tokio::spawn(async move {
             controller.run_to_completion().await;
             controller
         });
 
-        // Process side effects
-        while let Some(effect) = side_effect_rx.recv().await {
-            executor.handle(effect).await;
-        }
+        // Process side effects until controller finishes
+        let controller = loop {
+            tokio::select! {
+                Some(effect) = side_effect_rx.recv() => {
+                    executor.handle(effect).await;
+                }
+                res = &mut controller_handle => {
+                    let c = res?;
+                    side_effect_rx.close();
+                    while let Some(effect) = side_effect_rx.recv().await {
+                        executor.handle(effect).await;
+                    }
+                    break c;
+                }
+            }
+        };
 
-        let controller = controller_handle.await?;
         let elapsed = case_start.elapsed().as_secs_f64();
 
         // Determine result

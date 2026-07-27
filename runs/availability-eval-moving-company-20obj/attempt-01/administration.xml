@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="administration"
+      chinese_name="行政与合规"
+      english_name="Administration & Compliance"
+      name="administration"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="administration">
+  
+  <contract _name="Contract"
+            _module="Administration"
+            _module_key="administration"
+            name="Standard Moving Contract"
+            start_date="2024-01-01"
+            end_date="2024-12-31"
+            create_time="createTime()"
+            update_time="updateTime()"/>
+            
+  <insurance _name="Insurance"
+             _module="Administration"
+             _module_key="administration"
+             policy_number="POL-2024-001"
+             coverage_amount="1000000.00"
+             provider="SafeMove Insurance"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+             
+  <document_storage _name="DocumentStorage"
+                    _module="Administration"
+                    _module_key="administration"
+                    file_name="moving_contract.pdf"
+                    file_type="application/pdf"
+                    uploaded_by="employee()"
+                    create_time="createTime()"
+                    update_time="updateTime()"/>
+                    
+  <audit_log _name="AuditLog"
+             _module="Administration"
+             _module_key="administration"
+             action="CREATE"
+             entity_type="moving_event"
+             entity_id="12345"
+             performed_by="employee()"
+             create_time="createTime()"
+             update_time="updateTime()"
+             _audit_mask_fields="password_hash,secret"/>
+</root>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="employees"
+      chinese_name="员工管理"
+      english_name="Employees"
+      name="employees"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="employees">
+  
+  <staff_registry _name="StaffRegistry"
+                  _module="Employees"
+                  _module_key="employees"
+                  employee_id="EMP001"
+                  first_name="John"
+                  last_name="Doe"
+                  email="john.doe@movingco.com"
+                  phone="+1234567890"
+                  hire_date="2020-01-15"
+                  create_time="createTime()"
+                  update_time="updateTime()"/>
+                  
+  <job_assignments _name="JobAssignment"
+                   _module="Employees"
+                   _module_key="employees"
+                   assignment_code="JA001"
+                   start_time="2024-01-15 08:00:00"
+                   end_time="2024-01-15 17:00:00"
+                   staff_registry="staff_registry()"
+                   moving_event="moving_event()"
+                   create_time="createTime()"
+                   update_time="updateTime()"/>
+                   
+  <worked_hours _name="WorkedHours"
+                _module="Employees"
+                _module_key="employees"
+                hours_worked="8.0"
+                overtime_hours="2.0"
+                date="2024-01-15"
+                staff_registry="staff_registry()"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+                
+  <payroll_calculations _name="PayrollCalculation"
+                        _module="Employees"
+                        _module_key="employees"
+                        gross_pay="1200.00"
+                        tax_deductions="240.00"
+                        net_pay="960.00"
+                        pay_period_start="2024-01-01"
+                        pay_period_end="2024-01-15"
+                        staff_registry="staff_registry()"
+                        create_time="createTime()"
+                        update_time="updateTime()"/>
+                        
+  <bonuses _name="Bonus"
+           _module="Employees"
+           _module_key="employees"
+           bonus_amount="500.00"
+           bonus_type="Performance"
+           date_awarded="2024-01-15"
+           staff_registry="staff_registry()"
+           create_time="createTime()"
+           update_time="updateTime()"/>
+           
+  <leave_tracking _name="LeaveTracking"
+                  _module="Employees"
+                  _module_key="employees"
+                  leave_type="Vacation"
+                  start_date="2024-02-01"
+                  end_date="2024-02-07"
+                  days_requested="5"
+                  staff_registry="staff_registry()"
+                  create_time="createTime()"
+                  update_time="updateTime()"/>
+</root>

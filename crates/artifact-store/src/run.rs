@@ -87,6 +87,17 @@ impl RunArtifacts {
         std::fs::write(&path, &json)?;
         Ok(())
     }
+
+    /// Save arbitrary string content to an attempt directory.
+    pub fn save_attempt_raw(&self, attempt: u8, filename: &str, content: &str) -> Result<PathBuf> {
+        let dir = self.create_attempt(attempt)?;
+        let path = dir.join(filename);
+        if let Some(p) = path.parent() {
+            std::fs::create_dir_all(p)?;
+        }
+        std::fs::write(&path, content)?;
+        Ok(path)
+    }
 }
 
 /// Compute SHA-256 hex digest of bytes.

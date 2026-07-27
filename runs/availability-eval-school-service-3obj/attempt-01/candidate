@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="school_service"
+      chinese_name="学校服务"
+      english_name="School Service"
+      name="school-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="root">
+  
+  <school _name="School"
+            _module="Core"
+            _module_key="core"
+            name="Green Valley School"
+            address="123 Education Lane"
+            established_year="2005"
+            create_time="createTime()"
+            update_time="updateTime()"/>
+  
+  <teacher _name="Teacher"
+             _module="Core"
+             _module_key="core"
+             name="John Smith"
+             subject="Mathematics"
+             employee_id="EMP001"
+             school="school()"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+             
+  <student _name="Student"
+             _module="Core"
+             _module_key="core"
+             name="Emily Davis"
+             grade="10"
+             enrollment_date="2023-09-01"
+             school="school()"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+</root>

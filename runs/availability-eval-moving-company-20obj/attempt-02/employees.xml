@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="moving_company_management"
+      chinese_name="搬家公司管理"
+      english_name="Moving Company Management"
+      name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="root">
+  
+  <staff _name="Staff"
+         _module="Employees"
+         _module_key="employees"
+         employee_id="STAFF001"
+         first_name="John"
+         last_name="Doe"
+         email="john.doe@movingco.com"
+         phone="+1234567890"
+         hire_date="2020-01-15"
+         create_time="createTime()"
+         update_time="updateTime()"/>
+         
+  <job_assignment _name="JobAssignment"
+                  _module="Employees"
+                  _module_key="employees"
+                  assignment_code="JASS001"
+                  staff="staff()"
+                  moving_event="movingEvent()"
+                  assigned_date="2023-06-01"
+                  role_on_job="Lead Mover"
+                  create_time="createTime()"
+                  update_time="updateTime()"/>
+                  
+  <worked_hours _name="WorkedHours"
+                _module="Employees"
+                _module_key="employees"
+                staff="staff()"
+                date_worked="2023-06-15"
+                regular_hours="8.0"
+                overtime_hours="2.0"
+                location="Downtown Move"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+                
+  <payroll_calculation _name="PayrollCalculation"
+                       _module="Employees"
+                       _module_key="employees"
+                       staff="staff()"
+                       pay_period_start="2023-06-01"
+                       pay_period_end="2023-06-15"
+                       gross_pay="1200.00"
+                       tax_deductions="200.00"
+                       net_pay="1000.00"
+                       create_time="createTime()"
+                       update_time="updateTime()"/>
+                       
+  <bonus _name="Bonus"
+         _module="Employees"
+         _module_key="employees"
+         staff="staff()"
+         bonus_amount="150.00"
+         bonus_type="Performance"
+         awarded_date="2023-06-20"
+         reason="Exceeded move targets"
+         create_time="createTime()"
+         update_time="updateTime()"/>
+         
+  <leave_tracking _name="LeaveTracking"
+                  _module="Employees"
+                  _module_key="employees"
+                  staff="staff()"
+                  leave_type="Vacation"
+                  start_date="2023-07-01"
+                  end_date="2023-07-07"
+                  days_requested="5.0"
+                  status="Approved"
+                  create_time="createTime()"
+                  update_time="updateTime()"/>
+</root>

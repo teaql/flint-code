@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="moving_company_management"
+      chinese_name="搬家公司管理"
+      english_name="Moving Company Management"
+      name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="root">
+  
+  <user _name="User"
+        _module="System"
+        _module_key="system"
+        username="john_doe"
+        email="john@example.com"
+        password_hash="hashed_password_123"
+        _audit_mask_fields="password_hash"
+        create_time="createTime()"
+        update_time="updateTime()"/>
+        
+  <role _name="Role"
+        _module="System"
+        _module_key="system"
+        name="admin"
+        description="System administrator"
+        create_time="createTime()"
+        update_time="updateTime()"/>
+        
+  <permission _name="Permission"
+              _module="System"
+              _module_key="system"
+              name="manage_users"
+              description="Permission to manage user accounts"
+              create_time="createTime()"
+              update_time="updateTime()"/>
+              
+  <notification _name="Notification"
+                _module="System"
+                _module_key="system"
+                title="Move Scheduled"
+                message="Your move has been scheduled for next Monday"
+                notification_type="email"
+                is_read="false"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+                
+  <audit_log _name="AuditLog"
+             _module="System"
+             _module_key="system"
+             action="UPDATE"
+             entity_type="user"
+             entity_id="12345"
+             changes_json='{"email": ["old@example.com", "new@example.com"]}'
+             performed_by="user()"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+</root>

@@ -1,0 +1,16 @@
+{
+  "level": 3,
+  "level_name": "domain",
+  "passed": false,
+  "error_count": 4,
+  "warning_count": 4,
+  "suggestion_count": 0,
+  "actionable_errors": [
+    "## Error Pattern Summary",
+    "## ❌ Errors (Must Fix)",
+    "| Rule ID | Target | Error Message | Action |",
+    "| `KSML-KEYWORD-002` | `GreetingType.type` | Field 'type' in object 'GreetingType' conflicts with reserved keywords in: Rust, Go. (Defined at main.xml:28, attribute 'type'). Please rename the field to avoid generation/compilation errors. | Check `agents/ERROR-FIX.md` |"
+  ],
+  "diagnostic": "model input: runs/availability-eval-simple-greeting/attempt-02\nusing https://api.teaql.io/latest/evaluate\n# KSML Evaluation Report\n\n## 📊 Summary\n- **Errors**: 1\n- **Warnings**: 4\n- **Suggestions**: 0\n- **Solids**: 5\n\n## Error Pattern Summary\n\n1 errors total. Fix the largest repeated pattern first, then rerun evaluation.\n\n| Count | Pattern | Explanation | Action |\n|-------|---------|-------------|--------|\n| 1 | `Field name conflicts with reserved keyword` (`KSML-KEYWORD-002`) | Field 'type' in object 'GreetingType' conflicts with reserved keywords in: Rust, Go. (Defined at main.xml:28, attribute 'type'). Please rename the field to avoid generation/compilation errors. | Check agents/ERROR-FIX.md, apply the smallest fix, then rerun evaluation. |\n\n\n## ❌ Errors (Must Fix)\n\n| Rule ID | Target | Error Message | Action |\n|---------|--------|---------------|--------|\n| `KSML-KEYWORD-002` | `GreetingType.type` | Field 'type' in object 'GreetingType' conflicts with reserved keywords in: Rust, Go. (Defined at main.xml:28, attribute 'type'). Please rename the field to avoid generation/compilation errors. | Check `agents/ERROR-FIX.md` |\n\n\n## ⚠️ Warnings\n\n| Rule ID | Target | Warning Message |\n|---------|--------|-----------------|\n| `KSML-ROOT-002` | `` | Root name should preferably be lowercase kebab-case and end with -service (e.g. crm-service), but found 'simple-greeting-model'. |\n| `KSML-STRUCTURE-003` | `` | Object name should be lowercase snake_case (e.g. stock_item), but found 'Greeting'. |\n| `KSML-STRUCTURE-003` | `` | Object name should be lowercase snake_case (e.g. stock_item), but found 'GreetingType'. |\n| `KSML-DOMAIN-ROOT-002` | `` | Multiple independent business objects found: Greeting, GreetingType. The model may have disconnected graphs. |\n\n\n## ✅ Solids\n\n| Rule ID | Target | Message |\n|---------|--------|---------|\n| `KSML-UPLOAD-001` | `` | The upload contains 6 files. |\n| `KSML-UPLOAD-005` | `` | Resolved entrypoint: main.xml |\n| `KSML-XML-002` | `` | The XML document main.xml was parsed successfully. |\n| `KSML-OBJECT-001` | `Greeting` | Object 'Greeting' defines display name, module, and module key metadata. |\n| `KSML-OBJECT-001` | `GreetingType` | Object 'GreetingType' defines display name, module, and module key metadata. |\n\n",
+  "elapsed_secs": 0.754051136
+}

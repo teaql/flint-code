@@ -8,21 +8,42 @@ version = "1.0"
 
 [[cases]]
 name = "simple-greeting"
-task = "benchmarks/tasks/simple-greeting"
+task = "tasks/simple-greeting"
 workflow = "ksml-modeling"
 expect = "completed"
 timeout_secs = 600
 
 [[cases]]
 name = "school-service-3obj"
-task = "benchmarks/tasks/school-service"
+task = "tasks/school-service"
 workflow = "ksml-modeling"
 expect = "completed"
 timeout_secs = 600
 
 [[cases]]
 name = "context-overflow-reject"
-task = "benchmarks/tasks/context-overflow-test"
+task = "tasks/context-overflow-test"
 workflow = "ksml-modeling"
 expect = "preflight_rejected"
 timeout_secs = 30
+
+[[cases]]
+name = "moving-company-10obj"
+task = "tasks/moving-company-10obj"
+workflow = "ksml-modeling"
+expect = "completed"
+timeout_secs = 600
+
+[[cases]]
+name = "moving-company-20obj"
+task = "tasks/moving-company-20obj"
+workflow = "ksml-modeling"
+expect = "completed"
+timeout_secs = 900
+
+[[cases]]
+name = "moving-company-30obj"
+task = "tasks/moving-company-30obj"
+workflow = "ksml-modeling"
+expect = "completed"
+timeout_secs = 1200

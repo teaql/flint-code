@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root alias_model_name="moving_company_management"
+      chinese_name="搬家公司管理"
+      english_name="Moving Company Management"
+      name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="doublechaintech"
+      _module_key="root">
+  
+  <user _name="User"
+        _module="Platform"
+        _module_key="platform"
+        username="john_doe"
+        email="john@example.com"
+        password_hash="hashed_password_123"
+        create_time="createTime()"
+        update_time="updateTime()"
+        _audit_mask_fields="password_hash"/>
+  
+  <role _name="Role"
+        _module="Platform"
+        _module_key="platform"
+        name="admin"
+        description="System administrator"
+        create_time="createTime()"
+        update_time="updateTime()"/>
+  
+  <permission _name="Permission"
+              _module="Platform"
+              _module_key="platform"
+              name="manage_users"
+              description="Can manage user accounts"
+              create_time="createTime()"
+              update_time="updateTime()"/>
+  
+  <activity_log _name="ActivityLog"
+                _module="Platform"
+                _module_key="platform"
+                action="login"
+                details="User logged in from IP 192.168.1.1"
+                user="user()"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+  
+  <notification _name="Notification"
+                _module="Platform"
+                _module_key="platform"
+                type="email"
+                recipient="customer@example.com"
+                subject="Your move is scheduled"
+                body="Your move has been scheduled for next Monday"
+                status="sent"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+  
+  <api_endpoint _name="ApiEndpoint"
+                _module="Platform"
+                _module_key="platform"
+                path="/api/v1/moves"
+                method="GET"
+                description="Retrieve moving events"
+                is_active="true"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+  
+  <version_history _name="VersionHistory"
+                   _module="Platform"
+                   _module_key="platform"
+                   object_type="moving_event"
+                   object_id="12345"
+                   version_number="1"
+                   change_description="Initial creation"
+                   changed_by="user()"
+                   create_time="createTime()"
+                   update_time="updateTime()"/>
+  
+  <soft_delete _name="SoftDelete"
+               _module="Platform"
+               _module_key="platform"
+               object_type="moving_event"
+               object_id="12345"
+               deleted_by="user()"
+               delete_reason="Customer cancelled"
+               create_time="createTime()"
+               update_time="updateTime()"/>
+  
+  <workflow_trigger _name="WorkflowTrigger"
+                    _module="Platform"
+                    _module_key="platform"
+                    trigger_event="move_completed"
+                    action_type="send_invoice"
+                    is_active="true"
+                    create_time="createTime()"
+                    update_time="updateTime()"/>
+  
+  <external_integration _name="ExternalIntegration"
+                        _module="Platform"
+                        _module_key="platform"
+                        name="google_maps"
+                        service_type="mapping"
+                        api_key="maps_api_key_123"
+                        is_active="true"
+                        create_time="createTime()"
+                        update_time="updateTime()"
+                        _audit_mask_fields="api_key"/>
+</root>
