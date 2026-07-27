@@ -79,8 +79,8 @@ Business Requirements
 ### Build & Run
 
 ```bash
-git clone https://github.com/teaql/teaql-dgx-spark-agent.git
-cd teaql-dgx-spark-agent
+git clone https://github.com/teaql/flint-code.git
+cd flint-code
 
 # Build
 cargo build --release

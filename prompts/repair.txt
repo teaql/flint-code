@@ -9,5 +9,6 @@ Compiler errors:
 {{stderr}}
 ```
 
-Fix the code. Output ONLY the complete corrected Rust source. No markdown fences, no explanation.
-CRITICAL: Do not import the same name twice. If `Q` is in `pub use`, don't also add `use ... Q`.
+Fix the code to resolve all compiler errors.
+Refer to the `AGENTS.md` rules and assist outputs you received earlier for the correct APIs and imports.
+Output ONLY the complete corrected Rust source. No markdown fences, no explanation.

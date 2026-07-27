@@ -10,15 +10,14 @@ You are writing Rust business logic for a TeaQL app workspace.
 {{assist_outputs}}
 
 ## Task
-Write a COMPLETE replacement for src/lib.rs that:
-1. Has a SINGLE `use` block — merge all needed imports into ONE `use {{crate_name}}::{...}` statement
-2. DO NOT have BOTH `use {{crate_name}}::Q` AND `pub use {{crate_name}}::Q` — that causes error E0252
-3. Keep `pub use {{crate_name}}::{teaql_core, E, Q};` and add entity types to it
-4. Keep the `generated_domain_crate()` function
-5. Add ONE query function per entity using `Q::entities_minimal()` from the assist output
-6. Each function uses `.purpose("why")` and `.comment("what")` before `.execute_for_list(ctx).await`
-7. Each function returns `Result<SmartList<EntityType>, Box<dyn std::error::Error>>`
+Write a COMPLETE replacement for `src/lib.rs`.
 
-CRITICAL: Use `use teaql_core::SmartList;` for SmartList. Do NOT add a separate `use {{crate_name}}::Q;` — Q comes from the `pub use` line.
+Your requirements:
+1. Preserve the `generated_domain_crate()` function from the current `src/lib.rs`.
+2. Add one query function per entity based on the provided assist outputs.
+3. Each function must use `.purpose("why")` and `.comment("what")` before calling `.execute_for_list(ctx).await`.
+4. Each function must return `Result<SmartList<EntityType>, Box<dyn std::error::Error>>`.
+
+CRITICAL: Do NOT guess imports or method names. Strictly refer to `AGENTS.md` and the assist outputs for the exact syntax, types, and required imports (e.g., `TeaqlRepositoryProvider`, `Q`, `SmartList`, entity types). Merge all required imports cleanly at the top of the file.
 
 Output ONLY raw Rust source code. No markdown fences, no explanation.
