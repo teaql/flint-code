@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <!-- Platform & Settings (5 objects) -->
+
+  <user_account _name="User Account" _module="Platform" _module_key="platform"
+                id="id()" name="string()" email="string()" phone="string()"
+                password_hash="string()" status="string()"
+                create_time="createTime()" update_time="updateTime()"
+                _audit_mask_fields="password_hash">
+    <_value id="1" name="Admin User" email="admin@logistics.com" phone="13800000001" password_hash="hashed_secret_123" status="ACTIVE" />
+    <_value id="2" name="Dispatcher" email="dispatch@logistics.com" phone="13800000002" password_hash="hashed_secret_456" status="ACTIVE" />
+    <_value id="3" name="Driver" email="driver@logistics.com" phone="13800000003" password_hash="hashed_secret_789" status="ACTIVE" />
+  </user_account>
+
+  <user_role _name="User Role" _module="Platform" _module_key="platform"
+             id="id()" name="string()" code="string()" description="string()"
+             _constant="true" _identifier="code">
+    <_value id="1001" name="Administrator" code="ADMIN" description="Full system access" />
+    <_value id="1002" name="Dispatcher" code="DISPATCHER" description="Manage orders and fleet" />
+    <_value id="1003" name="Driver" code="DRIVER" description="View assignments and logs" />
+    <_value id="1004" name="Customer Service" code="CS" description="Handle inquiries" />
+  </user_role>
+
+  <access_permission _name="Access Permission" _module="Platform" _module_key="platform"
+                     id="id()" name="string()" resource="string()" action="string()"
+                     role="user_role()">
+    <_value id="2001" name="Read Orders" resource="orders" action="read" role="user_role()" />
+    <_value id="2002" name="Write Orders" resource="orders" action="write" role="user_role()" />
+    <_value id="2003" name="View Fleet" resource="fleet" action="read" role="user_role()" />
+    <_value id="2004" name="Manage Users" resource="users" action="manage" role="user_role()" />
+  </access_permission>
+
+  <system_notification _name="System Notification" _module="Platform" _module_key="platform"
+                       id="id()" title="string()" message="string()"
+                       recipient="user_account()" type="string()"
+                       recipient="user_account()" notification_type="string()"
+                       is_read="boolean()" create_time="createTime()">
+    <_value id="3001" title="System Update" message="Maintenance scheduled for Sunday." recipient="user_account()" notification_type="INFO" is_read="false" />
+    <_value id="3002" title="Alert" message="Vehicle maintenance due." recipient="user_account()" notification_type="WARNING" is_read="false" />
+  </system_notification>
+
+  <system_configuration _name="System Configuration" _module="Platform" _module_key="platform"
+                        id="id()" key="string()" value="string()" description="string()"
+                        category="string()">
+    <_value id="4001" key="max_load_kg" value="20000" description="Max vehicle load in kg" category="FLEET" />
+    <_value id="4002" key="tax_rate" value="0.08" description="Default tax rate" category="FINANCE" />
+    <_value id="4003" key="currency" value="USD" description="Default currency" category="GENERAL" />
+  </system_configuration>
+
+</root>

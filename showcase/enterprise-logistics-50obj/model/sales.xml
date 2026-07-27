@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <promotion_campaign _name="Promotion Campaign" _module="Sales" _module_key="sales"
+                      name="Summer Move Sale"
+                      start_date="2023-06-01"
+                      end_date="2023-08-31"
+                      budget="50000.00"
+                      status="active"
+                      description="Discounts for summer relocations"
+                      created_time="createTime()"
+                      update_time="updateTime()">
+    <_audit_mask_fields />
+  </promotion_campaign>
+
+  <discount_coupon _name="Discount Coupon" _module="Sales" _module_key="sales"
+                   code="SUMMER2023"
+                   discount_percentage="15.00"
+                   max_uses="1000"
+                   current_uses="450"
+                   expiry_date="2023-08-31"
+                   status="active"
+                   created_time="createTime()"
+                   update_time="updateTime()">
+    <_audit_mask_fields />
+  </discount_coupon>
+
+  <sales_lead _name="Sales Lead" _module="Sales" _module_key="sales"
+              name="John Doe Inquiry"
+              email="john.doe@example.com"
+              phone="13800138000"
+              source="website"
+              status="new"
+              estimated_value="5000.00"
+              created_time="createTime()"
+              update_time="updateTime()">
+    <_audit_mask_fields />
+  </sales_lead>
+
+  <sales_channel _name="Sales Channel" _module="Sales" _module_key="sales"
+                 name="Online Portal"
+                 channel_type="digital"
+                 url="https://logistics.example.com"
+                 status="active"
+                 created_time="createTime()"
+                 update_time="updateTime()">
+    <_audit_mask_fields />
+  </sales_channel>
+
+  <marketing_roi _name="Marketing ROI" _module="Sales" _module_key="sales"
+                 campaign="promotion_campaign()"
+                 total_spend="50000.00"
+                 total_revenue="250000.00"
+                 roi_percentage="400.00"
+                 report_date="2023-09-01"
+                 created_time="createTime()"
+                 update_time="updateTime()">
+    <_audit_mask_fields />
+  </marketing_roi>
+</root>

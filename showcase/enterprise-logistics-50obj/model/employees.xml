@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <!-- 1. Staff member -->
+  <staff_member _name="Staff Member"
+                _module="HR" _module_key="hr"
+                id="id()" name="string()" email="string()" phone="string()"
+                hire_date="date()" status="string()"
+                department="string()" job_title="string()"
+                manager="staff_member()"
+                created_at="createTime()" updated_at="updateTime()">
+    <_audit_mask_fields>password_hash</_audit_mask_fields>
+  </staff_member>
+
+  <!-- 2. Work shift -->
+  <work_shift _name="Work Shift"
+              _module="HR" _module_key="hr"
+              id="id()" name="string()" start_time="time()" end_time="time()"
+              shift_type="string()"
+              created_at="createTime()" updated_at="updateTime()" />
+
+  <!-- 3. Worked hours -->
+  <worked_hours _name="Worked Hours"
+                _module="HR" _module_key="hr"
+                id="id()" staff="staff_member()" shift="work_shift()"
+                date="date()" hours_worked="double()"
+                created_at="createTime()" updated_at="updateTime()" />
+
+  <!-- 4. Salary slip -->
+  <salary_slip _name="Salary Slip"
+               _module="HR" _module_key="hr"
+               id="id()" staff="staff_member()" period="string()"
+               base_salary="double()" bonus="double()" deductions="double()"
+               net_pay="double()" status="string()"
+               created_at="createTime()" updated_at="updateTime()" />
+
+  <!-- 5. Performance review -->
+  <performance_review _name="Performance Review"
+                      _module="HR" _module_key="hr"
+                      id="id()" staff="staff_member()" reviewer="staff_member()"
+                      review_date="date()" score="int()" comments="string()"
+                      status="string()"
+                      created_at="createTime()" updated_at="updateTime()" />
+
+  <!-- 6. Safety training -->
+  <safety_training _name="Safety Training"
+                   _module="HR" _module_key="hr"
+                   id="id()" staff="staff_member()" course_name="string()"
+                   completion_date="date()" certificate_number="string()"
+                   status="string()"
+                   created_at="createTime()" updated_at="updateTime()" />
+</root>

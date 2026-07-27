@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <warehouse _name="Warehouse" _module="Warehouse" _module_key="warehouse" id="id()" name="string()" code="string()" address="string()" city="string()" country="string()" capacity="1000.00" status="string()" create_time="createTime()" update_time="updateTime()">
+    <_value id="1" name="Main Hub" code="MAIN_HUB" address="123 Logistics Way" city="Shanghai" country="China" capacity="50000.00" status="ACTIVE" />
+    <_value id="2" name="West Coast Depot" code="WC_DEPOT" address="456 Harbor Blvd" city="Los Angeles" country="USA" capacity="30000.00" status="ACTIVE" />
+  </warehouse>
+
+  <storage_container _name="Storage Container" _module="Warehouse" _module_key="warehouse" id="id()" container_id="string()" warehouse="warehouse()" status="string()" create_time="createTime()" update_time="updateTime()">
+    <_value id="1" container_id="CONT-001" warehouse="warehouse()" status="AVAILABLE" />
+    <_value id="2" container_id="CONT-002" warehouse="warehouse()" status="OCCUPIED" />
+  </storage_container>
+
+  <container_unit _name="Container Unit" _module="Warehouse" _module_key="warehouse" id="id()" storage_container="storage_container()" unit_type="string()" quantity="100" create_time="createTime()" update_time="updateTime()">
+    <_value id="1" storage_container="storage_container()" unit_type="BOX" quantity="50" />
+    <_value id="2" storage_container="storage_container()" unit_type="CRATE" quantity="50" />
+  </container_unit>
+
+  <inventory_check _name="Inventory Check" _module="Warehouse" _module_key="warehouse" id="id()" warehouse="warehouse()" check_date="string()" total_items="1000" discrepancies="0" status="string()" create_time="createTime()" update_time="updateTime()">
+    <_value id="1" warehouse="warehouse()" check_date="2023-10-01" total_items="1000" discrepancies="0" status="COMPLETED" />
+    <_value id="2" warehouse="warehouse()" check_date="2023-10-15" total_items="1000" discrepancies="2" status="PENDING" />
+  </inventory_check>
+
+  <pallet _name="Pallet" _module="Warehouse" _module_key="warehouse" id="id()" warehouse="warehouse()" pallet_id="string()" load_weight="500.00" status="string()" create_time="createTime()" update_time="updateTime()">
+    <_value id="1" warehouse="warehouse()" pallet_id="PAL-001" load_weight="500.00" status="LOADED" />
+    <_value id="2" warehouse="warehouse()" pallet_id="PAL-002" load_weight="0.00" status="EMPTY" />
+  </pallet>
+
+  <storage_fee _name="Storage Fee" _module="Warehouse" _module_key="warehouse" id="id()" invoice="invoice()" fee_amount="100.00" currency="string()" period_start="string()" period_end="string()" status="string()" create_time="createTime()" update_time="updateTime()">
+    <_value id="1" invoice="invoice()" fee_amount="100.00" currency="USD" period_start="2023-10-01" period_end="2023-10-31" status="PAID" />
+    <_value id="2" invoice="invoice()" fee_amount="150.00" currency="USD" period_start="2023-11-01" period_end="2023-11-30" status="UNPAID" />
+  </storage_fee>
+</root>

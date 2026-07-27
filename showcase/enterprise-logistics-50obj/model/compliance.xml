@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <!-- Service Contract -->
+  <service_contract _name="Service Contract"
+                    _module="Compliance" _module_key="compliance"
+                    contract_number="string()"
+                    title="string()"
+                    start_date="2023-01-01"
+                    end_date="2024-01-01"
+                    status="string()"
+                    total_value="10000.00"
+                    created_time="createTime()"
+                    updated_time="updateTime()">
+    <_audit_mask_fields>
+      <field name="client_signature_data" />
+    </_audit_mask_fields>
+  </service_contract>
+
+  <!-- Insurance Policy -->
+  <insurance_policy _name="Insurance Policy"
+                    _module="Compliance" _module_key="compliance"
+                    policy_number="string()"
+                    provider="string()"
+                    coverage_amount="50000.00"
+                    premium="1000.00"
+                    start_date="2023-01-01"
+                    end_date="2024-01-01"
+                    status="string()"
+                    created_time="createTime()"
+                    updated_time="updateTime()" />
+
+  <!-- Claims Record -->
+  <claims_record _name="Claims Record"
+                 _module="Compliance" _module_key="compliance"
+                 claim_number="string()"
+                 claim_amount="5000.00"
+                 status="string()"
+                 description="string()"
+                 resolution_date="2023-06-15"
+                 created_time="createTime()"
+                 updated_time="updateTime()" />
+
+  <!-- Customs Declaration -->
+  <customs_declaration _name="Customs Declaration"
+                       _module="Compliance" _module_key="compliance"
+                       declaration_number="string()"
+                       port_of_entry="string()"
+                       country_of_origin="string()"
+                       declared_value="15000.00"
+                       status="string()"
+                       clearance_date="2023-05-20"
+                       created_time="createTime()"
+                       updated_time="updateTime()" />
+
+  <!-- Audit Log -->
+  <audit_log _name="Audit Log"
+             _module="Compliance" _module_key="compliance"
+             action="string()"
+             entity_type="string()"
+             entity_id="string()"
+             user_id="string()"
+             ip_address="string()"
+             details="string()"
+             created_time="createTime()" />
+</root>

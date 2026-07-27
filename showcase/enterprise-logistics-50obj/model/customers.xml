@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <private_customer _name="Private Customer" _module="CRM" _module_key="crm"
+                    id="id()" name="string()" phone="string()" email="string()"
+                    address="string()" city="string()" country="string()"
+                    customer_type="private" _constant="false">
+    <_value id="1001" name="John Smith" phone="13800138001" email="john@example.com" address="123 Main St" city="New York" country="USA" />
+    <_value id="1002" name="Jane Doe" phone="13800138002" email="jane@example.com" address="456 Oak Ave" city="London" country="UK" />
+  </private_customer>
+
+  <corporate_customer _name="Corporate Customer" _module="CRM" _module_key="crm"
+                      id="id()" name="string()" contact_person="string()" phone="string()"
+                      email="string()" address="string()" city="string()" country="string()"
+                      tax_id="string()" customer_type="corporate" _constant="false">
+    <_value id="2001" name="Acme Corp" contact_person="Bob Brown" phone="13800138003" email="info@acme.com" address="789 Business Park" city="Chicago" country="USA" tax_id="US123456" />
+    <_value id="2002" name="Global Tech" contact_person="Alice White" phone="13800138004" email="contact@globaltech.com" address="321 Tech Blvd" city="Berlin" country="Germany" tax_id="DE987654" />
+  </corporate_customer>
+
+  <customer_contact _name="Customer Contact" _module="CRM" _module_key="crm"
+                    id="id()" name="string()" phone="string()" email="string()"
+                    relationship="string()" private_customer="private_customer()" corporate_customer="corporate_customer()">
+    <_value id="3001" name="John Smith Jr" phone="13800138005" email="johnjr@example.com" relationship="Son" private_customer="private_customer()" />
+    <_value id="3002" name="Acme Assistant" phone="13800138006" email="assistant@acme.com" relationship="Admin" corporate_customer="corporate_customer()" />
+  </customer_contact>
+
+  <service_quote _name="Service Quote" _module="CRM" _module_key="crm"
+                 id="id()" quote_number="string()" description="string()"
+                 estimated_cost="5000.00" currency="USD" status="pending"
+                 valid_until="2024-12-31" private_customer="private_customer()" corporate_customer="corporate_customer()">
+    <_value id="4001" quote_number="Q-2023-001" description="Local Move" estimated_cost="1500.00" currency="USD" status="accepted" valid_until="2023-12-31" private_customer="private_customer()" />
+    <_value id="4002" quote_number="Q-2023-002" description="International Shipment" estimated_cost="12000.00" currency="USD" status="pending" valid_until="2024-06-30" corporate_customer="corporate_customer()" />
+  </service_quote>
+
+  <feedback_review _name="Feedback Review" _module="CRM" _module_key="crm"
+                   id="id()" rating="5" comment="string()" review_date="2023-10-01"
+                   private_customer="private_customer()" corporate_customer="corporate_customer()">
+    <_value id="5001" rating="5" comment="Excellent service!" review_date="2023-10-01" private_customer="private_customer()" />
+    <_value id="5002" rating="4" comment="Good, but slightly delayed." review_date="2023-10-15" corporate_customer="corporate_customer()" />
+  </feedback_review>
+
+  <customer_loyalty _name="Customer Loyalty" _module="CRM" _module_key="crm"
+                    id="id()" points="1000" tier="gold" private_customer="private_customer()" corporate_customer="corporate_customer()">
+    <_value id="6001" points="1500" tier="platinum" private_customer="private_customer()" />
+    <_value id="6002" points="500" tier="silver" corporate_customer="corporate_customer()" />
+  </customer_loyalty>
+</root>

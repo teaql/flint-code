@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <invoice _name="Invoice" _module="Finance" _module_key="finance"
+           id="id()" name="string()" code="string()"
+           amount="5000.00" currency="USD"
+           status="status()" created_at="createTime()" updated_at="updateTime()"
+           moving_order="moving_order()"
+           customer="private_customer()"
+           _audit_mask_fields="id">
+    <_value id="1001" name="Outstanding Invoice" code="INV-2023-001" amount="1500.00" currency="USD" status="OUTSTANDING" created_at="createTime()" updated_at="updateTime()" moving_order="moving_order()" customer="private_customer()" />
+    <_value id="1002" name="Paid Invoice" code="INV-2023-002" amount="2500.00" currency="EUR" status="PAID" created_at="createTime()" updated_at="updateTime()" moving_order="moving_order()" customer="corporate_customer()" />
+  </invoice>
+
+  <payment_record _name="Payment Record" _module="Finance" _module_key="finance"
+                  id="id()" name="string()" code="string()"
+                  amount="5000.00" currency="USD"
+                  status="status()" created_at="createTime()" updated_at="updateTime()"
+                  invoice="invoice()"
+                  _audit_mask_fields="id">
+    <_value id="2001" name="Wire Transfer" code="PAY-2023-001" amount="1500.00" currency="USD" status="COMPLETED" created_at="createTime()" updated_at="updateTime()" invoice="invoice()" />
+    <_value id="2002" name="Credit Card" code="PAY-2023-002" amount="2500.00" currency="EUR" status="PENDING" created_at="createTime()" updated_at="updateTime()" invoice="invoice()" />
+  </payment_record>
+
+  <expense_item _name="Expense Item" _module="Finance" _module_key="finance"
+                id="id()" name="string()" code="string()"
+                amount="500.00" currency="USD"
+                category="string()" created_at="createTime()" updated_at="updateTime()"
+                staff_member="staff_member()"
+                _audit_mask_fields="id">
+    <_value id="3001" name="Fuel Expense" code="EXP-2023-001" amount="150.00" currency="USD" category="FUEL" created_at="createTime()" updated_at="updateTime()" staff_member="staff_member()" />
+    <_value id="3002" name="Toll Fee" code="EXP-2023-002" amount="50.00" currency="USD" category="TOLL" created_at="createTime()" updated_at="updateTime()" staff_member="staff_member()" />
+  </expense_item>
+
+  <tax_record _name="Tax Record" _module="Finance" _module_key="finance"
+              id="id()" name="string()" code="string()"
+              amount="500.00" currency="USD"
+              tax_rate="5000.00" tax_type="string()"
+              created_at="createTime()" updated_at="updateTime()"
+              invoice="invoice()"
+              _audit_mask_fields="id">
+    <_value id="4001" name="VAT Record" code="TAX-2023-001" amount="150.00" currency="USD" tax_rate="10.00" tax_type="VAT" created_at="createTime()" updated_at="updateTime()" invoice="invoice()" />
+    <_value id="4002" name="Sales Tax" code="TAX-2023-002" amount="50.00" currency="USD" tax_rate="5.00" tax_type="SALES" created_at="createTime()" updated_at="updateTime()" invoice="invoice()" />
+  </tax_record>
+
+  <financial_report _name="Financial Report" _module="Finance" _module_key="finance"
+                    id="id()" name="string()" code="string()"
+                    total_revenue="50000.00" total_expenses="30000.00"
+                    period_start="2023-01-01" period_end="2023-01-31"
+                    created_at="createTime()" updated_at="updateTime()"
+                    _audit_mask_fields="id">
+    <_value id="5001" name="Monthly P&L" code="RPT-2023-01" total_revenue="50000.00" total_expenses="30000.00" period_start="2023-01-01" period_end="2023-01-31" created_at="createTime()" updated_at="updateTime()" />
+    <_value id="5002" name="Quarterly Summary" code="RPT-2023-Q1" total_revenue="150000.00" total_expenses="90000.00" period_start="2023-01-01" period_end="2023-03-31" created_at="createTime()" updated_at="updateTime()" />
+  </financial_report>
+</root>
