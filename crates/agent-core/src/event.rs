@@ -53,6 +53,9 @@ pub struct ModelResult {
     pub usage: TokenUsage,
     pub elapsed_secs: f64,
     pub http_status: u16,
+    /// Tool calls requested by the model (serialized as JSON Value to avoid cross-crate deps)
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub tool_calls: Option<serde_json::Value>,
 }
 
 /// Result from a validation gate

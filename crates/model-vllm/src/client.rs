@@ -55,8 +55,12 @@ impl VllmClient {
         }
     }
 
-    /// Build a ChatRequest from messages
-    fn build_request(&self, messages: Vec<ChatMessage>) -> ChatRequest {
+    /// Build a ChatRequest from messages with optional tools
+    fn build_request(
+        &self,
+        messages: Vec<ChatMessage>,
+        tools: Option<Vec<ToolDefinition>>,
+    ) -> ChatRequest {
         ChatRequest {
             model: self.profile.model.name.clone(),
             messages,
@@ -69,12 +73,24 @@ impl VllmClient {
             } else {
                 Some(ChatTemplateKwargs { enable_thinking: true })
             },
+            tools: tools.clone(),
+            tool_choice: tools.as_ref().map(|_| "auto".to_string()),
         }
     }
 
     /// Non-streaming chat completion. Returns ModelResult.
     pub async fn chat(&self, messages: Vec<ChatMessage>) -> std::result::Result<ModelResult, AgentError> {
-        let request = self.build_request(messages);
+        self.chat_with_tools(messages, &[]).await
+    }
+
+    /// Chat completion with tool definitions. Returns ModelResult with optional tool_calls.
+    pub async fn chat_with_tools(
+        &self,
+        messages: Vec<ChatMessage>,
+        tools: &[ToolDefinition],
+    ) -> std::result::Result<ModelResult, AgentError> {
+        let tools_opt = if tools.is_empty() { None } else { Some(tools.to_vec()) };
+        let request = self.build_request(messages, tools_opt);
         let url = self.profile.chat_url();
         let start = Instant::now();
 
@@ -121,6 +137,7 @@ impl VllmClient {
 
         let content = message.content.clone().unwrap_or_default();
         let reasoning_content = message.reasoning_content.clone();
+        let tool_calls = message.tool_calls.clone();
         let finish_reason = choice.finish_reason.clone().unwrap_or_else(|| "unknown".to_string());
 
         let usage = chat_response.usage.map(|u| TokenUsage {
@@ -129,23 +146,27 @@ impl VllmClient {
             total_tokens: u.total_tokens,
         }).unwrap_or(TokenUsage { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 });
 
+        let has_tool_calls = tool_calls.as_ref().map_or(false, |tc| !tc.is_empty());
+
         info!(
             status,
             finish_reason = %finish_reason,
             prompt_tokens = usage.prompt_tokens,
             completion_tokens = usage.completion_tokens,
+            has_tool_calls,
             elapsed_secs = elapsed,
             "Model response received"
         );
 
-        // Only finish_reason=stop with non-empty content is valid
-        if finish_reason != "stop" {
+        // Tool call responses use finish_reason="tool_calls" — that's valid
+        if finish_reason != "stop" && finish_reason != "tool_calls" {
             return Err(AgentError::IncompleteGeneration { reason: finish_reason });
         }
 
-        if content.trim().is_empty() {
+        // A response with tool_calls but empty content is valid
+        if !has_tool_calls && content.trim().is_empty() {
             return Err(AgentError::IncompleteGeneration {
-                reason: "empty content with finish_reason=stop".to_string(),
+                reason: "empty content with no tool calls".to_string(),
             });
         }
 
@@ -156,6 +177,7 @@ impl VllmClient {
             usage,
             elapsed_secs: elapsed,
             http_status: status,
+            tool_calls: tool_calls.map(|tc| serde_json::to_value(&tc).unwrap_or_default()),
         })
     }
 
@@ -164,7 +186,7 @@ impl VllmClient {
         &self,
         messages: Vec<ChatMessage>,
     ) -> std::result::Result<mpsc::Receiver<StreamEvent>, AgentError> {
-        let mut request = self.build_request(messages);
+        let mut request = self.build_request(messages, None);
         request.stream = true;
         let url = self.profile.chat_url();
 
