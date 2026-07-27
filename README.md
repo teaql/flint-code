@@ -169,7 +169,12 @@ FlintCode follows the [TeaQL Agent Kit](https://github.com/teaql/teaql-agent-kit
 
 ## License
 
-MIT
+Licensed under either of
+
+- [MIT License](LICENSE-MIT)
+- [Apache License, Version 2.0](LICENSE-APACHE)
+
+at your option.
 
 ## Related
 
