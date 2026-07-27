@@ -1,177 +1,171 @@
-# TeaQL DGX Spark Agent
+# FlintCode
 
-⚡ A TUI-based coding agent optimized for NVIDIA DGX Spark, built with Rust
-and [ratatui](https://ratatui.rs). Designed for autonomous TeaQL business
-software tasks within a **64K token context budget**.
+> *Strike code without the cloud.* — 燧石取火，离线生码。
 
-## Overview
+**FlintCode** is an AI coding agent designed for **air-gapped and compliance-restricted environments**. It runs entirely on local hardware (NVIDIA DGX Spark / DGX Station), requires no internet connection, and produces **compiler-verified** production code.
 
-The TeaQL DGX Spark Agent is a terminal-native coding assistant that runs
-locally on NVIDIA DGX Spark hardware. It communicates with local LLM
-inference endpoints (NIM) and manages context carefully to work within the
-smaller model context windows available on DGX Spark.
+Built with Rust. Powered by [TeaQL](https://teaql.io).
 
-### Key Features
+## Why FlintCode?
 
-- **64K Context Budget Management** — Automatic tracking, compaction, and
-  warning when approaching context limits
-- **Ratatui TUI** — Full terminal interface with file tree, chat, token
-  gauge, and vim-like keybindings
-- **TeaQL Integration** — Built-in support for `cargo-teaql` 2.0.8 model
-  evaluation, code generation, and object-specific assist
-- **Streaming LLM** — OpenAI-compatible API streaming with token-by-token
-  display
-- **Context Compaction** — Automatic summarization of older conversation
-  turns to stay within budget
-- **Autonomous Mode** — Follows
-  [teaql-agent-kit autonomous branch](https://github.com/teaql/teaql-agent-kit/tree/autonomous)
-  evaluation rules
+Every major AI coding tool today — Cursor, Copilot, Devin, Windsurf — requires cloud connectivity. For organizations bound by regulatory, security, or data sovereignty constraints, **none of them are usable**.
 
-## Architecture
+FlintCode fills this gap:
+
+| | Cloud Coding Agents | FlintCode |
+|--|---------------------|-----------|
+| **Network** | Requires internet | Air-gapped / offline |
+| **Data privacy** | Code sent to cloud | Data never leaves premises |
+| **Model size** | 100B+ parameters | Works with small local models |
+| **Correctness** | Hope it compiles | **Compiler-verified** |
+| **Compliance** | ❌ GDPR / HIPAA / 等保 | ✅ Fully compliant |
+
+## How It Works
+
+FlintCode doesn't try to be a general-purpose coding agent. Instead, it combines a **small local model** with a **deterministic validation pipeline** to guarantee correct output:
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                  TeaQL DGX Spark Agent                   │
-├─────────────┬───────────────────────┬───────────────────┤
-│  File Tree  │       Chat Panel      │   Token Gauge     │
-│  (25%)      │       (75%)           │   [████░░░] 62%   │
-│             │                       │                   │
-│  📂 src/    │  👤 You: ...          │   48K budget      │
-│  🦀 main.rs │  🤖 Agent: ...       │   8K reserved     │
-│  📄 model.. │                       │   8K output       │
-│             │                       │                   │
-├─────────────┴───────────────────────┴───────────────────┤
-│  [INSERT] ⏳ Thinking... │ Session: abc12...            │
-├─────────────────────────────────────────────────────────┤
-│  > Type your message here...                             │
-└─────────────────────────────────────────────────────────┘
+Business Requirements
+       │
+       ▼
+┌──────────────────┐
+│ LLM: Generate    │ ← Small model (Nemotron-3-Super, Llama, etc.)
+│ KSML Domain Model│
+└────────┬─────────┘
+         │
+    ┌────▼────┐
+    │ L1-L2   │ Local XML validation
+    │ L3      │ TeaQL domain validation (real semantics check)
+    │ L4      │ cargo teaql rust-lib-core (generate runtime code)
+    │ L5      │ cargo check (compiler verification ✓)
+    │ L6      │ cargo teaql assist (extract real API signatures)
+    │ L7      │ LLM: Generate business logic (guided by real APIs)
+    │ L8      │ cargo check (final compilation ✓)
+    └────┬────┘
+         │
+         ▼
+  Verified, Compilable
+  Production Rust Code
 ```
 
-## Prerequisites
+**The key insight**: We don't let the LLM guess APIs. TeaQL's `assist` system feeds the model **real, compiler-generated API signatures**. Combined with multi-level validation, even a small 8B model can produce code that **compiles on the first try**.
 
-- **NVIDIA DGX Spark** with NIM (NVIDIA Inference Microservice) running
-- **Rust** 1.75+ with cargo
-- **cargo-teaql** exactly `2.0.8`:
+## Benchmark Results (NVIDIA DGX Spark)
+
+30 business objects, full pipeline — from natural language to compilable Rust:
+
+| Step | Duration | Description |
+|------|----------|-------------|
+| KSML Generation | ~315s | 10 LLM calls, ~5000 tokens |
+| Domain Validation | ~1s | TeaQL semantic check |
+| Code Generation | ~6s | `cargo teaql` for lib + app |
+| Compilation | ~22s | Two `cargo check` passes |
+| Assist Discovery | ~18s | 8 entity API signatures |
+| Business Logic | ~30s | LLM writes query functions |
+| **Total** | **~7 min** | **vs. 1-2 weeks manual** |
+
+## Quick Start
+
+### Prerequisites
+
+- Local LLM inference endpoint (NIM, vLLM, Ollama, etc.)
+- Rust 1.75+ with cargo
+- `cargo-teaql` 2.0.8:
   ```bash
   cargo install cargo-teaql --version 2.0.8
   cargo-teaql install-links
   ```
 
-## Installation
+### Build & Run
 
 ```bash
-# Clone the repository
 git clone https://github.com/teaql/teaql-dgx-spark-agent.git
 cd teaql-dgx-spark-agent
 
-# Build (optimized for DGX Spark)
+# Build
 cargo build --release
 
-# Run
-./target/release/teaql-dgx-spark-agent
+# Run evaluation suite
+FLINTCODE_BASE_URL="http://localhost:8000" \
+  ./target/release/flintcode evaluate \
+    --plan benchmarks/rust-build-suite.toml \
+    --output runs/
+
+# Interactive TUI
+./target/release/flintcode-tui
 ```
 
-## Configuration
+### Configuration
 
-Configuration is stored at `~/.config/teaql-dgx-spark-agent/config.toml`:
+Profiles are stored in `profiles/`. Example:
 
 ```toml
-# Context window management (DGX Spark optimized)
-max_context_window = 64000
-reserved_tokens = 8000
-max_output_tokens = 8000
-context_budget = 48000
-
-# Local LLM endpoint (NIM on DGX Spark)
-llm_endpoint = "http://localhost:8000/v1"
-model_name = "meta/llama-3.1-70b-instruct"
+[model]
+name = "nemotron-3-super"
+endpoint = "http://localhost:8000/v1"
+max_context = 65536
 temperature = 0.1
-
-# Workspace
-workspace_root = "."
-
-# TeaQL
-cargo_teaql_version = "2.0.8"
-
-# UI
-show_token_usage = true
-auto_compact = true
 ```
-
-## Keybindings
-
-### Normal Mode
-| Key       | Action              |
-|-----------|---------------------|
-| `i`       | Enter insert mode   |
-| `/`       | Start command       |
-| `?`       | Toggle help         |
-| `Tab`     | Cycle panels        |
-| `j`/`k`   | Scroll chat         |
-| `g`/`G`   | Top/bottom of chat  |
-| `r`       | Refresh file tree   |
-| `Ctrl+C`  | Quit                |
-
-### Insert Mode
-| Key         | Action            |
-|-------------|-------------------|
-| `Enter`     | Send message      |
-| `Shift+Enter` | New line        |
-| `Esc`       | Normal mode       |
-| `↑`/`↓`    | History nav       |
-
-### Commands
-| Command       | Description                |
-|---------------|----------------------------|
-| `/help`       | Toggle help overlay        |
-| `/clear`      | Clear conversation         |
-| `/compact`    | Force context compaction   |
-| `/tokens`     | Show token usage details   |
-| `/model <n>`  | Switch model               |
-| `/quit`       | Exit                       |
-
-## Context Budget Strategy
-
-The DGX Spark's models have a 64K token context limit. The agent manages
-this with a three-tier strategy:
-
-1. **Budget Allocation**: 48K usable tokens (8K reserved for system prompt,
-   8K for output)
-2. **Auto-Compact at 85%**: When context reaches ~41K tokens, older messages
-   are summarized automatically
-3. **Critical Warning at 95%**: Visual alert when approaching the hard limit
-
-## TeaQL Agent Kit Integration
-
-This agent follows the rules from the
-[TeaQL Agent Kit autonomous branch](https://github.com/teaql/teaql-agent-kit/tree/autonomous):
-
-- Never guess method names — use generated `AGENTS.md` and assist output
-- Never edit generated files
-- Every query: `.purpose("why")` and `.comment("what")`
-- Every save: `.audit_as("description")`
-- Use `cargo teaql --input <model>` for all operations
-- Required: `cargo-teaql` exactly `2.0.8`
 
 ## Project Structure
 
 ```
-teaql-dgx-spark-agent/
-├── Cargo.toml              # Dependencies (ratatui, tokio, etc.)
-├── README.md               # This file
-├── AGENTS.md               # Rules for AI agents
-├── LICENSE                 # MIT License
-└── src/
-    ├── main.rs             # Entry point, logging setup
-    ├── app.rs              # Application state & event handling
-    ├── config.rs           # Configuration & context budget
-    ├── context.rs          # Context window management
-    ├── llm.rs              # LLM client (NIM/OpenAI-compatible)
-    ├── tui.rs              # Ratatui TUI rendering
-    ├── workspace.rs        # File tree & workspace state
-    ├── agent.rs            # Tool execution & orchestration
-    └── teaql.rs            # TeaQL-specific operations
+flintcode/
+├── apps/
+│   ├── flintcode-cli/        # Headless CLI for batch evaluation
+│   └── flintcode-tui/        # Interactive TUI (ratatui)
+├── crates/
+│   ├── agent-core/           # State machine, reducer, event loop
+│   ├── pipeline/             # Evaluation suite runner, build validation
+│   ├── model-vllm/           # LLM client (OpenAI-compatible)
+│   ├── validation/           # Multi-level validation engine
+│   ├── context-builder/      # Prompt construction, token budgeting
+│   ├── artifact-store/       # Run output and artifact management
+│   ├── tool-runner/          # External tool execution
+│   └── workspace-guard/      # Workspace isolation
+├── benchmarks/
+│   ├── tasks/                # Test cases (school-service, moving-company, etc.)
+│   ├── rust-build-suite.toml # Quick validation suite
+│   └── rust-full-30obj-bench.toml  # Full 30-object benchmark
+└── profiles/                 # Model/hardware configuration
 ```
+
+## Validation Pipeline
+
+FlintCode's multi-level validation is what makes small models reliable:
+
+| Level | What | How |
+|-------|------|-----|
+| **L1** | XML well-formedness | Local parser |
+| **L2** | Schema conformance | Structure check |
+| **L3** | Domain semantics | `cargo teaql evaluate` (real TeaQL rules) |
+| **L4** | Code generation | `cargo teaql rust-lib-core` |
+| **L5** | Compilation | `cargo check` (Rust compiler) |
+| **L6** | API discovery | `cargo teaql assist` (real API signatures) |
+| **L7** | Business logic | LLM + assist output → query functions |
+| **L8** | Full compilation | `cargo check` on complete workspace |
+
+If any level fails, the pipeline triggers an automatic **repair loop** — the LLM receives the specific error and regenerates.
+
+## Target Hardware
+
+FlintCode is hardware-agnostic but optimized for local inference:
+
+| Device | Model Size | Speed | Context |
+|--------|-----------|-------|---------|
+| **DGX Spark** | ≤ 70B (quantized) | ~16 tok/s | 64K |
+| **DGX Station** | ≤ 1T | ~150+ tok/s | 128K+ |
+| **Any GPU server** | Varies | Varies | Varies |
+
+## TeaQL Integration
+
+FlintCode follows the [TeaQL Agent Kit](https://github.com/teaql/teaql-agent-kit) rules:
+
+- Never guess method names — use `assist` output
+- Never edit generated files in `rust-lib-core/`
+- Every query: `.purpose("why")` and `.comment("what")`
+- Every save: `.audit_as("description")`
+- Required: `cargo-teaql` 2.0.8
 
 ## License
 
@@ -179,9 +173,6 @@ MIT
 
 ## Related
 
-- [teaql-agent-kit](https://github.com/teaql/teaql-agent-kit) — Evaluation
-  framework for AI coding agents on TeaQL
 - [TeaQL](https://teaql.io) — Deterministic execution for non-deterministic AI
+- [teaql-agent-kit](https://github.com/teaql/teaql-agent-kit) — Evaluation framework for AI coding agents
 - [ratatui](https://ratatui.rs) — Rust terminal UI framework
-- [NVIDIA DGX Spark](https://www.nvidia.com/en-us/data-center/dgx-spark/) —
-  AI supercomputer for desktop

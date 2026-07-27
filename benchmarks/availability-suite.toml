@@ -1,9 +1,9 @@
-# DGX Spark Model Availability Evaluation Suite
+# FlintCode Model Availability Evaluation Suite
 # Tests nemotron-3-super on core Coding Agent workflows
 
 [suite]
 name = "availability-eval"
-description = "First-phase DGX Spark model availability evaluation"
+description = "FlintCode model availability evaluation"
 version = "1.0"
 
 [[cases]]

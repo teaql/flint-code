@@ -2,12 +2,13 @@
 
 ## READ THIS BEFORE CODING
 
-This is a Rust TUI project using ratatui. It targets NVIDIA DGX Spark devices
-with a 64K token context window limit.
+This is **FlintCode**, a Rust-based AI coding agent for air-gapped environments.
+It uses ratatui for TUI and targets local inference hardware with constrained
+context windows (64K-128K tokens).
 
 ### Core Rules
 
-1. **Context budget awareness**: The DGX Spark models have 64K max context.
+1. **Context budget awareness**: Local models have limited context (e.g. 64K).
    All system prompts, conversation history, and tool outputs must fit within
    48K usable tokens (8K reserved, 8K for output).
 
@@ -36,23 +37,27 @@ with a 64K token context window limit.
 - Add doc comments for public items.
 - Keep modules focused — each file handles one concern.
 
-### TUI Development
+### Project Layout
 
-- All rendering goes through `src/tui.rs` using ratatui widgets.
-- Application state is in `src/app.rs`.
-- Context management (token counting, compaction) in `src/context.rs`.
-- LLM communication in `src/llm.rs`.
-- File/workspace state in `src/workspace.rs`.
+- `apps/flintcode-cli/` — Headless CLI for batch evaluation
+- `apps/flintcode-tui/` — Interactive TUI (ratatui)
+- `crates/agent-core/` — State machine (reducer.rs), events, run controller
+- `crates/pipeline/` — Evaluation suite runner (suite.rs), build validation (executor.rs)
+- `crates/model-vllm/` — LLM client (OpenAI-compatible API)
+- `crates/validation/` — Multi-level validation engine
+- `crates/context-builder/` — Prompt construction and token budgeting
+- `crates/artifact-store/` — Run output and artifact management
 
 ### Testing
 
 - Unit tests go in the same file as the code they test.
 - Integration tests go in `tests/`.
+- Benchmark suites in `benchmarks/` (TOML format).
 - Run tests with `cargo test`.
 
 ### TeaQL Integration
 
-- TeaQL operations are in `src/teaql.rs`.
-- Agent tool execution is in `src/agent.rs`.
+- Build validation pipeline in `crates/pipeline/src/executor.rs`.
+- State machine transitions in `crates/agent-core/src/reducer.rs`.
 - Follow the autonomous branch evaluation rules from
   [teaql-agent-kit](https://github.com/teaql/teaql-agent-kit/tree/autonomous).
