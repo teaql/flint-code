@@ -7,6 +7,7 @@ import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
 import io.teaql.core.SmartList;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Objects;
@@ -25,14 +26,14 @@ public class WorkShift extends BaseEntity implements RemoteInput {
     public static final String NAME_PROPERTY = "name";
     public static final String START_TIME_PROPERTY = "startTime";
     public static final String END_TIME_PROPERTY = "endTime";
-    public static final String SHIFT_TYPE_PROPERTY = "shiftType";
+    public static final String SHIFT_DATE_PROPERTY = "shiftDate";
     public static final String CREATED_AT_PROPERTY = "createdAt";
     public static final String UPDATED_AT_PROPERTY = "updatedAt";
     public static final String WORKED_HOURS_LIST_PROPERTY = "workedHoursList";
     private String name;
     private LocalTime startTime;
     private LocalTime endTime;
-    private String shiftType;
+    private LocalDate shiftDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private SmartList<WorkedHours> workedHoursList;
@@ -46,8 +47,8 @@ public class WorkShift extends BaseEntity implements RemoteInput {
     public LocalTime getEndTime(){
         return this.endTime;
     }
-    public String getShiftType(){
-        return this.shiftType;
+    public LocalDate getShiftDate(){
+        return this.shiftDate;
     }
     public LocalDateTime getCreatedAt(){
         return this.createdAt;
@@ -83,13 +84,12 @@ public class WorkShift extends BaseEntity implements RemoteInput {
         this.endTime = endTime;
         return this;
     }
-    public WorkShift updateShiftType(String shiftType){
-        shiftType = (shiftType == null ? null : shiftType.trim());
-        if(Objects.equals(this.shiftType, shiftType)){
+    public WorkShift updateShiftDate(LocalDate shiftDate){
+        if(Objects.equals(this.shiftDate, shiftDate)){
             return this;
         }
-        handleUpdate(SHIFT_TYPE_PROPERTY, getShiftType(), shiftType);
-        this.shiftType = shiftType;
+        handleUpdate(SHIFT_DATE_PROPERTY, getShiftDate(), shiftDate);
+        this.shiftDate = shiftDate;
         return this;
     }
     public WorkShift updateCreatedAt(LocalDateTime createdAt){
@@ -155,7 +155,7 @@ public class WorkShift extends BaseEntity implements RemoteInput {
 
             case "endTime": this.endTime = (LocalTime) value; break;
 
-            case "shiftType": this.shiftType = (value == null ? null : ((String)value).trim()); break;
+            case "shiftDate": this.shiftDate = (LocalDate) value; break;
 
             case "createdAt": this.createdAt = (LocalDateTime) value; break;
 
@@ -173,7 +173,7 @@ public class WorkShift extends BaseEntity implements RemoteInput {
             case "name": return this.name;
             case "startTime": return this.startTime;
             case "endTime": return this.endTime;
-            case "shiftType": return this.shiftType;
+            case "shiftDate": return this.shiftDate;
             case "createdAt": return this.createdAt;
             case "updatedAt": return this.updatedAt;
             case "workedHoursList": return this.workedHoursList;

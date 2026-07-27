@@ -1,6 +1,5 @@
 package com.doublechaintech.enterpriselogisticsservice.transitroute;
 
-import com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
@@ -21,34 +20,29 @@ import java.util.Objects;
 public class TransitRoute extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "TransitRoute";
 
-    public static final String ROUTE_ID_PROPERTY = "routeId";
-    public static final String NAME_PROPERTY = "name";
-    public static final String ORIGIN_WAREHOUSE_PROPERTY = "originWarehouse";
-    public static final String DESTINATION_WAREHOUSE_PROPERTY = "destinationWarehouse";
+    public static final String ROUTE_CODE_PROPERTY = "routeCode";
+    public static final String ORIGIN_CITY_PROPERTY = "originCity";
+    public static final String DESTINATION_CITY_PROPERTY = "destinationCity";
     public static final String DISTANCE_KM_PROPERTY = "distanceKm";
     public static final String ESTIMATED_DURATION_HOURS_PROPERTY = "estimatedDurationHours";
-    public static final String STATUS_PROPERTY = "status";
-    public static final String CREATE_TIME_PROPERTY = "createTime";
-    private String routeId;
-    private String name;
-    private Warehouse originWarehouse;
-    private Warehouse destinationWarehouse;
+    public static final String CREATED_TIME_PROPERTY = "createdTime";
+    public static final String UPDATED_TIME_PROPERTY = "updatedTime";
+    private String routeCode;
+    private String originCity;
+    private String destinationCity;
     private BigDecimal distanceKm;
     private BigDecimal estimatedDurationHours;
-    private String status;
-    private LocalDateTime createTime;
+    private LocalDateTime createdTime;
+    private LocalDateTime updatedTime;
 
-    public String getRouteId(){
-        return this.routeId;
+    public String getRouteCode(){
+        return this.routeCode;
     }
-    public String getName(){
-        return this.name;
+    public String getOriginCity(){
+        return this.originCity;
     }
-    public Warehouse getOriginWarehouse(){
-        return this.originWarehouse;
-    }
-    public Warehouse getDestinationWarehouse(){
-        return this.destinationWarehouse;
+    public String getDestinationCity(){
+        return this.destinationCity;
     }
     public BigDecimal getDistanceKm(){
         return this.distanceKm;
@@ -56,44 +50,37 @@ public class TransitRoute extends BaseEntity implements RemoteInput {
     public BigDecimal getEstimatedDurationHours(){
         return this.estimatedDurationHours;
     }
-    public String getStatus(){
-        return this.status;
+    public LocalDateTime getCreatedTime(){
+        return this.createdTime;
     }
-    public LocalDateTime getCreateTime(){
-        return this.createTime;
+    public LocalDateTime getUpdatedTime(){
+        return this.updatedTime;
     }
-    public TransitRoute updateRouteId(String routeId){
-        routeId = (routeId == null ? null : routeId.trim());
-        if(Objects.equals(this.routeId, routeId)){
+    public TransitRoute updateRouteCode(String routeCode){
+        routeCode = (routeCode == null ? null : routeCode.trim());
+        if(Objects.equals(this.routeCode, routeCode)){
             return this;
         }
-        handleUpdate(ROUTE_ID_PROPERTY, getRouteId(), routeId);
-        this.routeId = routeId;
+        handleUpdate(ROUTE_CODE_PROPERTY, getRouteCode(), routeCode);
+        this.routeCode = routeCode;
         return this;
     }
-    public TransitRoute updateName(String name){
-        name = (name == null ? null : name.trim());
-        if(Objects.equals(this.name, name)){
+    public TransitRoute updateOriginCity(String originCity){
+        originCity = (originCity == null ? null : originCity.trim());
+        if(Objects.equals(this.originCity, originCity)){
             return this;
         }
-        handleUpdate(NAME_PROPERTY, getName(), name);
-        this.name = name;
+        handleUpdate(ORIGIN_CITY_PROPERTY, getOriginCity(), originCity);
+        this.originCity = originCity;
         return this;
     }
-    public TransitRoute updateOriginWarehouse(Warehouse originWarehouse){
-        if(Objects.equals(this.originWarehouse, originWarehouse)){
+    public TransitRoute updateDestinationCity(String destinationCity){
+        destinationCity = (destinationCity == null ? null : destinationCity.trim());
+        if(Objects.equals(this.destinationCity, destinationCity)){
             return this;
         }
-        handleUpdate(ORIGIN_WAREHOUSE_PROPERTY, getOriginWarehouse(), originWarehouse);
-        this.originWarehouse = originWarehouse;
-        return this;
-    }
-    public TransitRoute updateDestinationWarehouse(Warehouse destinationWarehouse){
-        if(Objects.equals(this.destinationWarehouse, destinationWarehouse)){
-            return this;
-        }
-        handleUpdate(DESTINATION_WAREHOUSE_PROPERTY, getDestinationWarehouse(), destinationWarehouse);
-        this.destinationWarehouse = destinationWarehouse;
+        handleUpdate(DESTINATION_CITY_PROPERTY, getDestinationCity(), destinationCity);
+        this.destinationCity = destinationCity;
         return this;
     }
     public TransitRoute updateDistanceKm(BigDecimal distanceKm){
@@ -112,21 +99,20 @@ public class TransitRoute extends BaseEntity implements RemoteInput {
         this.estimatedDurationHours = estimatedDurationHours;
         return this;
     }
-    public TransitRoute updateStatus(String status){
-        status = (status == null ? null : status.trim());
-        if(Objects.equals(this.status, status)){
+    public TransitRoute updateCreatedTime(LocalDateTime createdTime){
+        if(Objects.equals(this.createdTime, createdTime)){
             return this;
         }
-        handleUpdate(STATUS_PROPERTY, getStatus(), status);
-        this.status = status;
+        handleUpdate(CREATED_TIME_PROPERTY, getCreatedTime(), createdTime);
+        this.createdTime = createdTime;
         return this;
     }
-    public TransitRoute updateCreateTime(LocalDateTime createTime){
-        if(Objects.equals(this.createTime, createTime)){
+    public TransitRoute updateUpdatedTime(LocalDateTime updatedTime){
+        if(Objects.equals(this.updatedTime, updatedTime)){
             return this;
         }
-        handleUpdate(CREATE_TIME_PROPERTY, getCreateTime(), createTime);
-        this.createTime = createTime;
+        handleUpdate(UPDATED_TIME_PROPERTY, getUpdatedTime(), updatedTime);
+        this.updatedTime = updatedTime;
         return this;
     }
 
@@ -157,21 +143,19 @@ public class TransitRoute extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public void __internalSet(String property, Object value) {
         switch (property) {
-            case "routeId": this.routeId = (value == null ? null : ((String)value).trim()); break;
+            case "routeCode": this.routeCode = (value == null ? null : ((String)value).trim()); break;
 
-            case "name": this.name = (value == null ? null : ((String)value).trim()); break;
+            case "originCity": this.originCity = (value == null ? null : ((String)value).trim()); break;
 
-            case "originWarehouse": this.originWarehouse = (Warehouse) value; break;
-
-            case "destinationWarehouse": this.destinationWarehouse = (Warehouse) value; break;
+            case "destinationCity": this.destinationCity = (value == null ? null : ((String)value).trim()); break;
 
             case "distanceKm": this.distanceKm = (BigDecimal) value; break;
 
             case "estimatedDurationHours": this.estimatedDurationHours = (BigDecimal) value; break;
 
-            case "status": this.status = (value == null ? null : ((String)value).trim()); break;
+            case "createdTime": this.createdTime = (LocalDateTime) value; break;
 
-            case "createTime": this.createTime = (LocalDateTime) value; break;
+            case "updatedTime": this.updatedTime = (LocalDateTime) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -181,14 +165,13 @@ public class TransitRoute extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public Object __internalGet(String property) {
         switch (property) {
-            case "routeId": return this.routeId;
-            case "name": return this.name;
-            case "originWarehouse": return this.originWarehouse;
-            case "destinationWarehouse": return this.destinationWarehouse;
+            case "routeCode": return this.routeCode;
+            case "originCity": return this.originCity;
+            case "destinationCity": return this.destinationCity;
             case "distanceKm": return this.distanceKm;
             case "estimatedDurationHours": return this.estimatedDurationHours;
-            case "status": return this.status;
-            case "createTime": return this.createTime;
+            case "createdTime": return this.createdTime;
+            case "updatedTime": return this.updatedTime;
             default: return super.__internalGet(property);
         }
     }

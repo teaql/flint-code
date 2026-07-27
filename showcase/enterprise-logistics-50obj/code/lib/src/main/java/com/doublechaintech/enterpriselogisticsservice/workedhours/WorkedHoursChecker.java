@@ -38,8 +38,8 @@ public class WorkedHoursChecker implements Checker<WorkedHours>{
       }
       checkStaff(_ctx, workedHours.getProperty(WorkedHours.STAFF_PROPERTY), newLocation(_parentLocation, WorkedHours.STAFF_PROPERTY));
       checkShift(_ctx, workedHours.getProperty(WorkedHours.SHIFT_PROPERTY), newLocation(_parentLocation, WorkedHours.SHIFT_PROPERTY));
-      checkDate(_ctx, workedHours.getProperty(WorkedHours.DATE_PROPERTY), newLocation(_parentLocation, WorkedHours.DATE_PROPERTY));
       checkHoursWorked(_ctx, workedHours.getProperty(WorkedHours.HOURS_WORKED_PROPERTY), newLocation(_parentLocation, WorkedHours.HOURS_WORKED_PROPERTY));
+      checkDate(_ctx, workedHours.getProperty(WorkedHours.DATE_PROPERTY), newLocation(_parentLocation, WorkedHours.DATE_PROPERTY));
       checkCreatedAt(_ctx, workedHours.getProperty(WorkedHours.CREATED_AT_PROPERTY), newLocation(_parentLocation, WorkedHours.CREATED_AT_PROPERTY));
       checkUpdatedAt(_ctx, workedHours.getProperty(WorkedHours.UPDATED_AT_PROPERTY), newLocation(_parentLocation, WorkedHours.UPDATED_AT_PROPERTY));
     }
@@ -58,12 +58,6 @@ public class WorkedHoursChecker implements Checker<WorkedHours>{
     }
     new WorkShiftChecker().checkAndFix(_ctx, shift, _parentLocation);
     }
-    public void checkDate(UserContext _ctx, LocalDate date, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, date);
-    if((date == null)){
-        return;
-    }
-    }
     public void checkHoursWorked(UserContext _ctx, String hoursWorked, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, hoursWorked);
     if((hoursWorked == null)){
@@ -71,6 +65,12 @@ public class WorkedHoursChecker implements Checker<WorkedHours>{
     }
     maxStringCheck(_ctx, _parentLocation, 100, hoursWorked);
 
+    }
+    public void checkDate(UserContext _ctx, LocalDate date, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, date);
+    if((date == null)){
+        return;
+    }
     }
     public void checkCreatedAt(UserContext _ctx, LocalDateTime createdAt, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, createdAt);

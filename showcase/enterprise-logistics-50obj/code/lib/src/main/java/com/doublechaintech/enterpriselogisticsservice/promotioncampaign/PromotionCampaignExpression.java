@@ -44,6 +44,13 @@ public class PromotionCampaignExpression<T, E, U extends PromotionCampaign> exte
        return new PromotionCampaignExpression(this, $it ->  ((PromotionCampaign)$it).updateName(name));
     }
 
+    public Expression<T, String> getDescription(){
+       return apply(PromotionCampaign::getDescription);
+    }
+    public PromotionCampaignExpression<T, U, U> updateDescription(String description){
+       return new PromotionCampaignExpression(this, $it ->  ((PromotionCampaign)$it).updateDescription(description));
+    }
+
     public Expression<T, LocalDate> getStartDate(){
        return apply(PromotionCampaign::getStartDate);
     }
@@ -72,13 +79,6 @@ public class PromotionCampaignExpression<T, E, U extends PromotionCampaign> exte
        return new PromotionCampaignExpression(this, $it ->  ((PromotionCampaign)$it).updateStatus(status));
     }
 
-    public Expression<T, String> getDescription(){
-       return apply(PromotionCampaign::getDescription);
-    }
-    public PromotionCampaignExpression<T, U, U> updateDescription(String description){
-       return new PromotionCampaignExpression(this, $it ->  ((PromotionCampaign)$it).updateDescription(description));
-    }
-
     public Expression<T, LocalDateTime> getCreatedTime(){
        return apply(PromotionCampaign::getCreatedTime);
     }
@@ -86,11 +86,11 @@ public class PromotionCampaignExpression<T, E, U extends PromotionCampaign> exte
        return new PromotionCampaignExpression(this, $it ->  ((PromotionCampaign)$it).updateCreatedTime(createdTime));
     }
 
-    public Expression<T, LocalDateTime> getUpdateTime(){
-       return apply(PromotionCampaign::getUpdateTime);
+    public Expression<T, LocalDateTime> getUpdatedTime(){
+       return apply(PromotionCampaign::getUpdatedTime);
     }
-    public PromotionCampaignExpression<T, U, U> updateUpdateTime(LocalDateTime updateTime){
-       return new PromotionCampaignExpression(this, $it ->  ((PromotionCampaign)$it).updateUpdateTime(updateTime));
+    public PromotionCampaignExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
+       return new PromotionCampaignExpression(this, $it ->  ((PromotionCampaign)$it).updateUpdatedTime(updatedTime));
     }
 
     public MarketingRoiListExpression<T, U, MarketingRoi> getMarketingRoiList(){

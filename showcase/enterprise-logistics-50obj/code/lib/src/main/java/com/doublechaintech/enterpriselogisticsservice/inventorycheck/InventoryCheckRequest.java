@@ -10,6 +10,7 @@ import io.teaql.core.SearchCriteria;
 import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -84,7 +85,7 @@ public class InventoryCheckRequest<T extends InventoryCheck> extends BaseRequest
 
     public InventoryCheckRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectWarehouseIdOnly().selectCheckDate().selectTotalItems().selectDiscrepancies().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
+        return selectId().selectWarehouseIdOnly().selectCheckDate().selectChecker().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
     }
 
     public InventoryCheckRequest<T> selectSelfFields(){
@@ -93,12 +94,12 @@ public class InventoryCheckRequest<T extends InventoryCheck> extends BaseRequest
 
     public InventoryCheckRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectWarehouse().selectCheckDate().selectTotalItems().selectDiscrepancies().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
+        return selectId().selectWarehouse().selectCheckDate().selectChecker().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
     }
 
     public InventoryCheckRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectWarehouse().selectCheckDate().selectTotalItems().selectDiscrepancies().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
+        return selectId().selectWarehouse().selectCheckDate().selectChecker().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
     }
 
 
@@ -155,54 +156,21 @@ public class InventoryCheckRequest<T extends InventoryCheck> extends BaseRequest
        unselectProperty(InventoryCheck.CHECK_DATE_PROPERTY);
        return this;
     }
-    public InventoryCheckRequest<T> selectTotalItems(){
-       selectProperty(InventoryCheck.TOTAL_ITEMS_PROPERTY);
+    public InventoryCheckRequest<T> selectChecker(){
+       selectProperty(InventoryCheck.CHECKER_PROPERTY);
        return this;
     }
 
     /**
-     * fill the totalItems with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  totalItems) to fetch totalItems property.
+     * fill the checker with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  checker) to fetch checker property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
-    /**
-     * fill the totalItems with customized aggrFunction, TEAQL uses ({aggrFunction}(totalItems) AS totalItems to fetch totalItems property.
-     * @param aggrFunction  aggrFunction
-     */
-    public InventoryCheckRequest<T> selectTotalItems(AggrFunction aggrFunction){
-       selectProperty(InventoryCheck.TOTAL_ITEMS_PROPERTY, aggrFunction);
-       return this;
-    }
 
 
-    public InventoryCheckRequest<T> unselectTotalItems(){
-       unselectProperty(InventoryCheck.TOTAL_ITEMS_PROPERTY);
-       return this;
-    }
-    public InventoryCheckRequest<T> selectDiscrepancies(){
-       selectProperty(InventoryCheck.DISCREPANCIES_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the discrepancies with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  discrepancies) to fetch discrepancies property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-    /**
-     * fill the discrepancies with customized aggrFunction, TEAQL uses ({aggrFunction}(discrepancies) AS discrepancies to fetch discrepancies property.
-     * @param aggrFunction  aggrFunction
-     */
-    public InventoryCheckRequest<T> selectDiscrepancies(AggrFunction aggrFunction){
-       selectProperty(InventoryCheck.DISCREPANCIES_PROPERTY, aggrFunction);
-       return this;
-    }
-
-
-    public InventoryCheckRequest<T> unselectDiscrepancies(){
-       unselectProperty(InventoryCheck.DISCREPANCIES_PROPERTY);
+    public InventoryCheckRequest<T> unselectChecker(){
+       unselectProperty(InventoryCheck.CHECKER_PROPERTY);
        return this;
     }
     public InventoryCheckRequest<T> selectStatus(){
@@ -324,7 +292,7 @@ public class InventoryCheckRequest<T extends InventoryCheck> extends BaseRequest
        return appendSearchCriteria(new SubQuerySearchCriteria(InventoryCheck.WAREHOUSE_PROPERTY, warehouse, Warehouse.ID_PROPERTY));
     }
 
-    public InventoryCheckRequest<T> filterByCheckDate(String... checkDate){
+    public InventoryCheckRequest<T> filterByCheckDate(LocalDate... checkDate){
       if (checkDate == null || checkDate.length == 0) {
         throw new IllegalArgumentException("filterByCheckDate parameter checkDate cannot be empty");
       }
@@ -347,132 +315,107 @@ public class InventoryCheckRequest<T extends InventoryCheck> extends BaseRequest
         return createBasicSearchCriteria(InventoryCheck.CHECK_DATE_PROPERTY, operator, values);
     }
 
-    public InventoryCheckRequest<T> withCheckDateGreaterThan(String checkDate){
+    public InventoryCheckRequest<T> withCheckDateGreaterThan(LocalDate checkDate){
        return withCheckDate(Operator.GREATER_THAN, checkDate);
     }
 
-    public InventoryCheckRequest<T> withCheckDateGreaterThanOrEqualTo(String checkDate){
+    public InventoryCheckRequest<T> withCheckDateGreaterThanOrEqualTo(LocalDate checkDate){
        return withCheckDate(Operator.GREATER_THAN_OR_EQUAL, checkDate);
     }
 
-    public InventoryCheckRequest<T> withCheckDateLessThan(String checkDate){
+    public InventoryCheckRequest<T> withCheckDateLessThan(LocalDate checkDate){
        return withCheckDate(Operator.LESS_THAN, checkDate);
     }
 
-    public InventoryCheckRequest<T> withCheckDateLessThanOrEqualTo(String checkDate){
+    public InventoryCheckRequest<T> withCheckDateLessThanOrEqualTo(LocalDate checkDate){
        return withCheckDate(Operator.LESS_THAN_OR_EQUAL, checkDate);
     }
 
-    public InventoryCheckRequest<T> withCheckDateBetween(String startOfCheckDate, String endOfCheckDate){
+    public InventoryCheckRequest<T> withCheckDateBetween(LocalDate startOfCheckDate, LocalDate endOfCheckDate){
        return withCheckDate(Operator.BETWEEN, startOfCheckDate, endOfCheckDate);
     }
-    public InventoryCheckRequest<T> withCheckDateStartingWith(String checkDate){
-       return withCheckDate(Operator.BEGIN_WITH, checkDate);
-    }
-    public InventoryCheckRequest<T> withCheckDateContaining(String checkDate){
-       return withCheckDate(Operator.CONTAIN, checkDate);
+    public InventoryCheckRequest<T> withCheckDateBefore(LocalDate checkDate){
+       return withCheckDate(Operator.LESS_THAN, checkDate);
     }
 
-    public InventoryCheckRequest<T> withCheckDateEndingWith(String checkDate){
-       return withCheckDate(Operator.END_WITH, checkDate);
+    public InventoryCheckRequest<T> withCheckDateBefore(Date checkDate){
+       return withCheckDate(Operator.LESS_THAN, checkDate);
     }
 
-    public InventoryCheckRequest<T> withCheckDateIs(String checkDate){
-       return withCheckDate(Operator.EQUAL, checkDate);
+    public InventoryCheckRequest<T> withCheckDateAfter(LocalDate checkDate){
+       return withCheckDate(Operator.GREATER_THAN, checkDate);
     }
 
-    public InventoryCheckRequest<T> withCheckDateSoundingLike(String checkDate){
-       return withCheckDate(Operator.SOUNDS_LIKE, checkDate);
+    public InventoryCheckRequest<T> withCheckDateAfter(Date checkDate){
+       return withCheckDate(Operator.GREATER_THAN, checkDate);
+    }
+
+    public InventoryCheckRequest<T> withCheckDateBetween(Date startOfCheckDate, Date endOfCheckDate){
+       return withCheckDate(Operator.BETWEEN, startOfCheckDate, endOfCheckDate);
     }
 
 
 
-    public InventoryCheckRequest<T> filterByTotalItems(Integer... totalItems){
-      if (totalItems == null || totalItems.length == 0) {
-        throw new IllegalArgumentException("filterByTotalItems parameter totalItems cannot be empty");
+
+    public InventoryCheckRequest<T> filterByChecker(String... checker){
+      if (checker == null || checker.length == 0) {
+        throw new IllegalArgumentException("filterByChecker parameter checker cannot be empty");
       }
-      return appendSearchCriteria(createTotalItemsCriteria(Operator.EQUAL, (Object[])totalItems));
+      return appendSearchCriteria(createCheckerCriteria(Operator.EQUAL, (Object[])checker));
     }
 
-    public InventoryCheckRequest<T> withTotalItems(Operator operator, Object... values){
-       return appendSearchCriteria(createTotalItemsCriteria(operator, values));
+    public InventoryCheckRequest<T> withChecker(Operator operator, Object... values){
+       return appendSearchCriteria(createCheckerCriteria(operator, values));
     }
 
-    public InventoryCheckRequest<T> withTotalItemsIsUnknown(){
-       return withTotalItems(Operator.IS_NULL);
+    public InventoryCheckRequest<T> withCheckerIsUnknown(){
+       return withChecker(Operator.IS_NULL);
     }
 
-    public InventoryCheckRequest<T> withTotalItemsIsKnown(){
-       return withTotalItems(Operator.IS_NOT_NULL);
+    public InventoryCheckRequest<T> withCheckerIsKnown(){
+       return withChecker(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createTotalItemsCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(InventoryCheck.TOTAL_ITEMS_PROPERTY, operator, values);
+    public SearchCriteria createCheckerCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(InventoryCheck.CHECKER_PROPERTY, operator, values);
     }
 
-    public InventoryCheckRequest<T> withTotalItemsGreaterThan(Integer totalItems){
-       return withTotalItems(Operator.GREATER_THAN, totalItems);
+    public InventoryCheckRequest<T> withCheckerGreaterThan(String checker){
+       return withChecker(Operator.GREATER_THAN, checker);
     }
 
-    public InventoryCheckRequest<T> withTotalItemsGreaterThanOrEqualTo(Integer totalItems){
-       return withTotalItems(Operator.GREATER_THAN_OR_EQUAL, totalItems);
+    public InventoryCheckRequest<T> withCheckerGreaterThanOrEqualTo(String checker){
+       return withChecker(Operator.GREATER_THAN_OR_EQUAL, checker);
     }
 
-    public InventoryCheckRequest<T> withTotalItemsLessThan(Integer totalItems){
-       return withTotalItems(Operator.LESS_THAN, totalItems);
+    public InventoryCheckRequest<T> withCheckerLessThan(String checker){
+       return withChecker(Operator.LESS_THAN, checker);
     }
 
-    public InventoryCheckRequest<T> withTotalItemsLessThanOrEqualTo(Integer totalItems){
-       return withTotalItems(Operator.LESS_THAN_OR_EQUAL, totalItems);
+    public InventoryCheckRequest<T> withCheckerLessThanOrEqualTo(String checker){
+       return withChecker(Operator.LESS_THAN_OR_EQUAL, checker);
     }
 
-    public InventoryCheckRequest<T> withTotalItemsBetween(Integer startOfTotalItems, Integer endOfTotalItems){
-       return withTotalItems(Operator.BETWEEN, startOfTotalItems, endOfTotalItems);
+    public InventoryCheckRequest<T> withCheckerBetween(String startOfChecker, String endOfChecker){
+       return withChecker(Operator.BETWEEN, startOfChecker, endOfChecker);
+    }
+    public InventoryCheckRequest<T> withCheckerStartingWith(String checker){
+       return withChecker(Operator.BEGIN_WITH, checker);
+    }
+    public InventoryCheckRequest<T> withCheckerContaining(String checker){
+       return withChecker(Operator.CONTAIN, checker);
     }
 
-
-
-    public InventoryCheckRequest<T> filterByDiscrepancies(Integer... discrepancies){
-      if (discrepancies == null || discrepancies.length == 0) {
-        throw new IllegalArgumentException("filterByDiscrepancies parameter discrepancies cannot be empty");
-      }
-      return appendSearchCriteria(createDiscrepanciesCriteria(Operator.EQUAL, (Object[])discrepancies));
+    public InventoryCheckRequest<T> withCheckerEndingWith(String checker){
+       return withChecker(Operator.END_WITH, checker);
     }
 
-    public InventoryCheckRequest<T> withDiscrepancies(Operator operator, Object... values){
-       return appendSearchCriteria(createDiscrepanciesCriteria(operator, values));
+    public InventoryCheckRequest<T> withCheckerIs(String checker){
+       return withChecker(Operator.EQUAL, checker);
     }
 
-    public InventoryCheckRequest<T> withDiscrepanciesIsUnknown(){
-       return withDiscrepancies(Operator.IS_NULL);
-    }
-
-    public InventoryCheckRequest<T> withDiscrepanciesIsKnown(){
-       return withDiscrepancies(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createDiscrepanciesCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(InventoryCheck.DISCREPANCIES_PROPERTY, operator, values);
-    }
-
-    public InventoryCheckRequest<T> withDiscrepanciesGreaterThan(Integer discrepancies){
-       return withDiscrepancies(Operator.GREATER_THAN, discrepancies);
-    }
-
-    public InventoryCheckRequest<T> withDiscrepanciesGreaterThanOrEqualTo(Integer discrepancies){
-       return withDiscrepancies(Operator.GREATER_THAN_OR_EQUAL, discrepancies);
-    }
-
-    public InventoryCheckRequest<T> withDiscrepanciesLessThan(Integer discrepancies){
-       return withDiscrepancies(Operator.LESS_THAN, discrepancies);
-    }
-
-    public InventoryCheckRequest<T> withDiscrepanciesLessThanOrEqualTo(Integer discrepancies){
-       return withDiscrepancies(Operator.LESS_THAN_OR_EQUAL, discrepancies);
-    }
-
-    public InventoryCheckRequest<T> withDiscrepanciesBetween(Integer startOfDiscrepancies, Integer endOfDiscrepancies){
-       return withDiscrepancies(Operator.BETWEEN, startOfDiscrepancies, endOfDiscrepancies);
+    public InventoryCheckRequest<T> withCheckerSoundingLike(String checker){
+       return withChecker(Operator.SOUNDS_LIKE, checker);
     }
 
 
@@ -722,134 +665,6 @@ public class InventoryCheckRequest<T extends InventoryCheck> extends BaseRequest
         super.count(retName);
         return this;
     }
-    public InventoryCheckRequest minTotalItems(){
-        return minTotalItemsAs(prefix("minOf",InventoryCheck.TOTAL_ITEMS_PROPERTY));
-    }
-
-    public InventoryCheckRequest minTotalItemsAs(String retName){
-        super.min(retName, InventoryCheck.TOTAL_ITEMS_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest maxTotalItems(){
-        return maxTotalItemsAs(prefix("maxOf",InventoryCheck.TOTAL_ITEMS_PROPERTY));
-    }
-
-    public InventoryCheckRequest maxTotalItemsAs(String retName){
-        super.max(retName, InventoryCheck.TOTAL_ITEMS_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest sumTotalItems(){
-        return sumTotalItemsAs(prefix("sumOf",InventoryCheck.TOTAL_ITEMS_PROPERTY));
-    }
-
-    public InventoryCheckRequest sumTotalItemsAs(String retName){
-        super.sum(retName, InventoryCheck.TOTAL_ITEMS_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest avgTotalItems(){
-        return avgTotalItemsAs(prefix("avgOf",InventoryCheck.TOTAL_ITEMS_PROPERTY));
-    }
-
-    public InventoryCheckRequest avgTotalItemsAs(String retName){
-        super.avg(retName, InventoryCheck.TOTAL_ITEMS_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest standardDeviationTotalItems(){
-        return standardDeviationTotalItemsAs(prefix("standardDeviationOf",InventoryCheck.TOTAL_ITEMS_PROPERTY));
-    }
-
-    public InventoryCheckRequest standardDeviationTotalItemsAs(String retName){
-        super.standardDeviation(retName, InventoryCheck.TOTAL_ITEMS_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest squareRootOfPopulationStandardDeviationTotalItems(){
-        return squareRootOfPopulationStandardDeviationTotalItemsAs(prefix("squareRootOfPopulationStandardDeviationOf",InventoryCheck.TOTAL_ITEMS_PROPERTY));
-    }
-
-    public InventoryCheckRequest squareRootOfPopulationStandardDeviationTotalItemsAs(String retName){
-        super.squareRootOfPopulationStandardDeviation(retName, InventoryCheck.TOTAL_ITEMS_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest sampleVarianceTotalItems(){
-        return sampleVarianceTotalItemsAs(prefix("sampleVarianceOf",InventoryCheck.TOTAL_ITEMS_PROPERTY));
-    }
-
-    public InventoryCheckRequest sampleVarianceTotalItemsAs(String retName){
-        super.sampleVariance(retName, InventoryCheck.TOTAL_ITEMS_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest samplePopulationVarianceTotalItems(){
-        return samplePopulationVarianceTotalItemsAs(prefix("samplePopulationVarianceOf",InventoryCheck.TOTAL_ITEMS_PROPERTY));
-    }
-
-    public InventoryCheckRequest samplePopulationVarianceTotalItemsAs(String retName){
-        super.samplePopulationVariance(retName, InventoryCheck.TOTAL_ITEMS_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest minDiscrepancies(){
-        return minDiscrepanciesAs(prefix("minOf",InventoryCheck.DISCREPANCIES_PROPERTY));
-    }
-
-    public InventoryCheckRequest minDiscrepanciesAs(String retName){
-        super.min(retName, InventoryCheck.DISCREPANCIES_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest maxDiscrepancies(){
-        return maxDiscrepanciesAs(prefix("maxOf",InventoryCheck.DISCREPANCIES_PROPERTY));
-    }
-
-    public InventoryCheckRequest maxDiscrepanciesAs(String retName){
-        super.max(retName, InventoryCheck.DISCREPANCIES_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest sumDiscrepancies(){
-        return sumDiscrepanciesAs(prefix("sumOf",InventoryCheck.DISCREPANCIES_PROPERTY));
-    }
-
-    public InventoryCheckRequest sumDiscrepanciesAs(String retName){
-        super.sum(retName, InventoryCheck.DISCREPANCIES_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest avgDiscrepancies(){
-        return avgDiscrepanciesAs(prefix("avgOf",InventoryCheck.DISCREPANCIES_PROPERTY));
-    }
-
-    public InventoryCheckRequest avgDiscrepanciesAs(String retName){
-        super.avg(retName, InventoryCheck.DISCREPANCIES_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest standardDeviationDiscrepancies(){
-        return standardDeviationDiscrepanciesAs(prefix("standardDeviationOf",InventoryCheck.DISCREPANCIES_PROPERTY));
-    }
-
-    public InventoryCheckRequest standardDeviationDiscrepanciesAs(String retName){
-        super.standardDeviation(retName, InventoryCheck.DISCREPANCIES_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest squareRootOfPopulationStandardDeviationDiscrepancies(){
-        return squareRootOfPopulationStandardDeviationDiscrepanciesAs(prefix("squareRootOfPopulationStandardDeviationOf",InventoryCheck.DISCREPANCIES_PROPERTY));
-    }
-
-    public InventoryCheckRequest squareRootOfPopulationStandardDeviationDiscrepanciesAs(String retName){
-        super.squareRootOfPopulationStandardDeviation(retName, InventoryCheck.DISCREPANCIES_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest sampleVarianceDiscrepancies(){
-        return sampleVarianceDiscrepanciesAs(prefix("sampleVarianceOf",InventoryCheck.DISCREPANCIES_PROPERTY));
-    }
-
-    public InventoryCheckRequest sampleVarianceDiscrepanciesAs(String retName){
-        super.sampleVariance(retName, InventoryCheck.DISCREPANCIES_PROPERTY);
-        return this;
-    }
-    public InventoryCheckRequest samplePopulationVarianceDiscrepancies(){
-        return samplePopulationVarianceDiscrepanciesAs(prefix("samplePopulationVarianceOf",InventoryCheck.DISCREPANCIES_PROPERTY));
-    }
-
-    public InventoryCheckRequest samplePopulationVarianceDiscrepanciesAs(String retName){
-        super.samplePopulationVariance(retName, InventoryCheck.DISCREPANCIES_PROPERTY);
-        return this;
-    }
     public InventoryCheckRequest<T> groupByWarehouseWithDetails(){
        return groupByWarehouseWithDetails(Q.warehouses().unlimited());
     }
@@ -858,7 +673,6 @@ public class InventoryCheckRequest<T extends InventoryCheck> extends BaseRequest
        aggregate(InventoryCheck.WAREHOUSE_PROPERTY, subRequest);
        return this;
     }
-
 
 
 
@@ -915,33 +729,18 @@ public class InventoryCheckRequest<T extends InventoryCheck> extends BaseRequest
        return this;
     }
 
-    public InventoryCheckRequest<T> groupByTotalItems(){
-       groupBy(InventoryCheck.TOTAL_ITEMS_PROPERTY);
+    public InventoryCheckRequest<T> groupByChecker(){
+       groupBy(InventoryCheck.CHECKER_PROPERTY);
        return this;
     }
 
-    public InventoryCheckRequest<T> groupByTotalItemsAs(String retName){
-       groupBy(retName, InventoryCheck.TOTAL_ITEMS_PROPERTY);
+    public InventoryCheckRequest<T> groupByCheckerAs(String retName){
+       groupBy(retName, InventoryCheck.CHECKER_PROPERTY);
        return this;
     }
 
-    public InventoryCheckRequest<T> groupByTotalItemsWithFunction(String retName, AggrFunction function){
-       groupBy(retName, InventoryCheck.TOTAL_ITEMS_PROPERTY, function);
-       return this;
-    }
-
-    public InventoryCheckRequest<T> groupByDiscrepancies(){
-       groupBy(InventoryCheck.DISCREPANCIES_PROPERTY);
-       return this;
-    }
-
-    public InventoryCheckRequest<T> groupByDiscrepanciesAs(String retName){
-       groupBy(retName, InventoryCheck.DISCREPANCIES_PROPERTY);
-       return this;
-    }
-
-    public InventoryCheckRequest<T> groupByDiscrepanciesWithFunction(String retName, AggrFunction function){
-       groupBy(retName, InventoryCheck.DISCREPANCIES_PROPERTY, function);
+    public InventoryCheckRequest<T> groupByCheckerWithFunction(String retName, AggrFunction function){
+       groupBy(retName, InventoryCheck.CHECKER_PROPERTY, function);
        return this;
     }
 
@@ -1036,35 +835,25 @@ public class InventoryCheckRequest<T extends InventoryCheck> extends BaseRequest
        addOrderByDescending(InventoryCheck.CHECK_DATE_PROPERTY);
        return this;
     }
-    public InventoryCheckRequest<T> orderByCheckDateAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(InventoryCheck.CHECK_DATE_PROPERTY);
+
+    public InventoryCheckRequest<T> orderByCheckerAscending(){
+       addOrderByAscending(InventoryCheck.CHECKER_PROPERTY);
        return this;
     }
 
-    public InventoryCheckRequest<T> orderByCheckDateDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(InventoryCheck.CHECK_DATE_PROPERTY);
+    public InventoryCheckRequest<T> orderByCheckerDescending(){
+       addOrderByDescending(InventoryCheck.CHECKER_PROPERTY);
        return this;
     }
-    public InventoryCheckRequest<T> orderByTotalItemsAscending(){
-       addOrderByAscending(InventoryCheck.TOTAL_ITEMS_PROPERTY);
-       return this;
-    }
-
-    public InventoryCheckRequest<T> orderByTotalItemsDescending(){
-       addOrderByDescending(InventoryCheck.TOTAL_ITEMS_PROPERTY);
+    public InventoryCheckRequest<T> orderByCheckerAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(InventoryCheck.CHECKER_PROPERTY);
        return this;
     }
 
-    public InventoryCheckRequest<T> orderByDiscrepanciesAscending(){
-       addOrderByAscending(InventoryCheck.DISCREPANCIES_PROPERTY);
+    public InventoryCheckRequest<T> orderByCheckerDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(InventoryCheck.CHECKER_PROPERTY);
        return this;
     }
-
-    public InventoryCheckRequest<T> orderByDiscrepanciesDescending(){
-       addOrderByDescending(InventoryCheck.DISCREPANCIES_PROPERTY);
-       return this;
-    }
-
     public InventoryCheckRequest<T> orderByStatusAscending(){
        addOrderByAscending(InventoryCheck.STATUS_PROPERTY);
        return this;
@@ -1120,7 +909,6 @@ public class InventoryCheckRequest<T extends InventoryCheck> extends BaseRequest
            .groupByWarehouseWith(warehouse);
        return warehouse;
     }
-
 
 
 

@@ -1,13 +1,12 @@
 package com.doublechaintech.enterpriselogisticsservice.customerloyalty;
 
-import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomerExpression;
 import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
 import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomerExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
+import java.time.LocalDateTime;
 import java.util.function.Function;
 
 public class CustomerLoyaltyExpression<T, E, U extends CustomerLoyalty> extends ExpressionAdaptor<T, E, U> implements BaseEntityExpression<T, U> {
@@ -58,12 +57,18 @@ public class CustomerLoyaltyExpression<T, E, U extends CustomerLoyalty> extends 
        return new CustomerLoyaltyExpression(this, $it ->  ((CustomerLoyalty)$it).updatePrivateCustomer(privateCustomer));
     }
 
-    public CorporateCustomerExpression<T, U, CorporateCustomer> getCorporateCustomer(){
-       return new CorporateCustomerExpression(this, $it ->  ((CustomerLoyalty)$it).getCorporateCustomer());
+    public Expression<T, LocalDateTime> getCreatedAt(){
+       return apply(CustomerLoyalty::getCreatedAt);
+    }
+    public CustomerLoyaltyExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
+       return new CustomerLoyaltyExpression(this, $it ->  ((CustomerLoyalty)$it).updateCreatedAt(createdAt));
     }
 
-    public CustomerLoyaltyExpression<T, U, U> updateCorporateCustomer(CorporateCustomer corporateCustomer){
-       return new CustomerLoyaltyExpression(this, $it ->  ((CustomerLoyalty)$it).updateCorporateCustomer(corporateCustomer));
+    public Expression<T, LocalDateTime> getUpdatedAt(){
+       return apply(CustomerLoyalty::getUpdatedAt);
+    }
+    public CustomerLoyaltyExpression<T, U, U> updateUpdatedAt(LocalDateTime updatedAt){
+       return new CustomerLoyaltyExpression(this, $it ->  ((CustomerLoyalty)$it).updateUpdatedAt(updatedAt));
     }
 
 }

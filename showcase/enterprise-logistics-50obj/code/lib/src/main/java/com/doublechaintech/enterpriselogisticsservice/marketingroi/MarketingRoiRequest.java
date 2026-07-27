@@ -3,6 +3,8 @@ package com.doublechaintech.enterpriselogisticsservice.marketingroi;
 import com.doublechaintech.enterpriselogisticsservice.Q;
 import com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign;
 import com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaignRequest;
+import com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel;
+import com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannelRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
@@ -86,7 +88,7 @@ public class MarketingRoiRequest<T extends MarketingRoi> extends BaseRequest<T> 
 
     public MarketingRoiRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectCampaignIdOnly().selectTotalSpend().selectTotalRevenue().selectRoiPercentage().selectReportDate().selectCreatedTime().selectUpdateTime().selectVersion();
+        return selectId().selectCampaignIdOnly().selectChannelIdOnly().selectSpend().selectRevenue().selectRoiPercentage().selectReportDate().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public MarketingRoiRequest<T> selectSelfFields(){
@@ -95,12 +97,12 @@ public class MarketingRoiRequest<T extends MarketingRoi> extends BaseRequest<T> 
 
     public MarketingRoiRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectCampaign().selectTotalSpend().selectTotalRevenue().selectRoiPercentage().selectReportDate().selectCreatedTime().selectUpdateTime().selectVersion();
+        return selectId().selectCampaign().selectChannel().selectSpend().selectRevenue().selectRoiPercentage().selectReportDate().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public MarketingRoiRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectCampaign().selectTotalSpend().selectTotalRevenue().selectRoiPercentage().selectReportDate().selectCreatedTime().selectUpdateTime().selectVersion();
+        return selectId().selectCampaign().selectChannel().selectSpend().selectRevenue().selectRoiPercentage().selectReportDate().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
 
@@ -140,54 +142,73 @@ public class MarketingRoiRequest<T extends MarketingRoi> extends BaseRequest<T> 
        unselectProperty(MarketingRoi.CAMPAIGN_PROPERTY);
        return this;
     }
-    public MarketingRoiRequest<T> selectTotalSpend(){
-       selectProperty(MarketingRoi.TOTAL_SPEND_PROPERTY);
+    public MarketingRoiRequest<T> selectChannelIdOnly(){
+       selectProperty(MarketingRoi.CHANNEL_PROPERTY);
+       return this;
+    }
+
+    public MarketingRoiRequest<T> selectChannel(){
+        return selectChannelWith(Q.salesChannels().unlimited().selectSelf());
+    }
+
+    public MarketingRoiRequest<T> selectChannelWith(SalesChannelRequest channel){
+       selectProperty(MarketingRoi.CHANNEL_PROPERTY);
+       enhanceRelation(MarketingRoi.CHANNEL_PROPERTY, channel);
+       return this;
+    }
+
+    public MarketingRoiRequest<T> unselectChannel(){
+       unselectProperty(MarketingRoi.CHANNEL_PROPERTY);
+       return this;
+    }
+    public MarketingRoiRequest<T> selectSpend(){
+       selectProperty(MarketingRoi.SPEND_PROPERTY);
        return this;
     }
 
     /**
-     * fill the totalSpend with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  totalSpend) to fetch totalSpend property.
+     * fill the spend with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  spend) to fetch spend property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
     /**
-     * fill the totalSpend with customized aggrFunction, TEAQL uses ({aggrFunction}(totalSpend) AS totalSpend to fetch totalSpend property.
+     * fill the spend with customized aggrFunction, TEAQL uses ({aggrFunction}(spend) AS spend to fetch spend property.
      * @param aggrFunction  aggrFunction
      */
-    public MarketingRoiRequest<T> selectTotalSpend(AggrFunction aggrFunction){
-       selectProperty(MarketingRoi.TOTAL_SPEND_PROPERTY, aggrFunction);
+    public MarketingRoiRequest<T> selectSpend(AggrFunction aggrFunction){
+       selectProperty(MarketingRoi.SPEND_PROPERTY, aggrFunction);
        return this;
     }
 
 
-    public MarketingRoiRequest<T> unselectTotalSpend(){
-       unselectProperty(MarketingRoi.TOTAL_SPEND_PROPERTY);
+    public MarketingRoiRequest<T> unselectSpend(){
+       unselectProperty(MarketingRoi.SPEND_PROPERTY);
        return this;
     }
-    public MarketingRoiRequest<T> selectTotalRevenue(){
-       selectProperty(MarketingRoi.TOTAL_REVENUE_PROPERTY);
+    public MarketingRoiRequest<T> selectRevenue(){
+       selectProperty(MarketingRoi.REVENUE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the totalRevenue with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  totalRevenue) to fetch totalRevenue property.
+     * fill the revenue with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  revenue) to fetch revenue property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
     /**
-     * fill the totalRevenue with customized aggrFunction, TEAQL uses ({aggrFunction}(totalRevenue) AS totalRevenue to fetch totalRevenue property.
+     * fill the revenue with customized aggrFunction, TEAQL uses ({aggrFunction}(revenue) AS revenue to fetch revenue property.
      * @param aggrFunction  aggrFunction
      */
-    public MarketingRoiRequest<T> selectTotalRevenue(AggrFunction aggrFunction){
-       selectProperty(MarketingRoi.TOTAL_REVENUE_PROPERTY, aggrFunction);
+    public MarketingRoiRequest<T> selectRevenue(AggrFunction aggrFunction){
+       selectProperty(MarketingRoi.REVENUE_PROPERTY, aggrFunction);
        return this;
     }
 
 
-    public MarketingRoiRequest<T> unselectTotalRevenue(){
-       unselectProperty(MarketingRoi.TOTAL_REVENUE_PROPERTY);
+    public MarketingRoiRequest<T> unselectRevenue(){
+       unselectProperty(MarketingRoi.REVENUE_PROPERTY);
        return this;
     }
     public MarketingRoiRequest<T> selectRoiPercentage(){
@@ -249,21 +270,21 @@ public class MarketingRoiRequest<T extends MarketingRoi> extends BaseRequest<T> 
        unselectProperty(MarketingRoi.CREATED_TIME_PROPERTY);
        return this;
     }
-    public MarketingRoiRequest<T> selectUpdateTime(){
-       selectProperty(MarketingRoi.UPDATE_TIME_PROPERTY);
+    public MarketingRoiRequest<T> selectUpdatedTime(){
+       selectProperty(MarketingRoi.UPDATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the updateTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updateTime) to fetch updateTime property.
+     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public MarketingRoiRequest<T> unselectUpdateTime(){
-       unselectProperty(MarketingRoi.UPDATE_TIME_PROPERTY);
+    public MarketingRoiRequest<T> unselectUpdatedTime(){
+       unselectProperty(MarketingRoi.UPDATED_TIME_PROPERTY);
        return this;
     }
     public MarketingRoiRequest<T> selectVersion(){
@@ -334,92 +355,125 @@ public class MarketingRoiRequest<T extends MarketingRoi> extends BaseRequest<T> 
        return appendSearchCriteria(new SubQuerySearchCriteria(MarketingRoi.CAMPAIGN_PROPERTY, campaign, PromotionCampaign.ID_PROPERTY));
     }
 
-    public MarketingRoiRequest<T> filterByTotalSpend(BigDecimal... totalSpend){
-      if (totalSpend == null || totalSpend.length == 0) {
-        throw new IllegalArgumentException("filterByTotalSpend parameter totalSpend cannot be empty");
+    public MarketingRoiRequest<T> filterByChannel(SalesChannel... channel){
+      if (channel == null || channel.length == 0) {
+        throw new IllegalArgumentException("filterByChannel parameter channel cannot be empty");
       }
-      return appendSearchCriteria(createTotalSpendCriteria(Operator.EQUAL, (Object[])totalSpend));
+      return appendSearchCriteria(createChannelCriteria(Operator.EQUAL, (Object[])channel));
     }
 
-    public MarketingRoiRequest<T> withTotalSpend(Operator operator, Object... values){
-       return appendSearchCriteria(createTotalSpendCriteria(operator, values));
+    public MarketingRoiRequest<T> withChannel(Operator operator, Object... values){
+       return appendSearchCriteria(createChannelCriteria(operator, values));
     }
 
-    public MarketingRoiRequest<T> withTotalSpendIsUnknown(){
-       return withTotalSpend(Operator.IS_NULL);
+    public MarketingRoiRequest<T> withChannelIsUnknown(){
+       return withChannel(Operator.IS_NULL);
     }
 
-    public MarketingRoiRequest<T> withTotalSpendIsKnown(){
-       return withTotalSpend(Operator.IS_NOT_NULL);
+    public MarketingRoiRequest<T> withChannelIsKnown(){
+       return withChannel(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createTotalSpendCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(MarketingRoi.TOTAL_SPEND_PROPERTY, operator, values);
+    public SearchCriteria createChannelCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(MarketingRoi.CHANNEL_PROPERTY, operator, values);
     }
 
-    public MarketingRoiRequest<T> withTotalSpendGreaterThan(BigDecimal totalSpend){
-       return withTotalSpend(Operator.GREATER_THAN, totalSpend);
-    }
-
-    public MarketingRoiRequest<T> withTotalSpendGreaterThanOrEqualTo(BigDecimal totalSpend){
-       return withTotalSpend(Operator.GREATER_THAN_OR_EQUAL, totalSpend);
-    }
-
-    public MarketingRoiRequest<T> withTotalSpendLessThan(BigDecimal totalSpend){
-       return withTotalSpend(Operator.LESS_THAN, totalSpend);
-    }
-
-    public MarketingRoiRequest<T> withTotalSpendLessThanOrEqualTo(BigDecimal totalSpend){
-       return withTotalSpend(Operator.LESS_THAN_OR_EQUAL, totalSpend);
-    }
-
-    public MarketingRoiRequest<T> withTotalSpendBetween(BigDecimal startOfTotalSpend, BigDecimal endOfTotalSpend){
-       return withTotalSpend(Operator.BETWEEN, startOfTotalSpend, endOfTotalSpend);
-    }
-
-
-
-    public MarketingRoiRequest<T> filterByTotalRevenue(BigDecimal... totalRevenue){
-      if (totalRevenue == null || totalRevenue.length == 0) {
-        throw new IllegalArgumentException("filterByTotalRevenue parameter totalRevenue cannot be empty");
+    public MarketingRoiRequest<T> filterByChannel(Long channel){
+      if(channel == null){
+         return this;
       }
-      return appendSearchCriteria(createTotalRevenueCriteria(Operator.EQUAL, (Object[])totalRevenue));
+      return withChannel(Operator.EQUAL, channel);
+    }
+    public MarketingRoiRequest<T> withChannelMatching(SalesChannelRequest channel){
+       return appendSearchCriteria(new SubQuerySearchCriteria(MarketingRoi.CHANNEL_PROPERTY, channel, SalesChannel.ID_PROPERTY));
     }
 
-    public MarketingRoiRequest<T> withTotalRevenue(Operator operator, Object... values){
-       return appendSearchCriteria(createTotalRevenueCriteria(operator, values));
+    public MarketingRoiRequest<T> filterBySpend(BigDecimal... spend){
+      if (spend == null || spend.length == 0) {
+        throw new IllegalArgumentException("filterBySpend parameter spend cannot be empty");
+      }
+      return appendSearchCriteria(createSpendCriteria(Operator.EQUAL, (Object[])spend));
     }
 
-    public MarketingRoiRequest<T> withTotalRevenueIsUnknown(){
-       return withTotalRevenue(Operator.IS_NULL);
+    public MarketingRoiRequest<T> withSpend(Operator operator, Object... values){
+       return appendSearchCriteria(createSpendCriteria(operator, values));
     }
 
-    public MarketingRoiRequest<T> withTotalRevenueIsKnown(){
-       return withTotalRevenue(Operator.IS_NOT_NULL);
+    public MarketingRoiRequest<T> withSpendIsUnknown(){
+       return withSpend(Operator.IS_NULL);
     }
 
-    public SearchCriteria createTotalRevenueCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(MarketingRoi.TOTAL_REVENUE_PROPERTY, operator, values);
+    public MarketingRoiRequest<T> withSpendIsKnown(){
+       return withSpend(Operator.IS_NOT_NULL);
     }
 
-    public MarketingRoiRequest<T> withTotalRevenueGreaterThan(BigDecimal totalRevenue){
-       return withTotalRevenue(Operator.GREATER_THAN, totalRevenue);
+    public SearchCriteria createSpendCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(MarketingRoi.SPEND_PROPERTY, operator, values);
     }
 
-    public MarketingRoiRequest<T> withTotalRevenueGreaterThanOrEqualTo(BigDecimal totalRevenue){
-       return withTotalRevenue(Operator.GREATER_THAN_OR_EQUAL, totalRevenue);
+    public MarketingRoiRequest<T> withSpendGreaterThan(BigDecimal spend){
+       return withSpend(Operator.GREATER_THAN, spend);
     }
 
-    public MarketingRoiRequest<T> withTotalRevenueLessThan(BigDecimal totalRevenue){
-       return withTotalRevenue(Operator.LESS_THAN, totalRevenue);
+    public MarketingRoiRequest<T> withSpendGreaterThanOrEqualTo(BigDecimal spend){
+       return withSpend(Operator.GREATER_THAN_OR_EQUAL, spend);
     }
 
-    public MarketingRoiRequest<T> withTotalRevenueLessThanOrEqualTo(BigDecimal totalRevenue){
-       return withTotalRevenue(Operator.LESS_THAN_OR_EQUAL, totalRevenue);
+    public MarketingRoiRequest<T> withSpendLessThan(BigDecimal spend){
+       return withSpend(Operator.LESS_THAN, spend);
     }
 
-    public MarketingRoiRequest<T> withTotalRevenueBetween(BigDecimal startOfTotalRevenue, BigDecimal endOfTotalRevenue){
-       return withTotalRevenue(Operator.BETWEEN, startOfTotalRevenue, endOfTotalRevenue);
+    public MarketingRoiRequest<T> withSpendLessThanOrEqualTo(BigDecimal spend){
+       return withSpend(Operator.LESS_THAN_OR_EQUAL, spend);
+    }
+
+    public MarketingRoiRequest<T> withSpendBetween(BigDecimal startOfSpend, BigDecimal endOfSpend){
+       return withSpend(Operator.BETWEEN, startOfSpend, endOfSpend);
+    }
+
+
+
+    public MarketingRoiRequest<T> filterByRevenue(BigDecimal... revenue){
+      if (revenue == null || revenue.length == 0) {
+        throw new IllegalArgumentException("filterByRevenue parameter revenue cannot be empty");
+      }
+      return appendSearchCriteria(createRevenueCriteria(Operator.EQUAL, (Object[])revenue));
+    }
+
+    public MarketingRoiRequest<T> withRevenue(Operator operator, Object... values){
+       return appendSearchCriteria(createRevenueCriteria(operator, values));
+    }
+
+    public MarketingRoiRequest<T> withRevenueIsUnknown(){
+       return withRevenue(Operator.IS_NULL);
+    }
+
+    public MarketingRoiRequest<T> withRevenueIsKnown(){
+       return withRevenue(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createRevenueCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(MarketingRoi.REVENUE_PROPERTY, operator, values);
+    }
+
+    public MarketingRoiRequest<T> withRevenueGreaterThan(BigDecimal revenue){
+       return withRevenue(Operator.GREATER_THAN, revenue);
+    }
+
+    public MarketingRoiRequest<T> withRevenueGreaterThanOrEqualTo(BigDecimal revenue){
+       return withRevenue(Operator.GREATER_THAN_OR_EQUAL, revenue);
+    }
+
+    public MarketingRoiRequest<T> withRevenueLessThan(BigDecimal revenue){
+       return withRevenue(Operator.LESS_THAN, revenue);
+    }
+
+    public MarketingRoiRequest<T> withRevenueLessThanOrEqualTo(BigDecimal revenue){
+       return withRevenue(Operator.LESS_THAN_OR_EQUAL, revenue);
+    }
+
+    public MarketingRoiRequest<T> withRevenueBetween(BigDecimal startOfRevenue, BigDecimal endOfRevenue){
+       return withRevenue(Operator.BETWEEN, startOfRevenue, endOfRevenue);
     }
 
 
@@ -599,66 +653,66 @@ public class MarketingRoiRequest<T extends MarketingRoi> extends BaseRequest<T> 
 
 
 
-    public MarketingRoiRequest<T> filterByUpdateTime(LocalDateTime... updateTime){
-      if (updateTime == null || updateTime.length == 0) {
-        throw new IllegalArgumentException("filterByUpdateTime parameter updateTime cannot be empty");
+    public MarketingRoiRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
+      if (updatedTime == null || updatedTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
       }
-      return appendSearchCriteria(createUpdateTimeCriteria(Operator.EQUAL, (Object[])updateTime));
+      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
     }
 
-    public MarketingRoiRequest<T> withUpdateTime(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdateTimeCriteria(operator, values));
+    public MarketingRoiRequest<T> withUpdatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
     }
 
-    public MarketingRoiRequest<T> withUpdateTimeIsUnknown(){
-       return withUpdateTime(Operator.IS_NULL);
+    public MarketingRoiRequest<T> withUpdatedTimeIsUnknown(){
+       return withUpdatedTime(Operator.IS_NULL);
     }
 
-    public MarketingRoiRequest<T> withUpdateTimeIsKnown(){
-       return withUpdateTime(Operator.IS_NOT_NULL);
+    public MarketingRoiRequest<T> withUpdatedTimeIsKnown(){
+       return withUpdatedTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createUpdateTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(MarketingRoi.UPDATE_TIME_PROPERTY, operator, values);
+    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(MarketingRoi.UPDATED_TIME_PROPERTY, operator, values);
     }
 
-    public MarketingRoiRequest<T> withUpdateTimeGreaterThan(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public MarketingRoiRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public MarketingRoiRequest<T> withUpdateTimeGreaterThanOrEqualTo(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN_OR_EQUAL, updateTime);
+    public MarketingRoiRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
     }
 
-    public MarketingRoiRequest<T> withUpdateTimeLessThan(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    public MarketingRoiRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public MarketingRoiRequest<T> withUpdateTimeLessThanOrEqualTo(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN_OR_EQUAL, updateTime);
+    public MarketingRoiRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
     }
 
-    public MarketingRoiRequest<T> withUpdateTimeBetween(LocalDateTime startOfUpdateTime, LocalDateTime endOfUpdateTime){
-       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    public MarketingRoiRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
-    public MarketingRoiRequest<T> withUpdateTimeBefore(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
-    }
-
-    public MarketingRoiRequest<T> withUpdateTimeBefore(Date updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    public MarketingRoiRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public MarketingRoiRequest<T> withUpdateTimeAfter(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public MarketingRoiRequest<T> withUpdatedTimeBefore(Date updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public MarketingRoiRequest<T> withUpdateTimeAfter(Date updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public MarketingRoiRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public MarketingRoiRequest<T> withUpdateTimeBetween(Date startOfUpdateTime, Date endOfUpdateTime){
-       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    public MarketingRoiRequest<T> withUpdatedTimeAfter(Date updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public MarketingRoiRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
 
 
@@ -716,132 +770,132 @@ public class MarketingRoiRequest<T extends MarketingRoi> extends BaseRequest<T> 
         super.count(retName);
         return this;
     }
-    public MarketingRoiRequest minTotalSpend(){
-        return minTotalSpendAs(prefix("minOf",MarketingRoi.TOTAL_SPEND_PROPERTY));
+    public MarketingRoiRequest minSpend(){
+        return minSpendAs(prefix("minOf",MarketingRoi.SPEND_PROPERTY));
     }
 
-    public MarketingRoiRequest minTotalSpendAs(String retName){
-        super.min(retName, MarketingRoi.TOTAL_SPEND_PROPERTY);
+    public MarketingRoiRequest minSpendAs(String retName){
+        super.min(retName, MarketingRoi.SPEND_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest maxTotalSpend(){
-        return maxTotalSpendAs(prefix("maxOf",MarketingRoi.TOTAL_SPEND_PROPERTY));
+    public MarketingRoiRequest maxSpend(){
+        return maxSpendAs(prefix("maxOf",MarketingRoi.SPEND_PROPERTY));
     }
 
-    public MarketingRoiRequest maxTotalSpendAs(String retName){
-        super.max(retName, MarketingRoi.TOTAL_SPEND_PROPERTY);
+    public MarketingRoiRequest maxSpendAs(String retName){
+        super.max(retName, MarketingRoi.SPEND_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest sumTotalSpend(){
-        return sumTotalSpendAs(prefix("sumOf",MarketingRoi.TOTAL_SPEND_PROPERTY));
+    public MarketingRoiRequest sumSpend(){
+        return sumSpendAs(prefix("sumOf",MarketingRoi.SPEND_PROPERTY));
     }
 
-    public MarketingRoiRequest sumTotalSpendAs(String retName){
-        super.sum(retName, MarketingRoi.TOTAL_SPEND_PROPERTY);
+    public MarketingRoiRequest sumSpendAs(String retName){
+        super.sum(retName, MarketingRoi.SPEND_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest avgTotalSpend(){
-        return avgTotalSpendAs(prefix("avgOf",MarketingRoi.TOTAL_SPEND_PROPERTY));
+    public MarketingRoiRequest avgSpend(){
+        return avgSpendAs(prefix("avgOf",MarketingRoi.SPEND_PROPERTY));
     }
 
-    public MarketingRoiRequest avgTotalSpendAs(String retName){
-        super.avg(retName, MarketingRoi.TOTAL_SPEND_PROPERTY);
+    public MarketingRoiRequest avgSpendAs(String retName){
+        super.avg(retName, MarketingRoi.SPEND_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest standardDeviationTotalSpend(){
-        return standardDeviationTotalSpendAs(prefix("standardDeviationOf",MarketingRoi.TOTAL_SPEND_PROPERTY));
+    public MarketingRoiRequest standardDeviationSpend(){
+        return standardDeviationSpendAs(prefix("standardDeviationOf",MarketingRoi.SPEND_PROPERTY));
     }
 
-    public MarketingRoiRequest standardDeviationTotalSpendAs(String retName){
-        super.standardDeviation(retName, MarketingRoi.TOTAL_SPEND_PROPERTY);
+    public MarketingRoiRequest standardDeviationSpendAs(String retName){
+        super.standardDeviation(retName, MarketingRoi.SPEND_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest squareRootOfPopulationStandardDeviationTotalSpend(){
-        return squareRootOfPopulationStandardDeviationTotalSpendAs(prefix("squareRootOfPopulationStandardDeviationOf",MarketingRoi.TOTAL_SPEND_PROPERTY));
+    public MarketingRoiRequest squareRootOfPopulationStandardDeviationSpend(){
+        return squareRootOfPopulationStandardDeviationSpendAs(prefix("squareRootOfPopulationStandardDeviationOf",MarketingRoi.SPEND_PROPERTY));
     }
 
-    public MarketingRoiRequest squareRootOfPopulationStandardDeviationTotalSpendAs(String retName){
-        super.squareRootOfPopulationStandardDeviation(retName, MarketingRoi.TOTAL_SPEND_PROPERTY);
+    public MarketingRoiRequest squareRootOfPopulationStandardDeviationSpendAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, MarketingRoi.SPEND_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest sampleVarianceTotalSpend(){
-        return sampleVarianceTotalSpendAs(prefix("sampleVarianceOf",MarketingRoi.TOTAL_SPEND_PROPERTY));
+    public MarketingRoiRequest sampleVarianceSpend(){
+        return sampleVarianceSpendAs(prefix("sampleVarianceOf",MarketingRoi.SPEND_PROPERTY));
     }
 
-    public MarketingRoiRequest sampleVarianceTotalSpendAs(String retName){
-        super.sampleVariance(retName, MarketingRoi.TOTAL_SPEND_PROPERTY);
+    public MarketingRoiRequest sampleVarianceSpendAs(String retName){
+        super.sampleVariance(retName, MarketingRoi.SPEND_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest samplePopulationVarianceTotalSpend(){
-        return samplePopulationVarianceTotalSpendAs(prefix("samplePopulationVarianceOf",MarketingRoi.TOTAL_SPEND_PROPERTY));
+    public MarketingRoiRequest samplePopulationVarianceSpend(){
+        return samplePopulationVarianceSpendAs(prefix("samplePopulationVarianceOf",MarketingRoi.SPEND_PROPERTY));
     }
 
-    public MarketingRoiRequest samplePopulationVarianceTotalSpendAs(String retName){
-        super.samplePopulationVariance(retName, MarketingRoi.TOTAL_SPEND_PROPERTY);
+    public MarketingRoiRequest samplePopulationVarianceSpendAs(String retName){
+        super.samplePopulationVariance(retName, MarketingRoi.SPEND_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest minTotalRevenue(){
-        return minTotalRevenueAs(prefix("minOf",MarketingRoi.TOTAL_REVENUE_PROPERTY));
+    public MarketingRoiRequest minRevenue(){
+        return minRevenueAs(prefix("minOf",MarketingRoi.REVENUE_PROPERTY));
     }
 
-    public MarketingRoiRequest minTotalRevenueAs(String retName){
-        super.min(retName, MarketingRoi.TOTAL_REVENUE_PROPERTY);
+    public MarketingRoiRequest minRevenueAs(String retName){
+        super.min(retName, MarketingRoi.REVENUE_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest maxTotalRevenue(){
-        return maxTotalRevenueAs(prefix("maxOf",MarketingRoi.TOTAL_REVENUE_PROPERTY));
+    public MarketingRoiRequest maxRevenue(){
+        return maxRevenueAs(prefix("maxOf",MarketingRoi.REVENUE_PROPERTY));
     }
 
-    public MarketingRoiRequest maxTotalRevenueAs(String retName){
-        super.max(retName, MarketingRoi.TOTAL_REVENUE_PROPERTY);
+    public MarketingRoiRequest maxRevenueAs(String retName){
+        super.max(retName, MarketingRoi.REVENUE_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest sumTotalRevenue(){
-        return sumTotalRevenueAs(prefix("sumOf",MarketingRoi.TOTAL_REVENUE_PROPERTY));
+    public MarketingRoiRequest sumRevenue(){
+        return sumRevenueAs(prefix("sumOf",MarketingRoi.REVENUE_PROPERTY));
     }
 
-    public MarketingRoiRequest sumTotalRevenueAs(String retName){
-        super.sum(retName, MarketingRoi.TOTAL_REVENUE_PROPERTY);
+    public MarketingRoiRequest sumRevenueAs(String retName){
+        super.sum(retName, MarketingRoi.REVENUE_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest avgTotalRevenue(){
-        return avgTotalRevenueAs(prefix("avgOf",MarketingRoi.TOTAL_REVENUE_PROPERTY));
+    public MarketingRoiRequest avgRevenue(){
+        return avgRevenueAs(prefix("avgOf",MarketingRoi.REVENUE_PROPERTY));
     }
 
-    public MarketingRoiRequest avgTotalRevenueAs(String retName){
-        super.avg(retName, MarketingRoi.TOTAL_REVENUE_PROPERTY);
+    public MarketingRoiRequest avgRevenueAs(String retName){
+        super.avg(retName, MarketingRoi.REVENUE_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest standardDeviationTotalRevenue(){
-        return standardDeviationTotalRevenueAs(prefix("standardDeviationOf",MarketingRoi.TOTAL_REVENUE_PROPERTY));
+    public MarketingRoiRequest standardDeviationRevenue(){
+        return standardDeviationRevenueAs(prefix("standardDeviationOf",MarketingRoi.REVENUE_PROPERTY));
     }
 
-    public MarketingRoiRequest standardDeviationTotalRevenueAs(String retName){
-        super.standardDeviation(retName, MarketingRoi.TOTAL_REVENUE_PROPERTY);
+    public MarketingRoiRequest standardDeviationRevenueAs(String retName){
+        super.standardDeviation(retName, MarketingRoi.REVENUE_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest squareRootOfPopulationStandardDeviationTotalRevenue(){
-        return squareRootOfPopulationStandardDeviationTotalRevenueAs(prefix("squareRootOfPopulationStandardDeviationOf",MarketingRoi.TOTAL_REVENUE_PROPERTY));
+    public MarketingRoiRequest squareRootOfPopulationStandardDeviationRevenue(){
+        return squareRootOfPopulationStandardDeviationRevenueAs(prefix("squareRootOfPopulationStandardDeviationOf",MarketingRoi.REVENUE_PROPERTY));
     }
 
-    public MarketingRoiRequest squareRootOfPopulationStandardDeviationTotalRevenueAs(String retName){
-        super.squareRootOfPopulationStandardDeviation(retName, MarketingRoi.TOTAL_REVENUE_PROPERTY);
+    public MarketingRoiRequest squareRootOfPopulationStandardDeviationRevenueAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, MarketingRoi.REVENUE_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest sampleVarianceTotalRevenue(){
-        return sampleVarianceTotalRevenueAs(prefix("sampleVarianceOf",MarketingRoi.TOTAL_REVENUE_PROPERTY));
+    public MarketingRoiRequest sampleVarianceRevenue(){
+        return sampleVarianceRevenueAs(prefix("sampleVarianceOf",MarketingRoi.REVENUE_PROPERTY));
     }
 
-    public MarketingRoiRequest sampleVarianceTotalRevenueAs(String retName){
-        super.sampleVariance(retName, MarketingRoi.TOTAL_REVENUE_PROPERTY);
+    public MarketingRoiRequest sampleVarianceRevenueAs(String retName){
+        super.sampleVariance(retName, MarketingRoi.REVENUE_PROPERTY);
         return this;
     }
-    public MarketingRoiRequest samplePopulationVarianceTotalRevenue(){
-        return samplePopulationVarianceTotalRevenueAs(prefix("samplePopulationVarianceOf",MarketingRoi.TOTAL_REVENUE_PROPERTY));
+    public MarketingRoiRequest samplePopulationVarianceRevenue(){
+        return samplePopulationVarianceRevenueAs(prefix("samplePopulationVarianceOf",MarketingRoi.REVENUE_PROPERTY));
     }
 
-    public MarketingRoiRequest samplePopulationVarianceTotalRevenueAs(String retName){
-        super.samplePopulationVariance(retName, MarketingRoi.TOTAL_REVENUE_PROPERTY);
+    public MarketingRoiRequest samplePopulationVarianceRevenueAs(String retName){
+        super.samplePopulationVariance(retName, MarketingRoi.REVENUE_PROPERTY);
         return this;
     }
     public MarketingRoiRequest minRoiPercentage(){
@@ -917,6 +971,15 @@ public class MarketingRoiRequest<T extends MarketingRoi> extends BaseRequest<T> 
        return this;
     }
 
+    public MarketingRoiRequest<T> groupByChannelWithDetails(){
+       return groupByChannelWithDetails(Q.salesChannels().unlimited());
+    }
+
+    public MarketingRoiRequest<T> groupByChannelWithDetails(SalesChannelRequest subRequest){
+       aggregate(MarketingRoi.CHANNEL_PROPERTY, subRequest);
+       return this;
+    }
+
 
 
 
@@ -957,34 +1020,52 @@ public class MarketingRoiRequest<T extends MarketingRoi> extends BaseRequest<T> 
        groupBy(retName, MarketingRoi.CAMPAIGN_PROPERTY, function);
        return this;
     }
-
-    public MarketingRoiRequest<T> groupByTotalSpend(){
-       groupBy(MarketingRoi.TOTAL_SPEND_PROPERTY);
+    public MarketingRoiRequest<T> groupByChannelWith(SalesChannelRequest subRequest){
+       groupBy(MarketingRoi.CHANNEL_PROPERTY, subRequest);
+       return this;
+    }
+    public MarketingRoiRequest<T> groupByChannel(){
+       groupBy(MarketingRoi.CHANNEL_PROPERTY);
        return this;
     }
 
-    public MarketingRoiRequest<T> groupByTotalSpendAs(String retName){
-       groupBy(retName, MarketingRoi.TOTAL_SPEND_PROPERTY);
+    public MarketingRoiRequest<T> groupByChannelAs(String retName){
+       groupBy(retName, MarketingRoi.CHANNEL_PROPERTY);
        return this;
     }
 
-    public MarketingRoiRequest<T> groupByTotalSpendWithFunction(String retName, AggrFunction function){
-       groupBy(retName, MarketingRoi.TOTAL_SPEND_PROPERTY, function);
+    public MarketingRoiRequest<T> groupByChannelWithFunction(String retName, AggrFunction function){
+       groupBy(retName, MarketingRoi.CHANNEL_PROPERTY, function);
        return this;
     }
 
-    public MarketingRoiRequest<T> groupByTotalRevenue(){
-       groupBy(MarketingRoi.TOTAL_REVENUE_PROPERTY);
+    public MarketingRoiRequest<T> groupBySpend(){
+       groupBy(MarketingRoi.SPEND_PROPERTY);
        return this;
     }
 
-    public MarketingRoiRequest<T> groupByTotalRevenueAs(String retName){
-       groupBy(retName, MarketingRoi.TOTAL_REVENUE_PROPERTY);
+    public MarketingRoiRequest<T> groupBySpendAs(String retName){
+       groupBy(retName, MarketingRoi.SPEND_PROPERTY);
        return this;
     }
 
-    public MarketingRoiRequest<T> groupByTotalRevenueWithFunction(String retName, AggrFunction function){
-       groupBy(retName, MarketingRoi.TOTAL_REVENUE_PROPERTY, function);
+    public MarketingRoiRequest<T> groupBySpendWithFunction(String retName, AggrFunction function){
+       groupBy(retName, MarketingRoi.SPEND_PROPERTY, function);
+       return this;
+    }
+
+    public MarketingRoiRequest<T> groupByRevenue(){
+       groupBy(MarketingRoi.REVENUE_PROPERTY);
+       return this;
+    }
+
+    public MarketingRoiRequest<T> groupByRevenueAs(String retName){
+       groupBy(retName, MarketingRoi.REVENUE_PROPERTY);
+       return this;
+    }
+
+    public MarketingRoiRequest<T> groupByRevenueWithFunction(String retName, AggrFunction function){
+       groupBy(retName, MarketingRoi.REVENUE_PROPERTY, function);
        return this;
     }
 
@@ -1033,18 +1114,18 @@ public class MarketingRoiRequest<T extends MarketingRoi> extends BaseRequest<T> 
        return this;
     }
 
-    public MarketingRoiRequest<T> groupByUpdateTime(){
-       groupBy(MarketingRoi.UPDATE_TIME_PROPERTY);
+    public MarketingRoiRequest<T> groupByUpdatedTime(){
+       groupBy(MarketingRoi.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public MarketingRoiRequest<T> groupByUpdateTimeAs(String retName){
-       groupBy(retName, MarketingRoi.UPDATE_TIME_PROPERTY);
+    public MarketingRoiRequest<T> groupByUpdatedTimeAs(String retName){
+       groupBy(retName, MarketingRoi.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public MarketingRoiRequest<T> groupByUpdateTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, MarketingRoi.UPDATE_TIME_PROPERTY, function);
+    public MarketingRoiRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, MarketingRoi.UPDATED_TIME_PROPERTY, function);
        return this;
     }
 
@@ -1085,23 +1166,33 @@ public class MarketingRoiRequest<T extends MarketingRoi> extends BaseRequest<T> 
        return this;
     }
 
-    public MarketingRoiRequest<T> orderByTotalSpendAscending(){
-       addOrderByAscending(MarketingRoi.TOTAL_SPEND_PROPERTY);
+    public MarketingRoiRequest<T> orderByChannelAscending(){
+       addOrderByAscending(MarketingRoi.CHANNEL_PROPERTY);
        return this;
     }
 
-    public MarketingRoiRequest<T> orderByTotalSpendDescending(){
-       addOrderByDescending(MarketingRoi.TOTAL_SPEND_PROPERTY);
+    public MarketingRoiRequest<T> orderByChannelDescending(){
+       addOrderByDescending(MarketingRoi.CHANNEL_PROPERTY);
        return this;
     }
 
-    public MarketingRoiRequest<T> orderByTotalRevenueAscending(){
-       addOrderByAscending(MarketingRoi.TOTAL_REVENUE_PROPERTY);
+    public MarketingRoiRequest<T> orderBySpendAscending(){
+       addOrderByAscending(MarketingRoi.SPEND_PROPERTY);
        return this;
     }
 
-    public MarketingRoiRequest<T> orderByTotalRevenueDescending(){
-       addOrderByDescending(MarketingRoi.TOTAL_REVENUE_PROPERTY);
+    public MarketingRoiRequest<T> orderBySpendDescending(){
+       addOrderByDescending(MarketingRoi.SPEND_PROPERTY);
+       return this;
+    }
+
+    public MarketingRoiRequest<T> orderByRevenueAscending(){
+       addOrderByAscending(MarketingRoi.REVENUE_PROPERTY);
+       return this;
+    }
+
+    public MarketingRoiRequest<T> orderByRevenueDescending(){
+       addOrderByDescending(MarketingRoi.REVENUE_PROPERTY);
        return this;
     }
 
@@ -1135,13 +1226,13 @@ public class MarketingRoiRequest<T extends MarketingRoi> extends BaseRequest<T> 
        return this;
     }
 
-    public MarketingRoiRequest<T> orderByUpdateTimeAscending(){
-       addOrderByAscending(MarketingRoi.UPDATE_TIME_PROPERTY);
+    public MarketingRoiRequest<T> orderByUpdatedTimeAscending(){
+       addOrderByAscending(MarketingRoi.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public MarketingRoiRequest<T> orderByUpdateTimeDescending(){
-       addOrderByDescending(MarketingRoi.UPDATE_TIME_PROPERTY);
+    public MarketingRoiRequest<T> orderByUpdatedTimeDescending(){
+       addOrderByDescending(MarketingRoi.UPDATED_TIME_PROPERTY);
        return this;
     }
 
@@ -1163,6 +1254,13 @@ public class MarketingRoiRequest<T extends MarketingRoi> extends BaseRequest<T> 
        return campaign;
     }
 
+    public SalesChannelRequest rollUpToChannel(){
+       SalesChannelRequest channel = Q.salesChannels().unlimited();
+       this.withChannelMatching(channel)
+           .groupByChannelWith(channel);
+       return channel;
+    }
+
 
 
 
@@ -1177,6 +1275,14 @@ public class MarketingRoiRequest<T extends MarketingRoi> extends BaseRequest<T> 
 
    public MarketingRoiRequest<T> facetByCampaignAs(String facetName, PromotionCampaignRequest campaign, boolean includeAllFacets){
        addFacet(facetName, MarketingRoi.CAMPAIGN_PROPERTY, campaign, includeAllFacets);
+       return this;
+   }
+   public MarketingRoiRequest<T> facetByChannelAs(String facetName, SalesChannelRequest channel){
+       return facetByChannelAs(facetName, channel, true);
+   }
+
+   public MarketingRoiRequest<T> facetByChannelAs(String facetName, SalesChannelRequest channel, boolean includeAllFacets){
+       addFacet(facetName, MarketingRoi.CHANNEL_PROPERTY, channel, includeAllFacets);
        return this;
    }
 

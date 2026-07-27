@@ -7,7 +7,6 @@ import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -22,32 +21,30 @@ public class TaxRecord extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "TaxRecord";
 
     public static final String NAME_PROPERTY = "name";
-    public static final String CODE_PROPERTY = "code";
-    public static final String AMOUNT_PROPERTY = "amount";
+    public static final String TAX_CODE_PROPERTY = "taxCode";
+    public static final String TAX_AMOUNT_PROPERTY = "taxAmount";
     public static final String CURRENCY_PROPERTY = "currency";
     public static final String TAX_RATE_PROPERTY = "taxRate";
-    public static final String TAX_TYPE_PROPERTY = "taxType";
-    public static final String CREATED_AT_PROPERTY = "createdAt";
-    public static final String UPDATED_AT_PROPERTY = "updatedAt";
+    public static final String TAX_PERIOD_PROPERTY = "taxPeriod";
+    public static final String FILING_STATUS_PROPERTY = "filingStatus";
     public static final String INVOICE_PROPERTY = "invoice";
     private String name;
-    private String code;
-    private BigDecimal amount;
+    private String taxCode;
+    private BigDecimal taxAmount;
     private String currency;
     private BigDecimal taxRate;
-    private String taxType;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String taxPeriod;
+    private String filingStatus;
     private Invoice invoice;
 
     public String getName(){
         return this.name;
     }
-    public String getCode(){
-        return this.code;
+    public String getTaxCode(){
+        return this.taxCode;
     }
-    public BigDecimal getAmount(){
-        return this.amount;
+    public BigDecimal getTaxAmount(){
+        return this.taxAmount;
     }
     public String getCurrency(){
         return this.currency;
@@ -55,14 +52,11 @@ public class TaxRecord extends BaseEntity implements RemoteInput {
     public BigDecimal getTaxRate(){
         return this.taxRate;
     }
-    public String getTaxType(){
-        return this.taxType;
+    public String getTaxPeriod(){
+        return this.taxPeriod;
     }
-    public LocalDateTime getCreatedAt(){
-        return this.createdAt;
-    }
-    public LocalDateTime getUpdatedAt(){
-        return this.updatedAt;
+    public String getFilingStatus(){
+        return this.filingStatus;
     }
     public Invoice getInvoice(){
         return this.invoice;
@@ -76,21 +70,21 @@ public class TaxRecord extends BaseEntity implements RemoteInput {
         this.name = name;
         return this;
     }
-    public TaxRecord updateCode(String code){
-        code = (code == null ? null : code.trim());
-        if(Objects.equals(this.code, code)){
+    public TaxRecord updateTaxCode(String taxCode){
+        taxCode = (taxCode == null ? null : taxCode.trim());
+        if(Objects.equals(this.taxCode, taxCode)){
             return this;
         }
-        handleUpdate(CODE_PROPERTY, getCode(), code);
-        this.code = code;
+        handleUpdate(TAX_CODE_PROPERTY, getTaxCode(), taxCode);
+        this.taxCode = taxCode;
         return this;
     }
-    public TaxRecord updateAmount(BigDecimal amount){
-        if(Objects.equals(this.amount, amount)){
+    public TaxRecord updateTaxAmount(BigDecimal taxAmount){
+        if(Objects.equals(this.taxAmount, taxAmount)){
             return this;
         }
-        handleUpdate(AMOUNT_PROPERTY, getAmount(), amount);
-        this.amount = amount;
+        handleUpdate(TAX_AMOUNT_PROPERTY, getTaxAmount(), taxAmount);
+        this.taxAmount = taxAmount;
         return this;
     }
     public TaxRecord updateCurrency(String currency){
@@ -110,29 +104,22 @@ public class TaxRecord extends BaseEntity implements RemoteInput {
         this.taxRate = taxRate;
         return this;
     }
-    public TaxRecord updateTaxType(String taxType){
-        taxType = (taxType == null ? null : taxType.trim());
-        if(Objects.equals(this.taxType, taxType)){
+    public TaxRecord updateTaxPeriod(String taxPeriod){
+        taxPeriod = (taxPeriod == null ? null : taxPeriod.trim());
+        if(Objects.equals(this.taxPeriod, taxPeriod)){
             return this;
         }
-        handleUpdate(TAX_TYPE_PROPERTY, getTaxType(), taxType);
-        this.taxType = taxType;
+        handleUpdate(TAX_PERIOD_PROPERTY, getTaxPeriod(), taxPeriod);
+        this.taxPeriod = taxPeriod;
         return this;
     }
-    public TaxRecord updateCreatedAt(LocalDateTime createdAt){
-        if(Objects.equals(this.createdAt, createdAt)){
+    public TaxRecord updateFilingStatus(String filingStatus){
+        filingStatus = (filingStatus == null ? null : filingStatus.trim());
+        if(Objects.equals(this.filingStatus, filingStatus)){
             return this;
         }
-        handleUpdate(CREATED_AT_PROPERTY, getCreatedAt(), createdAt);
-        this.createdAt = createdAt;
-        return this;
-    }
-    public TaxRecord updateUpdatedAt(LocalDateTime updatedAt){
-        if(Objects.equals(this.updatedAt, updatedAt)){
-            return this;
-        }
-        handleUpdate(UPDATED_AT_PROPERTY, getUpdatedAt(), updatedAt);
-        this.updatedAt = updatedAt;
+        handleUpdate(FILING_STATUS_PROPERTY, getFilingStatus(), filingStatus);
+        this.filingStatus = filingStatus;
         return this;
     }
     public TaxRecord updateInvoice(Invoice invoice){
@@ -173,19 +160,17 @@ public class TaxRecord extends BaseEntity implements RemoteInput {
         switch (property) {
             case "name": this.name = (value == null ? null : ((String)value).trim()); break;
 
-            case "code": this.code = (value == null ? null : ((String)value).trim()); break;
+            case "taxCode": this.taxCode = (value == null ? null : ((String)value).trim()); break;
 
-            case "amount": this.amount = (BigDecimal) value; break;
+            case "taxAmount": this.taxAmount = (BigDecimal) value; break;
 
             case "currency": this.currency = (value == null ? null : ((String)value).trim()); break;
 
             case "taxRate": this.taxRate = (BigDecimal) value; break;
 
-            case "taxType": this.taxType = (value == null ? null : ((String)value).trim()); break;
+            case "taxPeriod": this.taxPeriod = (value == null ? null : ((String)value).trim()); break;
 
-            case "createdAt": this.createdAt = (LocalDateTime) value; break;
-
-            case "updatedAt": this.updatedAt = (LocalDateTime) value; break;
+            case "filingStatus": this.filingStatus = (value == null ? null : ((String)value).trim()); break;
 
             case "invoice": this.invoice = (Invoice) value; break;
 
@@ -198,13 +183,12 @@ public class TaxRecord extends BaseEntity implements RemoteInput {
     public Object __internalGet(String property) {
         switch (property) {
             case "name": return this.name;
-            case "code": return this.code;
-            case "amount": return this.amount;
+            case "taxCode": return this.taxCode;
+            case "taxAmount": return this.taxAmount;
             case "currency": return this.currency;
             case "taxRate": return this.taxRate;
-            case "taxType": return this.taxType;
-            case "createdAt": return this.createdAt;
-            case "updatedAt": return this.updatedAt;
+            case "taxPeriod": return this.taxPeriod;
+            case "filingStatus": return this.filingStatus;
             case "invoice": return this.invoice;
             default: return super.__internalGet(property);
         }

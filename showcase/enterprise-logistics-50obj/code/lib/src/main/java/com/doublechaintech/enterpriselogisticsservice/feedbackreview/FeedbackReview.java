@@ -1,13 +1,12 @@
 package com.doublechaintech.enterpriselogisticsservice.feedbackreview;
 
-import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -22,30 +21,35 @@ public class FeedbackReview extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "FeedbackReview";
 
     public static final String RATING_PROPERTY = "rating";
+    public static final String TITLE_PROPERTY = "title";
     public static final String COMMENT_PROPERTY = "comment";
-    public static final String REVIEW_DATE_PROPERTY = "reviewDate";
-    public static final String PRIVATE_CUSTOMER_PROPERTY = "privateCustomer";
-    public static final String CORPORATE_CUSTOMER_PROPERTY = "corporateCustomer";
+    public static final String MOVING_ORDER_PROPERTY = "movingOrder";
+    public static final String CREATED_AT_PROPERTY = "createdAt";
+    public static final String UPDATED_AT_PROPERTY = "updatedAt";
     private Integer rating;
+    private String title;
     private String comment;
-    private LocalDate reviewDate;
-    private PrivateCustomer privateCustomer;
-    private CorporateCustomer corporateCustomer;
+    private MovingOrder movingOrder;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public Integer getRating(){
         return this.rating;
     }
+    public String getTitle(){
+        return this.title;
+    }
     public String getComment(){
         return this.comment;
     }
-    public LocalDate getReviewDate(){
-        return this.reviewDate;
+    public MovingOrder getMovingOrder(){
+        return this.movingOrder;
     }
-    public PrivateCustomer getPrivateCustomer(){
-        return this.privateCustomer;
+    public LocalDateTime getCreatedAt(){
+        return this.createdAt;
     }
-    public CorporateCustomer getCorporateCustomer(){
-        return this.corporateCustomer;
+    public LocalDateTime getUpdatedAt(){
+        return this.updatedAt;
     }
     public FeedbackReview updateRating(Integer rating){
         if(Objects.equals(this.rating, rating)){
@@ -53,6 +57,15 @@ public class FeedbackReview extends BaseEntity implements RemoteInput {
         }
         handleUpdate(RATING_PROPERTY, getRating(), rating);
         this.rating = rating;
+        return this;
+    }
+    public FeedbackReview updateTitle(String title){
+        title = (title == null ? null : title.trim());
+        if(Objects.equals(this.title, title)){
+            return this;
+        }
+        handleUpdate(TITLE_PROPERTY, getTitle(), title);
+        this.title = title;
         return this;
     }
     public FeedbackReview updateComment(String comment){
@@ -64,28 +77,28 @@ public class FeedbackReview extends BaseEntity implements RemoteInput {
         this.comment = comment;
         return this;
     }
-    public FeedbackReview updateReviewDate(LocalDate reviewDate){
-        if(Objects.equals(this.reviewDate, reviewDate)){
+    public FeedbackReview updateMovingOrder(MovingOrder movingOrder){
+        if(Objects.equals(this.movingOrder, movingOrder)){
             return this;
         }
-        handleUpdate(REVIEW_DATE_PROPERTY, getReviewDate(), reviewDate);
-        this.reviewDate = reviewDate;
+        handleUpdate(MOVING_ORDER_PROPERTY, getMovingOrder(), movingOrder);
+        this.movingOrder = movingOrder;
         return this;
     }
-    public FeedbackReview updatePrivateCustomer(PrivateCustomer privateCustomer){
-        if(Objects.equals(this.privateCustomer, privateCustomer)){
+    public FeedbackReview updateCreatedAt(LocalDateTime createdAt){
+        if(Objects.equals(this.createdAt, createdAt)){
             return this;
         }
-        handleUpdate(PRIVATE_CUSTOMER_PROPERTY, getPrivateCustomer(), privateCustomer);
-        this.privateCustomer = privateCustomer;
+        handleUpdate(CREATED_AT_PROPERTY, getCreatedAt(), createdAt);
+        this.createdAt = createdAt;
         return this;
     }
-    public FeedbackReview updateCorporateCustomer(CorporateCustomer corporateCustomer){
-        if(Objects.equals(this.corporateCustomer, corporateCustomer)){
+    public FeedbackReview updateUpdatedAt(LocalDateTime updatedAt){
+        if(Objects.equals(this.updatedAt, updatedAt)){
             return this;
         }
-        handleUpdate(CORPORATE_CUSTOMER_PROPERTY, getCorporateCustomer(), corporateCustomer);
-        this.corporateCustomer = corporateCustomer;
+        handleUpdate(UPDATED_AT_PROPERTY, getUpdatedAt(), updatedAt);
+        this.updatedAt = updatedAt;
         return this;
     }
 
@@ -118,13 +131,15 @@ public class FeedbackReview extends BaseEntity implements RemoteInput {
         switch (property) {
             case "rating": this.rating = (Integer) value; break;
 
+            case "title": this.title = (value == null ? null : ((String)value).trim()); break;
+
             case "comment": this.comment = (value == null ? null : ((String)value).trim()); break;
 
-            case "reviewDate": this.reviewDate = (LocalDate) value; break;
+            case "movingOrder": this.movingOrder = (MovingOrder) value; break;
 
-            case "privateCustomer": this.privateCustomer = (PrivateCustomer) value; break;
+            case "createdAt": this.createdAt = (LocalDateTime) value; break;
 
-            case "corporateCustomer": this.corporateCustomer = (CorporateCustomer) value; break;
+            case "updatedAt": this.updatedAt = (LocalDateTime) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -135,10 +150,11 @@ public class FeedbackReview extends BaseEntity implements RemoteInput {
     public Object __internalGet(String property) {
         switch (property) {
             case "rating": return this.rating;
+            case "title": return this.title;
             case "comment": return this.comment;
-            case "reviewDate": return this.reviewDate;
-            case "privateCustomer": return this.privateCustomer;
-            case "corporateCustomer": return this.corporateCustomer;
+            case "movingOrder": return this.movingOrder;
+            case "createdAt": return this.createdAt;
+            case "updatedAt": return this.updatedAt;
             default: return super.__internalGet(property);
         }
     }

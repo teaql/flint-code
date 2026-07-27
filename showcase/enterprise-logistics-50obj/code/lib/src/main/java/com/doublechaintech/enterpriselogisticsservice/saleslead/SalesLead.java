@@ -1,11 +1,11 @@
 package com.doublechaintech.enterpriselogisticsservice.saleslead;
 
+import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -21,29 +21,34 @@ public class SalesLead extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "SalesLead";
 
     public static final String NAME_PROPERTY = "name";
+    public static final String COMPANY_PROPERTY = "company";
     public static final String EMAIL_PROPERTY = "email";
     public static final String PHONE_PROPERTY = "phone";
     public static final String SOURCE_PROPERTY = "source";
     public static final String STATUS_PROPERTY = "status";
-    public static final String ESTIMATED_VALUE_PROPERTY = "estimatedValue";
+    public static final String ASSIGNED_TO_PROPERTY = "assignedTo";
     public static final String CREATED_TIME_PROPERTY = "createdTime";
-    public static final String UPDATE_TIME_PROPERTY = "updateTime";
+    public static final String UPDATED_TIME_PROPERTY = "updatedTime";
     private String name;
+    private String company;
     private String email;
-    private Integer phone;
+    private String phone;
     private String source;
     private String status;
-    private BigDecimal estimatedValue;
+    private StaffMember assignedTo;
     private LocalDateTime createdTime;
-    private LocalDateTime updateTime;
+    private LocalDateTime updatedTime;
 
     public String getName(){
         return this.name;
     }
+    public String getCompany(){
+        return this.company;
+    }
     public String getEmail(){
         return this.email;
     }
-    public Integer getPhone(){
+    public String getPhone(){
         return this.phone;
     }
     public String getSource(){
@@ -52,14 +57,14 @@ public class SalesLead extends BaseEntity implements RemoteInput {
     public String getStatus(){
         return this.status;
     }
-    public BigDecimal getEstimatedValue(){
-        return this.estimatedValue;
+    public StaffMember getAssignedTo(){
+        return this.assignedTo;
     }
     public LocalDateTime getCreatedTime(){
         return this.createdTime;
     }
-    public LocalDateTime getUpdateTime(){
-        return this.updateTime;
+    public LocalDateTime getUpdatedTime(){
+        return this.updatedTime;
     }
     public SalesLead updateName(String name){
         name = (name == null ? null : name.trim());
@@ -68,6 +73,15 @@ public class SalesLead extends BaseEntity implements RemoteInput {
         }
         handleUpdate(NAME_PROPERTY, getName(), name);
         this.name = name;
+        return this;
+    }
+    public SalesLead updateCompany(String company){
+        company = (company == null ? null : company.trim());
+        if(Objects.equals(this.company, company)){
+            return this;
+        }
+        handleUpdate(COMPANY_PROPERTY, getCompany(), company);
+        this.company = company;
         return this;
     }
     public SalesLead updateEmail(String email){
@@ -79,7 +93,8 @@ public class SalesLead extends BaseEntity implements RemoteInput {
         this.email = email;
         return this;
     }
-    public SalesLead updatePhone(Integer phone){
+    public SalesLead updatePhone(String phone){
+        phone = (phone == null ? null : phone.trim());
         if(Objects.equals(this.phone, phone)){
             return this;
         }
@@ -105,12 +120,12 @@ public class SalesLead extends BaseEntity implements RemoteInput {
         this.status = status;
         return this;
     }
-    public SalesLead updateEstimatedValue(BigDecimal estimatedValue){
-        if(Objects.equals(this.estimatedValue, estimatedValue)){
+    public SalesLead updateAssignedTo(StaffMember assignedTo){
+        if(Objects.equals(this.assignedTo, assignedTo)){
             return this;
         }
-        handleUpdate(ESTIMATED_VALUE_PROPERTY, getEstimatedValue(), estimatedValue);
-        this.estimatedValue = estimatedValue;
+        handleUpdate(ASSIGNED_TO_PROPERTY, getAssignedTo(), assignedTo);
+        this.assignedTo = assignedTo;
         return this;
     }
     public SalesLead updateCreatedTime(LocalDateTime createdTime){
@@ -121,12 +136,12 @@ public class SalesLead extends BaseEntity implements RemoteInput {
         this.createdTime = createdTime;
         return this;
     }
-    public SalesLead updateUpdateTime(LocalDateTime updateTime){
-        if(Objects.equals(this.updateTime, updateTime)){
+    public SalesLead updateUpdatedTime(LocalDateTime updatedTime){
+        if(Objects.equals(this.updatedTime, updatedTime)){
             return this;
         }
-        handleUpdate(UPDATE_TIME_PROPERTY, getUpdateTime(), updateTime);
-        this.updateTime = updateTime;
+        handleUpdate(UPDATED_TIME_PROPERTY, getUpdatedTime(), updatedTime);
+        this.updatedTime = updatedTime;
         return this;
     }
 
@@ -159,19 +174,21 @@ public class SalesLead extends BaseEntity implements RemoteInput {
         switch (property) {
             case "name": this.name = (value == null ? null : ((String)value).trim()); break;
 
+            case "company": this.company = (value == null ? null : ((String)value).trim()); break;
+
             case "email": this.email = (value == null ? null : ((String)value).trim()); break;
 
-            case "phone": this.phone = (Integer) value; break;
+            case "phone": this.phone = (value == null ? null : ((String)value).trim()); break;
 
             case "source": this.source = (value == null ? null : ((String)value).trim()); break;
 
             case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
-            case "estimatedValue": this.estimatedValue = (BigDecimal) value; break;
+            case "assignedTo": this.assignedTo = (StaffMember) value; break;
 
             case "createdTime": this.createdTime = (LocalDateTime) value; break;
 
-            case "updateTime": this.updateTime = (LocalDateTime) value; break;
+            case "updatedTime": this.updatedTime = (LocalDateTime) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -182,13 +199,14 @@ public class SalesLead extends BaseEntity implements RemoteInput {
     public Object __internalGet(String property) {
         switch (property) {
             case "name": return this.name;
+            case "company": return this.company;
             case "email": return this.email;
             case "phone": return this.phone;
             case "source": return this.source;
             case "status": return this.status;
-            case "estimatedValue": return this.estimatedValue;
+            case "assignedTo": return this.assignedTo;
             case "createdTime": return this.createdTime;
-            case "updateTime": return this.updateTime;
+            case "updatedTime": return this.updatedTime;
             default: return super.__internalGet(property);
         }
     }

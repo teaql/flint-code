@@ -87,7 +87,7 @@ public class WorkedHoursRequest<T extends WorkedHours> extends BaseRequest<T> {
 
     public WorkedHoursRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectStaffIdOnly().selectShiftIdOnly().selectDate().selectHoursWorked().selectCreatedAt().selectUpdatedAt().selectVersion();
+        return selectId().selectStaffIdOnly().selectShiftIdOnly().selectHoursWorked().selectDate().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public WorkedHoursRequest<T> selectSelfFields(){
@@ -96,12 +96,12 @@ public class WorkedHoursRequest<T extends WorkedHours> extends BaseRequest<T> {
 
     public WorkedHoursRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectStaff().selectShift().selectDate().selectHoursWorked().selectCreatedAt().selectUpdatedAt().selectVersion();
+        return selectId().selectStaff().selectShift().selectHoursWorked().selectDate().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public WorkedHoursRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectStaff().selectShift().selectDate().selectHoursWorked().selectCreatedAt().selectUpdatedAt().selectVersion();
+        return selectId().selectStaff().selectShift().selectHoursWorked().selectDate().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
 
@@ -160,23 +160,6 @@ public class WorkedHoursRequest<T extends WorkedHours> extends BaseRequest<T> {
        unselectProperty(WorkedHours.SHIFT_PROPERTY);
        return this;
     }
-    public WorkedHoursRequest<T> selectDate(){
-       selectProperty(WorkedHours.DATE_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the date with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  date) to fetch date property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public WorkedHoursRequest<T> unselectDate(){
-       unselectProperty(WorkedHours.DATE_PROPERTY);
-       return this;
-    }
     public WorkedHoursRequest<T> selectHoursWorked(){
        selectProperty(WorkedHours.HOURS_WORKED_PROPERTY);
        return this;
@@ -192,6 +175,23 @@ public class WorkedHoursRequest<T extends WorkedHours> extends BaseRequest<T> {
 
     public WorkedHoursRequest<T> unselectHoursWorked(){
        unselectProperty(WorkedHours.HOURS_WORKED_PROPERTY);
+       return this;
+    }
+    public WorkedHoursRequest<T> selectDate(){
+       selectProperty(WorkedHours.DATE_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the date with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  date) to fetch date property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public WorkedHoursRequest<T> unselectDate(){
+       unselectProperty(WorkedHours.DATE_PROPERTY);
        return this;
     }
     public WorkedHoursRequest<T> selectCreatedAt(){
@@ -329,6 +329,69 @@ public class WorkedHoursRequest<T extends WorkedHours> extends BaseRequest<T> {
        return appendSearchCriteria(new SubQuerySearchCriteria(WorkedHours.SHIFT_PROPERTY, shift, WorkShift.ID_PROPERTY));
     }
 
+    public WorkedHoursRequest<T> filterByHoursWorked(String... hoursWorked){
+      if (hoursWorked == null || hoursWorked.length == 0) {
+        throw new IllegalArgumentException("filterByHoursWorked parameter hoursWorked cannot be empty");
+      }
+      return appendSearchCriteria(createHoursWorkedCriteria(Operator.EQUAL, (Object[])hoursWorked));
+    }
+
+    public WorkedHoursRequest<T> withHoursWorked(Operator operator, Object... values){
+       return appendSearchCriteria(createHoursWorkedCriteria(operator, values));
+    }
+
+    public WorkedHoursRequest<T> withHoursWorkedIsUnknown(){
+       return withHoursWorked(Operator.IS_NULL);
+    }
+
+    public WorkedHoursRequest<T> withHoursWorkedIsKnown(){
+       return withHoursWorked(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createHoursWorkedCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(WorkedHours.HOURS_WORKED_PROPERTY, operator, values);
+    }
+
+    public WorkedHoursRequest<T> withHoursWorkedGreaterThan(String hoursWorked){
+       return withHoursWorked(Operator.GREATER_THAN, hoursWorked);
+    }
+
+    public WorkedHoursRequest<T> withHoursWorkedGreaterThanOrEqualTo(String hoursWorked){
+       return withHoursWorked(Operator.GREATER_THAN_OR_EQUAL, hoursWorked);
+    }
+
+    public WorkedHoursRequest<T> withHoursWorkedLessThan(String hoursWorked){
+       return withHoursWorked(Operator.LESS_THAN, hoursWorked);
+    }
+
+    public WorkedHoursRequest<T> withHoursWorkedLessThanOrEqualTo(String hoursWorked){
+       return withHoursWorked(Operator.LESS_THAN_OR_EQUAL, hoursWorked);
+    }
+
+    public WorkedHoursRequest<T> withHoursWorkedBetween(String startOfHoursWorked, String endOfHoursWorked){
+       return withHoursWorked(Operator.BETWEEN, startOfHoursWorked, endOfHoursWorked);
+    }
+    public WorkedHoursRequest<T> withHoursWorkedStartingWith(String hoursWorked){
+       return withHoursWorked(Operator.BEGIN_WITH, hoursWorked);
+    }
+    public WorkedHoursRequest<T> withHoursWorkedContaining(String hoursWorked){
+       return withHoursWorked(Operator.CONTAIN, hoursWorked);
+    }
+
+    public WorkedHoursRequest<T> withHoursWorkedEndingWith(String hoursWorked){
+       return withHoursWorked(Operator.END_WITH, hoursWorked);
+    }
+
+    public WorkedHoursRequest<T> withHoursWorkedIs(String hoursWorked){
+       return withHoursWorked(Operator.EQUAL, hoursWorked);
+    }
+
+    public WorkedHoursRequest<T> withHoursWorkedSoundingLike(String hoursWorked){
+       return withHoursWorked(Operator.SOUNDS_LIKE, hoursWorked);
+    }
+
+
+
     public WorkedHoursRequest<T> filterByDate(LocalDate... date){
       if (date == null || date.length == 0) {
         throw new IllegalArgumentException("filterByDate parameter date cannot be empty");
@@ -391,69 +454,6 @@ public class WorkedHoursRequest<T extends WorkedHours> extends BaseRequest<T> {
        return withDate(Operator.BETWEEN, startOfDate, endOfDate);
     }
 
-
-
-
-    public WorkedHoursRequest<T> filterByHoursWorked(String... hoursWorked){
-      if (hoursWorked == null || hoursWorked.length == 0) {
-        throw new IllegalArgumentException("filterByHoursWorked parameter hoursWorked cannot be empty");
-      }
-      return appendSearchCriteria(createHoursWorkedCriteria(Operator.EQUAL, (Object[])hoursWorked));
-    }
-
-    public WorkedHoursRequest<T> withHoursWorked(Operator operator, Object... values){
-       return appendSearchCriteria(createHoursWorkedCriteria(operator, values));
-    }
-
-    public WorkedHoursRequest<T> withHoursWorkedIsUnknown(){
-       return withHoursWorked(Operator.IS_NULL);
-    }
-
-    public WorkedHoursRequest<T> withHoursWorkedIsKnown(){
-       return withHoursWorked(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createHoursWorkedCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(WorkedHours.HOURS_WORKED_PROPERTY, operator, values);
-    }
-
-    public WorkedHoursRequest<T> withHoursWorkedGreaterThan(String hoursWorked){
-       return withHoursWorked(Operator.GREATER_THAN, hoursWorked);
-    }
-
-    public WorkedHoursRequest<T> withHoursWorkedGreaterThanOrEqualTo(String hoursWorked){
-       return withHoursWorked(Operator.GREATER_THAN_OR_EQUAL, hoursWorked);
-    }
-
-    public WorkedHoursRequest<T> withHoursWorkedLessThan(String hoursWorked){
-       return withHoursWorked(Operator.LESS_THAN, hoursWorked);
-    }
-
-    public WorkedHoursRequest<T> withHoursWorkedLessThanOrEqualTo(String hoursWorked){
-       return withHoursWorked(Operator.LESS_THAN_OR_EQUAL, hoursWorked);
-    }
-
-    public WorkedHoursRequest<T> withHoursWorkedBetween(String startOfHoursWorked, String endOfHoursWorked){
-       return withHoursWorked(Operator.BETWEEN, startOfHoursWorked, endOfHoursWorked);
-    }
-    public WorkedHoursRequest<T> withHoursWorkedStartingWith(String hoursWorked){
-       return withHoursWorked(Operator.BEGIN_WITH, hoursWorked);
-    }
-    public WorkedHoursRequest<T> withHoursWorkedContaining(String hoursWorked){
-       return withHoursWorked(Operator.CONTAIN, hoursWorked);
-    }
-
-    public WorkedHoursRequest<T> withHoursWorkedEndingWith(String hoursWorked){
-       return withHoursWorked(Operator.END_WITH, hoursWorked);
-    }
-
-    public WorkedHoursRequest<T> withHoursWorkedIs(String hoursWorked){
-       return withHoursWorked(Operator.EQUAL, hoursWorked);
-    }
-
-    public WorkedHoursRequest<T> withHoursWorkedSoundingLike(String hoursWorked){
-       return withHoursWorked(Operator.SOUNDS_LIKE, hoursWorked);
-    }
 
 
 
@@ -714,21 +714,6 @@ public class WorkedHoursRequest<T extends WorkedHours> extends BaseRequest<T> {
        return this;
     }
 
-    public WorkedHoursRequest<T> groupByDate(){
-       groupBy(WorkedHours.DATE_PROPERTY);
-       return this;
-    }
-
-    public WorkedHoursRequest<T> groupByDateAs(String retName){
-       groupBy(retName, WorkedHours.DATE_PROPERTY);
-       return this;
-    }
-
-    public WorkedHoursRequest<T> groupByDateWithFunction(String retName, AggrFunction function){
-       groupBy(retName, WorkedHours.DATE_PROPERTY, function);
-       return this;
-    }
-
     public WorkedHoursRequest<T> groupByHoursWorked(){
        groupBy(WorkedHours.HOURS_WORKED_PROPERTY);
        return this;
@@ -741,6 +726,21 @@ public class WorkedHoursRequest<T extends WorkedHours> extends BaseRequest<T> {
 
     public WorkedHoursRequest<T> groupByHoursWorkedWithFunction(String retName, AggrFunction function){
        groupBy(retName, WorkedHours.HOURS_WORKED_PROPERTY, function);
+       return this;
+    }
+
+    public WorkedHoursRequest<T> groupByDate(){
+       groupBy(WorkedHours.DATE_PROPERTY);
+       return this;
+    }
+
+    public WorkedHoursRequest<T> groupByDateAs(String retName){
+       groupBy(retName, WorkedHours.DATE_PROPERTY);
+       return this;
+    }
+
+    public WorkedHoursRequest<T> groupByDateWithFunction(String retName, AggrFunction function){
+       groupBy(retName, WorkedHours.DATE_PROPERTY, function);
        return this;
     }
 
@@ -821,16 +821,6 @@ public class WorkedHoursRequest<T extends WorkedHours> extends BaseRequest<T> {
        return this;
     }
 
-    public WorkedHoursRequest<T> orderByDateAscending(){
-       addOrderByAscending(WorkedHours.DATE_PROPERTY);
-       return this;
-    }
-
-    public WorkedHoursRequest<T> orderByDateDescending(){
-       addOrderByDescending(WorkedHours.DATE_PROPERTY);
-       return this;
-    }
-
     public WorkedHoursRequest<T> orderByHoursWorkedAscending(){
        addOrderByAscending(WorkedHours.HOURS_WORKED_PROPERTY);
        return this;
@@ -849,6 +839,16 @@ public class WorkedHoursRequest<T extends WorkedHours> extends BaseRequest<T> {
        addOrderByDescendingUsingGBK(WorkedHours.HOURS_WORKED_PROPERTY);
        return this;
     }
+    public WorkedHoursRequest<T> orderByDateAscending(){
+       addOrderByAscending(WorkedHours.DATE_PROPERTY);
+       return this;
+    }
+
+    public WorkedHoursRequest<T> orderByDateDescending(){
+       addOrderByDescending(WorkedHours.DATE_PROPERTY);
+       return this;
+    }
+
     public WorkedHoursRequest<T> orderByCreatedAtAscending(){
        addOrderByAscending(WorkedHours.CREATED_AT_PROPERTY);
        return this;

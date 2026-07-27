@@ -6,7 +6,6 @@ import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -23,13 +22,11 @@ public class Pallet extends BaseEntity implements RemoteInput {
 
     public static final String WAREHOUSE_PROPERTY = "warehouse";
     public static final String PALLET_ID_PROPERTY = "palletId";
-    public static final String LOAD_WEIGHT_PROPERTY = "loadWeight";
     public static final String STATUS_PROPERTY = "status";
     public static final String CREATE_TIME_PROPERTY = "createTime";
     public static final String UPDATE_TIME_PROPERTY = "updateTime";
     private Warehouse warehouse;
     private String palletId;
-    private BigDecimal loadWeight;
     private String status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
@@ -39,9 +36,6 @@ public class Pallet extends BaseEntity implements RemoteInput {
     }
     public String getPalletId(){
         return this.palletId;
-    }
-    public BigDecimal getLoadWeight(){
-        return this.loadWeight;
     }
     public String getStatus(){
         return this.status;
@@ -67,14 +61,6 @@ public class Pallet extends BaseEntity implements RemoteInput {
         }
         handleUpdate(PALLET_ID_PROPERTY, getPalletId(), palletId);
         this.palletId = palletId;
-        return this;
-    }
-    public Pallet updateLoadWeight(BigDecimal loadWeight){
-        if(Objects.equals(this.loadWeight, loadWeight)){
-            return this;
-        }
-        handleUpdate(LOAD_WEIGHT_PROPERTY, getLoadWeight(), loadWeight);
-        this.loadWeight = loadWeight;
         return this;
     }
     public Pallet updateStatus(String status){
@@ -134,8 +120,6 @@ public class Pallet extends BaseEntity implements RemoteInput {
 
             case "palletId": this.palletId = (value == null ? null : ((String)value).trim()); break;
 
-            case "loadWeight": this.loadWeight = (BigDecimal) value; break;
-
             case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
             case "createTime": this.createTime = (LocalDateTime) value; break;
@@ -152,7 +136,6 @@ public class Pallet extends BaseEntity implements RemoteInput {
         switch (property) {
             case "warehouse": return this.warehouse;
             case "palletId": return this.palletId;
-            case "loadWeight": return this.loadWeight;
             case "status": return this.status;
             case "createTime": return this.createTime;
             case "updateTime": return this.updateTime;

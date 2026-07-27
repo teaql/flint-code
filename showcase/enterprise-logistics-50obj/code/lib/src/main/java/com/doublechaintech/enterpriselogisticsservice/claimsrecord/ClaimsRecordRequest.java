@@ -1,9 +1,15 @@
 package com.doublechaintech.enterpriselogisticsservice.claimsrecord;
 
+import com.doublechaintech.enterpriselogisticsservice.Q;
+import com.doublechaintech.enterpriselogisticsservice.insurancepolicy.InsurancePolicy;
+import com.doublechaintech.enterpriselogisticsservice.insurancepolicy.InsurancePolicyRequest;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
 import io.teaql.core.SearchCriteria;
+import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.math.BigDecimal;
@@ -82,7 +88,7 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
 
     public ClaimsRecordRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectClaimNumber().selectClaimAmount().selectStatus().selectDescription().selectResolutionDate().selectCreatedTime().selectUpdatedTime().selectVersion();
+        return selectId().selectClaimNumber().selectDescription().selectClaimAmount().selectStatus().selectResolutionDate().selectMovingOrderIdOnly().selectInsurancePolicyIdOnly().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
     public ClaimsRecordRequest<T> selectSelfFields(){
@@ -91,12 +97,12 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
 
     public ClaimsRecordRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectClaimNumber().selectClaimAmount().selectStatus().selectDescription().selectResolutionDate().selectCreatedTime().selectUpdatedTime().selectVersion();
+        return selectId().selectClaimNumber().selectDescription().selectClaimAmount().selectStatus().selectResolutionDate().selectMovingOrder().selectInsurancePolicy().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
     public ClaimsRecordRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectClaimNumber().selectClaimAmount().selectStatus().selectDescription().selectResolutionDate().selectCreatedTime().selectUpdatedTime().selectVersion();
+        return selectId().selectClaimNumber().selectDescription().selectClaimAmount().selectStatus().selectResolutionDate().selectMovingOrder().selectInsurancePolicy().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
 
@@ -132,6 +138,23 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
 
     public ClaimsRecordRequest<T> unselectClaimNumber(){
        unselectProperty(ClaimsRecord.CLAIM_NUMBER_PROPERTY);
+       return this;
+    }
+    public ClaimsRecordRequest<T> selectDescription(){
+       selectProperty(ClaimsRecord.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the description with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  description) to fetch description property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public ClaimsRecordRequest<T> unselectDescription(){
+       unselectProperty(ClaimsRecord.DESCRIPTION_PROPERTY);
        return this;
     }
     public ClaimsRecordRequest<T> selectClaimAmount(){
@@ -176,23 +199,6 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
        unselectProperty(ClaimsRecord.STATUS_PROPERTY);
        return this;
     }
-    public ClaimsRecordRequest<T> selectDescription(){
-       selectProperty(ClaimsRecord.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the description with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  description) to fetch description property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public ClaimsRecordRequest<T> unselectDescription(){
-       unselectProperty(ClaimsRecord.DESCRIPTION_PROPERTY);
-       return this;
-    }
     public ClaimsRecordRequest<T> selectResolutionDate(){
        selectProperty(ClaimsRecord.RESOLUTION_DATE_PROPERTY);
        return this;
@@ -208,6 +214,44 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
 
     public ClaimsRecordRequest<T> unselectResolutionDate(){
        unselectProperty(ClaimsRecord.RESOLUTION_DATE_PROPERTY);
+       return this;
+    }
+    public ClaimsRecordRequest<T> selectMovingOrderIdOnly(){
+       selectProperty(ClaimsRecord.MOVING_ORDER_PROPERTY);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> selectMovingOrder(){
+        return selectMovingOrderWith(Q.movingOrders().unlimited().selectSelf());
+    }
+
+    public ClaimsRecordRequest<T> selectMovingOrderWith(MovingOrderRequest movingOrder){
+       selectProperty(ClaimsRecord.MOVING_ORDER_PROPERTY);
+       enhanceRelation(ClaimsRecord.MOVING_ORDER_PROPERTY, movingOrder);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> unselectMovingOrder(){
+       unselectProperty(ClaimsRecord.MOVING_ORDER_PROPERTY);
+       return this;
+    }
+    public ClaimsRecordRequest<T> selectInsurancePolicyIdOnly(){
+       selectProperty(ClaimsRecord.INSURANCE_POLICY_PROPERTY);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> selectInsurancePolicy(){
+        return selectInsurancePolicyWith(Q.insurancePolicies().unlimited().selectSelf());
+    }
+
+    public ClaimsRecordRequest<T> selectInsurancePolicyWith(InsurancePolicyRequest insurancePolicy){
+       selectProperty(ClaimsRecord.INSURANCE_POLICY_PROPERTY);
+       enhanceRelation(ClaimsRecord.INSURANCE_POLICY_PROPERTY, insurancePolicy);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> unselectInsurancePolicy(){
+       unselectProperty(ClaimsRecord.INSURANCE_POLICY_PROPERTY);
        return this;
     }
     public ClaimsRecordRequest<T> selectCreatedTime(){
@@ -227,21 +271,21 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
        unselectProperty(ClaimsRecord.CREATED_TIME_PROPERTY);
        return this;
     }
-    public ClaimsRecordRequest<T> selectUpdatedTime(){
-       selectProperty(ClaimsRecord.UPDATED_TIME_PROPERTY);
+    public ClaimsRecordRequest<T> selectUpdateTime(){
+       selectProperty(ClaimsRecord.UPDATE_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
+     * fill the updateTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updateTime) to fetch updateTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public ClaimsRecordRequest<T> unselectUpdatedTime(){
-       unselectProperty(ClaimsRecord.UPDATED_TIME_PROPERTY);
+    public ClaimsRecordRequest<T> unselectUpdateTime(){
+       unselectProperty(ClaimsRecord.UPDATE_TIME_PROPERTY);
        return this;
     }
     public ClaimsRecordRequest<T> selectVersion(){
@@ -338,6 +382,69 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
 
     public ClaimsRecordRequest<T> withClaimNumberSoundingLike(String claimNumber){
        return withClaimNumber(Operator.SOUNDS_LIKE, claimNumber);
+    }
+
+
+
+    public ClaimsRecordRequest<T> filterByDescription(String... description){
+      if (description == null || description.length == 0) {
+        throw new IllegalArgumentException("filterByDescription parameter description cannot be empty");
+      }
+      return appendSearchCriteria(createDescriptionCriteria(Operator.EQUAL, (Object[])description));
+    }
+
+    public ClaimsRecordRequest<T> withDescription(Operator operator, Object... values){
+       return appendSearchCriteria(createDescriptionCriteria(operator, values));
+    }
+
+    public ClaimsRecordRequest<T> withDescriptionIsUnknown(){
+       return withDescription(Operator.IS_NULL);
+    }
+
+    public ClaimsRecordRequest<T> withDescriptionIsKnown(){
+       return withDescription(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createDescriptionCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ClaimsRecord.DESCRIPTION_PROPERTY, operator, values);
+    }
+
+    public ClaimsRecordRequest<T> withDescriptionGreaterThan(String description){
+       return withDescription(Operator.GREATER_THAN, description);
+    }
+
+    public ClaimsRecordRequest<T> withDescriptionGreaterThanOrEqualTo(String description){
+       return withDescription(Operator.GREATER_THAN_OR_EQUAL, description);
+    }
+
+    public ClaimsRecordRequest<T> withDescriptionLessThan(String description){
+       return withDescription(Operator.LESS_THAN, description);
+    }
+
+    public ClaimsRecordRequest<T> withDescriptionLessThanOrEqualTo(String description){
+       return withDescription(Operator.LESS_THAN_OR_EQUAL, description);
+    }
+
+    public ClaimsRecordRequest<T> withDescriptionBetween(String startOfDescription, String endOfDescription){
+       return withDescription(Operator.BETWEEN, startOfDescription, endOfDescription);
+    }
+    public ClaimsRecordRequest<T> withDescriptionStartingWith(String description){
+       return withDescription(Operator.BEGIN_WITH, description);
+    }
+    public ClaimsRecordRequest<T> withDescriptionContaining(String description){
+       return withDescription(Operator.CONTAIN, description);
+    }
+
+    public ClaimsRecordRequest<T> withDescriptionEndingWith(String description){
+       return withDescription(Operator.END_WITH, description);
+    }
+
+    public ClaimsRecordRequest<T> withDescriptionIs(String description){
+       return withDescription(Operator.EQUAL, description);
+    }
+
+    public ClaimsRecordRequest<T> withDescriptionSoundingLike(String description){
+       return withDescription(Operator.SOUNDS_LIKE, description);
     }
 
 
@@ -450,69 +557,6 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
 
 
 
-    public ClaimsRecordRequest<T> filterByDescription(String... description){
-      if (description == null || description.length == 0) {
-        throw new IllegalArgumentException("filterByDescription parameter description cannot be empty");
-      }
-      return appendSearchCriteria(createDescriptionCriteria(Operator.EQUAL, (Object[])description));
-    }
-
-    public ClaimsRecordRequest<T> withDescription(Operator operator, Object... values){
-       return appendSearchCriteria(createDescriptionCriteria(operator, values));
-    }
-
-    public ClaimsRecordRequest<T> withDescriptionIsUnknown(){
-       return withDescription(Operator.IS_NULL);
-    }
-
-    public ClaimsRecordRequest<T> withDescriptionIsKnown(){
-       return withDescription(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createDescriptionCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(ClaimsRecord.DESCRIPTION_PROPERTY, operator, values);
-    }
-
-    public ClaimsRecordRequest<T> withDescriptionGreaterThan(String description){
-       return withDescription(Operator.GREATER_THAN, description);
-    }
-
-    public ClaimsRecordRequest<T> withDescriptionGreaterThanOrEqualTo(String description){
-       return withDescription(Operator.GREATER_THAN_OR_EQUAL, description);
-    }
-
-    public ClaimsRecordRequest<T> withDescriptionLessThan(String description){
-       return withDescription(Operator.LESS_THAN, description);
-    }
-
-    public ClaimsRecordRequest<T> withDescriptionLessThanOrEqualTo(String description){
-       return withDescription(Operator.LESS_THAN_OR_EQUAL, description);
-    }
-
-    public ClaimsRecordRequest<T> withDescriptionBetween(String startOfDescription, String endOfDescription){
-       return withDescription(Operator.BETWEEN, startOfDescription, endOfDescription);
-    }
-    public ClaimsRecordRequest<T> withDescriptionStartingWith(String description){
-       return withDescription(Operator.BEGIN_WITH, description);
-    }
-    public ClaimsRecordRequest<T> withDescriptionContaining(String description){
-       return withDescription(Operator.CONTAIN, description);
-    }
-
-    public ClaimsRecordRequest<T> withDescriptionEndingWith(String description){
-       return withDescription(Operator.END_WITH, description);
-    }
-
-    public ClaimsRecordRequest<T> withDescriptionIs(String description){
-       return withDescription(Operator.EQUAL, description);
-    }
-
-    public ClaimsRecordRequest<T> withDescriptionSoundingLike(String description){
-       return withDescription(Operator.SOUNDS_LIKE, description);
-    }
-
-
-
     public ClaimsRecordRequest<T> filterByResolutionDate(LocalDate... resolutionDate){
       if (resolutionDate == null || resolutionDate.length == 0) {
         throw new IllegalArgumentException("filterByResolutionDate parameter resolutionDate cannot be empty");
@@ -577,6 +621,72 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
 
 
 
+
+    public ClaimsRecordRequest<T> filterByMovingOrder(MovingOrder... movingOrder){
+      if (movingOrder == null || movingOrder.length == 0) {
+        throw new IllegalArgumentException("filterByMovingOrder parameter movingOrder cannot be empty");
+      }
+      return appendSearchCriteria(createMovingOrderCriteria(Operator.EQUAL, (Object[])movingOrder));
+    }
+
+    public ClaimsRecordRequest<T> withMovingOrder(Operator operator, Object... values){
+       return appendSearchCriteria(createMovingOrderCriteria(operator, values));
+    }
+
+    public ClaimsRecordRequest<T> withMovingOrderIsUnknown(){
+       return withMovingOrder(Operator.IS_NULL);
+    }
+
+    public ClaimsRecordRequest<T> withMovingOrderIsKnown(){
+       return withMovingOrder(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createMovingOrderCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ClaimsRecord.MOVING_ORDER_PROPERTY, operator, values);
+    }
+
+    public ClaimsRecordRequest<T> filterByMovingOrder(Long movingOrder){
+      if(movingOrder == null){
+         return this;
+      }
+      return withMovingOrder(Operator.EQUAL, movingOrder);
+    }
+    public ClaimsRecordRequest<T> withMovingOrderMatching(MovingOrderRequest movingOrder){
+       return appendSearchCriteria(new SubQuerySearchCriteria(ClaimsRecord.MOVING_ORDER_PROPERTY, movingOrder, MovingOrder.ID_PROPERTY));
+    }
+
+    public ClaimsRecordRequest<T> filterByInsurancePolicy(InsurancePolicy... insurancePolicy){
+      if (insurancePolicy == null || insurancePolicy.length == 0) {
+        throw new IllegalArgumentException("filterByInsurancePolicy parameter insurancePolicy cannot be empty");
+      }
+      return appendSearchCriteria(createInsurancePolicyCriteria(Operator.EQUAL, (Object[])insurancePolicy));
+    }
+
+    public ClaimsRecordRequest<T> withInsurancePolicy(Operator operator, Object... values){
+       return appendSearchCriteria(createInsurancePolicyCriteria(operator, values));
+    }
+
+    public ClaimsRecordRequest<T> withInsurancePolicyIsUnknown(){
+       return withInsurancePolicy(Operator.IS_NULL);
+    }
+
+    public ClaimsRecordRequest<T> withInsurancePolicyIsKnown(){
+       return withInsurancePolicy(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createInsurancePolicyCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ClaimsRecord.INSURANCE_POLICY_PROPERTY, operator, values);
+    }
+
+    public ClaimsRecordRequest<T> filterByInsurancePolicy(Long insurancePolicy){
+      if(insurancePolicy == null){
+         return this;
+      }
+      return withInsurancePolicy(Operator.EQUAL, insurancePolicy);
+    }
+    public ClaimsRecordRequest<T> withInsurancePolicyMatching(InsurancePolicyRequest insurancePolicy){
+       return appendSearchCriteria(new SubQuerySearchCriteria(ClaimsRecord.INSURANCE_POLICY_PROPERTY, insurancePolicy, InsurancePolicy.ID_PROPERTY));
+    }
 
     public ClaimsRecordRequest<T> filterByCreatedTime(LocalDateTime... createdTime){
       if (createdTime == null || createdTime.length == 0) {
@@ -643,66 +753,66 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
 
 
 
-    public ClaimsRecordRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
-      if (updatedTime == null || updatedTime.length == 0) {
-        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
+    public ClaimsRecordRequest<T> filterByUpdateTime(LocalDateTime... updateTime){
+      if (updateTime == null || updateTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdateTime parameter updateTime cannot be empty");
       }
-      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
+      return appendSearchCriteria(createUpdateTimeCriteria(Operator.EQUAL, (Object[])updateTime));
     }
 
-    public ClaimsRecordRequest<T> withUpdatedTime(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
+    public ClaimsRecordRequest<T> withUpdateTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdateTimeCriteria(operator, values));
     }
 
-    public ClaimsRecordRequest<T> withUpdatedTimeIsUnknown(){
-       return withUpdatedTime(Operator.IS_NULL);
+    public ClaimsRecordRequest<T> withUpdateTimeIsUnknown(){
+       return withUpdateTime(Operator.IS_NULL);
     }
 
-    public ClaimsRecordRequest<T> withUpdatedTimeIsKnown(){
-       return withUpdatedTime(Operator.IS_NOT_NULL);
+    public ClaimsRecordRequest<T> withUpdateTimeIsKnown(){
+       return withUpdateTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(ClaimsRecord.UPDATED_TIME_PROPERTY, operator, values);
+    public SearchCriteria createUpdateTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ClaimsRecord.UPDATE_TIME_PROPERTY, operator, values);
     }
 
-    public ClaimsRecordRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    public ClaimsRecordRequest<T> withUpdateTimeGreaterThan(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
     }
 
-    public ClaimsRecordRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
+    public ClaimsRecordRequest<T> withUpdateTimeGreaterThanOrEqualTo(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN_OR_EQUAL, updateTime);
     }
 
-    public ClaimsRecordRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    public ClaimsRecordRequest<T> withUpdateTimeLessThan(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
     }
 
-    public ClaimsRecordRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
+    public ClaimsRecordRequest<T> withUpdateTimeLessThanOrEqualTo(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN_OR_EQUAL, updateTime);
     }
 
-    public ClaimsRecordRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
-       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
+    public ClaimsRecordRequest<T> withUpdateTimeBetween(LocalDateTime startOfUpdateTime, LocalDateTime endOfUpdateTime){
+       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
     }
-    public ClaimsRecordRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
-    }
-
-    public ClaimsRecordRequest<T> withUpdatedTimeBefore(Date updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    public ClaimsRecordRequest<T> withUpdateTimeBefore(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
     }
 
-    public ClaimsRecordRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    public ClaimsRecordRequest<T> withUpdateTimeBefore(Date updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
     }
 
-    public ClaimsRecordRequest<T> withUpdatedTimeAfter(Date updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    public ClaimsRecordRequest<T> withUpdateTimeAfter(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
     }
 
-    public ClaimsRecordRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
-       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
+    public ClaimsRecordRequest<T> withUpdateTimeAfter(Date updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    }
+
+    public ClaimsRecordRequest<T> withUpdateTimeBetween(Date startOfUpdateTime, Date endOfUpdateTime){
+       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
     }
 
 
@@ -824,6 +934,27 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
         super.samplePopulationVariance(retName, ClaimsRecord.CLAIM_AMOUNT_PROPERTY);
         return this;
     }
+    public ClaimsRecordRequest<T> groupByMovingOrderWithDetails(){
+       return groupByMovingOrderWithDetails(Q.movingOrders().unlimited());
+    }
+
+    public ClaimsRecordRequest<T> groupByMovingOrderWithDetails(MovingOrderRequest subRequest){
+       aggregate(ClaimsRecord.MOVING_ORDER_PROPERTY, subRequest);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> groupByInsurancePolicyWithDetails(){
+       return groupByInsurancePolicyWithDetails(Q.insurancePolicies().unlimited());
+    }
+
+    public ClaimsRecordRequest<T> groupByInsurancePolicyWithDetails(InsurancePolicyRequest subRequest){
+       aggregate(ClaimsRecord.INSURANCE_POLICY_PROPERTY, subRequest);
+       return this;
+    }
+
+
+
+
 
     public ClaimsRecordRequest<T> groupById(){
        groupBy(ClaimsRecord.ID_PROPERTY);
@@ -852,6 +983,21 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
 
     public ClaimsRecordRequest<T> groupByClaimNumberWithFunction(String retName, AggrFunction function){
        groupBy(retName, ClaimsRecord.CLAIM_NUMBER_PROPERTY, function);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> groupByDescription(){
+       groupBy(ClaimsRecord.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> groupByDescriptionAs(String retName){
+       groupBy(retName, ClaimsRecord.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> groupByDescriptionWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ClaimsRecord.DESCRIPTION_PROPERTY, function);
        return this;
     }
 
@@ -885,21 +1031,6 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
        return this;
     }
 
-    public ClaimsRecordRequest<T> groupByDescription(){
-       groupBy(ClaimsRecord.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    public ClaimsRecordRequest<T> groupByDescriptionAs(String retName){
-       groupBy(retName, ClaimsRecord.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    public ClaimsRecordRequest<T> groupByDescriptionWithFunction(String retName, AggrFunction function){
-       groupBy(retName, ClaimsRecord.DESCRIPTION_PROPERTY, function);
-       return this;
-    }
-
     public ClaimsRecordRequest<T> groupByResolutionDate(){
        groupBy(ClaimsRecord.RESOLUTION_DATE_PROPERTY);
        return this;
@@ -912,6 +1043,42 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
 
     public ClaimsRecordRequest<T> groupByResolutionDateWithFunction(String retName, AggrFunction function){
        groupBy(retName, ClaimsRecord.RESOLUTION_DATE_PROPERTY, function);
+       return this;
+    }
+    public ClaimsRecordRequest<T> groupByMovingOrderWith(MovingOrderRequest subRequest){
+       groupBy(ClaimsRecord.MOVING_ORDER_PROPERTY, subRequest);
+       return this;
+    }
+    public ClaimsRecordRequest<T> groupByMovingOrder(){
+       groupBy(ClaimsRecord.MOVING_ORDER_PROPERTY);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> groupByMovingOrderAs(String retName){
+       groupBy(retName, ClaimsRecord.MOVING_ORDER_PROPERTY);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> groupByMovingOrderWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ClaimsRecord.MOVING_ORDER_PROPERTY, function);
+       return this;
+    }
+    public ClaimsRecordRequest<T> groupByInsurancePolicyWith(InsurancePolicyRequest subRequest){
+       groupBy(ClaimsRecord.INSURANCE_POLICY_PROPERTY, subRequest);
+       return this;
+    }
+    public ClaimsRecordRequest<T> groupByInsurancePolicy(){
+       groupBy(ClaimsRecord.INSURANCE_POLICY_PROPERTY);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> groupByInsurancePolicyAs(String retName){
+       groupBy(retName, ClaimsRecord.INSURANCE_POLICY_PROPERTY);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> groupByInsurancePolicyWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ClaimsRecord.INSURANCE_POLICY_PROPERTY, function);
        return this;
     }
 
@@ -930,18 +1097,18 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
        return this;
     }
 
-    public ClaimsRecordRequest<T> groupByUpdatedTime(){
-       groupBy(ClaimsRecord.UPDATED_TIME_PROPERTY);
+    public ClaimsRecordRequest<T> groupByUpdateTime(){
+       groupBy(ClaimsRecord.UPDATE_TIME_PROPERTY);
        return this;
     }
 
-    public ClaimsRecordRequest<T> groupByUpdatedTimeAs(String retName){
-       groupBy(retName, ClaimsRecord.UPDATED_TIME_PROPERTY);
+    public ClaimsRecordRequest<T> groupByUpdateTimeAs(String retName){
+       groupBy(retName, ClaimsRecord.UPDATE_TIME_PROPERTY);
        return this;
     }
 
-    public ClaimsRecordRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, ClaimsRecord.UPDATED_TIME_PROPERTY, function);
+    public ClaimsRecordRequest<T> groupByUpdateTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ClaimsRecord.UPDATE_TIME_PROPERTY, function);
        return this;
     }
 
@@ -990,6 +1157,24 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
        addOrderByDescendingUsingGBK(ClaimsRecord.CLAIM_NUMBER_PROPERTY);
        return this;
     }
+    public ClaimsRecordRequest<T> orderByDescriptionAscending(){
+       addOrderByAscending(ClaimsRecord.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> orderByDescriptionDescending(){
+       addOrderByDescending(ClaimsRecord.DESCRIPTION_PROPERTY);
+       return this;
+    }
+    public ClaimsRecordRequest<T> orderByDescriptionAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(ClaimsRecord.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> orderByDescriptionDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(ClaimsRecord.DESCRIPTION_PROPERTY);
+       return this;
+    }
     public ClaimsRecordRequest<T> orderByClaimAmountAscending(){
        addOrderByAscending(ClaimsRecord.CLAIM_AMOUNT_PROPERTY);
        return this;
@@ -1018,24 +1203,6 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
        addOrderByDescendingUsingGBK(ClaimsRecord.STATUS_PROPERTY);
        return this;
     }
-    public ClaimsRecordRequest<T> orderByDescriptionAscending(){
-       addOrderByAscending(ClaimsRecord.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    public ClaimsRecordRequest<T> orderByDescriptionDescending(){
-       addOrderByDescending(ClaimsRecord.DESCRIPTION_PROPERTY);
-       return this;
-    }
-    public ClaimsRecordRequest<T> orderByDescriptionAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(ClaimsRecord.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    public ClaimsRecordRequest<T> orderByDescriptionDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(ClaimsRecord.DESCRIPTION_PROPERTY);
-       return this;
-    }
     public ClaimsRecordRequest<T> orderByResolutionDateAscending(){
        addOrderByAscending(ClaimsRecord.RESOLUTION_DATE_PROPERTY);
        return this;
@@ -1043,6 +1210,26 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
 
     public ClaimsRecordRequest<T> orderByResolutionDateDescending(){
        addOrderByDescending(ClaimsRecord.RESOLUTION_DATE_PROPERTY);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> orderByMovingOrderAscending(){
+       addOrderByAscending(ClaimsRecord.MOVING_ORDER_PROPERTY);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> orderByMovingOrderDescending(){
+       addOrderByDescending(ClaimsRecord.MOVING_ORDER_PROPERTY);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> orderByInsurancePolicyAscending(){
+       addOrderByAscending(ClaimsRecord.INSURANCE_POLICY_PROPERTY);
+       return this;
+    }
+
+    public ClaimsRecordRequest<T> orderByInsurancePolicyDescending(){
+       addOrderByDescending(ClaimsRecord.INSURANCE_POLICY_PROPERTY);
        return this;
     }
 
@@ -1056,13 +1243,13 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
        return this;
     }
 
-    public ClaimsRecordRequest<T> orderByUpdatedTimeAscending(){
-       addOrderByAscending(ClaimsRecord.UPDATED_TIME_PROPERTY);
+    public ClaimsRecordRequest<T> orderByUpdateTimeAscending(){
+       addOrderByAscending(ClaimsRecord.UPDATE_TIME_PROPERTY);
        return this;
     }
 
-    public ClaimsRecordRequest<T> orderByUpdatedTimeDescending(){
-       addOrderByDescending(ClaimsRecord.UPDATED_TIME_PROPERTY);
+    public ClaimsRecordRequest<T> orderByUpdateTimeDescending(){
+       addOrderByDescending(ClaimsRecord.UPDATE_TIME_PROPERTY);
        return this;
     }
 
@@ -1077,7 +1264,40 @@ public class ClaimsRecordRequest<T extends ClaimsRecord> extends BaseRequest<T> 
     }
 
 
+    public MovingOrderRequest rollUpToMovingOrder(){
+       MovingOrderRequest movingOrder = Q.movingOrders().unlimited();
+       this.withMovingOrderMatching(movingOrder)
+           .groupByMovingOrderWith(movingOrder);
+       return movingOrder;
+    }
 
+    public InsurancePolicyRequest rollUpToInsurancePolicy(){
+       InsurancePolicyRequest insurancePolicy = Q.insurancePolicies().unlimited();
+       this.withInsurancePolicyMatching(insurancePolicy)
+           .groupByInsurancePolicyWith(insurancePolicy);
+       return insurancePolicy;
+    }
+
+
+
+
+
+   public ClaimsRecordRequest<T> facetByMovingOrderAs(String facetName, MovingOrderRequest movingOrder){
+       return facetByMovingOrderAs(facetName, movingOrder, true);
+   }
+
+   public ClaimsRecordRequest<T> facetByMovingOrderAs(String facetName, MovingOrderRequest movingOrder, boolean includeAllFacets){
+       addFacet(facetName, ClaimsRecord.MOVING_ORDER_PROPERTY, movingOrder, includeAllFacets);
+       return this;
+   }
+   public ClaimsRecordRequest<T> facetByInsurancePolicyAs(String facetName, InsurancePolicyRequest insurancePolicy){
+       return facetByInsurancePolicyAs(facetName, insurancePolicy, true);
+   }
+
+   public ClaimsRecordRequest<T> facetByInsurancePolicyAs(String facetName, InsurancePolicyRequest insurancePolicy, boolean includeAllFacets){
+       addFacet(facetName, ClaimsRecord.INSURANCE_POLICY_PROPERTY, insurancePolicy, includeAllFacets);
+       return this;
+   }
 
 
     /**

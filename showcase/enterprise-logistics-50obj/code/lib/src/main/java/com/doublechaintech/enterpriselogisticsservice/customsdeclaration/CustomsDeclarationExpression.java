@@ -1,11 +1,12 @@
 package com.doublechaintech.enterpriselogisticsservice.customsdeclaration;
 
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.function.Function;
 
@@ -42,25 +43,25 @@ public class CustomsDeclarationExpression<T, E, U extends CustomsDeclaration> ex
        return new CustomsDeclarationExpression(this, $it ->  ((CustomsDeclaration)$it).updateDeclarationNumber(declarationNumber));
     }
 
-    public Expression<T, String> getPortOfEntry(){
-       return apply(CustomsDeclaration::getPortOfEntry);
+    public Expression<T, String> getOriginCountry(){
+       return apply(CustomsDeclaration::getOriginCountry);
     }
-    public CustomsDeclarationExpression<T, U, U> updatePortOfEntry(String portOfEntry){
-       return new CustomsDeclarationExpression(this, $it ->  ((CustomsDeclaration)$it).updatePortOfEntry(portOfEntry));
-    }
-
-    public Expression<T, String> getCountryOfOrigin(){
-       return apply(CustomsDeclaration::getCountryOfOrigin);
-    }
-    public CustomsDeclarationExpression<T, U, U> updateCountryOfOrigin(String countryOfOrigin){
-       return new CustomsDeclarationExpression(this, $it ->  ((CustomsDeclaration)$it).updateCountryOfOrigin(countryOfOrigin));
+    public CustomsDeclarationExpression<T, U, U> updateOriginCountry(String originCountry){
+       return new CustomsDeclarationExpression(this, $it ->  ((CustomsDeclaration)$it).updateOriginCountry(originCountry));
     }
 
-    public Expression<T, BigDecimal> getDeclaredValue(){
-       return apply(CustomsDeclaration::getDeclaredValue);
+    public Expression<T, String> getDestinationCountry(){
+       return apply(CustomsDeclaration::getDestinationCountry);
     }
-    public CustomsDeclarationExpression<T, U, U> updateDeclaredValue(BigDecimal declaredValue){
-       return new CustomsDeclarationExpression(this, $it ->  ((CustomsDeclaration)$it).updateDeclaredValue(declaredValue));
+    public CustomsDeclarationExpression<T, U, U> updateDestinationCountry(String destinationCountry){
+       return new CustomsDeclarationExpression(this, $it ->  ((CustomsDeclaration)$it).updateDestinationCountry(destinationCountry));
+    }
+
+    public Expression<T, BigDecimal> getTotalValue(){
+       return apply(CustomsDeclaration::getTotalValue);
+    }
+    public CustomsDeclarationExpression<T, U, U> updateTotalValue(BigDecimal totalValue){
+       return new CustomsDeclarationExpression(this, $it ->  ((CustomsDeclaration)$it).updateTotalValue(totalValue));
     }
 
     public Expression<T, String> getStatus(){
@@ -70,11 +71,12 @@ public class CustomsDeclarationExpression<T, E, U extends CustomsDeclaration> ex
        return new CustomsDeclarationExpression(this, $it ->  ((CustomsDeclaration)$it).updateStatus(status));
     }
 
-    public Expression<T, LocalDate> getClearanceDate(){
-       return apply(CustomsDeclaration::getClearanceDate);
+    public MovingOrderExpression<T, U, MovingOrder> getMovingOrder(){
+       return new MovingOrderExpression(this, $it ->  ((CustomsDeclaration)$it).getMovingOrder());
     }
-    public CustomsDeclarationExpression<T, U, U> updateClearanceDate(LocalDate clearanceDate){
-       return new CustomsDeclarationExpression(this, $it ->  ((CustomsDeclaration)$it).updateClearanceDate(clearanceDate));
+
+    public CustomsDeclarationExpression<T, U, U> updateMovingOrder(MovingOrder movingOrder){
+       return new CustomsDeclarationExpression(this, $it ->  ((CustomsDeclaration)$it).updateMovingOrder(movingOrder));
     }
 
     public Expression<T, LocalDateTime> getCreatedTime(){
@@ -84,11 +86,11 @@ public class CustomsDeclarationExpression<T, E, U extends CustomsDeclaration> ex
        return new CustomsDeclarationExpression(this, $it ->  ((CustomsDeclaration)$it).updateCreatedTime(createdTime));
     }
 
-    public Expression<T, LocalDateTime> getUpdatedTime(){
-       return apply(CustomsDeclaration::getUpdatedTime);
+    public Expression<T, LocalDateTime> getUpdateTime(){
+       return apply(CustomsDeclaration::getUpdateTime);
     }
-    public CustomsDeclarationExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
-       return new CustomsDeclarationExpression(this, $it ->  ((CustomsDeclaration)$it).updateUpdatedTime(updatedTime));
+    public CustomsDeclarationExpression<T, U, U> updateUpdateTime(LocalDateTime updateTime){
+       return new CustomsDeclarationExpression(this, $it ->  ((CustomsDeclaration)$it).updateUpdateTime(updateTime));
     }
 
 }

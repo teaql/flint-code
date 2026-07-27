@@ -3,10 +3,8 @@ package com.doublechaintech.enterpriselogisticsservice.corporatecustomer;
 import com.doublechaintech.enterpriselogisticsservice.Q;
 import com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact;
 import com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContactRequest;
-import com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyalty;
-import com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyaltyRequest;
-import com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview;
-import com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReviewRequest;
+import com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract;
+import com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContractRequest;
 import com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote;
 import com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuoteRequest;
 import io.teaql.core.AggrFunction;
@@ -16,6 +14,8 @@ import io.teaql.core.SearchCriteria;
 import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseRequest<T> {
 
@@ -88,7 +88,7 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
 
     public CorporateCustomerRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectName().selectContactPerson().selectPhone().selectEmail().selectAddress().selectCity().selectCountry().selectTaxId().selectCustomerType().selectVersion();
+        return selectId().selectName().selectRegistrationNumber().selectIndustry().selectEmployeeCount().selectBillingAddress().selectContactEmail().selectContactPhone().selectCustomerType().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public CorporateCustomerRequest<T> selectSelfFields(){
@@ -97,13 +97,13 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
 
     public CorporateCustomerRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectName().selectContactPerson().selectPhone().selectEmail().selectAddress().selectCity().selectCountry().selectTaxId().selectCustomerType().selectVersion();
+        return selectId().selectName().selectRegistrationNumber().selectIndustry().selectEmployeeCount().selectBillingAddress().selectContactEmail().selectContactPhone().selectCustomerType().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public CorporateCustomerRequest<T> selectChildren(){
         super.selectAny();
-        selectCustomerContactList().selectServiceQuoteList().selectFeedbackReviewList().selectCustomerLoyaltyList();
-        return selectId().selectName().selectContactPerson().selectPhone().selectEmail().selectAddress().selectCity().selectCountry().selectTaxId().selectCustomerType().selectVersion();
+        selectCustomerContactList().selectServiceQuoteList().selectServiceContractList();
+        return selectId().selectName().selectRegistrationNumber().selectIndustry().selectEmployeeCount().selectBillingAddress().selectContactEmail().selectContactPhone().selectCustomerType().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
 
@@ -141,123 +141,114 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
        unselectProperty(CorporateCustomer.NAME_PROPERTY);
        return this;
     }
-    public CorporateCustomerRequest<T> selectContactPerson(){
-       selectProperty(CorporateCustomer.CONTACT_PERSON_PROPERTY);
+    public CorporateCustomerRequest<T> selectRegistrationNumber(){
+       selectProperty(CorporateCustomer.REGISTRATION_NUMBER_PROPERTY);
        return this;
     }
 
     /**
-     * fill the contactPerson with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  contactPerson) to fetch contactPerson property.
+     * fill the registrationNumber with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  registrationNumber) to fetch registrationNumber property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public CorporateCustomerRequest<T> unselectContactPerson(){
-       unselectProperty(CorporateCustomer.CONTACT_PERSON_PROPERTY);
+    public CorporateCustomerRequest<T> unselectRegistrationNumber(){
+       unselectProperty(CorporateCustomer.REGISTRATION_NUMBER_PROPERTY);
        return this;
     }
-    public CorporateCustomerRequest<T> selectPhone(){
-       selectProperty(CorporateCustomer.PHONE_PROPERTY);
+    public CorporateCustomerRequest<T> selectIndustry(){
+       selectProperty(CorporateCustomer.INDUSTRY_PROPERTY);
        return this;
     }
 
     /**
-     * fill the phone with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  phone) to fetch phone property.
+     * fill the industry with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  industry) to fetch industry property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public CorporateCustomerRequest<T> unselectPhone(){
-       unselectProperty(CorporateCustomer.PHONE_PROPERTY);
+    public CorporateCustomerRequest<T> unselectIndustry(){
+       unselectProperty(CorporateCustomer.INDUSTRY_PROPERTY);
        return this;
     }
-    public CorporateCustomerRequest<T> selectEmail(){
-       selectProperty(CorporateCustomer.EMAIL_PROPERTY);
+    public CorporateCustomerRequest<T> selectEmployeeCount(){
+       selectProperty(CorporateCustomer.EMPLOYEE_COUNT_PROPERTY);
        return this;
     }
 
     /**
-     * fill the email with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  email) to fetch email property.
+     * fill the employeeCount with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  employeeCount) to fetch employeeCount property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+    /**
+     * fill the employeeCount with customized aggrFunction, TEAQL uses ({aggrFunction}(employeeCount) AS employeeCount to fetch employeeCount property.
+     * @param aggrFunction  aggrFunction
+     */
+    public CorporateCustomerRequest<T> selectEmployeeCount(AggrFunction aggrFunction){
+       selectProperty(CorporateCustomer.EMPLOYEE_COUNT_PROPERTY, aggrFunction);
+       return this;
+    }
+
+
+    public CorporateCustomerRequest<T> unselectEmployeeCount(){
+       unselectProperty(CorporateCustomer.EMPLOYEE_COUNT_PROPERTY);
+       return this;
+    }
+    public CorporateCustomerRequest<T> selectBillingAddress(){
+       selectProperty(CorporateCustomer.BILLING_ADDRESS_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the billingAddress with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  billingAddress) to fetch billingAddress property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public CorporateCustomerRequest<T> unselectEmail(){
-       unselectProperty(CorporateCustomer.EMAIL_PROPERTY);
+    public CorporateCustomerRequest<T> unselectBillingAddress(){
+       unselectProperty(CorporateCustomer.BILLING_ADDRESS_PROPERTY);
        return this;
     }
-    public CorporateCustomerRequest<T> selectAddress(){
-       selectProperty(CorporateCustomer.ADDRESS_PROPERTY);
+    public CorporateCustomerRequest<T> selectContactEmail(){
+       selectProperty(CorporateCustomer.CONTACT_EMAIL_PROPERTY);
        return this;
     }
 
     /**
-     * fill the address with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  address) to fetch address property.
+     * fill the contactEmail with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  contactEmail) to fetch contactEmail property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public CorporateCustomerRequest<T> unselectAddress(){
-       unselectProperty(CorporateCustomer.ADDRESS_PROPERTY);
+    public CorporateCustomerRequest<T> unselectContactEmail(){
+       unselectProperty(CorporateCustomer.CONTACT_EMAIL_PROPERTY);
        return this;
     }
-    public CorporateCustomerRequest<T> selectCity(){
-       selectProperty(CorporateCustomer.CITY_PROPERTY);
+    public CorporateCustomerRequest<T> selectContactPhone(){
+       selectProperty(CorporateCustomer.CONTACT_PHONE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the city with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  city) to fetch city property.
+     * fill the contactPhone with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  contactPhone) to fetch contactPhone property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public CorporateCustomerRequest<T> unselectCity(){
-       unselectProperty(CorporateCustomer.CITY_PROPERTY);
-       return this;
-    }
-    public CorporateCustomerRequest<T> selectCountry(){
-       selectProperty(CorporateCustomer.COUNTRY_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the country with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  country) to fetch country property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public CorporateCustomerRequest<T> unselectCountry(){
-       unselectProperty(CorporateCustomer.COUNTRY_PROPERTY);
-       return this;
-    }
-    public CorporateCustomerRequest<T> selectTaxId(){
-       selectProperty(CorporateCustomer.TAX_ID_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the taxId with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  taxId) to fetch taxId property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public CorporateCustomerRequest<T> unselectTaxId(){
-       unselectProperty(CorporateCustomer.TAX_ID_PROPERTY);
+    public CorporateCustomerRequest<T> unselectContactPhone(){
+       unselectProperty(CorporateCustomer.CONTACT_PHONE_PROPERTY);
        return this;
     }
     public CorporateCustomerRequest<T> selectCustomerType(){
@@ -275,6 +266,40 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
 
     public CorporateCustomerRequest<T> unselectCustomerType(){
        unselectProperty(CorporateCustomer.CUSTOMER_TYPE_PROPERTY);
+       return this;
+    }
+    public CorporateCustomerRequest<T> selectCreatedAt(){
+       selectProperty(CorporateCustomer.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the createdAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdAt) to fetch createdAt property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public CorporateCustomerRequest<T> unselectCreatedAt(){
+       unselectProperty(CorporateCustomer.CREATED_AT_PROPERTY);
+       return this;
+    }
+    public CorporateCustomerRequest<T> selectUpdatedAt(){
+       selectProperty(CorporateCustomer.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the updatedAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedAt) to fetch updatedAt property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public CorporateCustomerRequest<T> unselectUpdatedAt(){
+       unselectProperty(CorporateCustomer.UPDATED_AT_PROPERTY);
        return this;
     }
     public CorporateCustomerRequest<T> selectVersion(){
@@ -310,20 +335,12 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
        enhanceRelation(CorporateCustomer.SERVICE_QUOTE_LIST_PROPERTY, serviceQuoteList);
        return this;
     }
-    public CorporateCustomerRequest<T> selectFeedbackReviewList(){
-       return selectFeedbackReviewListWith(Q.feedbackReviews().selectSelf());
+    public CorporateCustomerRequest<T> selectServiceContractList(){
+       return selectServiceContractListWith(Q.serviceContracts().selectSelf());
     }
 
-    public CorporateCustomerRequest<T> selectFeedbackReviewListWith(FeedbackReviewRequest feedbackReviewList){
-       enhanceRelation(CorporateCustomer.FEEDBACK_REVIEW_LIST_PROPERTY, feedbackReviewList);
-       return this;
-    }
-    public CorporateCustomerRequest<T> selectCustomerLoyaltyList(){
-       return selectCustomerLoyaltyListWith(Q.customerLoyalties().selectSelf());
-    }
-
-    public CorporateCustomerRequest<T> selectCustomerLoyaltyListWith(CustomerLoyaltyRequest customerLoyaltyList){
-       enhanceRelation(CorporateCustomer.CUSTOMER_LOYALTY_LIST_PROPERTY, customerLoyaltyList);
+    public CorporateCustomerRequest<T> selectServiceContractListWith(ServiceContractRequest serviceContractList){
+       enhanceRelation(CorporateCustomer.SERVICE_CONTRACT_LIST_PROPERTY, serviceContractList);
        return this;
     }
 
@@ -407,443 +424,362 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
 
 
 
-    public CorporateCustomerRequest<T> filterByContactPerson(String... contactPerson){
-      if (contactPerson == null || contactPerson.length == 0) {
-        throw new IllegalArgumentException("filterByContactPerson parameter contactPerson cannot be empty");
+    public CorporateCustomerRequest<T> filterByRegistrationNumber(String... registrationNumber){
+      if (registrationNumber == null || registrationNumber.length == 0) {
+        throw new IllegalArgumentException("filterByRegistrationNumber parameter registrationNumber cannot be empty");
       }
-      return appendSearchCriteria(createContactPersonCriteria(Operator.EQUAL, (Object[])contactPerson));
+      return appendSearchCriteria(createRegistrationNumberCriteria(Operator.EQUAL, (Object[])registrationNumber));
     }
 
-    public CorporateCustomerRequest<T> withContactPerson(Operator operator, Object... values){
-       return appendSearchCriteria(createContactPersonCriteria(operator, values));
+    public CorporateCustomerRequest<T> withRegistrationNumber(Operator operator, Object... values){
+       return appendSearchCriteria(createRegistrationNumberCriteria(operator, values));
     }
 
-    public CorporateCustomerRequest<T> withContactPersonIsUnknown(){
-       return withContactPerson(Operator.IS_NULL);
+    public CorporateCustomerRequest<T> withRegistrationNumberIsUnknown(){
+       return withRegistrationNumber(Operator.IS_NULL);
     }
 
-    public CorporateCustomerRequest<T> withContactPersonIsKnown(){
-       return withContactPerson(Operator.IS_NOT_NULL);
+    public CorporateCustomerRequest<T> withRegistrationNumberIsKnown(){
+       return withRegistrationNumber(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createContactPersonCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CorporateCustomer.CONTACT_PERSON_PROPERTY, operator, values);
+    public SearchCriteria createRegistrationNumberCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CorporateCustomer.REGISTRATION_NUMBER_PROPERTY, operator, values);
     }
 
-    public CorporateCustomerRequest<T> withContactPersonGreaterThan(String contactPerson){
-       return withContactPerson(Operator.GREATER_THAN, contactPerson);
+    public CorporateCustomerRequest<T> withRegistrationNumberGreaterThan(String registrationNumber){
+       return withRegistrationNumber(Operator.GREATER_THAN, registrationNumber);
     }
 
-    public CorporateCustomerRequest<T> withContactPersonGreaterThanOrEqualTo(String contactPerson){
-       return withContactPerson(Operator.GREATER_THAN_OR_EQUAL, contactPerson);
+    public CorporateCustomerRequest<T> withRegistrationNumberGreaterThanOrEqualTo(String registrationNumber){
+       return withRegistrationNumber(Operator.GREATER_THAN_OR_EQUAL, registrationNumber);
     }
 
-    public CorporateCustomerRequest<T> withContactPersonLessThan(String contactPerson){
-       return withContactPerson(Operator.LESS_THAN, contactPerson);
+    public CorporateCustomerRequest<T> withRegistrationNumberLessThan(String registrationNumber){
+       return withRegistrationNumber(Operator.LESS_THAN, registrationNumber);
     }
 
-    public CorporateCustomerRequest<T> withContactPersonLessThanOrEqualTo(String contactPerson){
-       return withContactPerson(Operator.LESS_THAN_OR_EQUAL, contactPerson);
+    public CorporateCustomerRequest<T> withRegistrationNumberLessThanOrEqualTo(String registrationNumber){
+       return withRegistrationNumber(Operator.LESS_THAN_OR_EQUAL, registrationNumber);
     }
 
-    public CorporateCustomerRequest<T> withContactPersonBetween(String startOfContactPerson, String endOfContactPerson){
-       return withContactPerson(Operator.BETWEEN, startOfContactPerson, endOfContactPerson);
+    public CorporateCustomerRequest<T> withRegistrationNumberBetween(String startOfRegistrationNumber, String endOfRegistrationNumber){
+       return withRegistrationNumber(Operator.BETWEEN, startOfRegistrationNumber, endOfRegistrationNumber);
     }
-    public CorporateCustomerRequest<T> withContactPersonStartingWith(String contactPerson){
-       return withContactPerson(Operator.BEGIN_WITH, contactPerson);
+    public CorporateCustomerRequest<T> withRegistrationNumberStartingWith(String registrationNumber){
+       return withRegistrationNumber(Operator.BEGIN_WITH, registrationNumber);
     }
-    public CorporateCustomerRequest<T> withContactPersonContaining(String contactPerson){
-       return withContactPerson(Operator.CONTAIN, contactPerson);
-    }
-
-    public CorporateCustomerRequest<T> withContactPersonEndingWith(String contactPerson){
-       return withContactPerson(Operator.END_WITH, contactPerson);
+    public CorporateCustomerRequest<T> withRegistrationNumberContaining(String registrationNumber){
+       return withRegistrationNumber(Operator.CONTAIN, registrationNumber);
     }
 
-    public CorporateCustomerRequest<T> withContactPersonIs(String contactPerson){
-       return withContactPerson(Operator.EQUAL, contactPerson);
+    public CorporateCustomerRequest<T> withRegistrationNumberEndingWith(String registrationNumber){
+       return withRegistrationNumber(Operator.END_WITH, registrationNumber);
     }
 
-    public CorporateCustomerRequest<T> withContactPersonSoundingLike(String contactPerson){
-       return withContactPerson(Operator.SOUNDS_LIKE, contactPerson);
+    public CorporateCustomerRequest<T> withRegistrationNumberIs(String registrationNumber){
+       return withRegistrationNumber(Operator.EQUAL, registrationNumber);
+    }
+
+    public CorporateCustomerRequest<T> withRegistrationNumberSoundingLike(String registrationNumber){
+       return withRegistrationNumber(Operator.SOUNDS_LIKE, registrationNumber);
     }
 
 
 
-    public CorporateCustomerRequest<T> filterByPhone(String... phone){
-      if (phone == null || phone.length == 0) {
-        throw new IllegalArgumentException("filterByPhone parameter phone cannot be empty");
+    public CorporateCustomerRequest<T> filterByIndustry(String... industry){
+      if (industry == null || industry.length == 0) {
+        throw new IllegalArgumentException("filterByIndustry parameter industry cannot be empty");
       }
-      return appendSearchCriteria(createPhoneCriteria(Operator.EQUAL, (Object[])phone));
+      return appendSearchCriteria(createIndustryCriteria(Operator.EQUAL, (Object[])industry));
     }
 
-    public CorporateCustomerRequest<T> withPhone(Operator operator, Object... values){
-       return appendSearchCriteria(createPhoneCriteria(operator, values));
+    public CorporateCustomerRequest<T> withIndustry(Operator operator, Object... values){
+       return appendSearchCriteria(createIndustryCriteria(operator, values));
     }
 
-    public CorporateCustomerRequest<T> withPhoneIsUnknown(){
-       return withPhone(Operator.IS_NULL);
+    public CorporateCustomerRequest<T> withIndustryIsUnknown(){
+       return withIndustry(Operator.IS_NULL);
     }
 
-    public CorporateCustomerRequest<T> withPhoneIsKnown(){
-       return withPhone(Operator.IS_NOT_NULL);
+    public CorporateCustomerRequest<T> withIndustryIsKnown(){
+       return withIndustry(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createPhoneCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CorporateCustomer.PHONE_PROPERTY, operator, values);
+    public SearchCriteria createIndustryCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CorporateCustomer.INDUSTRY_PROPERTY, operator, values);
     }
 
-    public CorporateCustomerRequest<T> withPhoneGreaterThan(String phone){
-       return withPhone(Operator.GREATER_THAN, phone);
+    public CorporateCustomerRequest<T> withIndustryGreaterThan(String industry){
+       return withIndustry(Operator.GREATER_THAN, industry);
     }
 
-    public CorporateCustomerRequest<T> withPhoneGreaterThanOrEqualTo(String phone){
-       return withPhone(Operator.GREATER_THAN_OR_EQUAL, phone);
+    public CorporateCustomerRequest<T> withIndustryGreaterThanOrEqualTo(String industry){
+       return withIndustry(Operator.GREATER_THAN_OR_EQUAL, industry);
     }
 
-    public CorporateCustomerRequest<T> withPhoneLessThan(String phone){
-       return withPhone(Operator.LESS_THAN, phone);
+    public CorporateCustomerRequest<T> withIndustryLessThan(String industry){
+       return withIndustry(Operator.LESS_THAN, industry);
     }
 
-    public CorporateCustomerRequest<T> withPhoneLessThanOrEqualTo(String phone){
-       return withPhone(Operator.LESS_THAN_OR_EQUAL, phone);
+    public CorporateCustomerRequest<T> withIndustryLessThanOrEqualTo(String industry){
+       return withIndustry(Operator.LESS_THAN_OR_EQUAL, industry);
     }
 
-    public CorporateCustomerRequest<T> withPhoneBetween(String startOfPhone, String endOfPhone){
-       return withPhone(Operator.BETWEEN, startOfPhone, endOfPhone);
+    public CorporateCustomerRequest<T> withIndustryBetween(String startOfIndustry, String endOfIndustry){
+       return withIndustry(Operator.BETWEEN, startOfIndustry, endOfIndustry);
     }
-    public CorporateCustomerRequest<T> withPhoneStartingWith(String phone){
-       return withPhone(Operator.BEGIN_WITH, phone);
+    public CorporateCustomerRequest<T> withIndustryStartingWith(String industry){
+       return withIndustry(Operator.BEGIN_WITH, industry);
     }
-    public CorporateCustomerRequest<T> withPhoneContaining(String phone){
-       return withPhone(Operator.CONTAIN, phone);
-    }
-
-    public CorporateCustomerRequest<T> withPhoneEndingWith(String phone){
-       return withPhone(Operator.END_WITH, phone);
+    public CorporateCustomerRequest<T> withIndustryContaining(String industry){
+       return withIndustry(Operator.CONTAIN, industry);
     }
 
-    public CorporateCustomerRequest<T> withPhoneIs(String phone){
-       return withPhone(Operator.EQUAL, phone);
+    public CorporateCustomerRequest<T> withIndustryEndingWith(String industry){
+       return withIndustry(Operator.END_WITH, industry);
     }
 
-    public CorporateCustomerRequest<T> withPhoneSoundingLike(String phone){
-       return withPhone(Operator.SOUNDS_LIKE, phone);
+    public CorporateCustomerRequest<T> withIndustryIs(String industry){
+       return withIndustry(Operator.EQUAL, industry);
+    }
+
+    public CorporateCustomerRequest<T> withIndustrySoundingLike(String industry){
+       return withIndustry(Operator.SOUNDS_LIKE, industry);
     }
 
 
 
-    public CorporateCustomerRequest<T> filterByEmail(String... email){
-      if (email == null || email.length == 0) {
-        throw new IllegalArgumentException("filterByEmail parameter email cannot be empty");
+    public CorporateCustomerRequest<T> filterByEmployeeCount(Integer... employeeCount){
+      if (employeeCount == null || employeeCount.length == 0) {
+        throw new IllegalArgumentException("filterByEmployeeCount parameter employeeCount cannot be empty");
       }
-      return appendSearchCriteria(createEmailCriteria(Operator.EQUAL, (Object[])email));
+      return appendSearchCriteria(createEmployeeCountCriteria(Operator.EQUAL, (Object[])employeeCount));
     }
 
-    public CorporateCustomerRequest<T> withEmail(Operator operator, Object... values){
-       return appendSearchCriteria(createEmailCriteria(operator, values));
+    public CorporateCustomerRequest<T> withEmployeeCount(Operator operator, Object... values){
+       return appendSearchCriteria(createEmployeeCountCriteria(operator, values));
     }
 
-    public CorporateCustomerRequest<T> withEmailIsUnknown(){
-       return withEmail(Operator.IS_NULL);
+    public CorporateCustomerRequest<T> withEmployeeCountIsUnknown(){
+       return withEmployeeCount(Operator.IS_NULL);
     }
 
-    public CorporateCustomerRequest<T> withEmailIsKnown(){
-       return withEmail(Operator.IS_NOT_NULL);
+    public CorporateCustomerRequest<T> withEmployeeCountIsKnown(){
+       return withEmployeeCount(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createEmailCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CorporateCustomer.EMAIL_PROPERTY, operator, values);
+    public SearchCriteria createEmployeeCountCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CorporateCustomer.EMPLOYEE_COUNT_PROPERTY, operator, values);
     }
 
-    public CorporateCustomerRequest<T> withEmailGreaterThan(String email){
-       return withEmail(Operator.GREATER_THAN, email);
+    public CorporateCustomerRequest<T> withEmployeeCountGreaterThan(Integer employeeCount){
+       return withEmployeeCount(Operator.GREATER_THAN, employeeCount);
     }
 
-    public CorporateCustomerRequest<T> withEmailGreaterThanOrEqualTo(String email){
-       return withEmail(Operator.GREATER_THAN_OR_EQUAL, email);
+    public CorporateCustomerRequest<T> withEmployeeCountGreaterThanOrEqualTo(Integer employeeCount){
+       return withEmployeeCount(Operator.GREATER_THAN_OR_EQUAL, employeeCount);
     }
 
-    public CorporateCustomerRequest<T> withEmailLessThan(String email){
-       return withEmail(Operator.LESS_THAN, email);
+    public CorporateCustomerRequest<T> withEmployeeCountLessThan(Integer employeeCount){
+       return withEmployeeCount(Operator.LESS_THAN, employeeCount);
     }
 
-    public CorporateCustomerRequest<T> withEmailLessThanOrEqualTo(String email){
-       return withEmail(Operator.LESS_THAN_OR_EQUAL, email);
+    public CorporateCustomerRequest<T> withEmployeeCountLessThanOrEqualTo(Integer employeeCount){
+       return withEmployeeCount(Operator.LESS_THAN_OR_EQUAL, employeeCount);
     }
 
-    public CorporateCustomerRequest<T> withEmailBetween(String startOfEmail, String endOfEmail){
-       return withEmail(Operator.BETWEEN, startOfEmail, endOfEmail);
-    }
-    public CorporateCustomerRequest<T> withEmailStartingWith(String email){
-       return withEmail(Operator.BEGIN_WITH, email);
-    }
-    public CorporateCustomerRequest<T> withEmailContaining(String email){
-       return withEmail(Operator.CONTAIN, email);
-    }
-
-    public CorporateCustomerRequest<T> withEmailEndingWith(String email){
-       return withEmail(Operator.END_WITH, email);
-    }
-
-    public CorporateCustomerRequest<T> withEmailIs(String email){
-       return withEmail(Operator.EQUAL, email);
-    }
-
-    public CorporateCustomerRequest<T> withEmailSoundingLike(String email){
-       return withEmail(Operator.SOUNDS_LIKE, email);
+    public CorporateCustomerRequest<T> withEmployeeCountBetween(Integer startOfEmployeeCount, Integer endOfEmployeeCount){
+       return withEmployeeCount(Operator.BETWEEN, startOfEmployeeCount, endOfEmployeeCount);
     }
 
 
 
-    public CorporateCustomerRequest<T> filterByAddress(String... address){
-      if (address == null || address.length == 0) {
-        throw new IllegalArgumentException("filterByAddress parameter address cannot be empty");
+    public CorporateCustomerRequest<T> filterByBillingAddress(String... billingAddress){
+      if (billingAddress == null || billingAddress.length == 0) {
+        throw new IllegalArgumentException("filterByBillingAddress parameter billingAddress cannot be empty");
       }
-      return appendSearchCriteria(createAddressCriteria(Operator.EQUAL, (Object[])address));
+      return appendSearchCriteria(createBillingAddressCriteria(Operator.EQUAL, (Object[])billingAddress));
     }
 
-    public CorporateCustomerRequest<T> withAddress(Operator operator, Object... values){
-       return appendSearchCriteria(createAddressCriteria(operator, values));
+    public CorporateCustomerRequest<T> withBillingAddress(Operator operator, Object... values){
+       return appendSearchCriteria(createBillingAddressCriteria(operator, values));
     }
 
-    public CorporateCustomerRequest<T> withAddressIsUnknown(){
-       return withAddress(Operator.IS_NULL);
+    public CorporateCustomerRequest<T> withBillingAddressIsUnknown(){
+       return withBillingAddress(Operator.IS_NULL);
     }
 
-    public CorporateCustomerRequest<T> withAddressIsKnown(){
-       return withAddress(Operator.IS_NOT_NULL);
+    public CorporateCustomerRequest<T> withBillingAddressIsKnown(){
+       return withBillingAddress(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createAddressCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CorporateCustomer.ADDRESS_PROPERTY, operator, values);
+    public SearchCriteria createBillingAddressCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CorporateCustomer.BILLING_ADDRESS_PROPERTY, operator, values);
     }
 
-    public CorporateCustomerRequest<T> withAddressGreaterThan(String address){
-       return withAddress(Operator.GREATER_THAN, address);
+    public CorporateCustomerRequest<T> withBillingAddressGreaterThan(String billingAddress){
+       return withBillingAddress(Operator.GREATER_THAN, billingAddress);
     }
 
-    public CorporateCustomerRequest<T> withAddressGreaterThanOrEqualTo(String address){
-       return withAddress(Operator.GREATER_THAN_OR_EQUAL, address);
+    public CorporateCustomerRequest<T> withBillingAddressGreaterThanOrEqualTo(String billingAddress){
+       return withBillingAddress(Operator.GREATER_THAN_OR_EQUAL, billingAddress);
     }
 
-    public CorporateCustomerRequest<T> withAddressLessThan(String address){
-       return withAddress(Operator.LESS_THAN, address);
+    public CorporateCustomerRequest<T> withBillingAddressLessThan(String billingAddress){
+       return withBillingAddress(Operator.LESS_THAN, billingAddress);
     }
 
-    public CorporateCustomerRequest<T> withAddressLessThanOrEqualTo(String address){
-       return withAddress(Operator.LESS_THAN_OR_EQUAL, address);
+    public CorporateCustomerRequest<T> withBillingAddressLessThanOrEqualTo(String billingAddress){
+       return withBillingAddress(Operator.LESS_THAN_OR_EQUAL, billingAddress);
     }
 
-    public CorporateCustomerRequest<T> withAddressBetween(String startOfAddress, String endOfAddress){
-       return withAddress(Operator.BETWEEN, startOfAddress, endOfAddress);
+    public CorporateCustomerRequest<T> withBillingAddressBetween(String startOfBillingAddress, String endOfBillingAddress){
+       return withBillingAddress(Operator.BETWEEN, startOfBillingAddress, endOfBillingAddress);
     }
-    public CorporateCustomerRequest<T> withAddressStartingWith(String address){
-       return withAddress(Operator.BEGIN_WITH, address);
+    public CorporateCustomerRequest<T> withBillingAddressStartingWith(String billingAddress){
+       return withBillingAddress(Operator.BEGIN_WITH, billingAddress);
     }
-    public CorporateCustomerRequest<T> withAddressContaining(String address){
-       return withAddress(Operator.CONTAIN, address);
-    }
-
-    public CorporateCustomerRequest<T> withAddressEndingWith(String address){
-       return withAddress(Operator.END_WITH, address);
+    public CorporateCustomerRequest<T> withBillingAddressContaining(String billingAddress){
+       return withBillingAddress(Operator.CONTAIN, billingAddress);
     }
 
-    public CorporateCustomerRequest<T> withAddressIs(String address){
-       return withAddress(Operator.EQUAL, address);
+    public CorporateCustomerRequest<T> withBillingAddressEndingWith(String billingAddress){
+       return withBillingAddress(Operator.END_WITH, billingAddress);
     }
 
-    public CorporateCustomerRequest<T> withAddressSoundingLike(String address){
-       return withAddress(Operator.SOUNDS_LIKE, address);
+    public CorporateCustomerRequest<T> withBillingAddressIs(String billingAddress){
+       return withBillingAddress(Operator.EQUAL, billingAddress);
+    }
+
+    public CorporateCustomerRequest<T> withBillingAddressSoundingLike(String billingAddress){
+       return withBillingAddress(Operator.SOUNDS_LIKE, billingAddress);
     }
 
 
 
-    public CorporateCustomerRequest<T> filterByCity(String... city){
-      if (city == null || city.length == 0) {
-        throw new IllegalArgumentException("filterByCity parameter city cannot be empty");
+    public CorporateCustomerRequest<T> filterByContactEmail(String... contactEmail){
+      if (contactEmail == null || contactEmail.length == 0) {
+        throw new IllegalArgumentException("filterByContactEmail parameter contactEmail cannot be empty");
       }
-      return appendSearchCriteria(createCityCriteria(Operator.EQUAL, (Object[])city));
+      return appendSearchCriteria(createContactEmailCriteria(Operator.EQUAL, (Object[])contactEmail));
     }
 
-    public CorporateCustomerRequest<T> withCity(Operator operator, Object... values){
-       return appendSearchCriteria(createCityCriteria(operator, values));
+    public CorporateCustomerRequest<T> withContactEmail(Operator operator, Object... values){
+       return appendSearchCriteria(createContactEmailCriteria(operator, values));
     }
 
-    public CorporateCustomerRequest<T> withCityIsUnknown(){
-       return withCity(Operator.IS_NULL);
+    public CorporateCustomerRequest<T> withContactEmailIsUnknown(){
+       return withContactEmail(Operator.IS_NULL);
     }
 
-    public CorporateCustomerRequest<T> withCityIsKnown(){
-       return withCity(Operator.IS_NOT_NULL);
+    public CorporateCustomerRequest<T> withContactEmailIsKnown(){
+       return withContactEmail(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCityCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CorporateCustomer.CITY_PROPERTY, operator, values);
+    public SearchCriteria createContactEmailCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CorporateCustomer.CONTACT_EMAIL_PROPERTY, operator, values);
     }
 
-    public CorporateCustomerRequest<T> withCityGreaterThan(String city){
-       return withCity(Operator.GREATER_THAN, city);
+    public CorporateCustomerRequest<T> withContactEmailGreaterThan(String contactEmail){
+       return withContactEmail(Operator.GREATER_THAN, contactEmail);
     }
 
-    public CorporateCustomerRequest<T> withCityGreaterThanOrEqualTo(String city){
-       return withCity(Operator.GREATER_THAN_OR_EQUAL, city);
+    public CorporateCustomerRequest<T> withContactEmailGreaterThanOrEqualTo(String contactEmail){
+       return withContactEmail(Operator.GREATER_THAN_OR_EQUAL, contactEmail);
     }
 
-    public CorporateCustomerRequest<T> withCityLessThan(String city){
-       return withCity(Operator.LESS_THAN, city);
+    public CorporateCustomerRequest<T> withContactEmailLessThan(String contactEmail){
+       return withContactEmail(Operator.LESS_THAN, contactEmail);
     }
 
-    public CorporateCustomerRequest<T> withCityLessThanOrEqualTo(String city){
-       return withCity(Operator.LESS_THAN_OR_EQUAL, city);
+    public CorporateCustomerRequest<T> withContactEmailLessThanOrEqualTo(String contactEmail){
+       return withContactEmail(Operator.LESS_THAN_OR_EQUAL, contactEmail);
     }
 
-    public CorporateCustomerRequest<T> withCityBetween(String startOfCity, String endOfCity){
-       return withCity(Operator.BETWEEN, startOfCity, endOfCity);
+    public CorporateCustomerRequest<T> withContactEmailBetween(String startOfContactEmail, String endOfContactEmail){
+       return withContactEmail(Operator.BETWEEN, startOfContactEmail, endOfContactEmail);
     }
-    public CorporateCustomerRequest<T> withCityStartingWith(String city){
-       return withCity(Operator.BEGIN_WITH, city);
+    public CorporateCustomerRequest<T> withContactEmailStartingWith(String contactEmail){
+       return withContactEmail(Operator.BEGIN_WITH, contactEmail);
     }
-    public CorporateCustomerRequest<T> withCityContaining(String city){
-       return withCity(Operator.CONTAIN, city);
-    }
-
-    public CorporateCustomerRequest<T> withCityEndingWith(String city){
-       return withCity(Operator.END_WITH, city);
+    public CorporateCustomerRequest<T> withContactEmailContaining(String contactEmail){
+       return withContactEmail(Operator.CONTAIN, contactEmail);
     }
 
-    public CorporateCustomerRequest<T> withCityIs(String city){
-       return withCity(Operator.EQUAL, city);
+    public CorporateCustomerRequest<T> withContactEmailEndingWith(String contactEmail){
+       return withContactEmail(Operator.END_WITH, contactEmail);
     }
 
-    public CorporateCustomerRequest<T> withCitySoundingLike(String city){
-       return withCity(Operator.SOUNDS_LIKE, city);
+    public CorporateCustomerRequest<T> withContactEmailIs(String contactEmail){
+       return withContactEmail(Operator.EQUAL, contactEmail);
+    }
+
+    public CorporateCustomerRequest<T> withContactEmailSoundingLike(String contactEmail){
+       return withContactEmail(Operator.SOUNDS_LIKE, contactEmail);
     }
 
 
 
-    public CorporateCustomerRequest<T> filterByCountry(String... country){
-      if (country == null || country.length == 0) {
-        throw new IllegalArgumentException("filterByCountry parameter country cannot be empty");
+    public CorporateCustomerRequest<T> filterByContactPhone(String... contactPhone){
+      if (contactPhone == null || contactPhone.length == 0) {
+        throw new IllegalArgumentException("filterByContactPhone parameter contactPhone cannot be empty");
       }
-      return appendSearchCriteria(createCountryCriteria(Operator.EQUAL, (Object[])country));
+      return appendSearchCriteria(createContactPhoneCriteria(Operator.EQUAL, (Object[])contactPhone));
     }
 
-    public CorporateCustomerRequest<T> withCountry(Operator operator, Object... values){
-       return appendSearchCriteria(createCountryCriteria(operator, values));
+    public CorporateCustomerRequest<T> withContactPhone(Operator operator, Object... values){
+       return appendSearchCriteria(createContactPhoneCriteria(operator, values));
     }
 
-    public CorporateCustomerRequest<T> withCountryIsUnknown(){
-       return withCountry(Operator.IS_NULL);
+    public CorporateCustomerRequest<T> withContactPhoneIsUnknown(){
+       return withContactPhone(Operator.IS_NULL);
     }
 
-    public CorporateCustomerRequest<T> withCountryIsKnown(){
-       return withCountry(Operator.IS_NOT_NULL);
+    public CorporateCustomerRequest<T> withContactPhoneIsKnown(){
+       return withContactPhone(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCountryCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CorporateCustomer.COUNTRY_PROPERTY, operator, values);
+    public SearchCriteria createContactPhoneCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CorporateCustomer.CONTACT_PHONE_PROPERTY, operator, values);
     }
 
-    public CorporateCustomerRequest<T> withCountryGreaterThan(String country){
-       return withCountry(Operator.GREATER_THAN, country);
+    public CorporateCustomerRequest<T> withContactPhoneGreaterThan(String contactPhone){
+       return withContactPhone(Operator.GREATER_THAN, contactPhone);
     }
 
-    public CorporateCustomerRequest<T> withCountryGreaterThanOrEqualTo(String country){
-       return withCountry(Operator.GREATER_THAN_OR_EQUAL, country);
+    public CorporateCustomerRequest<T> withContactPhoneGreaterThanOrEqualTo(String contactPhone){
+       return withContactPhone(Operator.GREATER_THAN_OR_EQUAL, contactPhone);
     }
 
-    public CorporateCustomerRequest<T> withCountryLessThan(String country){
-       return withCountry(Operator.LESS_THAN, country);
+    public CorporateCustomerRequest<T> withContactPhoneLessThan(String contactPhone){
+       return withContactPhone(Operator.LESS_THAN, contactPhone);
     }
 
-    public CorporateCustomerRequest<T> withCountryLessThanOrEqualTo(String country){
-       return withCountry(Operator.LESS_THAN_OR_EQUAL, country);
+    public CorporateCustomerRequest<T> withContactPhoneLessThanOrEqualTo(String contactPhone){
+       return withContactPhone(Operator.LESS_THAN_OR_EQUAL, contactPhone);
     }
 
-    public CorporateCustomerRequest<T> withCountryBetween(String startOfCountry, String endOfCountry){
-       return withCountry(Operator.BETWEEN, startOfCountry, endOfCountry);
+    public CorporateCustomerRequest<T> withContactPhoneBetween(String startOfContactPhone, String endOfContactPhone){
+       return withContactPhone(Operator.BETWEEN, startOfContactPhone, endOfContactPhone);
     }
-    public CorporateCustomerRequest<T> withCountryStartingWith(String country){
-       return withCountry(Operator.BEGIN_WITH, country);
+    public CorporateCustomerRequest<T> withContactPhoneStartingWith(String contactPhone){
+       return withContactPhone(Operator.BEGIN_WITH, contactPhone);
     }
-    public CorporateCustomerRequest<T> withCountryContaining(String country){
-       return withCountry(Operator.CONTAIN, country);
-    }
-
-    public CorporateCustomerRequest<T> withCountryEndingWith(String country){
-       return withCountry(Operator.END_WITH, country);
+    public CorporateCustomerRequest<T> withContactPhoneContaining(String contactPhone){
+       return withContactPhone(Operator.CONTAIN, contactPhone);
     }
 
-    public CorporateCustomerRequest<T> withCountryIs(String country){
-       return withCountry(Operator.EQUAL, country);
+    public CorporateCustomerRequest<T> withContactPhoneEndingWith(String contactPhone){
+       return withContactPhone(Operator.END_WITH, contactPhone);
     }
 
-    public CorporateCustomerRequest<T> withCountrySoundingLike(String country){
-       return withCountry(Operator.SOUNDS_LIKE, country);
+    public CorporateCustomerRequest<T> withContactPhoneIs(String contactPhone){
+       return withContactPhone(Operator.EQUAL, contactPhone);
     }
 
-
-
-    public CorporateCustomerRequest<T> filterByTaxId(String... taxId){
-      if (taxId == null || taxId.length == 0) {
-        throw new IllegalArgumentException("filterByTaxId parameter taxId cannot be empty");
-      }
-      return appendSearchCriteria(createTaxIdCriteria(Operator.EQUAL, (Object[])taxId));
-    }
-
-    public CorporateCustomerRequest<T> withTaxId(Operator operator, Object... values){
-       return appendSearchCriteria(createTaxIdCriteria(operator, values));
-    }
-
-    public CorporateCustomerRequest<T> withTaxIdIsUnknown(){
-       return withTaxId(Operator.IS_NULL);
-    }
-
-    public CorporateCustomerRequest<T> withTaxIdIsKnown(){
-       return withTaxId(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createTaxIdCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CorporateCustomer.TAX_ID_PROPERTY, operator, values);
-    }
-
-    public CorporateCustomerRequest<T> withTaxIdGreaterThan(String taxId){
-       return withTaxId(Operator.GREATER_THAN, taxId);
-    }
-
-    public CorporateCustomerRequest<T> withTaxIdGreaterThanOrEqualTo(String taxId){
-       return withTaxId(Operator.GREATER_THAN_OR_EQUAL, taxId);
-    }
-
-    public CorporateCustomerRequest<T> withTaxIdLessThan(String taxId){
-       return withTaxId(Operator.LESS_THAN, taxId);
-    }
-
-    public CorporateCustomerRequest<T> withTaxIdLessThanOrEqualTo(String taxId){
-       return withTaxId(Operator.LESS_THAN_OR_EQUAL, taxId);
-    }
-
-    public CorporateCustomerRequest<T> withTaxIdBetween(String startOfTaxId, String endOfTaxId){
-       return withTaxId(Operator.BETWEEN, startOfTaxId, endOfTaxId);
-    }
-    public CorporateCustomerRequest<T> withTaxIdStartingWith(String taxId){
-       return withTaxId(Operator.BEGIN_WITH, taxId);
-    }
-    public CorporateCustomerRequest<T> withTaxIdContaining(String taxId){
-       return withTaxId(Operator.CONTAIN, taxId);
-    }
-
-    public CorporateCustomerRequest<T> withTaxIdEndingWith(String taxId){
-       return withTaxId(Operator.END_WITH, taxId);
-    }
-
-    public CorporateCustomerRequest<T> withTaxIdIs(String taxId){
-       return withTaxId(Operator.EQUAL, taxId);
-    }
-
-    public CorporateCustomerRequest<T> withTaxIdSoundingLike(String taxId){
-       return withTaxId(Operator.SOUNDS_LIKE, taxId);
+    public CorporateCustomerRequest<T> withContactPhoneSoundingLike(String contactPhone){
+       return withContactPhone(Operator.SOUNDS_LIKE, contactPhone);
     }
 
 
@@ -908,6 +844,136 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
     public CorporateCustomerRequest<T> withCustomerTypeSoundingLike(String customerType){
        return withCustomerType(Operator.SOUNDS_LIKE, customerType);
     }
+
+
+
+    public CorporateCustomerRequest<T> filterByCreatedAt(LocalDateTime... createdAt){
+      if (createdAt == null || createdAt.length == 0) {
+        throw new IllegalArgumentException("filterByCreatedAt parameter createdAt cannot be empty");
+      }
+      return appendSearchCriteria(createCreatedAtCriteria(Operator.EQUAL, (Object[])createdAt));
+    }
+
+    public CorporateCustomerRequest<T> withCreatedAt(Operator operator, Object... values){
+       return appendSearchCriteria(createCreatedAtCriteria(operator, values));
+    }
+
+    public CorporateCustomerRequest<T> withCreatedAtIsUnknown(){
+       return withCreatedAt(Operator.IS_NULL);
+    }
+
+    public CorporateCustomerRequest<T> withCreatedAtIsKnown(){
+       return withCreatedAt(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createCreatedAtCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CorporateCustomer.CREATED_AT_PROPERTY, operator, values);
+    }
+
+    public CorporateCustomerRequest<T> withCreatedAtGreaterThan(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public CorporateCustomerRequest<T> withCreatedAtGreaterThanOrEqualTo(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN_OR_EQUAL, createdAt);
+    }
+
+    public CorporateCustomerRequest<T> withCreatedAtLessThan(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public CorporateCustomerRequest<T> withCreatedAtLessThanOrEqualTo(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN_OR_EQUAL, createdAt);
+    }
+
+    public CorporateCustomerRequest<T> withCreatedAtBetween(LocalDateTime startOfCreatedAt, LocalDateTime endOfCreatedAt){
+       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    }
+    public CorporateCustomerRequest<T> withCreatedAtBefore(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public CorporateCustomerRequest<T> withCreatedAtBefore(Date createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public CorporateCustomerRequest<T> withCreatedAtAfter(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public CorporateCustomerRequest<T> withCreatedAtAfter(Date createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public CorporateCustomerRequest<T> withCreatedAtBetween(Date startOfCreatedAt, Date endOfCreatedAt){
+       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    }
+
+
+
+
+    public CorporateCustomerRequest<T> filterByUpdatedAt(LocalDateTime... updatedAt){
+      if (updatedAt == null || updatedAt.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedAt parameter updatedAt cannot be empty");
+      }
+      return appendSearchCriteria(createUpdatedAtCriteria(Operator.EQUAL, (Object[])updatedAt));
+    }
+
+    public CorporateCustomerRequest<T> withUpdatedAt(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedAtCriteria(operator, values));
+    }
+
+    public CorporateCustomerRequest<T> withUpdatedAtIsUnknown(){
+       return withUpdatedAt(Operator.IS_NULL);
+    }
+
+    public CorporateCustomerRequest<T> withUpdatedAtIsKnown(){
+       return withUpdatedAt(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createUpdatedAtCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CorporateCustomer.UPDATED_AT_PROPERTY, operator, values);
+    }
+
+    public CorporateCustomerRequest<T> withUpdatedAtGreaterThan(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public CorporateCustomerRequest<T> withUpdatedAtGreaterThanOrEqualTo(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN_OR_EQUAL, updatedAt);
+    }
+
+    public CorporateCustomerRequest<T> withUpdatedAtLessThan(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public CorporateCustomerRequest<T> withUpdatedAtLessThanOrEqualTo(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN_OR_EQUAL, updatedAt);
+    }
+
+    public CorporateCustomerRequest<T> withUpdatedAtBetween(LocalDateTime startOfUpdatedAt, LocalDateTime endOfUpdatedAt){
+       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    }
+    public CorporateCustomerRequest<T> withUpdatedAtBefore(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public CorporateCustomerRequest<T> withUpdatedAtBefore(Date updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public CorporateCustomerRequest<T> withUpdatedAtAfter(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public CorporateCustomerRequest<T> withUpdatedAtAfter(Date updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public CorporateCustomerRequest<T> withUpdatedAtBetween(Date startOfUpdatedAt, Date endOfUpdatedAt){
+       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    }
+
 
 
 
@@ -984,35 +1050,20 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
     public CorporateCustomerRequest<T> haveNoServiceQuotes(){
         return withoutServiceQuoteListMatching(Q.serviceQuotes().unlimited());
     }
-    public CorporateCustomerRequest<T> withFeedbackReviewListMatching(FeedbackReviewRequest feedbackReviewRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(CorporateCustomer.ID_PROPERTY, feedbackReviewRequest, FeedbackReview.CORPORATE_CUSTOMER_PROPERTY));
+    public CorporateCustomerRequest<T> withServiceContractListMatching(ServiceContractRequest serviceContractRequest){
+        return appendSearchCriteria(new SubQuerySearchCriteria(CorporateCustomer.ID_PROPERTY, serviceContractRequest, ServiceContract.CORPORATE_CUSTOMER_PROPERTY));
     }
 
-    public CorporateCustomerRequest<T> withoutFeedbackReviewListMatching(FeedbackReviewRequest feedbackReviewRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(CorporateCustomer.ID_PROPERTY, feedbackReviewRequest, FeedbackReview.CORPORATE_CUSTOMER_PROPERTY)));
+    public CorporateCustomerRequest<T> withoutServiceContractListMatching(ServiceContractRequest serviceContractRequest){
+        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(CorporateCustomer.ID_PROPERTY, serviceContractRequest, ServiceContract.CORPORATE_CUSTOMER_PROPERTY)));
     }
 
-    public CorporateCustomerRequest<T> haveFeedbackReviews(){
-        return withFeedbackReviewListMatching(Q.feedbackReviews().unlimited());
+    public CorporateCustomerRequest<T> haveServiceContracts(){
+        return withServiceContractListMatching(Q.serviceContracts().unlimited());
     }
 
-    public CorporateCustomerRequest<T> haveNoFeedbackReviews(){
-        return withoutFeedbackReviewListMatching(Q.feedbackReviews().unlimited());
-    }
-    public CorporateCustomerRequest<T> withCustomerLoyaltyListMatching(CustomerLoyaltyRequest customerLoyaltyRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(CorporateCustomer.ID_PROPERTY, customerLoyaltyRequest, CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY));
-    }
-
-    public CorporateCustomerRequest<T> withoutCustomerLoyaltyListMatching(CustomerLoyaltyRequest customerLoyaltyRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(CorporateCustomer.ID_PROPERTY, customerLoyaltyRequest, CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY)));
-    }
-
-    public CorporateCustomerRequest<T> haveCustomerLoyalties(){
-        return withCustomerLoyaltyListMatching(Q.customerLoyalties().unlimited());
-    }
-
-    public CorporateCustomerRequest<T> haveNoCustomerLoyalties(){
-        return withoutCustomerLoyaltyListMatching(Q.customerLoyalties().unlimited());
+    public CorporateCustomerRequest<T> haveNoServiceContracts(){
+        return withoutServiceContractListMatching(Q.serviceContracts().unlimited());
     }
 
     public CorporateCustomerRequest<T> count(){
@@ -1023,6 +1074,70 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
         super.count(retName);
         return this;
     }
+    public CorporateCustomerRequest minEmployeeCount(){
+        return minEmployeeCountAs(prefix("minOf",CorporateCustomer.EMPLOYEE_COUNT_PROPERTY));
+    }
+
+    public CorporateCustomerRequest minEmployeeCountAs(String retName){
+        super.min(retName, CorporateCustomer.EMPLOYEE_COUNT_PROPERTY);
+        return this;
+    }
+    public CorporateCustomerRequest maxEmployeeCount(){
+        return maxEmployeeCountAs(prefix("maxOf",CorporateCustomer.EMPLOYEE_COUNT_PROPERTY));
+    }
+
+    public CorporateCustomerRequest maxEmployeeCountAs(String retName){
+        super.max(retName, CorporateCustomer.EMPLOYEE_COUNT_PROPERTY);
+        return this;
+    }
+    public CorporateCustomerRequest sumEmployeeCount(){
+        return sumEmployeeCountAs(prefix("sumOf",CorporateCustomer.EMPLOYEE_COUNT_PROPERTY));
+    }
+
+    public CorporateCustomerRequest sumEmployeeCountAs(String retName){
+        super.sum(retName, CorporateCustomer.EMPLOYEE_COUNT_PROPERTY);
+        return this;
+    }
+    public CorporateCustomerRequest avgEmployeeCount(){
+        return avgEmployeeCountAs(prefix("avgOf",CorporateCustomer.EMPLOYEE_COUNT_PROPERTY));
+    }
+
+    public CorporateCustomerRequest avgEmployeeCountAs(String retName){
+        super.avg(retName, CorporateCustomer.EMPLOYEE_COUNT_PROPERTY);
+        return this;
+    }
+    public CorporateCustomerRequest standardDeviationEmployeeCount(){
+        return standardDeviationEmployeeCountAs(prefix("standardDeviationOf",CorporateCustomer.EMPLOYEE_COUNT_PROPERTY));
+    }
+
+    public CorporateCustomerRequest standardDeviationEmployeeCountAs(String retName){
+        super.standardDeviation(retName, CorporateCustomer.EMPLOYEE_COUNT_PROPERTY);
+        return this;
+    }
+    public CorporateCustomerRequest squareRootOfPopulationStandardDeviationEmployeeCount(){
+        return squareRootOfPopulationStandardDeviationEmployeeCountAs(prefix("squareRootOfPopulationStandardDeviationOf",CorporateCustomer.EMPLOYEE_COUNT_PROPERTY));
+    }
+
+    public CorporateCustomerRequest squareRootOfPopulationStandardDeviationEmployeeCountAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, CorporateCustomer.EMPLOYEE_COUNT_PROPERTY);
+        return this;
+    }
+    public CorporateCustomerRequest sampleVarianceEmployeeCount(){
+        return sampleVarianceEmployeeCountAs(prefix("sampleVarianceOf",CorporateCustomer.EMPLOYEE_COUNT_PROPERTY));
+    }
+
+    public CorporateCustomerRequest sampleVarianceEmployeeCountAs(String retName){
+        super.sampleVariance(retName, CorporateCustomer.EMPLOYEE_COUNT_PROPERTY);
+        return this;
+    }
+    public CorporateCustomerRequest samplePopulationVarianceEmployeeCount(){
+        return samplePopulationVarianceEmployeeCountAs(prefix("samplePopulationVarianceOf",CorporateCustomer.EMPLOYEE_COUNT_PROPERTY));
+    }
+
+    public CorporateCustomerRequest samplePopulationVarianceEmployeeCountAs(String retName){
+        super.samplePopulationVariance(retName, CorporateCustomer.EMPLOYEE_COUNT_PROPERTY);
+        return this;
+    }
     public CorporateCustomerRequest<T> groupByCustomerContactsWithDetails(CustomerContactRequest subRequest){
        aggregate(CorporateCustomer.CUSTOMER_CONTACT_LIST_PROPERTY, subRequest);
        return this;
@@ -1031,12 +1146,8 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
        aggregate(CorporateCustomer.SERVICE_QUOTE_LIST_PROPERTY, subRequest);
        return this;
     }
-    public CorporateCustomerRequest<T> groupByFeedbackReviewsWithDetails(FeedbackReviewRequest subRequest){
-       aggregate(CorporateCustomer.FEEDBACK_REVIEW_LIST_PROPERTY, subRequest);
-       return this;
-    }
-    public CorporateCustomerRequest<T> groupByCustomerLoyaltiesWithDetails(CustomerLoyaltyRequest subRequest){
-       aggregate(CorporateCustomer.CUSTOMER_LOYALTY_LIST_PROPERTY, subRequest);
+    public CorporateCustomerRequest<T> groupByServiceContractsWithDetails(ServiceContractRequest subRequest){
+       aggregate(CorporateCustomer.SERVICE_CONTRACT_LIST_PROPERTY, subRequest);
        return this;
     }
 
@@ -1070,108 +1181,93 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByContactPerson(){
-       groupBy(CorporateCustomer.CONTACT_PERSON_PROPERTY);
+    public CorporateCustomerRequest<T> groupByRegistrationNumber(){
+       groupBy(CorporateCustomer.REGISTRATION_NUMBER_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByContactPersonAs(String retName){
-       groupBy(retName, CorporateCustomer.CONTACT_PERSON_PROPERTY);
+    public CorporateCustomerRequest<T> groupByRegistrationNumberAs(String retName){
+       groupBy(retName, CorporateCustomer.REGISTRATION_NUMBER_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByContactPersonWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CorporateCustomer.CONTACT_PERSON_PROPERTY, function);
+    public CorporateCustomerRequest<T> groupByRegistrationNumberWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CorporateCustomer.REGISTRATION_NUMBER_PROPERTY, function);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByPhone(){
-       groupBy(CorporateCustomer.PHONE_PROPERTY);
+    public CorporateCustomerRequest<T> groupByIndustry(){
+       groupBy(CorporateCustomer.INDUSTRY_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByPhoneAs(String retName){
-       groupBy(retName, CorporateCustomer.PHONE_PROPERTY);
+    public CorporateCustomerRequest<T> groupByIndustryAs(String retName){
+       groupBy(retName, CorporateCustomer.INDUSTRY_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByPhoneWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CorporateCustomer.PHONE_PROPERTY, function);
+    public CorporateCustomerRequest<T> groupByIndustryWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CorporateCustomer.INDUSTRY_PROPERTY, function);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByEmail(){
-       groupBy(CorporateCustomer.EMAIL_PROPERTY);
+    public CorporateCustomerRequest<T> groupByEmployeeCount(){
+       groupBy(CorporateCustomer.EMPLOYEE_COUNT_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByEmailAs(String retName){
-       groupBy(retName, CorporateCustomer.EMAIL_PROPERTY);
+    public CorporateCustomerRequest<T> groupByEmployeeCountAs(String retName){
+       groupBy(retName, CorporateCustomer.EMPLOYEE_COUNT_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByEmailWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CorporateCustomer.EMAIL_PROPERTY, function);
+    public CorporateCustomerRequest<T> groupByEmployeeCountWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CorporateCustomer.EMPLOYEE_COUNT_PROPERTY, function);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByAddress(){
-       groupBy(CorporateCustomer.ADDRESS_PROPERTY);
+    public CorporateCustomerRequest<T> groupByBillingAddress(){
+       groupBy(CorporateCustomer.BILLING_ADDRESS_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByAddressAs(String retName){
-       groupBy(retName, CorporateCustomer.ADDRESS_PROPERTY);
+    public CorporateCustomerRequest<T> groupByBillingAddressAs(String retName){
+       groupBy(retName, CorporateCustomer.BILLING_ADDRESS_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByAddressWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CorporateCustomer.ADDRESS_PROPERTY, function);
+    public CorporateCustomerRequest<T> groupByBillingAddressWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CorporateCustomer.BILLING_ADDRESS_PROPERTY, function);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByCity(){
-       groupBy(CorporateCustomer.CITY_PROPERTY);
+    public CorporateCustomerRequest<T> groupByContactEmail(){
+       groupBy(CorporateCustomer.CONTACT_EMAIL_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByCityAs(String retName){
-       groupBy(retName, CorporateCustomer.CITY_PROPERTY);
+    public CorporateCustomerRequest<T> groupByContactEmailAs(String retName){
+       groupBy(retName, CorporateCustomer.CONTACT_EMAIL_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByCityWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CorporateCustomer.CITY_PROPERTY, function);
+    public CorporateCustomerRequest<T> groupByContactEmailWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CorporateCustomer.CONTACT_EMAIL_PROPERTY, function);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByCountry(){
-       groupBy(CorporateCustomer.COUNTRY_PROPERTY);
+    public CorporateCustomerRequest<T> groupByContactPhone(){
+       groupBy(CorporateCustomer.CONTACT_PHONE_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByCountryAs(String retName){
-       groupBy(retName, CorporateCustomer.COUNTRY_PROPERTY);
+    public CorporateCustomerRequest<T> groupByContactPhoneAs(String retName){
+       groupBy(retName, CorporateCustomer.CONTACT_PHONE_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> groupByCountryWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CorporateCustomer.COUNTRY_PROPERTY, function);
-       return this;
-    }
-
-    public CorporateCustomerRequest<T> groupByTaxId(){
-       groupBy(CorporateCustomer.TAX_ID_PROPERTY);
-       return this;
-    }
-
-    public CorporateCustomerRequest<T> groupByTaxIdAs(String retName){
-       groupBy(retName, CorporateCustomer.TAX_ID_PROPERTY);
-       return this;
-    }
-
-    public CorporateCustomerRequest<T> groupByTaxIdWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CorporateCustomer.TAX_ID_PROPERTY, function);
+    public CorporateCustomerRequest<T> groupByContactPhoneWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CorporateCustomer.CONTACT_PHONE_PROPERTY, function);
        return this;
     }
 
@@ -1187,6 +1283,36 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
 
     public CorporateCustomerRequest<T> groupByCustomerTypeWithFunction(String retName, AggrFunction function){
        groupBy(retName, CorporateCustomer.CUSTOMER_TYPE_PROPERTY, function);
+       return this;
+    }
+
+    public CorporateCustomerRequest<T> groupByCreatedAt(){
+       groupBy(CorporateCustomer.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CorporateCustomerRequest<T> groupByCreatedAtAs(String retName){
+       groupBy(retName, CorporateCustomer.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CorporateCustomerRequest<T> groupByCreatedAtWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CorporateCustomer.CREATED_AT_PROPERTY, function);
+       return this;
+    }
+
+    public CorporateCustomerRequest<T> groupByUpdatedAt(){
+       groupBy(CorporateCustomer.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CorporateCustomerRequest<T> groupByUpdatedAtAs(String retName){
+       groupBy(retName, CorporateCustomer.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CorporateCustomerRequest<T> groupByUpdatedAtWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CorporateCustomer.UPDATED_AT_PROPERTY, function);
        return this;
     }
 
@@ -1235,130 +1361,104 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
        addOrderByDescendingUsingGBK(CorporateCustomer.NAME_PROPERTY);
        return this;
     }
-    public CorporateCustomerRequest<T> orderByContactPersonAscending(){
-       addOrderByAscending(CorporateCustomer.CONTACT_PERSON_PROPERTY);
+    public CorporateCustomerRequest<T> orderByRegistrationNumberAscending(){
+       addOrderByAscending(CorporateCustomer.REGISTRATION_NUMBER_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> orderByContactPersonDescending(){
-       addOrderByDescending(CorporateCustomer.CONTACT_PERSON_PROPERTY);
+    public CorporateCustomerRequest<T> orderByRegistrationNumberDescending(){
+       addOrderByDescending(CorporateCustomer.REGISTRATION_NUMBER_PROPERTY);
        return this;
     }
-    public CorporateCustomerRequest<T> orderByContactPersonAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(CorporateCustomer.CONTACT_PERSON_PROPERTY);
-       return this;
-    }
-
-    public CorporateCustomerRequest<T> orderByContactPersonDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(CorporateCustomer.CONTACT_PERSON_PROPERTY);
-       return this;
-    }
-    public CorporateCustomerRequest<T> orderByPhoneAscending(){
-       addOrderByAscending(CorporateCustomer.PHONE_PROPERTY);
+    public CorporateCustomerRequest<T> orderByRegistrationNumberAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(CorporateCustomer.REGISTRATION_NUMBER_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> orderByPhoneDescending(){
-       addOrderByDescending(CorporateCustomer.PHONE_PROPERTY);
+    public CorporateCustomerRequest<T> orderByRegistrationNumberDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(CorporateCustomer.REGISTRATION_NUMBER_PROPERTY);
        return this;
     }
-    public CorporateCustomerRequest<T> orderByPhoneAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(CorporateCustomer.PHONE_PROPERTY);
-       return this;
-    }
-
-    public CorporateCustomerRequest<T> orderByPhoneDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(CorporateCustomer.PHONE_PROPERTY);
-       return this;
-    }
-    public CorporateCustomerRequest<T> orderByEmailAscending(){
-       addOrderByAscending(CorporateCustomer.EMAIL_PROPERTY);
+    public CorporateCustomerRequest<T> orderByIndustryAscending(){
+       addOrderByAscending(CorporateCustomer.INDUSTRY_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> orderByEmailDescending(){
-       addOrderByDescending(CorporateCustomer.EMAIL_PROPERTY);
+    public CorporateCustomerRequest<T> orderByIndustryDescending(){
+       addOrderByDescending(CorporateCustomer.INDUSTRY_PROPERTY);
        return this;
     }
-    public CorporateCustomerRequest<T> orderByEmailAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(CorporateCustomer.EMAIL_PROPERTY);
-       return this;
-    }
-
-    public CorporateCustomerRequest<T> orderByEmailDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(CorporateCustomer.EMAIL_PROPERTY);
-       return this;
-    }
-    public CorporateCustomerRequest<T> orderByAddressAscending(){
-       addOrderByAscending(CorporateCustomer.ADDRESS_PROPERTY);
+    public CorporateCustomerRequest<T> orderByIndustryAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(CorporateCustomer.INDUSTRY_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> orderByAddressDescending(){
-       addOrderByDescending(CorporateCustomer.ADDRESS_PROPERTY);
+    public CorporateCustomerRequest<T> orderByIndustryDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(CorporateCustomer.INDUSTRY_PROPERTY);
        return this;
     }
-    public CorporateCustomerRequest<T> orderByAddressAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(CorporateCustomer.ADDRESS_PROPERTY);
-       return this;
-    }
-
-    public CorporateCustomerRequest<T> orderByAddressDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(CorporateCustomer.ADDRESS_PROPERTY);
-       return this;
-    }
-    public CorporateCustomerRequest<T> orderByCityAscending(){
-       addOrderByAscending(CorporateCustomer.CITY_PROPERTY);
+    public CorporateCustomerRequest<T> orderByEmployeeCountAscending(){
+       addOrderByAscending(CorporateCustomer.EMPLOYEE_COUNT_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> orderByCityDescending(){
-       addOrderByDescending(CorporateCustomer.CITY_PROPERTY);
-       return this;
-    }
-    public CorporateCustomerRequest<T> orderByCityAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(CorporateCustomer.CITY_PROPERTY);
+    public CorporateCustomerRequest<T> orderByEmployeeCountDescending(){
+       addOrderByDescending(CorporateCustomer.EMPLOYEE_COUNT_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> orderByCityDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(CorporateCustomer.CITY_PROPERTY);
-       return this;
-    }
-    public CorporateCustomerRequest<T> orderByCountryAscending(){
-       addOrderByAscending(CorporateCustomer.COUNTRY_PROPERTY);
+    public CorporateCustomerRequest<T> orderByBillingAddressAscending(){
+       addOrderByAscending(CorporateCustomer.BILLING_ADDRESS_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> orderByCountryDescending(){
-       addOrderByDescending(CorporateCustomer.COUNTRY_PROPERTY);
+    public CorporateCustomerRequest<T> orderByBillingAddressDescending(){
+       addOrderByDescending(CorporateCustomer.BILLING_ADDRESS_PROPERTY);
        return this;
     }
-    public CorporateCustomerRequest<T> orderByCountryAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(CorporateCustomer.COUNTRY_PROPERTY);
-       return this;
-    }
-
-    public CorporateCustomerRequest<T> orderByCountryDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(CorporateCustomer.COUNTRY_PROPERTY);
-       return this;
-    }
-    public CorporateCustomerRequest<T> orderByTaxIdAscending(){
-       addOrderByAscending(CorporateCustomer.TAX_ID_PROPERTY);
+    public CorporateCustomerRequest<T> orderByBillingAddressAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(CorporateCustomer.BILLING_ADDRESS_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> orderByTaxIdDescending(){
-       addOrderByDescending(CorporateCustomer.TAX_ID_PROPERTY);
+    public CorporateCustomerRequest<T> orderByBillingAddressDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(CorporateCustomer.BILLING_ADDRESS_PROPERTY);
        return this;
     }
-    public CorporateCustomerRequest<T> orderByTaxIdAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(CorporateCustomer.TAX_ID_PROPERTY);
+    public CorporateCustomerRequest<T> orderByContactEmailAscending(){
+       addOrderByAscending(CorporateCustomer.CONTACT_EMAIL_PROPERTY);
        return this;
     }
 
-    public CorporateCustomerRequest<T> orderByTaxIdDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(CorporateCustomer.TAX_ID_PROPERTY);
+    public CorporateCustomerRequest<T> orderByContactEmailDescending(){
+       addOrderByDescending(CorporateCustomer.CONTACT_EMAIL_PROPERTY);
+       return this;
+    }
+    public CorporateCustomerRequest<T> orderByContactEmailAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(CorporateCustomer.CONTACT_EMAIL_PROPERTY);
+       return this;
+    }
+
+    public CorporateCustomerRequest<T> orderByContactEmailDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(CorporateCustomer.CONTACT_EMAIL_PROPERTY);
+       return this;
+    }
+    public CorporateCustomerRequest<T> orderByContactPhoneAscending(){
+       addOrderByAscending(CorporateCustomer.CONTACT_PHONE_PROPERTY);
+       return this;
+    }
+
+    public CorporateCustomerRequest<T> orderByContactPhoneDescending(){
+       addOrderByDescending(CorporateCustomer.CONTACT_PHONE_PROPERTY);
+       return this;
+    }
+    public CorporateCustomerRequest<T> orderByContactPhoneAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(CorporateCustomer.CONTACT_PHONE_PROPERTY);
+       return this;
+    }
+
+    public CorporateCustomerRequest<T> orderByContactPhoneDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(CorporateCustomer.CONTACT_PHONE_PROPERTY);
        return this;
     }
     public CorporateCustomerRequest<T> orderByCustomerTypeAscending(){
@@ -1379,6 +1479,26 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
        addOrderByDescendingUsingGBK(CorporateCustomer.CUSTOMER_TYPE_PROPERTY);
        return this;
     }
+    public CorporateCustomerRequest<T> orderByCreatedAtAscending(){
+       addOrderByAscending(CorporateCustomer.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CorporateCustomerRequest<T> orderByCreatedAtDescending(){
+       addOrderByDescending(CorporateCustomer.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CorporateCustomerRequest<T> orderByUpdatedAtAscending(){
+       addOrderByAscending(CorporateCustomer.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CorporateCustomerRequest<T> orderByUpdatedAtDescending(){
+       addOrderByDescending(CorporateCustomer.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
     public CorporateCustomerRequest<T> orderByVersionAscending(){
        addOrderByAscending(CorporateCustomer.VERSION_PROPERTY);
        return this;
@@ -1416,31 +1536,18 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
     public CorporateCustomerRequest<T> statsFromServiceQuotes(ServiceQuoteRequest subRequest){
        return statsFromServiceQuotesAs(REFINEMENTS, subRequest);
     }
-    public CorporateCustomerRequest<T> statsFromFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-       return statsFromFeedbackReviewsAs(name, subRequest, false);
+    public CorporateCustomerRequest<T> statsFromServiceContractsAs(String name, ServiceContractRequest subRequest){
+       return statsFromServiceContractsAs(name, subRequest, false);
     }
 
-    public CorporateCustomerRequest<T> statsFromFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(FeedbackReview.CORPORATE_CUSTOMER_PROPERTY);
+    public CorporateCustomerRequest<T> statsFromServiceContractsAs(String name, ServiceContractRequest subRequest, boolean singleResult){
+       subRequest.setPartitionProperty(ServiceContract.CORPORATE_CUSTOMER_PROPERTY);
        addAggregateDynamicProperty(name, subRequest, singleResult);
        return this;
     }
 
-    public CorporateCustomerRequest<T> statsFromFeedbackReviews(FeedbackReviewRequest subRequest){
-       return statsFromFeedbackReviewsAs(REFINEMENTS, subRequest);
-    }
-    public CorporateCustomerRequest<T> statsFromCustomerLoyaltiesAs(String name, CustomerLoyaltyRequest subRequest){
-       return statsFromCustomerLoyaltiesAs(name, subRequest, false);
-    }
-
-    public CorporateCustomerRequest<T> statsFromCustomerLoyaltiesAs(String name, CustomerLoyaltyRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY);
-       addAggregateDynamicProperty(name, subRequest, singleResult);
-       return this;
-    }
-
-    public CorporateCustomerRequest<T> statsFromCustomerLoyalties(CustomerLoyaltyRequest subRequest){
-       return statsFromCustomerLoyaltiesAs(REFINEMENTS, subRequest);
+    public CorporateCustomerRequest<T> statsFromServiceContracts(ServiceContractRequest subRequest){
+       return statsFromServiceContractsAs(REFINEMENTS, subRequest);
     }
     public CorporateCustomerRequest<T> countCustomerContacts(){
         return countCustomerContactsAs("Count");
@@ -1464,27 +1571,16 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
     public CorporateCustomerRequest<T> countServiceQuotesWith(String name, ServiceQuoteRequest subRequest){
         return statsFromServiceQuotesAs(name, subRequest.count(), true);
     }
-    public CorporateCustomerRequest<T> countFeedbackReviews(){
-        return countFeedbackReviewsAs("Count");
+    public CorporateCustomerRequest<T> countServiceContracts(){
+        return countServiceContractsAs("Count");
     }
 
-    public CorporateCustomerRequest<T> countFeedbackReviewsAs(String name){
-        return countFeedbackReviewsWith(name, Q.feedbackReviews().unlimited());
+    public CorporateCustomerRequest<T> countServiceContractsAs(String name){
+        return countServiceContractsWith(name, Q.serviceContracts().unlimited());
     }
 
-    public CorporateCustomerRequest<T> countFeedbackReviewsWith(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.count(), true);
-    }
-    public CorporateCustomerRequest<T> countCustomerLoyalties(){
-        return countCustomerLoyaltiesAs("Count");
-    }
-
-    public CorporateCustomerRequest<T> countCustomerLoyaltiesAs(String name){
-        return countCustomerLoyaltiesWith(name, Q.customerLoyalties().unlimited());
-    }
-
-    public CorporateCustomerRequest<T> countCustomerLoyaltiesWith(String name, CustomerLoyaltyRequest subRequest){
-        return statsFromCustomerLoyaltiesAs(name, subRequest.count(), true);
+    public CorporateCustomerRequest<T> countServiceContractsWith(String name, ServiceContractRequest subRequest){
+        return statsFromServiceContractsAs(name, subRequest.count(), true);
     }
     public CorporateCustomerRequest<T> minEstimatedCostOfServiceQuotes(){
         return minEstimatedCostOfServiceQuotesAs("minEstimatedCostOfServiceQuotes");
@@ -1574,181 +1670,93 @@ public class CorporateCustomerRequest<T extends CorporateCustomer> extends BaseR
     public CorporateCustomerRequest<T> samplePopulationVarianceEstimatedCostOfServiceQuotesAs(String name, ServiceQuoteRequest subRequest){
         return statsFromServiceQuotesAs(name, subRequest.samplePopulationVarianceEstimatedCost(), true);
     }
-    public CorporateCustomerRequest<T> minRatingOfFeedbackReviews(){
-        return minRatingOfFeedbackReviewsAs("minRatingOfFeedbackReviews");
+    public CorporateCustomerRequest<T> minTotalValueOfServiceContracts(){
+        return minTotalValueOfServiceContractsAs("minTotalValueOfServiceContracts");
     }
 
-    public CorporateCustomerRequest<T> minRatingOfFeedbackReviewsAs(String name){
-        return minRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
+    public CorporateCustomerRequest<T> minTotalValueOfServiceContractsAs(String name){
+        return minTotalValueOfServiceContractsAs(name, Q.serviceContracts().unlimited());
     }
 
-    public CorporateCustomerRequest<T> minRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.minRating(), true);
+    public CorporateCustomerRequest<T> minTotalValueOfServiceContractsAs(String name, ServiceContractRequest subRequest){
+        return statsFromServiceContractsAs(name, subRequest.minTotalValue(), true);
     }
-    public CorporateCustomerRequest<T> maxRatingOfFeedbackReviews(){
-        return maxRatingOfFeedbackReviewsAs("maxRatingOfFeedbackReviews");
-    }
-
-    public CorporateCustomerRequest<T> maxRatingOfFeedbackReviewsAs(String name){
-        return maxRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
+    public CorporateCustomerRequest<T> maxTotalValueOfServiceContracts(){
+        return maxTotalValueOfServiceContractsAs("maxTotalValueOfServiceContracts");
     }
 
-    public CorporateCustomerRequest<T> maxRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.maxRating(), true);
-    }
-    public CorporateCustomerRequest<T> sumRatingOfFeedbackReviews(){
-        return sumRatingOfFeedbackReviewsAs("sumRatingOfFeedbackReviews");
+    public CorporateCustomerRequest<T> maxTotalValueOfServiceContractsAs(String name){
+        return maxTotalValueOfServiceContractsAs(name, Q.serviceContracts().unlimited());
     }
 
-    public CorporateCustomerRequest<T> sumRatingOfFeedbackReviewsAs(String name){
-        return sumRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
+    public CorporateCustomerRequest<T> maxTotalValueOfServiceContractsAs(String name, ServiceContractRequest subRequest){
+        return statsFromServiceContractsAs(name, subRequest.maxTotalValue(), true);
+    }
+    public CorporateCustomerRequest<T> sumTotalValueOfServiceContracts(){
+        return sumTotalValueOfServiceContractsAs("sumTotalValueOfServiceContracts");
     }
 
-    public CorporateCustomerRequest<T> sumRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.sumRating(), true);
-    }
-    public CorporateCustomerRequest<T> avgRatingOfFeedbackReviews(){
-        return avgRatingOfFeedbackReviewsAs("avgRatingOfFeedbackReviews");
+    public CorporateCustomerRequest<T> sumTotalValueOfServiceContractsAs(String name){
+        return sumTotalValueOfServiceContractsAs(name, Q.serviceContracts().unlimited());
     }
 
-    public CorporateCustomerRequest<T> avgRatingOfFeedbackReviewsAs(String name){
-        return avgRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
+    public CorporateCustomerRequest<T> sumTotalValueOfServiceContractsAs(String name, ServiceContractRequest subRequest){
+        return statsFromServiceContractsAs(name, subRequest.sumTotalValue(), true);
+    }
+    public CorporateCustomerRequest<T> avgTotalValueOfServiceContracts(){
+        return avgTotalValueOfServiceContractsAs("avgTotalValueOfServiceContracts");
     }
 
-    public CorporateCustomerRequest<T> avgRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.avgRating(), true);
-    }
-    public CorporateCustomerRequest<T> standardDeviationRatingOfFeedbackReviews(){
-        return standardDeviationRatingOfFeedbackReviewsAs("stdDevRatingOfFeedbackReviews");
+    public CorporateCustomerRequest<T> avgTotalValueOfServiceContractsAs(String name){
+        return avgTotalValueOfServiceContractsAs(name, Q.serviceContracts().unlimited());
     }
 
-    public CorporateCustomerRequest<T> standardDeviationRatingOfFeedbackReviewsAs(String name){
-        return standardDeviationRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
+    public CorporateCustomerRequest<T> avgTotalValueOfServiceContractsAs(String name, ServiceContractRequest subRequest){
+        return statsFromServiceContractsAs(name, subRequest.avgTotalValue(), true);
+    }
+    public CorporateCustomerRequest<T> standardDeviationTotalValueOfServiceContracts(){
+        return standardDeviationTotalValueOfServiceContractsAs("stdDevTotalValueOfServiceContracts");
     }
 
-    public CorporateCustomerRequest<T> standardDeviationRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.standardDeviationRating(), true);
-    }
-    public CorporateCustomerRequest<T> squareRootOfPopulationStandardDeviationRatingOfFeedbackReviews(){
-        return squareRootOfPopulationStandardDeviationRatingOfFeedbackReviewsAs("stdDevPopRatingOfFeedbackReviews");
+    public CorporateCustomerRequest<T> standardDeviationTotalValueOfServiceContractsAs(String name){
+        return standardDeviationTotalValueOfServiceContractsAs(name, Q.serviceContracts().unlimited());
     }
 
-    public CorporateCustomerRequest<T> squareRootOfPopulationStandardDeviationRatingOfFeedbackReviewsAs(String name){
-        return squareRootOfPopulationStandardDeviationRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
+    public CorporateCustomerRequest<T> standardDeviationTotalValueOfServiceContractsAs(String name, ServiceContractRequest subRequest){
+        return statsFromServiceContractsAs(name, subRequest.standardDeviationTotalValue(), true);
+    }
+    public CorporateCustomerRequest<T> squareRootOfPopulationStandardDeviationTotalValueOfServiceContracts(){
+        return squareRootOfPopulationStandardDeviationTotalValueOfServiceContractsAs("stdDevPopTotalValueOfServiceContracts");
     }
 
-    public CorporateCustomerRequest<T> squareRootOfPopulationStandardDeviationRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.squareRootOfPopulationStandardDeviationRating(), true);
-    }
-    public CorporateCustomerRequest<T> sampleVarianceRatingOfFeedbackReviews(){
-        return sampleVarianceRatingOfFeedbackReviewsAs("varSampRatingOfFeedbackReviews");
+    public CorporateCustomerRequest<T> squareRootOfPopulationStandardDeviationTotalValueOfServiceContractsAs(String name){
+        return squareRootOfPopulationStandardDeviationTotalValueOfServiceContractsAs(name, Q.serviceContracts().unlimited());
     }
 
-    public CorporateCustomerRequest<T> sampleVarianceRatingOfFeedbackReviewsAs(String name){
-        return sampleVarianceRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
+    public CorporateCustomerRequest<T> squareRootOfPopulationStandardDeviationTotalValueOfServiceContractsAs(String name, ServiceContractRequest subRequest){
+        return statsFromServiceContractsAs(name, subRequest.squareRootOfPopulationStandardDeviationTotalValue(), true);
+    }
+    public CorporateCustomerRequest<T> sampleVarianceTotalValueOfServiceContracts(){
+        return sampleVarianceTotalValueOfServiceContractsAs("varSampTotalValueOfServiceContracts");
     }
 
-    public CorporateCustomerRequest<T> sampleVarianceRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.sampleVarianceRating(), true);
-    }
-    public CorporateCustomerRequest<T> samplePopulationVarianceRatingOfFeedbackReviews(){
-        return samplePopulationVarianceRatingOfFeedbackReviewsAs("varPopRatingOfFeedbackReviews");
+    public CorporateCustomerRequest<T> sampleVarianceTotalValueOfServiceContractsAs(String name){
+        return sampleVarianceTotalValueOfServiceContractsAs(name, Q.serviceContracts().unlimited());
     }
 
-    public CorporateCustomerRequest<T> samplePopulationVarianceRatingOfFeedbackReviewsAs(String name){
-        return samplePopulationVarianceRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
+    public CorporateCustomerRequest<T> sampleVarianceTotalValueOfServiceContractsAs(String name, ServiceContractRequest subRequest){
+        return statsFromServiceContractsAs(name, subRequest.sampleVarianceTotalValue(), true);
+    }
+    public CorporateCustomerRequest<T> samplePopulationVarianceTotalValueOfServiceContracts(){
+        return samplePopulationVarianceTotalValueOfServiceContractsAs("varPopTotalValueOfServiceContracts");
     }
 
-    public CorporateCustomerRequest<T> samplePopulationVarianceRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.samplePopulationVarianceRating(), true);
-    }
-    public CorporateCustomerRequest<T> minPointsOfCustomerLoyalties(){
-        return minPointsOfCustomerLoyaltiesAs("minPointsOfCustomerLoyalties");
+    public CorporateCustomerRequest<T> samplePopulationVarianceTotalValueOfServiceContractsAs(String name){
+        return samplePopulationVarianceTotalValueOfServiceContractsAs(name, Q.serviceContracts().unlimited());
     }
 
-    public CorporateCustomerRequest<T> minPointsOfCustomerLoyaltiesAs(String name){
-        return minPointsOfCustomerLoyaltiesAs(name, Q.customerLoyalties().unlimited());
-    }
-
-    public CorporateCustomerRequest<T> minPointsOfCustomerLoyaltiesAs(String name, CustomerLoyaltyRequest subRequest){
-        return statsFromCustomerLoyaltiesAs(name, subRequest.minPoints(), true);
-    }
-    public CorporateCustomerRequest<T> maxPointsOfCustomerLoyalties(){
-        return maxPointsOfCustomerLoyaltiesAs("maxPointsOfCustomerLoyalties");
-    }
-
-    public CorporateCustomerRequest<T> maxPointsOfCustomerLoyaltiesAs(String name){
-        return maxPointsOfCustomerLoyaltiesAs(name, Q.customerLoyalties().unlimited());
-    }
-
-    public CorporateCustomerRequest<T> maxPointsOfCustomerLoyaltiesAs(String name, CustomerLoyaltyRequest subRequest){
-        return statsFromCustomerLoyaltiesAs(name, subRequest.maxPoints(), true);
-    }
-    public CorporateCustomerRequest<T> sumPointsOfCustomerLoyalties(){
-        return sumPointsOfCustomerLoyaltiesAs("sumPointsOfCustomerLoyalties");
-    }
-
-    public CorporateCustomerRequest<T> sumPointsOfCustomerLoyaltiesAs(String name){
-        return sumPointsOfCustomerLoyaltiesAs(name, Q.customerLoyalties().unlimited());
-    }
-
-    public CorporateCustomerRequest<T> sumPointsOfCustomerLoyaltiesAs(String name, CustomerLoyaltyRequest subRequest){
-        return statsFromCustomerLoyaltiesAs(name, subRequest.sumPoints(), true);
-    }
-    public CorporateCustomerRequest<T> avgPointsOfCustomerLoyalties(){
-        return avgPointsOfCustomerLoyaltiesAs("avgPointsOfCustomerLoyalties");
-    }
-
-    public CorporateCustomerRequest<T> avgPointsOfCustomerLoyaltiesAs(String name){
-        return avgPointsOfCustomerLoyaltiesAs(name, Q.customerLoyalties().unlimited());
-    }
-
-    public CorporateCustomerRequest<T> avgPointsOfCustomerLoyaltiesAs(String name, CustomerLoyaltyRequest subRequest){
-        return statsFromCustomerLoyaltiesAs(name, subRequest.avgPoints(), true);
-    }
-    public CorporateCustomerRequest<T> standardDeviationPointsOfCustomerLoyalties(){
-        return standardDeviationPointsOfCustomerLoyaltiesAs("stdDevPointsOfCustomerLoyalties");
-    }
-
-    public CorporateCustomerRequest<T> standardDeviationPointsOfCustomerLoyaltiesAs(String name){
-        return standardDeviationPointsOfCustomerLoyaltiesAs(name, Q.customerLoyalties().unlimited());
-    }
-
-    public CorporateCustomerRequest<T> standardDeviationPointsOfCustomerLoyaltiesAs(String name, CustomerLoyaltyRequest subRequest){
-        return statsFromCustomerLoyaltiesAs(name, subRequest.standardDeviationPoints(), true);
-    }
-    public CorporateCustomerRequest<T> squareRootOfPopulationStandardDeviationPointsOfCustomerLoyalties(){
-        return squareRootOfPopulationStandardDeviationPointsOfCustomerLoyaltiesAs("stdDevPopPointsOfCustomerLoyalties");
-    }
-
-    public CorporateCustomerRequest<T> squareRootOfPopulationStandardDeviationPointsOfCustomerLoyaltiesAs(String name){
-        return squareRootOfPopulationStandardDeviationPointsOfCustomerLoyaltiesAs(name, Q.customerLoyalties().unlimited());
-    }
-
-    public CorporateCustomerRequest<T> squareRootOfPopulationStandardDeviationPointsOfCustomerLoyaltiesAs(String name, CustomerLoyaltyRequest subRequest){
-        return statsFromCustomerLoyaltiesAs(name, subRequest.squareRootOfPopulationStandardDeviationPoints(), true);
-    }
-    public CorporateCustomerRequest<T> sampleVariancePointsOfCustomerLoyalties(){
-        return sampleVariancePointsOfCustomerLoyaltiesAs("varSampPointsOfCustomerLoyalties");
-    }
-
-    public CorporateCustomerRequest<T> sampleVariancePointsOfCustomerLoyaltiesAs(String name){
-        return sampleVariancePointsOfCustomerLoyaltiesAs(name, Q.customerLoyalties().unlimited());
-    }
-
-    public CorporateCustomerRequest<T> sampleVariancePointsOfCustomerLoyaltiesAs(String name, CustomerLoyaltyRequest subRequest){
-        return statsFromCustomerLoyaltiesAs(name, subRequest.sampleVariancePoints(), true);
-    }
-    public CorporateCustomerRequest<T> samplePopulationVariancePointsOfCustomerLoyalties(){
-        return samplePopulationVariancePointsOfCustomerLoyaltiesAs("varPopPointsOfCustomerLoyalties");
-    }
-
-    public CorporateCustomerRequest<T> samplePopulationVariancePointsOfCustomerLoyaltiesAs(String name){
-        return samplePopulationVariancePointsOfCustomerLoyaltiesAs(name, Q.customerLoyalties().unlimited());
-    }
-
-    public CorporateCustomerRequest<T> samplePopulationVariancePointsOfCustomerLoyaltiesAs(String name, CustomerLoyaltyRequest subRequest){
-        return statsFromCustomerLoyaltiesAs(name, subRequest.samplePopulationVariancePoints(), true);
+    public CorporateCustomerRequest<T> samplePopulationVarianceTotalValueOfServiceContractsAs(String name, ServiceContractRequest subRequest){
+        return statsFromServiceContractsAs(name, subRequest.samplePopulationVarianceTotalValue(), true);
     }
 
 

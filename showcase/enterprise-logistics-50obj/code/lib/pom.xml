@@ -6,7 +6,7 @@
 
   <groupId>com.doublechaintech</groupId>
   <artifactId>enterprise-logistics-service-core</artifactId>
-  <version></version>
+  <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <properties>

@@ -4,10 +4,6 @@ import com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerCo
 import com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContactListExpression;
 import com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyalty;
 import com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyaltyListExpression;
-import com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview;
-import com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReviewListExpression;
-import com.doublechaintech.enterpriselogisticsservice.invoice.Invoice;
-import com.doublechaintech.enterpriselogisticsservice.invoice.InvoiceListExpression;
 import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
 import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderListExpression;
 import com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote;
@@ -16,6 +12,7 @@ import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
+import java.time.LocalDateTime;
 import java.util.function.Function;
 
 public class PrivateCustomerExpression<T, E, U extends PrivateCustomer> extends ExpressionAdaptor<T, E, U> implements BaseEntityExpression<T, U> {
@@ -65,11 +62,18 @@ public class PrivateCustomerExpression<T, E, U extends PrivateCustomer> extends 
        return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).updateEmail(email));
     }
 
-    public Expression<T, String> getAddress(){
-       return apply(PrivateCustomer::getAddress);
+    public Expression<T, String> getAddressLine1(){
+       return apply(PrivateCustomer::getAddressLine1);
     }
-    public PrivateCustomerExpression<T, U, U> updateAddress(String address){
-       return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).updateAddress(address));
+    public PrivateCustomerExpression<T, U, U> updateAddressLine1(String addressLine1){
+       return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).updateAddressLine1(addressLine1));
+    }
+
+    public Expression<T, String> getAddressLine2(){
+       return apply(PrivateCustomer::getAddressLine2);
+    }
+    public PrivateCustomerExpression<T, U, U> updateAddressLine2(String addressLine2){
+       return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).updateAddressLine2(addressLine2));
     }
 
     public Expression<T, String> getCity(){
@@ -77,6 +81,20 @@ public class PrivateCustomerExpression<T, E, U extends PrivateCustomer> extends 
     }
     public PrivateCustomerExpression<T, U, U> updateCity(String city){
        return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).updateCity(city));
+    }
+
+    public Expression<T, String> getState(){
+       return apply(PrivateCustomer::getState);
+    }
+    public PrivateCustomerExpression<T, U, U> updateState(String state){
+       return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).updateState(state));
+    }
+
+    public Expression<T, String> getZipCode(){
+       return apply(PrivateCustomer::getZipCode);
+    }
+    public PrivateCustomerExpression<T, U, U> updateZipCode(String zipCode){
+       return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).updateZipCode(zipCode));
     }
 
     public Expression<T, String> getCountry(){
@@ -93,6 +111,20 @@ public class PrivateCustomerExpression<T, E, U extends PrivateCustomer> extends 
        return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).updateCustomerType(customerType));
     }
 
+    public Expression<T, LocalDateTime> getCreatedAt(){
+       return apply(PrivateCustomer::getCreatedAt);
+    }
+    public PrivateCustomerExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
+       return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).updateCreatedAt(createdAt));
+    }
+
+    public Expression<T, LocalDateTime> getUpdatedAt(){
+       return apply(PrivateCustomer::getUpdatedAt);
+    }
+    public PrivateCustomerExpression<T, U, U> updateUpdatedAt(LocalDateTime updatedAt){
+       return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).updateUpdatedAt(updatedAt));
+    }
+
     public MovingOrderListExpression<T, U, MovingOrder> getMovingOrderList(){
         return new MovingOrderListExpression(this, $it ->  ((PrivateCustomer)$it).getMovingOrderList());
     }
@@ -102,14 +134,8 @@ public class PrivateCustomerExpression<T, E, U extends PrivateCustomer> extends 
     public ServiceQuoteListExpression<T, U, ServiceQuote> getServiceQuoteList(){
         return new ServiceQuoteListExpression(this, $it ->  ((PrivateCustomer)$it).getServiceQuoteList());
     }
-    public FeedbackReviewListExpression<T, U, FeedbackReview> getFeedbackReviewList(){
-        return new FeedbackReviewListExpression(this, $it ->  ((PrivateCustomer)$it).getFeedbackReviewList());
-    }
     public CustomerLoyaltyListExpression<T, U, CustomerLoyalty> getCustomerLoyaltyList(){
         return new CustomerLoyaltyListExpression(this, $it ->  ((PrivateCustomer)$it).getCustomerLoyaltyList());
-    }
-    public InvoiceListExpression<T, U, Invoice> getInvoiceList(){
-        return new InvoiceListExpression(this, $it ->  ((PrivateCustomer)$it).getInvoiceList());
     }
     public PrivateCustomerExpression<T, U, U> addMovingOrder(MovingOrder movingOrder){
        return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).addMovingOrder(movingOrder));
@@ -120,13 +146,7 @@ public class PrivateCustomerExpression<T, E, U extends PrivateCustomer> extends 
     public PrivateCustomerExpression<T, U, U> addServiceQuote(ServiceQuote serviceQuote){
        return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).addServiceQuote(serviceQuote));
     }
-    public PrivateCustomerExpression<T, U, U> addFeedbackReview(FeedbackReview feedbackReview){
-       return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).addFeedbackReview(feedbackReview));
-    }
     public PrivateCustomerExpression<T, U, U> addCustomerLoyalty(CustomerLoyalty customerLoyalty){
        return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).addCustomerLoyalty(customerLoyalty));
-    }
-    public PrivateCustomerExpression<T, U, U> addInvoice(Invoice invoice){
-       return new PrivateCustomerExpression(this, $it ->  ((PrivateCustomer)$it).addInvoice(invoice));
     }
 }

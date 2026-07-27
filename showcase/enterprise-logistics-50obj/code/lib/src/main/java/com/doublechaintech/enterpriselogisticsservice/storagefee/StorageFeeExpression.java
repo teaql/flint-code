@@ -1,7 +1,9 @@
 package com.doublechaintech.enterpriselogisticsservice.storagefee;
 
-import com.doublechaintech.enterpriselogisticsservice.invoice.Invoice;
-import com.doublechaintech.enterpriselogisticsservice.invoice.InvoiceExpression;
+import com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainer;
+import com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainerExpression;
+import com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse;
+import com.doublechaintech.enterpriselogisticsservice.warehouse.WarehouseExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
@@ -36,19 +38,27 @@ public class StorageFeeExpression<T, E, U extends StorageFee> extends Expression
      }
 
 
-    public InvoiceExpression<T, U, Invoice> getInvoice(){
-       return new InvoiceExpression(this, $it ->  ((StorageFee)$it).getInvoice());
+    public WarehouseExpression<T, U, Warehouse> getWarehouse(){
+       return new WarehouseExpression(this, $it ->  ((StorageFee)$it).getWarehouse());
     }
 
-    public StorageFeeExpression<T, U, U> updateInvoice(Invoice invoice){
-       return new StorageFeeExpression(this, $it ->  ((StorageFee)$it).updateInvoice(invoice));
+    public StorageFeeExpression<T, U, U> updateWarehouse(Warehouse warehouse){
+       return new StorageFeeExpression(this, $it ->  ((StorageFee)$it).updateWarehouse(warehouse));
     }
 
-    public Expression<T, BigDecimal> getFeeAmount(){
-       return apply(StorageFee::getFeeAmount);
+    public StorageContainerExpression<T, U, StorageContainer> getContainer(){
+       return new StorageContainerExpression(this, $it ->  ((StorageFee)$it).getContainer());
     }
-    public StorageFeeExpression<T, U, U> updateFeeAmount(BigDecimal feeAmount){
-       return new StorageFeeExpression(this, $it ->  ((StorageFee)$it).updateFeeAmount(feeAmount));
+
+    public StorageFeeExpression<T, U, U> updateContainer(StorageContainer container){
+       return new StorageFeeExpression(this, $it ->  ((StorageFee)$it).updateContainer(container));
+    }
+
+    public Expression<T, BigDecimal> getAmount(){
+       return apply(StorageFee::getAmount);
+    }
+    public StorageFeeExpression<T, U, U> updateAmount(BigDecimal amount){
+       return new StorageFeeExpression(this, $it ->  ((StorageFee)$it).updateAmount(amount));
     }
 
     public Expression<T, String> getCurrency(){
@@ -58,25 +68,11 @@ public class StorageFeeExpression<T, E, U extends StorageFee> extends Expression
        return new StorageFeeExpression(this, $it ->  ((StorageFee)$it).updateCurrency(currency));
     }
 
-    public Expression<T, String> getPeriodStart(){
-       return apply(StorageFee::getPeriodStart);
+    public Expression<T, String> getPeriod(){
+       return apply(StorageFee::getPeriod);
     }
-    public StorageFeeExpression<T, U, U> updatePeriodStart(String periodStart){
-       return new StorageFeeExpression(this, $it ->  ((StorageFee)$it).updatePeriodStart(periodStart));
-    }
-
-    public Expression<T, String> getPeriodEnd(){
-       return apply(StorageFee::getPeriodEnd);
-    }
-    public StorageFeeExpression<T, U, U> updatePeriodEnd(String periodEnd){
-       return new StorageFeeExpression(this, $it ->  ((StorageFee)$it).updatePeriodEnd(periodEnd));
-    }
-
-    public Expression<T, String> getStatus(){
-       return apply(StorageFee::getStatus);
-    }
-    public StorageFeeExpression<T, U, U> updateStatus(String status){
-       return new StorageFeeExpression(this, $it ->  ((StorageFee)$it).updateStatus(status));
+    public StorageFeeExpression<T, U, U> updatePeriod(String period){
+       return new StorageFeeExpression(this, $it ->  ((StorageFee)$it).updatePeriod(period));
     }
 
     public Expression<T, LocalDateTime> getCreateTime(){

@@ -1,9 +1,13 @@
 package com.doublechaintech.enterpriselogisticsservice.saleschannel;
 
+import com.doublechaintech.enterpriselogisticsservice.Q;
+import com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi;
+import com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoiRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
 import io.teaql.core.SearchCriteria;
+import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.time.LocalDateTime;
@@ -80,7 +84,7 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
 
     public SalesChannelRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectName().selectChannelType().selectUrl().selectStatus().selectCreatedTime().selectUpdateTime().selectVersion();
+        return selectId().selectName().selectDescription().selectChannelType().selectIsActive().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public SalesChannelRequest<T> selectSelfFields(){
@@ -89,12 +93,13 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
 
     public SalesChannelRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectName().selectChannelType().selectUrl().selectStatus().selectCreatedTime().selectUpdateTime().selectVersion();
+        return selectId().selectName().selectDescription().selectChannelType().selectIsActive().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public SalesChannelRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectName().selectChannelType().selectUrl().selectStatus().selectCreatedTime().selectUpdateTime().selectVersion();
+        selectMarketingRoiList();
+        return selectId().selectName().selectDescription().selectChannelType().selectIsActive().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
 
@@ -132,6 +137,23 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
        unselectProperty(SalesChannel.NAME_PROPERTY);
        return this;
     }
+    public SalesChannelRequest<T> selectDescription(){
+       selectProperty(SalesChannel.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the description with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  description) to fetch description property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public SalesChannelRequest<T> unselectDescription(){
+       unselectProperty(SalesChannel.DESCRIPTION_PROPERTY);
+       return this;
+    }
     public SalesChannelRequest<T> selectChannelType(){
        selectProperty(SalesChannel.CHANNEL_TYPE_PROPERTY);
        return this;
@@ -149,38 +171,21 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
        unselectProperty(SalesChannel.CHANNEL_TYPE_PROPERTY);
        return this;
     }
-    public SalesChannelRequest<T> selectUrl(){
-       selectProperty(SalesChannel.URL_PROPERTY);
+    public SalesChannelRequest<T> selectIsActive(){
+       selectProperty(SalesChannel.IS_ACTIVE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the url with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  url) to fetch url property.
+     * fill the isActive with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  isActive) to fetch isActive property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public SalesChannelRequest<T> unselectUrl(){
-       unselectProperty(SalesChannel.URL_PROPERTY);
-       return this;
-    }
-    public SalesChannelRequest<T> selectStatus(){
-       selectProperty(SalesChannel.STATUS_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the status with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  status) to fetch status property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public SalesChannelRequest<T> unselectStatus(){
-       unselectProperty(SalesChannel.STATUS_PROPERTY);
+    public SalesChannelRequest<T> unselectIsActive(){
+       unselectProperty(SalesChannel.IS_ACTIVE_PROPERTY);
        return this;
     }
     public SalesChannelRequest<T> selectCreatedTime(){
@@ -200,21 +205,21 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
        unselectProperty(SalesChannel.CREATED_TIME_PROPERTY);
        return this;
     }
-    public SalesChannelRequest<T> selectUpdateTime(){
-       selectProperty(SalesChannel.UPDATE_TIME_PROPERTY);
+    public SalesChannelRequest<T> selectUpdatedTime(){
+       selectProperty(SalesChannel.UPDATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the updateTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updateTime) to fetch updateTime property.
+     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public SalesChannelRequest<T> unselectUpdateTime(){
-       unselectProperty(SalesChannel.UPDATE_TIME_PROPERTY);
+    public SalesChannelRequest<T> unselectUpdatedTime(){
+       unselectProperty(SalesChannel.UPDATED_TIME_PROPERTY);
        return this;
     }
     public SalesChannelRequest<T> selectVersion(){
@@ -232,6 +237,14 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
 
     public SalesChannelRequest<T> unselectVersion(){
        unselectProperty(SalesChannel.VERSION_PROPERTY);
+       return this;
+    }
+    public SalesChannelRequest<T> selectMarketingRoiList(){
+       return selectMarketingRoiListWith(Q.marketingRois().selectSelf());
+    }
+
+    public SalesChannelRequest<T> selectMarketingRoiListWith(MarketingRoiRequest marketingRoiList){
+       enhanceRelation(SalesChannel.MARKETING_ROI_LIST_PROPERTY, marketingRoiList);
        return this;
     }
 
@@ -315,6 +328,69 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
 
 
 
+    public SalesChannelRequest<T> filterByDescription(String... description){
+      if (description == null || description.length == 0) {
+        throw new IllegalArgumentException("filterByDescription parameter description cannot be empty");
+      }
+      return appendSearchCriteria(createDescriptionCriteria(Operator.EQUAL, (Object[])description));
+    }
+
+    public SalesChannelRequest<T> withDescription(Operator operator, Object... values){
+       return appendSearchCriteria(createDescriptionCriteria(operator, values));
+    }
+
+    public SalesChannelRequest<T> withDescriptionIsUnknown(){
+       return withDescription(Operator.IS_NULL);
+    }
+
+    public SalesChannelRequest<T> withDescriptionIsKnown(){
+       return withDescription(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createDescriptionCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(SalesChannel.DESCRIPTION_PROPERTY, operator, values);
+    }
+
+    public SalesChannelRequest<T> withDescriptionGreaterThan(String description){
+       return withDescription(Operator.GREATER_THAN, description);
+    }
+
+    public SalesChannelRequest<T> withDescriptionGreaterThanOrEqualTo(String description){
+       return withDescription(Operator.GREATER_THAN_OR_EQUAL, description);
+    }
+
+    public SalesChannelRequest<T> withDescriptionLessThan(String description){
+       return withDescription(Operator.LESS_THAN, description);
+    }
+
+    public SalesChannelRequest<T> withDescriptionLessThanOrEqualTo(String description){
+       return withDescription(Operator.LESS_THAN_OR_EQUAL, description);
+    }
+
+    public SalesChannelRequest<T> withDescriptionBetween(String startOfDescription, String endOfDescription){
+       return withDescription(Operator.BETWEEN, startOfDescription, endOfDescription);
+    }
+    public SalesChannelRequest<T> withDescriptionStartingWith(String description){
+       return withDescription(Operator.BEGIN_WITH, description);
+    }
+    public SalesChannelRequest<T> withDescriptionContaining(String description){
+       return withDescription(Operator.CONTAIN, description);
+    }
+
+    public SalesChannelRequest<T> withDescriptionEndingWith(String description){
+       return withDescription(Operator.END_WITH, description);
+    }
+
+    public SalesChannelRequest<T> withDescriptionIs(String description){
+       return withDescription(Operator.EQUAL, description);
+    }
+
+    public SalesChannelRequest<T> withDescriptionSoundingLike(String description){
+       return withDescription(Operator.SOUNDS_LIKE, description);
+    }
+
+
+
     public SalesChannelRequest<T> filterByChannelType(String... channelType){
       if (channelType == null || channelType.length == 0) {
         throw new IllegalArgumentException("filterByChannelType parameter channelType cannot be empty");
@@ -378,130 +454,36 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
 
 
 
-    public SalesChannelRequest<T> filterByUrl(String... url){
-      if (url == null || url.length == 0) {
-        throw new IllegalArgumentException("filterByUrl parameter url cannot be empty");
+    public SalesChannelRequest<T> filterByIsActive(Boolean... isActive){
+      if (isActive == null || isActive.length == 0) {
+        throw new IllegalArgumentException("filterByIsActive parameter isActive cannot be empty");
       }
-      return appendSearchCriteria(createUrlCriteria(Operator.EQUAL, (Object[])url));
+      return appendSearchCriteria(createIsActiveCriteria(Operator.EQUAL, (Object[])isActive));
     }
 
-    public SalesChannelRequest<T> withUrl(Operator operator, Object... values){
-       return appendSearchCriteria(createUrlCriteria(operator, values));
+    public SalesChannelRequest<T> withIsActive(Operator operator, Object... values){
+       return appendSearchCriteria(createIsActiveCriteria(operator, values));
     }
 
-    public SalesChannelRequest<T> withUrlIsUnknown(){
-       return withUrl(Operator.IS_NULL);
+    public SalesChannelRequest<T> withIsActiveIsUnknown(){
+       return withIsActive(Operator.IS_NULL);
     }
 
-    public SalesChannelRequest<T> withUrlIsKnown(){
-       return withUrl(Operator.IS_NOT_NULL);
+    public SalesChannelRequest<T> withIsActiveIsKnown(){
+       return withIsActive(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createUrlCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(SalesChannel.URL_PROPERTY, operator, values);
+    public SearchCriteria createIsActiveCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(SalesChannel.IS_ACTIVE_PROPERTY, operator, values);
     }
 
-    public SalesChannelRequest<T> withUrlGreaterThan(String url){
-       return withUrl(Operator.GREATER_THAN, url);
+    public SalesChannelRequest<T> whichIsIsActive(){
+       return withIsActive(Operator.EQUAL, true);
     }
 
-    public SalesChannelRequest<T> withUrlGreaterThanOrEqualTo(String url){
-       return withUrl(Operator.GREATER_THAN_OR_EQUAL, url);
+    public SalesChannelRequest<T> whichIsNotIsActive(){
+       return withIsActive(Operator.EQUAL, false);
     }
-
-    public SalesChannelRequest<T> withUrlLessThan(String url){
-       return withUrl(Operator.LESS_THAN, url);
-    }
-
-    public SalesChannelRequest<T> withUrlLessThanOrEqualTo(String url){
-       return withUrl(Operator.LESS_THAN_OR_EQUAL, url);
-    }
-
-    public SalesChannelRequest<T> withUrlBetween(String startOfUrl, String endOfUrl){
-       return withUrl(Operator.BETWEEN, startOfUrl, endOfUrl);
-    }
-    public SalesChannelRequest<T> withUrlStartingWith(String url){
-       return withUrl(Operator.BEGIN_WITH, url);
-    }
-    public SalesChannelRequest<T> withUrlContaining(String url){
-       return withUrl(Operator.CONTAIN, url);
-    }
-
-    public SalesChannelRequest<T> withUrlEndingWith(String url){
-       return withUrl(Operator.END_WITH, url);
-    }
-
-    public SalesChannelRequest<T> withUrlIs(String url){
-       return withUrl(Operator.EQUAL, url);
-    }
-
-    public SalesChannelRequest<T> withUrlSoundingLike(String url){
-       return withUrl(Operator.SOUNDS_LIKE, url);
-    }
-
-
-
-    public SalesChannelRequest<T> filterByStatus(String... status){
-      if (status == null || status.length == 0) {
-        throw new IllegalArgumentException("filterByStatus parameter status cannot be empty");
-      }
-      return appendSearchCriteria(createStatusCriteria(Operator.EQUAL, (Object[])status));
-    }
-
-    public SalesChannelRequest<T> withStatus(Operator operator, Object... values){
-       return appendSearchCriteria(createStatusCriteria(operator, values));
-    }
-
-    public SalesChannelRequest<T> withStatusIsUnknown(){
-       return withStatus(Operator.IS_NULL);
-    }
-
-    public SalesChannelRequest<T> withStatusIsKnown(){
-       return withStatus(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createStatusCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(SalesChannel.STATUS_PROPERTY, operator, values);
-    }
-
-    public SalesChannelRequest<T> withStatusGreaterThan(String status){
-       return withStatus(Operator.GREATER_THAN, status);
-    }
-
-    public SalesChannelRequest<T> withStatusGreaterThanOrEqualTo(String status){
-       return withStatus(Operator.GREATER_THAN_OR_EQUAL, status);
-    }
-
-    public SalesChannelRequest<T> withStatusLessThan(String status){
-       return withStatus(Operator.LESS_THAN, status);
-    }
-
-    public SalesChannelRequest<T> withStatusLessThanOrEqualTo(String status){
-       return withStatus(Operator.LESS_THAN_OR_EQUAL, status);
-    }
-
-    public SalesChannelRequest<T> withStatusBetween(String startOfStatus, String endOfStatus){
-       return withStatus(Operator.BETWEEN, startOfStatus, endOfStatus);
-    }
-    public SalesChannelRequest<T> withStatusStartingWith(String status){
-       return withStatus(Operator.BEGIN_WITH, status);
-    }
-    public SalesChannelRequest<T> withStatusContaining(String status){
-       return withStatus(Operator.CONTAIN, status);
-    }
-
-    public SalesChannelRequest<T> withStatusEndingWith(String status){
-       return withStatus(Operator.END_WITH, status);
-    }
-
-    public SalesChannelRequest<T> withStatusIs(String status){
-       return withStatus(Operator.EQUAL, status);
-    }
-
-    public SalesChannelRequest<T> withStatusSoundingLike(String status){
-       return withStatus(Operator.SOUNDS_LIKE, status);
-    }
-
 
 
     public SalesChannelRequest<T> filterByCreatedTime(LocalDateTime... createdTime){
@@ -569,66 +551,66 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
 
 
 
-    public SalesChannelRequest<T> filterByUpdateTime(LocalDateTime... updateTime){
-      if (updateTime == null || updateTime.length == 0) {
-        throw new IllegalArgumentException("filterByUpdateTime parameter updateTime cannot be empty");
+    public SalesChannelRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
+      if (updatedTime == null || updatedTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
       }
-      return appendSearchCriteria(createUpdateTimeCriteria(Operator.EQUAL, (Object[])updateTime));
+      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
     }
 
-    public SalesChannelRequest<T> withUpdateTime(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdateTimeCriteria(operator, values));
+    public SalesChannelRequest<T> withUpdatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
     }
 
-    public SalesChannelRequest<T> withUpdateTimeIsUnknown(){
-       return withUpdateTime(Operator.IS_NULL);
+    public SalesChannelRequest<T> withUpdatedTimeIsUnknown(){
+       return withUpdatedTime(Operator.IS_NULL);
     }
 
-    public SalesChannelRequest<T> withUpdateTimeIsKnown(){
-       return withUpdateTime(Operator.IS_NOT_NULL);
+    public SalesChannelRequest<T> withUpdatedTimeIsKnown(){
+       return withUpdatedTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createUpdateTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(SalesChannel.UPDATE_TIME_PROPERTY, operator, values);
+    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(SalesChannel.UPDATED_TIME_PROPERTY, operator, values);
     }
 
-    public SalesChannelRequest<T> withUpdateTimeGreaterThan(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public SalesChannelRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public SalesChannelRequest<T> withUpdateTimeGreaterThanOrEqualTo(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN_OR_EQUAL, updateTime);
+    public SalesChannelRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
     }
 
-    public SalesChannelRequest<T> withUpdateTimeLessThan(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    public SalesChannelRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public SalesChannelRequest<T> withUpdateTimeLessThanOrEqualTo(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN_OR_EQUAL, updateTime);
+    public SalesChannelRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
     }
 
-    public SalesChannelRequest<T> withUpdateTimeBetween(LocalDateTime startOfUpdateTime, LocalDateTime endOfUpdateTime){
-       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    public SalesChannelRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
-    public SalesChannelRequest<T> withUpdateTimeBefore(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
-    }
-
-    public SalesChannelRequest<T> withUpdateTimeBefore(Date updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    public SalesChannelRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public SalesChannelRequest<T> withUpdateTimeAfter(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public SalesChannelRequest<T> withUpdatedTimeBefore(Date updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public SalesChannelRequest<T> withUpdateTimeAfter(Date updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public SalesChannelRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public SalesChannelRequest<T> withUpdateTimeBetween(Date startOfUpdateTime, Date endOfUpdateTime){
-       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    public SalesChannelRequest<T> withUpdatedTimeAfter(Date updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public SalesChannelRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
 
 
@@ -677,6 +659,21 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
        return withVersion(Operator.BETWEEN, startOfVersion, endOfVersion);
     }
 
+    public SalesChannelRequest<T> withMarketingRoiListMatching(MarketingRoiRequest marketingRoiRequest){
+        return appendSearchCriteria(new SubQuerySearchCriteria(SalesChannel.ID_PROPERTY, marketingRoiRequest, MarketingRoi.CHANNEL_PROPERTY));
+    }
+
+    public SalesChannelRequest<T> withoutMarketingRoiListMatching(MarketingRoiRequest marketingRoiRequest){
+        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(SalesChannel.ID_PROPERTY, marketingRoiRequest, MarketingRoi.CHANNEL_PROPERTY)));
+    }
+
+    public SalesChannelRequest<T> haveMarketingRois(){
+        return withMarketingRoiListMatching(Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> haveNoMarketingRois(){
+        return withoutMarketingRoiListMatching(Q.marketingRois().unlimited());
+    }
 
     public SalesChannelRequest<T> count(){
         super.count();
@@ -685,6 +682,10 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
     public SalesChannelRequest<T> countAs(String retName){
         super.count(retName);
         return this;
+    }
+    public SalesChannelRequest<T> groupByMarketingRoisWithDetails(MarketingRoiRequest subRequest){
+       aggregate(SalesChannel.MARKETING_ROI_LIST_PROPERTY, subRequest);
+       return this;
     }
 
     public SalesChannelRequest<T> groupById(){
@@ -717,6 +718,21 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
        return this;
     }
 
+    public SalesChannelRequest<T> groupByDescription(){
+       groupBy(SalesChannel.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public SalesChannelRequest<T> groupByDescriptionAs(String retName){
+       groupBy(retName, SalesChannel.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public SalesChannelRequest<T> groupByDescriptionWithFunction(String retName, AggrFunction function){
+       groupBy(retName, SalesChannel.DESCRIPTION_PROPERTY, function);
+       return this;
+    }
+
     public SalesChannelRequest<T> groupByChannelType(){
        groupBy(SalesChannel.CHANNEL_TYPE_PROPERTY);
        return this;
@@ -732,33 +748,18 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
        return this;
     }
 
-    public SalesChannelRequest<T> groupByUrl(){
-       groupBy(SalesChannel.URL_PROPERTY);
+    public SalesChannelRequest<T> groupByIsActive(){
+       groupBy(SalesChannel.IS_ACTIVE_PROPERTY);
        return this;
     }
 
-    public SalesChannelRequest<T> groupByUrlAs(String retName){
-       groupBy(retName, SalesChannel.URL_PROPERTY);
+    public SalesChannelRequest<T> groupByIsActiveAs(String retName){
+       groupBy(retName, SalesChannel.IS_ACTIVE_PROPERTY);
        return this;
     }
 
-    public SalesChannelRequest<T> groupByUrlWithFunction(String retName, AggrFunction function){
-       groupBy(retName, SalesChannel.URL_PROPERTY, function);
-       return this;
-    }
-
-    public SalesChannelRequest<T> groupByStatus(){
-       groupBy(SalesChannel.STATUS_PROPERTY);
-       return this;
-    }
-
-    public SalesChannelRequest<T> groupByStatusAs(String retName){
-       groupBy(retName, SalesChannel.STATUS_PROPERTY);
-       return this;
-    }
-
-    public SalesChannelRequest<T> groupByStatusWithFunction(String retName, AggrFunction function){
-       groupBy(retName, SalesChannel.STATUS_PROPERTY, function);
+    public SalesChannelRequest<T> groupByIsActiveWithFunction(String retName, AggrFunction function){
+       groupBy(retName, SalesChannel.IS_ACTIVE_PROPERTY, function);
        return this;
     }
 
@@ -777,18 +778,18 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
        return this;
     }
 
-    public SalesChannelRequest<T> groupByUpdateTime(){
-       groupBy(SalesChannel.UPDATE_TIME_PROPERTY);
+    public SalesChannelRequest<T> groupByUpdatedTime(){
+       groupBy(SalesChannel.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public SalesChannelRequest<T> groupByUpdateTimeAs(String retName){
-       groupBy(retName, SalesChannel.UPDATE_TIME_PROPERTY);
+    public SalesChannelRequest<T> groupByUpdatedTimeAs(String retName){
+       groupBy(retName, SalesChannel.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public SalesChannelRequest<T> groupByUpdateTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, SalesChannel.UPDATE_TIME_PROPERTY, function);
+    public SalesChannelRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, SalesChannel.UPDATED_TIME_PROPERTY, function);
        return this;
     }
 
@@ -837,6 +838,24 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
        addOrderByDescendingUsingGBK(SalesChannel.NAME_PROPERTY);
        return this;
     }
+    public SalesChannelRequest<T> orderByDescriptionAscending(){
+       addOrderByAscending(SalesChannel.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public SalesChannelRequest<T> orderByDescriptionDescending(){
+       addOrderByDescending(SalesChannel.DESCRIPTION_PROPERTY);
+       return this;
+    }
+    public SalesChannelRequest<T> orderByDescriptionAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(SalesChannel.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public SalesChannelRequest<T> orderByDescriptionDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(SalesChannel.DESCRIPTION_PROPERTY);
+       return this;
+    }
     public SalesChannelRequest<T> orderByChannelTypeAscending(){
        addOrderByAscending(SalesChannel.CHANNEL_TYPE_PROPERTY);
        return this;
@@ -855,42 +874,16 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
        addOrderByDescendingUsingGBK(SalesChannel.CHANNEL_TYPE_PROPERTY);
        return this;
     }
-    public SalesChannelRequest<T> orderByUrlAscending(){
-       addOrderByAscending(SalesChannel.URL_PROPERTY);
+    public SalesChannelRequest<T> orderByIsActiveAscending(){
+       addOrderByAscending(SalesChannel.IS_ACTIVE_PROPERTY);
        return this;
     }
 
-    public SalesChannelRequest<T> orderByUrlDescending(){
-       addOrderByDescending(SalesChannel.URL_PROPERTY);
-       return this;
-    }
-    public SalesChannelRequest<T> orderByUrlAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(SalesChannel.URL_PROPERTY);
+    public SalesChannelRequest<T> orderByIsActiveDescending(){
+       addOrderByDescending(SalesChannel.IS_ACTIVE_PROPERTY);
        return this;
     }
 
-    public SalesChannelRequest<T> orderByUrlDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(SalesChannel.URL_PROPERTY);
-       return this;
-    }
-    public SalesChannelRequest<T> orderByStatusAscending(){
-       addOrderByAscending(SalesChannel.STATUS_PROPERTY);
-       return this;
-    }
-
-    public SalesChannelRequest<T> orderByStatusDescending(){
-       addOrderByDescending(SalesChannel.STATUS_PROPERTY);
-       return this;
-    }
-    public SalesChannelRequest<T> orderByStatusAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(SalesChannel.STATUS_PROPERTY);
-       return this;
-    }
-
-    public SalesChannelRequest<T> orderByStatusDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(SalesChannel.STATUS_PROPERTY);
-       return this;
-    }
     public SalesChannelRequest<T> orderByCreatedTimeAscending(){
        addOrderByAscending(SalesChannel.CREATED_TIME_PROPERTY);
        return this;
@@ -901,13 +894,13 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
        return this;
     }
 
-    public SalesChannelRequest<T> orderByUpdateTimeAscending(){
-       addOrderByAscending(SalesChannel.UPDATE_TIME_PROPERTY);
+    public SalesChannelRequest<T> orderByUpdatedTimeAscending(){
+       addOrderByAscending(SalesChannel.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public SalesChannelRequest<T> orderByUpdateTimeDescending(){
-       addOrderByDescending(SalesChannel.UPDATE_TIME_PROPERTY);
+    public SalesChannelRequest<T> orderByUpdatedTimeDescending(){
+       addOrderByDescending(SalesChannel.UPDATED_TIME_PROPERTY);
        return this;
     }
 
@@ -922,6 +915,294 @@ public class SalesChannelRequest<T extends SalesChannel> extends BaseRequest<T> 
     }
 
 
+    public SalesChannelRequest<T> statsFromMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+       return statsFromMarketingRoisAs(name, subRequest, false);
+    }
+
+    public SalesChannelRequest<T> statsFromMarketingRoisAs(String name, MarketingRoiRequest subRequest, boolean singleResult){
+       subRequest.setPartitionProperty(MarketingRoi.CHANNEL_PROPERTY);
+       addAggregateDynamicProperty(name, subRequest, singleResult);
+       return this;
+    }
+
+    public SalesChannelRequest<T> statsFromMarketingRois(MarketingRoiRequest subRequest){
+       return statsFromMarketingRoisAs(REFINEMENTS, subRequest);
+    }
+    public SalesChannelRequest<T> countMarketingRois(){
+        return countMarketingRoisAs("Count");
+    }
+
+    public SalesChannelRequest<T> countMarketingRoisAs(String name){
+        return countMarketingRoisWith(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> countMarketingRoisWith(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.count(), true);
+    }
+    public SalesChannelRequest<T> minSpendOfMarketingRois(){
+        return minSpendOfMarketingRoisAs("minSpendOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> minSpendOfMarketingRoisAs(String name){
+        return minSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> minSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.minSpend(), true);
+    }
+    public SalesChannelRequest<T> maxSpendOfMarketingRois(){
+        return maxSpendOfMarketingRoisAs("maxSpendOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> maxSpendOfMarketingRoisAs(String name){
+        return maxSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> maxSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.maxSpend(), true);
+    }
+    public SalesChannelRequest<T> sumSpendOfMarketingRois(){
+        return sumSpendOfMarketingRoisAs("sumSpendOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> sumSpendOfMarketingRoisAs(String name){
+        return sumSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> sumSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.sumSpend(), true);
+    }
+    public SalesChannelRequest<T> avgSpendOfMarketingRois(){
+        return avgSpendOfMarketingRoisAs("avgSpendOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> avgSpendOfMarketingRoisAs(String name){
+        return avgSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> avgSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.avgSpend(), true);
+    }
+    public SalesChannelRequest<T> standardDeviationSpendOfMarketingRois(){
+        return standardDeviationSpendOfMarketingRoisAs("stdDevSpendOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> standardDeviationSpendOfMarketingRoisAs(String name){
+        return standardDeviationSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> standardDeviationSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.standardDeviationSpend(), true);
+    }
+    public SalesChannelRequest<T> squareRootOfPopulationStandardDeviationSpendOfMarketingRois(){
+        return squareRootOfPopulationStandardDeviationSpendOfMarketingRoisAs("stdDevPopSpendOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> squareRootOfPopulationStandardDeviationSpendOfMarketingRoisAs(String name){
+        return squareRootOfPopulationStandardDeviationSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> squareRootOfPopulationStandardDeviationSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.squareRootOfPopulationStandardDeviationSpend(), true);
+    }
+    public SalesChannelRequest<T> sampleVarianceSpendOfMarketingRois(){
+        return sampleVarianceSpendOfMarketingRoisAs("varSampSpendOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> sampleVarianceSpendOfMarketingRoisAs(String name){
+        return sampleVarianceSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> sampleVarianceSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.sampleVarianceSpend(), true);
+    }
+    public SalesChannelRequest<T> samplePopulationVarianceSpendOfMarketingRois(){
+        return samplePopulationVarianceSpendOfMarketingRoisAs("varPopSpendOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> samplePopulationVarianceSpendOfMarketingRoisAs(String name){
+        return samplePopulationVarianceSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> samplePopulationVarianceSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.samplePopulationVarianceSpend(), true);
+    }
+    public SalesChannelRequest<T> minRevenueOfMarketingRois(){
+        return minRevenueOfMarketingRoisAs("minRevenueOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> minRevenueOfMarketingRoisAs(String name){
+        return minRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> minRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.minRevenue(), true);
+    }
+    public SalesChannelRequest<T> maxRevenueOfMarketingRois(){
+        return maxRevenueOfMarketingRoisAs("maxRevenueOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> maxRevenueOfMarketingRoisAs(String name){
+        return maxRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> maxRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.maxRevenue(), true);
+    }
+    public SalesChannelRequest<T> sumRevenueOfMarketingRois(){
+        return sumRevenueOfMarketingRoisAs("sumRevenueOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> sumRevenueOfMarketingRoisAs(String name){
+        return sumRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> sumRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.sumRevenue(), true);
+    }
+    public SalesChannelRequest<T> avgRevenueOfMarketingRois(){
+        return avgRevenueOfMarketingRoisAs("avgRevenueOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> avgRevenueOfMarketingRoisAs(String name){
+        return avgRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> avgRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.avgRevenue(), true);
+    }
+    public SalesChannelRequest<T> standardDeviationRevenueOfMarketingRois(){
+        return standardDeviationRevenueOfMarketingRoisAs("stdDevRevenueOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> standardDeviationRevenueOfMarketingRoisAs(String name){
+        return standardDeviationRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> standardDeviationRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.standardDeviationRevenue(), true);
+    }
+    public SalesChannelRequest<T> squareRootOfPopulationStandardDeviationRevenueOfMarketingRois(){
+        return squareRootOfPopulationStandardDeviationRevenueOfMarketingRoisAs("stdDevPopRevenueOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> squareRootOfPopulationStandardDeviationRevenueOfMarketingRoisAs(String name){
+        return squareRootOfPopulationStandardDeviationRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> squareRootOfPopulationStandardDeviationRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.squareRootOfPopulationStandardDeviationRevenue(), true);
+    }
+    public SalesChannelRequest<T> sampleVarianceRevenueOfMarketingRois(){
+        return sampleVarianceRevenueOfMarketingRoisAs("varSampRevenueOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> sampleVarianceRevenueOfMarketingRoisAs(String name){
+        return sampleVarianceRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> sampleVarianceRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.sampleVarianceRevenue(), true);
+    }
+    public SalesChannelRequest<T> samplePopulationVarianceRevenueOfMarketingRois(){
+        return samplePopulationVarianceRevenueOfMarketingRoisAs("varPopRevenueOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> samplePopulationVarianceRevenueOfMarketingRoisAs(String name){
+        return samplePopulationVarianceRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> samplePopulationVarianceRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.samplePopulationVarianceRevenue(), true);
+    }
+    public SalesChannelRequest<T> minRoiPercentageOfMarketingRois(){
+        return minRoiPercentageOfMarketingRoisAs("minRoiPercentageOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> minRoiPercentageOfMarketingRoisAs(String name){
+        return minRoiPercentageOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> minRoiPercentageOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.minRoiPercentage(), true);
+    }
+    public SalesChannelRequest<T> maxRoiPercentageOfMarketingRois(){
+        return maxRoiPercentageOfMarketingRoisAs("maxRoiPercentageOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> maxRoiPercentageOfMarketingRoisAs(String name){
+        return maxRoiPercentageOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> maxRoiPercentageOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.maxRoiPercentage(), true);
+    }
+    public SalesChannelRequest<T> sumRoiPercentageOfMarketingRois(){
+        return sumRoiPercentageOfMarketingRoisAs("sumRoiPercentageOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> sumRoiPercentageOfMarketingRoisAs(String name){
+        return sumRoiPercentageOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> sumRoiPercentageOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.sumRoiPercentage(), true);
+    }
+    public SalesChannelRequest<T> avgRoiPercentageOfMarketingRois(){
+        return avgRoiPercentageOfMarketingRoisAs("avgRoiPercentageOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> avgRoiPercentageOfMarketingRoisAs(String name){
+        return avgRoiPercentageOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> avgRoiPercentageOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.avgRoiPercentage(), true);
+    }
+    public SalesChannelRequest<T> standardDeviationRoiPercentageOfMarketingRois(){
+        return standardDeviationRoiPercentageOfMarketingRoisAs("stdDevRoiPercentageOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> standardDeviationRoiPercentageOfMarketingRoisAs(String name){
+        return standardDeviationRoiPercentageOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> standardDeviationRoiPercentageOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.standardDeviationRoiPercentage(), true);
+    }
+    public SalesChannelRequest<T> squareRootOfPopulationStandardDeviationRoiPercentageOfMarketingRois(){
+        return squareRootOfPopulationStandardDeviationRoiPercentageOfMarketingRoisAs("stdDevPopRoiPercentageOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> squareRootOfPopulationStandardDeviationRoiPercentageOfMarketingRoisAs(String name){
+        return squareRootOfPopulationStandardDeviationRoiPercentageOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> squareRootOfPopulationStandardDeviationRoiPercentageOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.squareRootOfPopulationStandardDeviationRoiPercentage(), true);
+    }
+    public SalesChannelRequest<T> sampleVarianceRoiPercentageOfMarketingRois(){
+        return sampleVarianceRoiPercentageOfMarketingRoisAs("varSampRoiPercentageOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> sampleVarianceRoiPercentageOfMarketingRoisAs(String name){
+        return sampleVarianceRoiPercentageOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> sampleVarianceRoiPercentageOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.sampleVarianceRoiPercentage(), true);
+    }
+    public SalesChannelRequest<T> samplePopulationVarianceRoiPercentageOfMarketingRois(){
+        return samplePopulationVarianceRoiPercentageOfMarketingRoisAs("varPopRoiPercentageOfMarketingRois");
+    }
+
+    public SalesChannelRequest<T> samplePopulationVarianceRoiPercentageOfMarketingRoisAs(String name){
+        return samplePopulationVarianceRoiPercentageOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public SalesChannelRequest<T> samplePopulationVarianceRoiPercentageOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.samplePopulationVarianceRoiPercentage(), true);
+    }
 
 
 

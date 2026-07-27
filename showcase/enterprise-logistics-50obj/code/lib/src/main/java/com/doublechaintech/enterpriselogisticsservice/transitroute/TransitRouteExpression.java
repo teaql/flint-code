@@ -1,7 +1,5 @@
 package com.doublechaintech.enterpriselogisticsservice.transitroute;
 
-import com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse;
-import com.doublechaintech.enterpriselogisticsservice.warehouse.WarehouseExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
@@ -36,34 +34,25 @@ public class TransitRouteExpression<T, E, U extends TransitRoute> extends Expres
      }
 
 
-    public Expression<T, String> getRouteId(){
-       return apply(TransitRoute::getRouteId);
+    public Expression<T, String> getRouteCode(){
+       return apply(TransitRoute::getRouteCode);
     }
-    public TransitRouteExpression<T, U, U> updateRouteId(String routeId){
-       return new TransitRouteExpression(this, $it ->  ((TransitRoute)$it).updateRouteId(routeId));
-    }
-
-    public Expression<T, String> getName(){
-       return apply(TransitRoute::getName);
-    }
-    public TransitRouteExpression<T, U, U> updateName(String name){
-       return new TransitRouteExpression(this, $it ->  ((TransitRoute)$it).updateName(name));
+    public TransitRouteExpression<T, U, U> updateRouteCode(String routeCode){
+       return new TransitRouteExpression(this, $it ->  ((TransitRoute)$it).updateRouteCode(routeCode));
     }
 
-    public WarehouseExpression<T, U, Warehouse> getOriginWarehouse(){
-       return new WarehouseExpression(this, $it ->  ((TransitRoute)$it).getOriginWarehouse());
+    public Expression<T, String> getOriginCity(){
+       return apply(TransitRoute::getOriginCity);
+    }
+    public TransitRouteExpression<T, U, U> updateOriginCity(String originCity){
+       return new TransitRouteExpression(this, $it ->  ((TransitRoute)$it).updateOriginCity(originCity));
     }
 
-    public TransitRouteExpression<T, U, U> updateOriginWarehouse(Warehouse originWarehouse){
-       return new TransitRouteExpression(this, $it ->  ((TransitRoute)$it).updateOriginWarehouse(originWarehouse));
+    public Expression<T, String> getDestinationCity(){
+       return apply(TransitRoute::getDestinationCity);
     }
-
-    public WarehouseExpression<T, U, Warehouse> getDestinationWarehouse(){
-       return new WarehouseExpression(this, $it ->  ((TransitRoute)$it).getDestinationWarehouse());
-    }
-
-    public TransitRouteExpression<T, U, U> updateDestinationWarehouse(Warehouse destinationWarehouse){
-       return new TransitRouteExpression(this, $it ->  ((TransitRoute)$it).updateDestinationWarehouse(destinationWarehouse));
+    public TransitRouteExpression<T, U, U> updateDestinationCity(String destinationCity){
+       return new TransitRouteExpression(this, $it ->  ((TransitRoute)$it).updateDestinationCity(destinationCity));
     }
 
     public Expression<T, BigDecimal> getDistanceKm(){
@@ -80,18 +69,18 @@ public class TransitRouteExpression<T, E, U extends TransitRoute> extends Expres
        return new TransitRouteExpression(this, $it ->  ((TransitRoute)$it).updateEstimatedDurationHours(estimatedDurationHours));
     }
 
-    public Expression<T, String> getStatus(){
-       return apply(TransitRoute::getStatus);
+    public Expression<T, LocalDateTime> getCreatedTime(){
+       return apply(TransitRoute::getCreatedTime);
     }
-    public TransitRouteExpression<T, U, U> updateStatus(String status){
-       return new TransitRouteExpression(this, $it ->  ((TransitRoute)$it).updateStatus(status));
+    public TransitRouteExpression<T, U, U> updateCreatedTime(LocalDateTime createdTime){
+       return new TransitRouteExpression(this, $it ->  ((TransitRoute)$it).updateCreatedTime(createdTime));
     }
 
-    public Expression<T, LocalDateTime> getCreateTime(){
-       return apply(TransitRoute::getCreateTime);
+    public Expression<T, LocalDateTime> getUpdatedTime(){
+       return apply(TransitRoute::getUpdatedTime);
     }
-    public TransitRouteExpression<T, U, U> updateCreateTime(LocalDateTime createTime){
-       return new TransitRouteExpression(this, $it ->  ((TransitRoute)$it).updateCreateTime(createTime));
+    public TransitRouteExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
+       return new TransitRouteExpression(this, $it ->  ((TransitRoute)$it).updateUpdatedTime(updatedTime));
     }
 
 }

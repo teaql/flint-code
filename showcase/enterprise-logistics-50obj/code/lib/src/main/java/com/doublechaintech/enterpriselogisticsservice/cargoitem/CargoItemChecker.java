@@ -26,36 +26,31 @@ public class CargoItemChecker implements Checker<CargoItem>{
          return;
       }
       if(cargoItem.newItem()){
-        if(cargoItem.getCreateTime() == null){
-           cargoItem.updateCreateTime(java.time.LocalDateTime.now());
+        if(cargoItem.getCreatedTime() == null){
+           cargoItem.updateCreatedTime(java.time.LocalDateTime.now());
+        }if(cargoItem.getUpdatedTime() == null){
+           cargoItem.updateUpdatedTime(java.time.LocalDateTime.now());
         }
       }else if(cargoItem.updateItem()){
+        cargoItem.updateUpdatedTime(java.time.LocalDateTime.now());
       }
-      checkItemId(_ctx, cargoItem.getProperty(CargoItem.ITEM_ID_PROPERTY), newLocation(_parentLocation, CargoItem.ITEM_ID_PROPERTY));
-      checkMovingOrder(_ctx, cargoItem.getProperty(CargoItem.MOVING_ORDER_PROPERTY), newLocation(_parentLocation, CargoItem.MOVING_ORDER_PROPERTY));
+      checkItemCode(_ctx, cargoItem.getProperty(CargoItem.ITEM_CODE_PROPERTY), newLocation(_parentLocation, CargoItem.ITEM_CODE_PROPERTY));
       checkDescription(_ctx, cargoItem.getProperty(CargoItem.DESCRIPTION_PROPERTY), newLocation(_parentLocation, CargoItem.DESCRIPTION_PROPERTY));
-      checkCategory(_ctx, cargoItem.getProperty(CargoItem.CATEGORY_PROPERTY), newLocation(_parentLocation, CargoItem.CATEGORY_PROPERTY));
       checkWeightKg(_ctx, cargoItem.getProperty(CargoItem.WEIGHT_KG_PROPERTY), newLocation(_parentLocation, CargoItem.WEIGHT_KG_PROPERTY));
       checkVolumeM3(_ctx, cargoItem.getProperty(CargoItem.VOLUME_M3_PROPERTY), newLocation(_parentLocation, CargoItem.VOLUME_M3_PROPERTY));
-      checkValue(_ctx, cargoItem.getProperty(CargoItem.VALUE_PROPERTY), newLocation(_parentLocation, CargoItem.VALUE_PROPERTY));
       checkFragile(_ctx, cargoItem.getProperty(CargoItem.FRAGILE_PROPERTY), newLocation(_parentLocation, CargoItem.FRAGILE_PROPERTY));
-      checkCreateTime(_ctx, cargoItem.getProperty(CargoItem.CREATE_TIME_PROPERTY), newLocation(_parentLocation, CargoItem.CREATE_TIME_PROPERTY));
+      checkMovingOrder(_ctx, cargoItem.getProperty(CargoItem.MOVING_ORDER_PROPERTY), newLocation(_parentLocation, CargoItem.MOVING_ORDER_PROPERTY));
+      checkCreatedTime(_ctx, cargoItem.getProperty(CargoItem.CREATED_TIME_PROPERTY), newLocation(_parentLocation, CargoItem.CREATED_TIME_PROPERTY));
+      checkUpdatedTime(_ctx, cargoItem.getProperty(CargoItem.UPDATED_TIME_PROPERTY), newLocation(_parentLocation, CargoItem.UPDATED_TIME_PROPERTY));
     }
 
-    public void checkItemId(UserContext _ctx, String itemId, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, itemId);
-    if((itemId == null)){
+    public void checkItemCode(UserContext _ctx, String itemCode, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, itemCode);
+    if((itemCode == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, itemId);
+    maxStringCheck(_ctx, _parentLocation, 100, itemCode);
 
-    }
-    public void checkMovingOrder(UserContext _ctx, MovingOrder movingOrder, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, movingOrder);
-    if((movingOrder == null)){
-        return;
-    }
-    new MovingOrderChecker().checkAndFix(_ctx, movingOrder, _parentLocation);
     }
     public void checkDescription(UserContext _ctx, String description, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, description);
@@ -63,14 +58,6 @@ public class CargoItemChecker implements Checker<CargoItem>{
         return;
     }
     maxStringCheck(_ctx, _parentLocation, 100, description);
-
-    }
-    public void checkCategory(UserContext _ctx, String category, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, category);
-    if((category == null)){
-        return;
-    }
-    maxStringCheck(_ctx, _parentLocation, 100, category);
 
     }
     public void checkWeightKg(UserContext _ctx, BigDecimal weightKg, ObjectLocation _parentLocation){
@@ -85,21 +72,28 @@ public class CargoItemChecker implements Checker<CargoItem>{
         return;
     }
     }
-    public void checkValue(UserContext _ctx, BigDecimal value, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, value);
-    if((value == null)){
-        return;
-    }
-    }
     public void checkFragile(UserContext _ctx, Boolean fragile, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, fragile);
     if((fragile == null)){
         return;
     }
     }
-    public void checkCreateTime(UserContext _ctx, LocalDateTime createTime, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, createTime);
-    if((createTime == null)){
+    public void checkMovingOrder(UserContext _ctx, MovingOrder movingOrder, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, movingOrder);
+    if((movingOrder == null)){
+        return;
+    }
+    new MovingOrderChecker().checkAndFix(_ctx, movingOrder, _parentLocation);
+    }
+    public void checkCreatedTime(UserContext _ctx, LocalDateTime createdTime, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, createdTime);
+    if((createdTime == null)){
+        return;
+    }
+    }
+    public void checkUpdatedTime(UserContext _ctx, LocalDateTime updatedTime, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, updatedTime);
+    if((updatedTime == null)){
         return;
     }
     }

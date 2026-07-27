@@ -12,6 +12,8 @@ import io.teaql.core.SearchCriteria;
 import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 public class CustomerContactRequest<T extends CustomerContact> extends BaseRequest<T> {
 
@@ -84,7 +86,7 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
 
     public CustomerContactRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectName().selectPhone().selectEmail().selectRelationship().selectPrivateCustomerIdOnly().selectCorporateCustomerIdOnly().selectVersion();
+        return selectId().selectFirstName().selectLastName().selectEmail().selectPhone().selectIsPrimary().selectPrivateCustomerIdOnly().selectCorporateCustomerIdOnly().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public CustomerContactRequest<T> selectSelfFields(){
@@ -93,12 +95,12 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
 
     public CustomerContactRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectName().selectPhone().selectEmail().selectRelationship().selectPrivateCustomer().selectCorporateCustomer().selectVersion();
+        return selectId().selectFirstName().selectLastName().selectEmail().selectPhone().selectIsPrimary().selectPrivateCustomer().selectCorporateCustomer().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public CustomerContactRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectName().selectPhone().selectEmail().selectRelationship().selectPrivateCustomer().selectCorporateCustomer().selectVersion();
+        return selectId().selectFirstName().selectLastName().selectEmail().selectPhone().selectIsPrimary().selectPrivateCustomer().selectCorporateCustomer().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
 
@@ -119,38 +121,38 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
        unselectProperty(CustomerContact.ID_PROPERTY);
        return this;
     }
-    public CustomerContactRequest<T> selectName(){
-       selectProperty(CustomerContact.NAME_PROPERTY);
+    public CustomerContactRequest<T> selectFirstName(){
+       selectProperty(CustomerContact.FIRST_NAME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the name with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  name) to fetch name property.
+     * fill the firstName with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  firstName) to fetch firstName property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public CustomerContactRequest<T> unselectName(){
-       unselectProperty(CustomerContact.NAME_PROPERTY);
+    public CustomerContactRequest<T> unselectFirstName(){
+       unselectProperty(CustomerContact.FIRST_NAME_PROPERTY);
        return this;
     }
-    public CustomerContactRequest<T> selectPhone(){
-       selectProperty(CustomerContact.PHONE_PROPERTY);
+    public CustomerContactRequest<T> selectLastName(){
+       selectProperty(CustomerContact.LAST_NAME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the phone with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  phone) to fetch phone property.
+     * fill the lastName with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  lastName) to fetch lastName property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public CustomerContactRequest<T> unselectPhone(){
-       unselectProperty(CustomerContact.PHONE_PROPERTY);
+    public CustomerContactRequest<T> unselectLastName(){
+       unselectProperty(CustomerContact.LAST_NAME_PROPERTY);
        return this;
     }
     public CustomerContactRequest<T> selectEmail(){
@@ -170,21 +172,38 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
        unselectProperty(CustomerContact.EMAIL_PROPERTY);
        return this;
     }
-    public CustomerContactRequest<T> selectRelationship(){
-       selectProperty(CustomerContact.RELATIONSHIP_PROPERTY);
+    public CustomerContactRequest<T> selectPhone(){
+       selectProperty(CustomerContact.PHONE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the relationship with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  relationship) to fetch relationship property.
+     * fill the phone with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  phone) to fetch phone property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public CustomerContactRequest<T> unselectRelationship(){
-       unselectProperty(CustomerContact.RELATIONSHIP_PROPERTY);
+    public CustomerContactRequest<T> unselectPhone(){
+       unselectProperty(CustomerContact.PHONE_PROPERTY);
+       return this;
+    }
+    public CustomerContactRequest<T> selectIsPrimary(){
+       selectProperty(CustomerContact.IS_PRIMARY_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the isPrimary with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  isPrimary) to fetch isPrimary property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public CustomerContactRequest<T> unselectIsPrimary(){
+       unselectProperty(CustomerContact.IS_PRIMARY_PROPERTY);
        return this;
     }
     public CustomerContactRequest<T> selectPrivateCustomerIdOnly(){
@@ -225,6 +244,40 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
        unselectProperty(CustomerContact.CORPORATE_CUSTOMER_PROPERTY);
        return this;
     }
+    public CustomerContactRequest<T> selectCreatedAt(){
+       selectProperty(CustomerContact.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the createdAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdAt) to fetch createdAt property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public CustomerContactRequest<T> unselectCreatedAt(){
+       unselectProperty(CustomerContact.CREATED_AT_PROPERTY);
+       return this;
+    }
+    public CustomerContactRequest<T> selectUpdatedAt(){
+       selectProperty(CustomerContact.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the updatedAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedAt) to fetch updatedAt property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public CustomerContactRequest<T> unselectUpdatedAt(){
+       unselectProperty(CustomerContact.UPDATED_AT_PROPERTY);
+       return this;
+    }
     public CustomerContactRequest<T> selectVersion(){
        selectProperty(CustomerContact.VERSION_PROPERTY);
        return this;
@@ -260,128 +313,128 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
 
 
 
-    public CustomerContactRequest<T> filterByName(String... name){
-      if (name == null || name.length == 0) {
-        throw new IllegalArgumentException("filterByName parameter name cannot be empty");
+    public CustomerContactRequest<T> filterByFirstName(String... firstName){
+      if (firstName == null || firstName.length == 0) {
+        throw new IllegalArgumentException("filterByFirstName parameter firstName cannot be empty");
       }
-      return appendSearchCriteria(createNameCriteria(Operator.EQUAL, (Object[])name));
+      return appendSearchCriteria(createFirstNameCriteria(Operator.EQUAL, (Object[])firstName));
     }
 
-    public CustomerContactRequest<T> withName(Operator operator, Object... values){
-       return appendSearchCriteria(createNameCriteria(operator, values));
+    public CustomerContactRequest<T> withFirstName(Operator operator, Object... values){
+       return appendSearchCriteria(createFirstNameCriteria(operator, values));
     }
 
-    public CustomerContactRequest<T> withNameIsUnknown(){
-       return withName(Operator.IS_NULL);
+    public CustomerContactRequest<T> withFirstNameIsUnknown(){
+       return withFirstName(Operator.IS_NULL);
     }
 
-    public CustomerContactRequest<T> withNameIsKnown(){
-       return withName(Operator.IS_NOT_NULL);
+    public CustomerContactRequest<T> withFirstNameIsKnown(){
+       return withFirstName(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createNameCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CustomerContact.NAME_PROPERTY, operator, values);
+    public SearchCriteria createFirstNameCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CustomerContact.FIRST_NAME_PROPERTY, operator, values);
     }
 
-    public CustomerContactRequest<T> withNameGreaterThan(String name){
-       return withName(Operator.GREATER_THAN, name);
+    public CustomerContactRequest<T> withFirstNameGreaterThan(String firstName){
+       return withFirstName(Operator.GREATER_THAN, firstName);
     }
 
-    public CustomerContactRequest<T> withNameGreaterThanOrEqualTo(String name){
-       return withName(Operator.GREATER_THAN_OR_EQUAL, name);
+    public CustomerContactRequest<T> withFirstNameGreaterThanOrEqualTo(String firstName){
+       return withFirstName(Operator.GREATER_THAN_OR_EQUAL, firstName);
     }
 
-    public CustomerContactRequest<T> withNameLessThan(String name){
-       return withName(Operator.LESS_THAN, name);
+    public CustomerContactRequest<T> withFirstNameLessThan(String firstName){
+       return withFirstName(Operator.LESS_THAN, firstName);
     }
 
-    public CustomerContactRequest<T> withNameLessThanOrEqualTo(String name){
-       return withName(Operator.LESS_THAN_OR_EQUAL, name);
+    public CustomerContactRequest<T> withFirstNameLessThanOrEqualTo(String firstName){
+       return withFirstName(Operator.LESS_THAN_OR_EQUAL, firstName);
     }
 
-    public CustomerContactRequest<T> withNameBetween(String startOfName, String endOfName){
-       return withName(Operator.BETWEEN, startOfName, endOfName);
+    public CustomerContactRequest<T> withFirstNameBetween(String startOfFirstName, String endOfFirstName){
+       return withFirstName(Operator.BETWEEN, startOfFirstName, endOfFirstName);
     }
-    public CustomerContactRequest<T> withNameStartingWith(String name){
-       return withName(Operator.BEGIN_WITH, name);
+    public CustomerContactRequest<T> withFirstNameStartingWith(String firstName){
+       return withFirstName(Operator.BEGIN_WITH, firstName);
     }
-    public CustomerContactRequest<T> withNameContaining(String name){
-       return withName(Operator.CONTAIN, name);
-    }
-
-    public CustomerContactRequest<T> withNameEndingWith(String name){
-       return withName(Operator.END_WITH, name);
+    public CustomerContactRequest<T> withFirstNameContaining(String firstName){
+       return withFirstName(Operator.CONTAIN, firstName);
     }
 
-    public CustomerContactRequest<T> withNameIs(String name){
-       return withName(Operator.EQUAL, name);
+    public CustomerContactRequest<T> withFirstNameEndingWith(String firstName){
+       return withFirstName(Operator.END_WITH, firstName);
     }
 
-    public CustomerContactRequest<T> withNameSoundingLike(String name){
-       return withName(Operator.SOUNDS_LIKE, name);
+    public CustomerContactRequest<T> withFirstNameIs(String firstName){
+       return withFirstName(Operator.EQUAL, firstName);
+    }
+
+    public CustomerContactRequest<T> withFirstNameSoundingLike(String firstName){
+       return withFirstName(Operator.SOUNDS_LIKE, firstName);
     }
 
 
 
-    public CustomerContactRequest<T> filterByPhone(String... phone){
-      if (phone == null || phone.length == 0) {
-        throw new IllegalArgumentException("filterByPhone parameter phone cannot be empty");
+    public CustomerContactRequest<T> filterByLastName(String... lastName){
+      if (lastName == null || lastName.length == 0) {
+        throw new IllegalArgumentException("filterByLastName parameter lastName cannot be empty");
       }
-      return appendSearchCriteria(createPhoneCriteria(Operator.EQUAL, (Object[])phone));
+      return appendSearchCriteria(createLastNameCriteria(Operator.EQUAL, (Object[])lastName));
     }
 
-    public CustomerContactRequest<T> withPhone(Operator operator, Object... values){
-       return appendSearchCriteria(createPhoneCriteria(operator, values));
+    public CustomerContactRequest<T> withLastName(Operator operator, Object... values){
+       return appendSearchCriteria(createLastNameCriteria(operator, values));
     }
 
-    public CustomerContactRequest<T> withPhoneIsUnknown(){
-       return withPhone(Operator.IS_NULL);
+    public CustomerContactRequest<T> withLastNameIsUnknown(){
+       return withLastName(Operator.IS_NULL);
     }
 
-    public CustomerContactRequest<T> withPhoneIsKnown(){
-       return withPhone(Operator.IS_NOT_NULL);
+    public CustomerContactRequest<T> withLastNameIsKnown(){
+       return withLastName(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createPhoneCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CustomerContact.PHONE_PROPERTY, operator, values);
+    public SearchCriteria createLastNameCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CustomerContact.LAST_NAME_PROPERTY, operator, values);
     }
 
-    public CustomerContactRequest<T> withPhoneGreaterThan(String phone){
-       return withPhone(Operator.GREATER_THAN, phone);
+    public CustomerContactRequest<T> withLastNameGreaterThan(String lastName){
+       return withLastName(Operator.GREATER_THAN, lastName);
     }
 
-    public CustomerContactRequest<T> withPhoneGreaterThanOrEqualTo(String phone){
-       return withPhone(Operator.GREATER_THAN_OR_EQUAL, phone);
+    public CustomerContactRequest<T> withLastNameGreaterThanOrEqualTo(String lastName){
+       return withLastName(Operator.GREATER_THAN_OR_EQUAL, lastName);
     }
 
-    public CustomerContactRequest<T> withPhoneLessThan(String phone){
-       return withPhone(Operator.LESS_THAN, phone);
+    public CustomerContactRequest<T> withLastNameLessThan(String lastName){
+       return withLastName(Operator.LESS_THAN, lastName);
     }
 
-    public CustomerContactRequest<T> withPhoneLessThanOrEqualTo(String phone){
-       return withPhone(Operator.LESS_THAN_OR_EQUAL, phone);
+    public CustomerContactRequest<T> withLastNameLessThanOrEqualTo(String lastName){
+       return withLastName(Operator.LESS_THAN_OR_EQUAL, lastName);
     }
 
-    public CustomerContactRequest<T> withPhoneBetween(String startOfPhone, String endOfPhone){
-       return withPhone(Operator.BETWEEN, startOfPhone, endOfPhone);
+    public CustomerContactRequest<T> withLastNameBetween(String startOfLastName, String endOfLastName){
+       return withLastName(Operator.BETWEEN, startOfLastName, endOfLastName);
     }
-    public CustomerContactRequest<T> withPhoneStartingWith(String phone){
-       return withPhone(Operator.BEGIN_WITH, phone);
+    public CustomerContactRequest<T> withLastNameStartingWith(String lastName){
+       return withLastName(Operator.BEGIN_WITH, lastName);
     }
-    public CustomerContactRequest<T> withPhoneContaining(String phone){
-       return withPhone(Operator.CONTAIN, phone);
-    }
-
-    public CustomerContactRequest<T> withPhoneEndingWith(String phone){
-       return withPhone(Operator.END_WITH, phone);
+    public CustomerContactRequest<T> withLastNameContaining(String lastName){
+       return withLastName(Operator.CONTAIN, lastName);
     }
 
-    public CustomerContactRequest<T> withPhoneIs(String phone){
-       return withPhone(Operator.EQUAL, phone);
+    public CustomerContactRequest<T> withLastNameEndingWith(String lastName){
+       return withLastName(Operator.END_WITH, lastName);
     }
 
-    public CustomerContactRequest<T> withPhoneSoundingLike(String phone){
-       return withPhone(Operator.SOUNDS_LIKE, phone);
+    public CustomerContactRequest<T> withLastNameIs(String lastName){
+       return withLastName(Operator.EQUAL, lastName);
+    }
+
+    public CustomerContactRequest<T> withLastNameSoundingLike(String lastName){
+       return withLastName(Operator.SOUNDS_LIKE, lastName);
     }
 
 
@@ -449,67 +502,99 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
 
 
 
-    public CustomerContactRequest<T> filterByRelationship(String... relationship){
-      if (relationship == null || relationship.length == 0) {
-        throw new IllegalArgumentException("filterByRelationship parameter relationship cannot be empty");
+    public CustomerContactRequest<T> filterByPhone(String... phone){
+      if (phone == null || phone.length == 0) {
+        throw new IllegalArgumentException("filterByPhone parameter phone cannot be empty");
       }
-      return appendSearchCriteria(createRelationshipCriteria(Operator.EQUAL, (Object[])relationship));
+      return appendSearchCriteria(createPhoneCriteria(Operator.EQUAL, (Object[])phone));
     }
 
-    public CustomerContactRequest<T> withRelationship(Operator operator, Object... values){
-       return appendSearchCriteria(createRelationshipCriteria(operator, values));
+    public CustomerContactRequest<T> withPhone(Operator operator, Object... values){
+       return appendSearchCriteria(createPhoneCriteria(operator, values));
     }
 
-    public CustomerContactRequest<T> withRelationshipIsUnknown(){
-       return withRelationship(Operator.IS_NULL);
+    public CustomerContactRequest<T> withPhoneIsUnknown(){
+       return withPhone(Operator.IS_NULL);
     }
 
-    public CustomerContactRequest<T> withRelationshipIsKnown(){
-       return withRelationship(Operator.IS_NOT_NULL);
+    public CustomerContactRequest<T> withPhoneIsKnown(){
+       return withPhone(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createRelationshipCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CustomerContact.RELATIONSHIP_PROPERTY, operator, values);
+    public SearchCriteria createPhoneCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CustomerContact.PHONE_PROPERTY, operator, values);
     }
 
-    public CustomerContactRequest<T> withRelationshipGreaterThan(String relationship){
-       return withRelationship(Operator.GREATER_THAN, relationship);
+    public CustomerContactRequest<T> withPhoneGreaterThan(String phone){
+       return withPhone(Operator.GREATER_THAN, phone);
     }
 
-    public CustomerContactRequest<T> withRelationshipGreaterThanOrEqualTo(String relationship){
-       return withRelationship(Operator.GREATER_THAN_OR_EQUAL, relationship);
+    public CustomerContactRequest<T> withPhoneGreaterThanOrEqualTo(String phone){
+       return withPhone(Operator.GREATER_THAN_OR_EQUAL, phone);
     }
 
-    public CustomerContactRequest<T> withRelationshipLessThan(String relationship){
-       return withRelationship(Operator.LESS_THAN, relationship);
+    public CustomerContactRequest<T> withPhoneLessThan(String phone){
+       return withPhone(Operator.LESS_THAN, phone);
     }
 
-    public CustomerContactRequest<T> withRelationshipLessThanOrEqualTo(String relationship){
-       return withRelationship(Operator.LESS_THAN_OR_EQUAL, relationship);
+    public CustomerContactRequest<T> withPhoneLessThanOrEqualTo(String phone){
+       return withPhone(Operator.LESS_THAN_OR_EQUAL, phone);
     }
 
-    public CustomerContactRequest<T> withRelationshipBetween(String startOfRelationship, String endOfRelationship){
-       return withRelationship(Operator.BETWEEN, startOfRelationship, endOfRelationship);
+    public CustomerContactRequest<T> withPhoneBetween(String startOfPhone, String endOfPhone){
+       return withPhone(Operator.BETWEEN, startOfPhone, endOfPhone);
     }
-    public CustomerContactRequest<T> withRelationshipStartingWith(String relationship){
-       return withRelationship(Operator.BEGIN_WITH, relationship);
+    public CustomerContactRequest<T> withPhoneStartingWith(String phone){
+       return withPhone(Operator.BEGIN_WITH, phone);
     }
-    public CustomerContactRequest<T> withRelationshipContaining(String relationship){
-       return withRelationship(Operator.CONTAIN, relationship);
-    }
-
-    public CustomerContactRequest<T> withRelationshipEndingWith(String relationship){
-       return withRelationship(Operator.END_WITH, relationship);
+    public CustomerContactRequest<T> withPhoneContaining(String phone){
+       return withPhone(Operator.CONTAIN, phone);
     }
 
-    public CustomerContactRequest<T> withRelationshipIs(String relationship){
-       return withRelationship(Operator.EQUAL, relationship);
+    public CustomerContactRequest<T> withPhoneEndingWith(String phone){
+       return withPhone(Operator.END_WITH, phone);
     }
 
-    public CustomerContactRequest<T> withRelationshipSoundingLike(String relationship){
-       return withRelationship(Operator.SOUNDS_LIKE, relationship);
+    public CustomerContactRequest<T> withPhoneIs(String phone){
+       return withPhone(Operator.EQUAL, phone);
     }
 
+    public CustomerContactRequest<T> withPhoneSoundingLike(String phone){
+       return withPhone(Operator.SOUNDS_LIKE, phone);
+    }
+
+
+
+    public CustomerContactRequest<T> filterByIsPrimary(Boolean... isPrimary){
+      if (isPrimary == null || isPrimary.length == 0) {
+        throw new IllegalArgumentException("filterByIsPrimary parameter isPrimary cannot be empty");
+      }
+      return appendSearchCriteria(createIsPrimaryCriteria(Operator.EQUAL, (Object[])isPrimary));
+    }
+
+    public CustomerContactRequest<T> withIsPrimary(Operator operator, Object... values){
+       return appendSearchCriteria(createIsPrimaryCriteria(operator, values));
+    }
+
+    public CustomerContactRequest<T> withIsPrimaryIsUnknown(){
+       return withIsPrimary(Operator.IS_NULL);
+    }
+
+    public CustomerContactRequest<T> withIsPrimaryIsKnown(){
+       return withIsPrimary(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createIsPrimaryCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CustomerContact.IS_PRIMARY_PROPERTY, operator, values);
+    }
+
+    public CustomerContactRequest<T> whichIsIsPrimary(){
+       return withIsPrimary(Operator.EQUAL, true);
+    }
+
+    public CustomerContactRequest<T> whichIsNotIsPrimary(){
+       return withIsPrimary(Operator.EQUAL, false);
+    }
 
 
     public CustomerContactRequest<T> filterByPrivateCustomer(PrivateCustomer... privateCustomer){
@@ -577,6 +662,136 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
     public CustomerContactRequest<T> withCorporateCustomerMatching(CorporateCustomerRequest corporateCustomer){
        return appendSearchCriteria(new SubQuerySearchCriteria(CustomerContact.CORPORATE_CUSTOMER_PROPERTY, corporateCustomer, CorporateCustomer.ID_PROPERTY));
     }
+
+    public CustomerContactRequest<T> filterByCreatedAt(LocalDateTime... createdAt){
+      if (createdAt == null || createdAt.length == 0) {
+        throw new IllegalArgumentException("filterByCreatedAt parameter createdAt cannot be empty");
+      }
+      return appendSearchCriteria(createCreatedAtCriteria(Operator.EQUAL, (Object[])createdAt));
+    }
+
+    public CustomerContactRequest<T> withCreatedAt(Operator operator, Object... values){
+       return appendSearchCriteria(createCreatedAtCriteria(operator, values));
+    }
+
+    public CustomerContactRequest<T> withCreatedAtIsUnknown(){
+       return withCreatedAt(Operator.IS_NULL);
+    }
+
+    public CustomerContactRequest<T> withCreatedAtIsKnown(){
+       return withCreatedAt(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createCreatedAtCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CustomerContact.CREATED_AT_PROPERTY, operator, values);
+    }
+
+    public CustomerContactRequest<T> withCreatedAtGreaterThan(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public CustomerContactRequest<T> withCreatedAtGreaterThanOrEqualTo(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN_OR_EQUAL, createdAt);
+    }
+
+    public CustomerContactRequest<T> withCreatedAtLessThan(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public CustomerContactRequest<T> withCreatedAtLessThanOrEqualTo(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN_OR_EQUAL, createdAt);
+    }
+
+    public CustomerContactRequest<T> withCreatedAtBetween(LocalDateTime startOfCreatedAt, LocalDateTime endOfCreatedAt){
+       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    }
+    public CustomerContactRequest<T> withCreatedAtBefore(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public CustomerContactRequest<T> withCreatedAtBefore(Date createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public CustomerContactRequest<T> withCreatedAtAfter(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public CustomerContactRequest<T> withCreatedAtAfter(Date createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public CustomerContactRequest<T> withCreatedAtBetween(Date startOfCreatedAt, Date endOfCreatedAt){
+       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    }
+
+
+
+
+    public CustomerContactRequest<T> filterByUpdatedAt(LocalDateTime... updatedAt){
+      if (updatedAt == null || updatedAt.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedAt parameter updatedAt cannot be empty");
+      }
+      return appendSearchCriteria(createUpdatedAtCriteria(Operator.EQUAL, (Object[])updatedAt));
+    }
+
+    public CustomerContactRequest<T> withUpdatedAt(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedAtCriteria(operator, values));
+    }
+
+    public CustomerContactRequest<T> withUpdatedAtIsUnknown(){
+       return withUpdatedAt(Operator.IS_NULL);
+    }
+
+    public CustomerContactRequest<T> withUpdatedAtIsKnown(){
+       return withUpdatedAt(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createUpdatedAtCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CustomerContact.UPDATED_AT_PROPERTY, operator, values);
+    }
+
+    public CustomerContactRequest<T> withUpdatedAtGreaterThan(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public CustomerContactRequest<T> withUpdatedAtGreaterThanOrEqualTo(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN_OR_EQUAL, updatedAt);
+    }
+
+    public CustomerContactRequest<T> withUpdatedAtLessThan(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public CustomerContactRequest<T> withUpdatedAtLessThanOrEqualTo(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN_OR_EQUAL, updatedAt);
+    }
+
+    public CustomerContactRequest<T> withUpdatedAtBetween(LocalDateTime startOfUpdatedAt, LocalDateTime endOfUpdatedAt){
+       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    }
+    public CustomerContactRequest<T> withUpdatedAtBefore(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public CustomerContactRequest<T> withUpdatedAtBefore(Date updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public CustomerContactRequest<T> withUpdatedAtAfter(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public CustomerContactRequest<T> withUpdatedAtAfter(Date updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public CustomerContactRequest<T> withUpdatedAtBetween(Date startOfUpdatedAt, Date endOfUpdatedAt){
+       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    }
+
+
+
 
     public CustomerContactRequest<T> filterByVersion(Long... version){
       if (version == null || version.length == 0) {
@@ -650,6 +865,8 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
 
 
 
+
+
     public CustomerContactRequest<T> groupById(){
        groupBy(CustomerContact.ID_PROPERTY);
        return this;
@@ -665,33 +882,33 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
        return this;
     }
 
-    public CustomerContactRequest<T> groupByName(){
-       groupBy(CustomerContact.NAME_PROPERTY);
+    public CustomerContactRequest<T> groupByFirstName(){
+       groupBy(CustomerContact.FIRST_NAME_PROPERTY);
        return this;
     }
 
-    public CustomerContactRequest<T> groupByNameAs(String retName){
-       groupBy(retName, CustomerContact.NAME_PROPERTY);
+    public CustomerContactRequest<T> groupByFirstNameAs(String retName){
+       groupBy(retName, CustomerContact.FIRST_NAME_PROPERTY);
        return this;
     }
 
-    public CustomerContactRequest<T> groupByNameWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CustomerContact.NAME_PROPERTY, function);
+    public CustomerContactRequest<T> groupByFirstNameWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CustomerContact.FIRST_NAME_PROPERTY, function);
        return this;
     }
 
-    public CustomerContactRequest<T> groupByPhone(){
-       groupBy(CustomerContact.PHONE_PROPERTY);
+    public CustomerContactRequest<T> groupByLastName(){
+       groupBy(CustomerContact.LAST_NAME_PROPERTY);
        return this;
     }
 
-    public CustomerContactRequest<T> groupByPhoneAs(String retName){
-       groupBy(retName, CustomerContact.PHONE_PROPERTY);
+    public CustomerContactRequest<T> groupByLastNameAs(String retName){
+       groupBy(retName, CustomerContact.LAST_NAME_PROPERTY);
        return this;
     }
 
-    public CustomerContactRequest<T> groupByPhoneWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CustomerContact.PHONE_PROPERTY, function);
+    public CustomerContactRequest<T> groupByLastNameWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CustomerContact.LAST_NAME_PROPERTY, function);
        return this;
     }
 
@@ -710,18 +927,33 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
        return this;
     }
 
-    public CustomerContactRequest<T> groupByRelationship(){
-       groupBy(CustomerContact.RELATIONSHIP_PROPERTY);
+    public CustomerContactRequest<T> groupByPhone(){
+       groupBy(CustomerContact.PHONE_PROPERTY);
        return this;
     }
 
-    public CustomerContactRequest<T> groupByRelationshipAs(String retName){
-       groupBy(retName, CustomerContact.RELATIONSHIP_PROPERTY);
+    public CustomerContactRequest<T> groupByPhoneAs(String retName){
+       groupBy(retName, CustomerContact.PHONE_PROPERTY);
        return this;
     }
 
-    public CustomerContactRequest<T> groupByRelationshipWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CustomerContact.RELATIONSHIP_PROPERTY, function);
+    public CustomerContactRequest<T> groupByPhoneWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CustomerContact.PHONE_PROPERTY, function);
+       return this;
+    }
+
+    public CustomerContactRequest<T> groupByIsPrimary(){
+       groupBy(CustomerContact.IS_PRIMARY_PROPERTY);
+       return this;
+    }
+
+    public CustomerContactRequest<T> groupByIsPrimaryAs(String retName){
+       groupBy(retName, CustomerContact.IS_PRIMARY_PROPERTY);
+       return this;
+    }
+
+    public CustomerContactRequest<T> groupByIsPrimaryWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CustomerContact.IS_PRIMARY_PROPERTY, function);
        return this;
     }
     public CustomerContactRequest<T> groupByPrivateCustomerWith(PrivateCustomerRequest subRequest){
@@ -761,6 +993,36 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
        return this;
     }
 
+    public CustomerContactRequest<T> groupByCreatedAt(){
+       groupBy(CustomerContact.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CustomerContactRequest<T> groupByCreatedAtAs(String retName){
+       groupBy(retName, CustomerContact.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CustomerContactRequest<T> groupByCreatedAtWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CustomerContact.CREATED_AT_PROPERTY, function);
+       return this;
+    }
+
+    public CustomerContactRequest<T> groupByUpdatedAt(){
+       groupBy(CustomerContact.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CustomerContactRequest<T> groupByUpdatedAtAs(String retName){
+       groupBy(retName, CustomerContact.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CustomerContactRequest<T> groupByUpdatedAtWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CustomerContact.UPDATED_AT_PROPERTY, function);
+       return this;
+    }
+
     public CustomerContactRequest<T> groupByVersion(){
        groupBy(CustomerContact.VERSION_PROPERTY);
        return this;
@@ -788,40 +1050,40 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
        return this;
     }
 
-    public CustomerContactRequest<T> orderByNameAscending(){
-       addOrderByAscending(CustomerContact.NAME_PROPERTY);
+    public CustomerContactRequest<T> orderByFirstNameAscending(){
+       addOrderByAscending(CustomerContact.FIRST_NAME_PROPERTY);
        return this;
     }
 
-    public CustomerContactRequest<T> orderByNameDescending(){
-       addOrderByDescending(CustomerContact.NAME_PROPERTY);
+    public CustomerContactRequest<T> orderByFirstNameDescending(){
+       addOrderByDescending(CustomerContact.FIRST_NAME_PROPERTY);
        return this;
     }
-    public CustomerContactRequest<T> orderByNameAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(CustomerContact.NAME_PROPERTY);
-       return this;
-    }
-
-    public CustomerContactRequest<T> orderByNameDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(CustomerContact.NAME_PROPERTY);
-       return this;
-    }
-    public CustomerContactRequest<T> orderByPhoneAscending(){
-       addOrderByAscending(CustomerContact.PHONE_PROPERTY);
+    public CustomerContactRequest<T> orderByFirstNameAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(CustomerContact.FIRST_NAME_PROPERTY);
        return this;
     }
 
-    public CustomerContactRequest<T> orderByPhoneDescending(){
-       addOrderByDescending(CustomerContact.PHONE_PROPERTY);
+    public CustomerContactRequest<T> orderByFirstNameDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(CustomerContact.FIRST_NAME_PROPERTY);
        return this;
     }
-    public CustomerContactRequest<T> orderByPhoneAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(CustomerContact.PHONE_PROPERTY);
+    public CustomerContactRequest<T> orderByLastNameAscending(){
+       addOrderByAscending(CustomerContact.LAST_NAME_PROPERTY);
        return this;
     }
 
-    public CustomerContactRequest<T> orderByPhoneDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(CustomerContact.PHONE_PROPERTY);
+    public CustomerContactRequest<T> orderByLastNameDescending(){
+       addOrderByDescending(CustomerContact.LAST_NAME_PROPERTY);
+       return this;
+    }
+    public CustomerContactRequest<T> orderByLastNameAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(CustomerContact.LAST_NAME_PROPERTY);
+       return this;
+    }
+
+    public CustomerContactRequest<T> orderByLastNameDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(CustomerContact.LAST_NAME_PROPERTY);
        return this;
     }
     public CustomerContactRequest<T> orderByEmailAscending(){
@@ -842,24 +1104,34 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
        addOrderByDescendingUsingGBK(CustomerContact.EMAIL_PROPERTY);
        return this;
     }
-    public CustomerContactRequest<T> orderByRelationshipAscending(){
-       addOrderByAscending(CustomerContact.RELATIONSHIP_PROPERTY);
+    public CustomerContactRequest<T> orderByPhoneAscending(){
+       addOrderByAscending(CustomerContact.PHONE_PROPERTY);
        return this;
     }
 
-    public CustomerContactRequest<T> orderByRelationshipDescending(){
-       addOrderByDescending(CustomerContact.RELATIONSHIP_PROPERTY);
+    public CustomerContactRequest<T> orderByPhoneDescending(){
+       addOrderByDescending(CustomerContact.PHONE_PROPERTY);
        return this;
     }
-    public CustomerContactRequest<T> orderByRelationshipAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(CustomerContact.RELATIONSHIP_PROPERTY);
+    public CustomerContactRequest<T> orderByPhoneAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(CustomerContact.PHONE_PROPERTY);
        return this;
     }
 
-    public CustomerContactRequest<T> orderByRelationshipDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(CustomerContact.RELATIONSHIP_PROPERTY);
+    public CustomerContactRequest<T> orderByPhoneDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(CustomerContact.PHONE_PROPERTY);
        return this;
     }
+    public CustomerContactRequest<T> orderByIsPrimaryAscending(){
+       addOrderByAscending(CustomerContact.IS_PRIMARY_PROPERTY);
+       return this;
+    }
+
+    public CustomerContactRequest<T> orderByIsPrimaryDescending(){
+       addOrderByDescending(CustomerContact.IS_PRIMARY_PROPERTY);
+       return this;
+    }
+
     public CustomerContactRequest<T> orderByPrivateCustomerAscending(){
        addOrderByAscending(CustomerContact.PRIVATE_CUSTOMER_PROPERTY);
        return this;
@@ -877,6 +1149,26 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
 
     public CustomerContactRequest<T> orderByCorporateCustomerDescending(){
        addOrderByDescending(CustomerContact.CORPORATE_CUSTOMER_PROPERTY);
+       return this;
+    }
+
+    public CustomerContactRequest<T> orderByCreatedAtAscending(){
+       addOrderByAscending(CustomerContact.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CustomerContactRequest<T> orderByCreatedAtDescending(){
+       addOrderByDescending(CustomerContact.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CustomerContactRequest<T> orderByUpdatedAtAscending(){
+       addOrderByAscending(CustomerContact.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CustomerContactRequest<T> orderByUpdatedAtDescending(){
+       addOrderByDescending(CustomerContact.UPDATED_AT_PROPERTY);
        return this;
     }
 
@@ -904,6 +1196,8 @@ public class CustomerContactRequest<T extends CustomerContact> extends BaseReque
            .groupByCorporateCustomerWith(corporateCustomer);
        return corporateCustomer;
     }
+
+
 
 
 

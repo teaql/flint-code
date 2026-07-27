@@ -1,13 +1,11 @@
 package com.doublechaintech.enterpriselogisticsservice.expenseitem;
 
-import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember;
-import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMemberExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.function.Function;
 
 public class ExpenseItemExpression<T, E, U extends ExpenseItem> extends ExpressionAdaptor<T, E, U> implements BaseEntityExpression<T, U> {
@@ -43,11 +41,11 @@ public class ExpenseItemExpression<T, E, U extends ExpenseItem> extends Expressi
        return new ExpenseItemExpression(this, $it ->  ((ExpenseItem)$it).updateName(name));
     }
 
-    public Expression<T, String> getCode(){
-       return apply(ExpenseItem::getCode);
+    public Expression<T, String> getDescription(){
+       return apply(ExpenseItem::getDescription);
     }
-    public ExpenseItemExpression<T, U, U> updateCode(String code){
-       return new ExpenseItemExpression(this, $it ->  ((ExpenseItem)$it).updateCode(code));
+    public ExpenseItemExpression<T, U, U> updateDescription(String description){
+       return new ExpenseItemExpression(this, $it ->  ((ExpenseItem)$it).updateDescription(description));
     }
 
     public Expression<T, BigDecimal> getAmount(){
@@ -64,33 +62,32 @@ public class ExpenseItemExpression<T, E, U extends ExpenseItem> extends Expressi
        return new ExpenseItemExpression(this, $it ->  ((ExpenseItem)$it).updateCurrency(currency));
     }
 
-    public Expression<T, String> getCategory(){
-       return apply(ExpenseItem::getCategory);
+    public Expression<T, String> getExpenseType(){
+       return apply(ExpenseItem::getExpenseType);
     }
-    public ExpenseItemExpression<T, U, U> updateCategory(String category){
-       return new ExpenseItemExpression(this, $it ->  ((ExpenseItem)$it).updateCategory(category));
-    }
-
-    public Expression<T, LocalDateTime> getCreatedAt(){
-       return apply(ExpenseItem::getCreatedAt);
-    }
-    public ExpenseItemExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
-       return new ExpenseItemExpression(this, $it ->  ((ExpenseItem)$it).updateCreatedAt(createdAt));
+    public ExpenseItemExpression<T, U, U> updateExpenseType(String expenseType){
+       return new ExpenseItemExpression(this, $it ->  ((ExpenseItem)$it).updateExpenseType(expenseType));
     }
 
-    public Expression<T, LocalDateTime> getUpdatedAt(){
-       return apply(ExpenseItem::getUpdatedAt);
+    public Expression<T, LocalDate> getExpenseDate(){
+       return apply(ExpenseItem::getExpenseDate);
     }
-    public ExpenseItemExpression<T, U, U> updateUpdatedAt(LocalDateTime updatedAt){
-       return new ExpenseItemExpression(this, $it ->  ((ExpenseItem)$it).updateUpdatedAt(updatedAt));
-    }
-
-    public StaffMemberExpression<T, U, StaffMember> getStaffMember(){
-       return new StaffMemberExpression(this, $it ->  ((ExpenseItem)$it).getStaffMember());
+    public ExpenseItemExpression<T, U, U> updateExpenseDate(LocalDate expenseDate){
+       return new ExpenseItemExpression(this, $it ->  ((ExpenseItem)$it).updateExpenseDate(expenseDate));
     }
 
-    public ExpenseItemExpression<T, U, U> updateStaffMember(StaffMember staffMember){
-       return new ExpenseItemExpression(this, $it ->  ((ExpenseItem)$it).updateStaffMember(staffMember));
+    public Expression<T, String> getEmployee(){
+       return apply(ExpenseItem::getEmployee);
+    }
+    public ExpenseItemExpression<T, U, U> updateEmployee(String employee){
+       return new ExpenseItemExpression(this, $it ->  ((ExpenseItem)$it).updateEmployee(employee));
+    }
+
+    public Expression<T, String> getStatus(){
+       return apply(ExpenseItem::getStatus);
+    }
+    public ExpenseItemExpression<T, U, U> updateStatus(String status){
+       return new ExpenseItemExpression(this, $it ->  ((ExpenseItem)$it).updateStatus(status));
     }
 
 }

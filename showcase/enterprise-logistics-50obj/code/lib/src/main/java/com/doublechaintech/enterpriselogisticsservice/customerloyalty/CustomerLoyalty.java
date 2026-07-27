@@ -1,12 +1,12 @@
 package com.doublechaintech.enterpriselogisticsservice.customerloyalty;
 
-import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer;
 import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -23,11 +23,13 @@ public class CustomerLoyalty extends BaseEntity implements RemoteInput {
     public static final String POINTS_PROPERTY = "points";
     public static final String TIER_PROPERTY = "tier";
     public static final String PRIVATE_CUSTOMER_PROPERTY = "privateCustomer";
-    public static final String CORPORATE_CUSTOMER_PROPERTY = "corporateCustomer";
+    public static final String CREATED_AT_PROPERTY = "createdAt";
+    public static final String UPDATED_AT_PROPERTY = "updatedAt";
     private Integer points;
     private String tier;
     private PrivateCustomer privateCustomer;
-    private CorporateCustomer corporateCustomer;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public Integer getPoints(){
         return this.points;
@@ -38,8 +40,11 @@ public class CustomerLoyalty extends BaseEntity implements RemoteInput {
     public PrivateCustomer getPrivateCustomer(){
         return this.privateCustomer;
     }
-    public CorporateCustomer getCorporateCustomer(){
-        return this.corporateCustomer;
+    public LocalDateTime getCreatedAt(){
+        return this.createdAt;
+    }
+    public LocalDateTime getUpdatedAt(){
+        return this.updatedAt;
     }
     public CustomerLoyalty updatePoints(Integer points){
         if(Objects.equals(this.points, points)){
@@ -66,12 +71,20 @@ public class CustomerLoyalty extends BaseEntity implements RemoteInput {
         this.privateCustomer = privateCustomer;
         return this;
     }
-    public CustomerLoyalty updateCorporateCustomer(CorporateCustomer corporateCustomer){
-        if(Objects.equals(this.corporateCustomer, corporateCustomer)){
+    public CustomerLoyalty updateCreatedAt(LocalDateTime createdAt){
+        if(Objects.equals(this.createdAt, createdAt)){
             return this;
         }
-        handleUpdate(CORPORATE_CUSTOMER_PROPERTY, getCorporateCustomer(), corporateCustomer);
-        this.corporateCustomer = corporateCustomer;
+        handleUpdate(CREATED_AT_PROPERTY, getCreatedAt(), createdAt);
+        this.createdAt = createdAt;
+        return this;
+    }
+    public CustomerLoyalty updateUpdatedAt(LocalDateTime updatedAt){
+        if(Objects.equals(this.updatedAt, updatedAt)){
+            return this;
+        }
+        handleUpdate(UPDATED_AT_PROPERTY, getUpdatedAt(), updatedAt);
+        this.updatedAt = updatedAt;
         return this;
     }
 
@@ -108,7 +121,9 @@ public class CustomerLoyalty extends BaseEntity implements RemoteInput {
 
             case "privateCustomer": this.privateCustomer = (PrivateCustomer) value; break;
 
-            case "corporateCustomer": this.corporateCustomer = (CorporateCustomer) value; break;
+            case "createdAt": this.createdAt = (LocalDateTime) value; break;
+
+            case "updatedAt": this.updatedAt = (LocalDateTime) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -121,7 +136,8 @@ public class CustomerLoyalty extends BaseEntity implements RemoteInput {
             case "points": return this.points;
             case "tier": return this.tier;
             case "privateCustomer": return this.privateCustomer;
-            case "corporateCustomer": return this.corporateCustomer;
+            case "createdAt": return this.createdAt;
+            case "updatedAt": return this.updatedAt;
             default: return super.__internalGet(property);
         }
     }

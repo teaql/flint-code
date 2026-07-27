@@ -2,14 +2,12 @@ package com.doublechaintech.enterpriselogisticsservice.staffmember;
 
 import com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan;
 import com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlanChecker;
-import com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem;
-import com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItemChecker;
 import com.doublechaintech.enterpriselogisticsservice.performancereview.PerformanceReview;
 import com.doublechaintech.enterpriselogisticsservice.performancereview.PerformanceReviewChecker;
-import com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining;
-import com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTrainingChecker;
 import com.doublechaintech.enterpriselogisticsservice.salaryslip.SalarySlip;
 import com.doublechaintech.enterpriselogisticsservice.salaryslip.SalarySlipChecker;
+import com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead;
+import com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLeadChecker;
 import com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHours;
 import com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHoursChecker;
 import io.teaql.core.UserContext;
@@ -59,8 +57,8 @@ public class StaffMemberChecker implements Checker<StaffMember>{
          new DispatchPlanChecker().checkAndFix(_ctx, dispatchPlan, newLocation(_parentLocation, StaffMember.DISPATCH_PLAN_LIST_PROPERTY, i));
       }
       for(int i = 0; staffMember.getStaffMemberList() != null && i < staffMember.getStaffMemberList().size(); i++){
-         StaffMember staffMember = staffMember.getStaffMemberList().get(i);
-         new StaffMemberChecker().checkAndFix(_ctx, staffMember, newLocation(_parentLocation, StaffMember.STAFF_MEMBER_LIST_PROPERTY, i));
+         StaffMember childStaffMember = staffMember.getStaffMemberList().get(i);
+         new StaffMemberChecker().checkAndFix(_ctx, childStaffMember, newLocation(_parentLocation, StaffMember.STAFF_MEMBER_LIST_PROPERTY, i));
       }
       for(int i = 0; staffMember.getWorkedHoursList() != null && i < staffMember.getWorkedHoursList().size(); i++){
          WorkedHours workedHours = staffMember.getWorkedHoursList().get(i);
@@ -78,13 +76,9 @@ public class StaffMemberChecker implements Checker<StaffMember>{
          PerformanceReview performanceReviewAsReviewer = staffMember.getPerformanceReviewListAsReviewer().get(i);
          new PerformanceReviewChecker().checkAndFix(_ctx, performanceReviewAsReviewer, newLocation(_parentLocation, StaffMember.PERFORMANCE_REVIEW_LIST_AS_REVIEWER_PROPERTY, i));
       }
-      for(int i = 0; staffMember.getSafetyTrainingList() != null && i < staffMember.getSafetyTrainingList().size(); i++){
-         SafetyTraining safetyTraining = staffMember.getSafetyTrainingList().get(i);
-         new SafetyTrainingChecker().checkAndFix(_ctx, safetyTraining, newLocation(_parentLocation, StaffMember.SAFETY_TRAINING_LIST_PROPERTY, i));
-      }
-      for(int i = 0; staffMember.getExpenseItemList() != null && i < staffMember.getExpenseItemList().size(); i++){
-         ExpenseItem expenseItem = staffMember.getExpenseItemList().get(i);
-         new ExpenseItemChecker().checkAndFix(_ctx, expenseItem, newLocation(_parentLocation, StaffMember.EXPENSE_ITEM_LIST_PROPERTY, i));
+      for(int i = 0; staffMember.getSalesLeadList() != null && i < staffMember.getSalesLeadList().size(); i++){
+         SalesLead salesLead = staffMember.getSalesLeadList().get(i);
+         new SalesLeadChecker().checkAndFix(_ctx, salesLead, newLocation(_parentLocation, StaffMember.SALES_LEAD_LIST_PROPERTY, i));
       }
     }
 

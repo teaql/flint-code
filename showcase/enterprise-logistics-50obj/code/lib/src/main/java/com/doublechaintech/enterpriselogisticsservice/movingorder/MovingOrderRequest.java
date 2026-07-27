@@ -3,16 +3,20 @@ package com.doublechaintech.enterpriselogisticsservice.movingorder;
 import com.doublechaintech.enterpriselogisticsservice.Q;
 import com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem;
 import com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItemRequest;
+import com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord;
+import com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecordRequest;
+import com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration;
+import com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclarationRequest;
 import com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan;
 import com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlanRequest;
+import com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview;
+import com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReviewRequest;
 import com.doublechaintech.enterpriselogisticsservice.invoice.Invoice;
 import com.doublechaintech.enterpriselogisticsservice.invoice.InvoiceRequest;
 import com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress;
 import com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddressRequest;
 import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
 import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomerRequest;
-import com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot;
-import com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlotRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
@@ -21,7 +25,6 @@ import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -96,7 +99,7 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
 
     public MovingOrderRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectOrderId().selectCustomerIdOnly().selectStatus().selectTotalWeight().selectTotalVolume().selectEstimatedCost().selectActualCost().selectPickupDate().selectDeliveryDate().selectSpecialInstructions().selectCreateTime().selectUpdateTime().selectVersion();
+        return selectId().selectOrderNumber().selectStatus().selectCustomerIdOnly().selectPickupAddressIdOnly().selectDeliveryAddressIdOnly().selectTotalWeight().selectTotalVolume().selectEstimatedCost().selectActualCost().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public MovingOrderRequest<T> selectSelfFields(){
@@ -105,13 +108,13 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
 
     public MovingOrderRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectOrderId().selectCustomer().selectStatus().selectTotalWeight().selectTotalVolume().selectEstimatedCost().selectActualCost().selectPickupDate().selectDeliveryDate().selectSpecialInstructions().selectCreateTime().selectUpdateTime().selectVersion();
+        return selectId().selectOrderNumber().selectStatus().selectCustomer().selectPickupAddress().selectDeliveryAddress().selectTotalWeight().selectTotalVolume().selectEstimatedCost().selectActualCost().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public MovingOrderRequest<T> selectChildren(){
         super.selectAny();
-        selectDispatchPlanList().selectTimeSlotList().selectCargoItemList().selectPickupAddressList().selectInvoiceList();
-        return selectId().selectOrderId().selectCustomer().selectStatus().selectTotalWeight().selectTotalVolume().selectEstimatedCost().selectActualCost().selectPickupDate().selectDeliveryDate().selectSpecialInstructions().selectCreateTime().selectUpdateTime().selectVersion();
+        selectDispatchPlanList().selectCargoItemList().selectFeedbackReviewList().selectInvoiceList().selectClaimsRecordList().selectCustomsDeclarationList();
+        return selectId().selectOrderNumber().selectStatus().selectCustomer().selectPickupAddress().selectDeliveryAddress().selectTotalWeight().selectTotalVolume().selectEstimatedCost().selectActualCost().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
 
@@ -132,21 +135,38 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
        unselectProperty(MovingOrder.ID_PROPERTY);
        return this;
     }
-    public MovingOrderRequest<T> selectOrderId(){
-       selectProperty(MovingOrder.ORDER_ID_PROPERTY);
+    public MovingOrderRequest<T> selectOrderNumber(){
+       selectProperty(MovingOrder.ORDER_NUMBER_PROPERTY);
        return this;
     }
 
     /**
-     * fill the orderId with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  orderId) to fetch orderId property.
+     * fill the orderNumber with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  orderNumber) to fetch orderNumber property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public MovingOrderRequest<T> unselectOrderId(){
-       unselectProperty(MovingOrder.ORDER_ID_PROPERTY);
+    public MovingOrderRequest<T> unselectOrderNumber(){
+       unselectProperty(MovingOrder.ORDER_NUMBER_PROPERTY);
+       return this;
+    }
+    public MovingOrderRequest<T> selectStatus(){
+       selectProperty(MovingOrder.STATUS_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the status with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  status) to fetch status property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public MovingOrderRequest<T> unselectStatus(){
+       unselectProperty(MovingOrder.STATUS_PROPERTY);
        return this;
     }
     public MovingOrderRequest<T> selectCustomerIdOnly(){
@@ -168,21 +188,42 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
        unselectProperty(MovingOrder.CUSTOMER_PROPERTY);
        return this;
     }
-    public MovingOrderRequest<T> selectStatus(){
-       selectProperty(MovingOrder.STATUS_PROPERTY);
+    public MovingOrderRequest<T> selectPickupAddressIdOnly(){
+       selectProperty(MovingOrder.PICKUP_ADDRESS_PROPERTY);
        return this;
     }
 
-    /**
-     * fill the status with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  status) to fetch status property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
+    public MovingOrderRequest<T> selectPickupAddress(){
+        return selectPickupAddressWith(Q.pickupAddresses().unlimited().selectSelf());
+    }
 
+    public MovingOrderRequest<T> selectPickupAddressWith(PickupAddressRequest pickupAddress){
+       selectProperty(MovingOrder.PICKUP_ADDRESS_PROPERTY);
+       enhanceRelation(MovingOrder.PICKUP_ADDRESS_PROPERTY, pickupAddress);
+       return this;
+    }
 
+    public MovingOrderRequest<T> unselectPickupAddress(){
+       unselectProperty(MovingOrder.PICKUP_ADDRESS_PROPERTY);
+       return this;
+    }
+    public MovingOrderRequest<T> selectDeliveryAddressIdOnly(){
+       selectProperty(MovingOrder.DELIVERY_ADDRESS_PROPERTY);
+       return this;
+    }
 
+    public MovingOrderRequest<T> selectDeliveryAddress(){
+        return selectDeliveryAddressWith(Q.pickupAddresses().unlimited().selectSelf());
+    }
 
-    public MovingOrderRequest<T> unselectStatus(){
-       unselectProperty(MovingOrder.STATUS_PROPERTY);
+    public MovingOrderRequest<T> selectDeliveryAddressWith(PickupAddressRequest deliveryAddress){
+       selectProperty(MovingOrder.DELIVERY_ADDRESS_PROPERTY);
+       enhanceRelation(MovingOrder.DELIVERY_ADDRESS_PROPERTY, deliveryAddress);
+       return this;
+    }
+
+    public MovingOrderRequest<T> unselectDeliveryAddress(){
+       unselectProperty(MovingOrder.DELIVERY_ADDRESS_PROPERTY);
        return this;
     }
     public MovingOrderRequest<T> selectTotalWeight(){
@@ -285,89 +326,38 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
        unselectProperty(MovingOrder.ACTUAL_COST_PROPERTY);
        return this;
     }
-    public MovingOrderRequest<T> selectPickupDate(){
-       selectProperty(MovingOrder.PICKUP_DATE_PROPERTY);
+    public MovingOrderRequest<T> selectCreatedTime(){
+       selectProperty(MovingOrder.CREATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the pickupDate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  pickupDate) to fetch pickupDate property.
+     * fill the createdTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdTime) to fetch createdTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public MovingOrderRequest<T> unselectPickupDate(){
-       unselectProperty(MovingOrder.PICKUP_DATE_PROPERTY);
+    public MovingOrderRequest<T> unselectCreatedTime(){
+       unselectProperty(MovingOrder.CREATED_TIME_PROPERTY);
        return this;
     }
-    public MovingOrderRequest<T> selectDeliveryDate(){
-       selectProperty(MovingOrder.DELIVERY_DATE_PROPERTY);
+    public MovingOrderRequest<T> selectUpdatedTime(){
+       selectProperty(MovingOrder.UPDATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the deliveryDate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  deliveryDate) to fetch deliveryDate property.
+     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public MovingOrderRequest<T> unselectDeliveryDate(){
-       unselectProperty(MovingOrder.DELIVERY_DATE_PROPERTY);
-       return this;
-    }
-    public MovingOrderRequest<T> selectSpecialInstructions(){
-       selectProperty(MovingOrder.SPECIAL_INSTRUCTIONS_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the specialInstructions with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  specialInstructions) to fetch specialInstructions property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public MovingOrderRequest<T> unselectSpecialInstructions(){
-       unselectProperty(MovingOrder.SPECIAL_INSTRUCTIONS_PROPERTY);
-       return this;
-    }
-    public MovingOrderRequest<T> selectCreateTime(){
-       selectProperty(MovingOrder.CREATE_TIME_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the createTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createTime) to fetch createTime property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public MovingOrderRequest<T> unselectCreateTime(){
-       unselectProperty(MovingOrder.CREATE_TIME_PROPERTY);
-       return this;
-    }
-    public MovingOrderRequest<T> selectUpdateTime(){
-       selectProperty(MovingOrder.UPDATE_TIME_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the updateTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updateTime) to fetch updateTime property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public MovingOrderRequest<T> unselectUpdateTime(){
-       unselectProperty(MovingOrder.UPDATE_TIME_PROPERTY);
+    public MovingOrderRequest<T> unselectUpdatedTime(){
+       unselectProperty(MovingOrder.UPDATED_TIME_PROPERTY);
        return this;
     }
     public MovingOrderRequest<T> selectVersion(){
@@ -395,14 +385,6 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
        enhanceRelation(MovingOrder.DISPATCH_PLAN_LIST_PROPERTY, dispatchPlanList);
        return this;
     }
-    public MovingOrderRequest<T> selectTimeSlotList(){
-       return selectTimeSlotListWith(Q.timeSlots().selectSelf());
-    }
-
-    public MovingOrderRequest<T> selectTimeSlotListWith(TimeSlotRequest timeSlotList){
-       enhanceRelation(MovingOrder.TIME_SLOT_LIST_PROPERTY, timeSlotList);
-       return this;
-    }
     public MovingOrderRequest<T> selectCargoItemList(){
        return selectCargoItemListWith(Q.cargoItems().selectSelf());
     }
@@ -411,12 +393,12 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
        enhanceRelation(MovingOrder.CARGO_ITEM_LIST_PROPERTY, cargoItemList);
        return this;
     }
-    public MovingOrderRequest<T> selectPickupAddressList(){
-       return selectPickupAddressListWith(Q.pickupAddresses().selectSelf());
+    public MovingOrderRequest<T> selectFeedbackReviewList(){
+       return selectFeedbackReviewListWith(Q.feedbackReviews().selectSelf());
     }
 
-    public MovingOrderRequest<T> selectPickupAddressListWith(PickupAddressRequest pickupAddressList){
-       enhanceRelation(MovingOrder.PICKUP_ADDRESS_LIST_PROPERTY, pickupAddressList);
+    public MovingOrderRequest<T> selectFeedbackReviewListWith(FeedbackReviewRequest feedbackReviewList){
+       enhanceRelation(MovingOrder.FEEDBACK_REVIEW_LIST_PROPERTY, feedbackReviewList);
        return this;
     }
     public MovingOrderRequest<T> selectInvoiceList(){
@@ -425,6 +407,22 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
 
     public MovingOrderRequest<T> selectInvoiceListWith(InvoiceRequest invoiceList){
        enhanceRelation(MovingOrder.INVOICE_LIST_PROPERTY, invoiceList);
+       return this;
+    }
+    public MovingOrderRequest<T> selectClaimsRecordList(){
+       return selectClaimsRecordListWith(Q.claimsRecords().selectSelf());
+    }
+
+    public MovingOrderRequest<T> selectClaimsRecordListWith(ClaimsRecordRequest claimsRecordList){
+       enhanceRelation(MovingOrder.CLAIMS_RECORD_LIST_PROPERTY, claimsRecordList);
+       return this;
+    }
+    public MovingOrderRequest<T> selectCustomsDeclarationList(){
+       return selectCustomsDeclarationListWith(Q.customsDeclarations().selectSelf());
+    }
+
+    public MovingOrderRequest<T> selectCustomsDeclarationListWith(CustomsDeclarationRequest customsDeclarationList){
+       enhanceRelation(MovingOrder.CUSTOMS_DECLARATION_LIST_PROPERTY, customsDeclarationList);
        return this;
     }
 
@@ -445,101 +443,68 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
 
 
 
-    public MovingOrderRequest<T> filterByOrderId(String... orderId){
-      if (orderId == null || orderId.length == 0) {
-        throw new IllegalArgumentException("filterByOrderId parameter orderId cannot be empty");
+    public MovingOrderRequest<T> filterByOrderNumber(String... orderNumber){
+      if (orderNumber == null || orderNumber.length == 0) {
+        throw new IllegalArgumentException("filterByOrderNumber parameter orderNumber cannot be empty");
       }
-      return appendSearchCriteria(createOrderIdCriteria(Operator.EQUAL, (Object[])orderId));
+      return appendSearchCriteria(createOrderNumberCriteria(Operator.EQUAL, (Object[])orderNumber));
     }
 
-    public MovingOrderRequest<T> withOrderId(Operator operator, Object... values){
-       return appendSearchCriteria(createOrderIdCriteria(operator, values));
+    public MovingOrderRequest<T> withOrderNumber(Operator operator, Object... values){
+       return appendSearchCriteria(createOrderNumberCriteria(operator, values));
     }
 
-    public MovingOrderRequest<T> withOrderIdIsUnknown(){
-       return withOrderId(Operator.IS_NULL);
+    public MovingOrderRequest<T> withOrderNumberIsUnknown(){
+       return withOrderNumber(Operator.IS_NULL);
     }
 
-    public MovingOrderRequest<T> withOrderIdIsKnown(){
-       return withOrderId(Operator.IS_NOT_NULL);
+    public MovingOrderRequest<T> withOrderNumberIsKnown(){
+       return withOrderNumber(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createOrderIdCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(MovingOrder.ORDER_ID_PROPERTY, operator, values);
+    public SearchCriteria createOrderNumberCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(MovingOrder.ORDER_NUMBER_PROPERTY, operator, values);
     }
 
-    public MovingOrderRequest<T> withOrderIdGreaterThan(String orderId){
-       return withOrderId(Operator.GREATER_THAN, orderId);
+    public MovingOrderRequest<T> withOrderNumberGreaterThan(String orderNumber){
+       return withOrderNumber(Operator.GREATER_THAN, orderNumber);
     }
 
-    public MovingOrderRequest<T> withOrderIdGreaterThanOrEqualTo(String orderId){
-       return withOrderId(Operator.GREATER_THAN_OR_EQUAL, orderId);
+    public MovingOrderRequest<T> withOrderNumberGreaterThanOrEqualTo(String orderNumber){
+       return withOrderNumber(Operator.GREATER_THAN_OR_EQUAL, orderNumber);
     }
 
-    public MovingOrderRequest<T> withOrderIdLessThan(String orderId){
-       return withOrderId(Operator.LESS_THAN, orderId);
+    public MovingOrderRequest<T> withOrderNumberLessThan(String orderNumber){
+       return withOrderNumber(Operator.LESS_THAN, orderNumber);
     }
 
-    public MovingOrderRequest<T> withOrderIdLessThanOrEqualTo(String orderId){
-       return withOrderId(Operator.LESS_THAN_OR_EQUAL, orderId);
+    public MovingOrderRequest<T> withOrderNumberLessThanOrEqualTo(String orderNumber){
+       return withOrderNumber(Operator.LESS_THAN_OR_EQUAL, orderNumber);
     }
 
-    public MovingOrderRequest<T> withOrderIdBetween(String startOfOrderId, String endOfOrderId){
-       return withOrderId(Operator.BETWEEN, startOfOrderId, endOfOrderId);
+    public MovingOrderRequest<T> withOrderNumberBetween(String startOfOrderNumber, String endOfOrderNumber){
+       return withOrderNumber(Operator.BETWEEN, startOfOrderNumber, endOfOrderNumber);
     }
-    public MovingOrderRequest<T> withOrderIdStartingWith(String orderId){
-       return withOrderId(Operator.BEGIN_WITH, orderId);
+    public MovingOrderRequest<T> withOrderNumberStartingWith(String orderNumber){
+       return withOrderNumber(Operator.BEGIN_WITH, orderNumber);
     }
-    public MovingOrderRequest<T> withOrderIdContaining(String orderId){
-       return withOrderId(Operator.CONTAIN, orderId);
-    }
-
-    public MovingOrderRequest<T> withOrderIdEndingWith(String orderId){
-       return withOrderId(Operator.END_WITH, orderId);
+    public MovingOrderRequest<T> withOrderNumberContaining(String orderNumber){
+       return withOrderNumber(Operator.CONTAIN, orderNumber);
     }
 
-    public MovingOrderRequest<T> withOrderIdIs(String orderId){
-       return withOrderId(Operator.EQUAL, orderId);
+    public MovingOrderRequest<T> withOrderNumberEndingWith(String orderNumber){
+       return withOrderNumber(Operator.END_WITH, orderNumber);
     }
 
-    public MovingOrderRequest<T> withOrderIdSoundingLike(String orderId){
-       return withOrderId(Operator.SOUNDS_LIKE, orderId);
+    public MovingOrderRequest<T> withOrderNumberIs(String orderNumber){
+       return withOrderNumber(Operator.EQUAL, orderNumber);
+    }
+
+    public MovingOrderRequest<T> withOrderNumberSoundingLike(String orderNumber){
+       return withOrderNumber(Operator.SOUNDS_LIKE, orderNumber);
     }
 
 
-
-    public MovingOrderRequest<T> filterByCustomer(PrivateCustomer... customer){
-      if (customer == null || customer.length == 0) {
-        throw new IllegalArgumentException("filterByCustomer parameter customer cannot be empty");
-      }
-      return appendSearchCriteria(createCustomerCriteria(Operator.EQUAL, (Object[])customer));
-    }
-
-    public MovingOrderRequest<T> withCustomer(Operator operator, Object... values){
-       return appendSearchCriteria(createCustomerCriteria(operator, values));
-    }
-
-    public MovingOrderRequest<T> withCustomerIsUnknown(){
-       return withCustomer(Operator.IS_NULL);
-    }
-
-    public MovingOrderRequest<T> withCustomerIsKnown(){
-       return withCustomer(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createCustomerCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(MovingOrder.CUSTOMER_PROPERTY, operator, values);
-    }
-
-    public MovingOrderRequest<T> filterByCustomer(Long customer){
-      if(customer == null){
-         return this;
-      }
-      return withCustomer(Operator.EQUAL, customer);
-    }
-    public MovingOrderRequest<T> withCustomerMatching(PrivateCustomerRequest customer){
-       return appendSearchCriteria(new SubQuerySearchCriteria(MovingOrder.CUSTOMER_PROPERTY, customer, PrivateCustomer.ID_PROPERTY));
-    }
 
     public MovingOrderRequest<T> filterByStatus(String... status){
       if (status == null || status.length == 0) {
@@ -603,6 +568,105 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
     }
 
 
+
+    public MovingOrderRequest<T> filterByCustomer(PrivateCustomer... customer){
+      if (customer == null || customer.length == 0) {
+        throw new IllegalArgumentException("filterByCustomer parameter customer cannot be empty");
+      }
+      return appendSearchCriteria(createCustomerCriteria(Operator.EQUAL, (Object[])customer));
+    }
+
+    public MovingOrderRequest<T> withCustomer(Operator operator, Object... values){
+       return appendSearchCriteria(createCustomerCriteria(operator, values));
+    }
+
+    public MovingOrderRequest<T> withCustomerIsUnknown(){
+       return withCustomer(Operator.IS_NULL);
+    }
+
+    public MovingOrderRequest<T> withCustomerIsKnown(){
+       return withCustomer(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createCustomerCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(MovingOrder.CUSTOMER_PROPERTY, operator, values);
+    }
+
+    public MovingOrderRequest<T> filterByCustomer(Long customer){
+      if(customer == null){
+         return this;
+      }
+      return withCustomer(Operator.EQUAL, customer);
+    }
+    public MovingOrderRequest<T> withCustomerMatching(PrivateCustomerRequest customer){
+       return appendSearchCriteria(new SubQuerySearchCriteria(MovingOrder.CUSTOMER_PROPERTY, customer, PrivateCustomer.ID_PROPERTY));
+    }
+
+    public MovingOrderRequest<T> filterByPickupAddress(PickupAddress... pickupAddress){
+      if (pickupAddress == null || pickupAddress.length == 0) {
+        throw new IllegalArgumentException("filterByPickupAddress parameter pickupAddress cannot be empty");
+      }
+      return appendSearchCriteria(createPickupAddressCriteria(Operator.EQUAL, (Object[])pickupAddress));
+    }
+
+    public MovingOrderRequest<T> withPickupAddress(Operator operator, Object... values){
+       return appendSearchCriteria(createPickupAddressCriteria(operator, values));
+    }
+
+    public MovingOrderRequest<T> withPickupAddressIsUnknown(){
+       return withPickupAddress(Operator.IS_NULL);
+    }
+
+    public MovingOrderRequest<T> withPickupAddressIsKnown(){
+       return withPickupAddress(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createPickupAddressCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(MovingOrder.PICKUP_ADDRESS_PROPERTY, operator, values);
+    }
+
+    public MovingOrderRequest<T> filterByPickupAddress(Long pickupAddress){
+      if(pickupAddress == null){
+         return this;
+      }
+      return withPickupAddress(Operator.EQUAL, pickupAddress);
+    }
+    public MovingOrderRequest<T> withPickupAddressMatching(PickupAddressRequest pickupAddress){
+       return appendSearchCriteria(new SubQuerySearchCriteria(MovingOrder.PICKUP_ADDRESS_PROPERTY, pickupAddress, PickupAddress.ID_PROPERTY));
+    }
+
+    public MovingOrderRequest<T> filterByDeliveryAddress(PickupAddress... deliveryAddress){
+      if (deliveryAddress == null || deliveryAddress.length == 0) {
+        throw new IllegalArgumentException("filterByDeliveryAddress parameter deliveryAddress cannot be empty");
+      }
+      return appendSearchCriteria(createDeliveryAddressCriteria(Operator.EQUAL, (Object[])deliveryAddress));
+    }
+
+    public MovingOrderRequest<T> withDeliveryAddress(Operator operator, Object... values){
+       return appendSearchCriteria(createDeliveryAddressCriteria(operator, values));
+    }
+
+    public MovingOrderRequest<T> withDeliveryAddressIsUnknown(){
+       return withDeliveryAddress(Operator.IS_NULL);
+    }
+
+    public MovingOrderRequest<T> withDeliveryAddressIsKnown(){
+       return withDeliveryAddress(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createDeliveryAddressCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(MovingOrder.DELIVERY_ADDRESS_PROPERTY, operator, values);
+    }
+
+    public MovingOrderRequest<T> filterByDeliveryAddress(Long deliveryAddress){
+      if(deliveryAddress == null){
+         return this;
+      }
+      return withDeliveryAddress(Operator.EQUAL, deliveryAddress);
+    }
+    public MovingOrderRequest<T> withDeliveryAddressMatching(PickupAddressRequest deliveryAddress){
+       return appendSearchCriteria(new SubQuerySearchCriteria(MovingOrder.DELIVERY_ADDRESS_PROPERTY, deliveryAddress, PickupAddress.ID_PROPERTY));
+    }
 
     public MovingOrderRequest<T> filterByTotalWeight(BigDecimal... totalWeight){
       if (totalWeight == null || totalWeight.length == 0) {
@@ -784,324 +848,131 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
 
 
 
-    public MovingOrderRequest<T> filterByPickupDate(LocalDate... pickupDate){
-      if (pickupDate == null || pickupDate.length == 0) {
-        throw new IllegalArgumentException("filterByPickupDate parameter pickupDate cannot be empty");
+    public MovingOrderRequest<T> filterByCreatedTime(LocalDateTime... createdTime){
+      if (createdTime == null || createdTime.length == 0) {
+        throw new IllegalArgumentException("filterByCreatedTime parameter createdTime cannot be empty");
       }
-      return appendSearchCriteria(createPickupDateCriteria(Operator.EQUAL, (Object[])pickupDate));
+      return appendSearchCriteria(createCreatedTimeCriteria(Operator.EQUAL, (Object[])createdTime));
     }
 
-    public MovingOrderRequest<T> withPickupDate(Operator operator, Object... values){
-       return appendSearchCriteria(createPickupDateCriteria(operator, values));
+    public MovingOrderRequest<T> withCreatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createCreatedTimeCriteria(operator, values));
     }
 
-    public MovingOrderRequest<T> withPickupDateIsUnknown(){
-       return withPickupDate(Operator.IS_NULL);
+    public MovingOrderRequest<T> withCreatedTimeIsUnknown(){
+       return withCreatedTime(Operator.IS_NULL);
     }
 
-    public MovingOrderRequest<T> withPickupDateIsKnown(){
-       return withPickupDate(Operator.IS_NOT_NULL);
+    public MovingOrderRequest<T> withCreatedTimeIsKnown(){
+       return withCreatedTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createPickupDateCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(MovingOrder.PICKUP_DATE_PROPERTY, operator, values);
+    public SearchCriteria createCreatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(MovingOrder.CREATED_TIME_PROPERTY, operator, values);
     }
 
-    public MovingOrderRequest<T> withPickupDateGreaterThan(LocalDate pickupDate){
-       return withPickupDate(Operator.GREATER_THAN, pickupDate);
+    public MovingOrderRequest<T> withCreatedTimeGreaterThan(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
     }
 
-    public MovingOrderRequest<T> withPickupDateGreaterThanOrEqualTo(LocalDate pickupDate){
-       return withPickupDate(Operator.GREATER_THAN_OR_EQUAL, pickupDate);
+    public MovingOrderRequest<T> withCreatedTimeGreaterThanOrEqualTo(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN_OR_EQUAL, createdTime);
     }
 
-    public MovingOrderRequest<T> withPickupDateLessThan(LocalDate pickupDate){
-       return withPickupDate(Operator.LESS_THAN, pickupDate);
+    public MovingOrderRequest<T> withCreatedTimeLessThan(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
     }
 
-    public MovingOrderRequest<T> withPickupDateLessThanOrEqualTo(LocalDate pickupDate){
-       return withPickupDate(Operator.LESS_THAN_OR_EQUAL, pickupDate);
+    public MovingOrderRequest<T> withCreatedTimeLessThanOrEqualTo(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN_OR_EQUAL, createdTime);
     }
 
-    public MovingOrderRequest<T> withPickupDateBetween(LocalDate startOfPickupDate, LocalDate endOfPickupDate){
-       return withPickupDate(Operator.BETWEEN, startOfPickupDate, endOfPickupDate);
+    public MovingOrderRequest<T> withCreatedTimeBetween(LocalDateTime startOfCreatedTime, LocalDateTime endOfCreatedTime){
+       return withCreatedTime(Operator.BETWEEN, startOfCreatedTime, endOfCreatedTime);
     }
-    public MovingOrderRequest<T> withPickupDateBefore(LocalDate pickupDate){
-       return withPickupDate(Operator.LESS_THAN, pickupDate);
-    }
-
-    public MovingOrderRequest<T> withPickupDateBefore(Date pickupDate){
-       return withPickupDate(Operator.LESS_THAN, pickupDate);
+    public MovingOrderRequest<T> withCreatedTimeBefore(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
     }
 
-    public MovingOrderRequest<T> withPickupDateAfter(LocalDate pickupDate){
-       return withPickupDate(Operator.GREATER_THAN, pickupDate);
+    public MovingOrderRequest<T> withCreatedTimeBefore(Date createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
     }
 
-    public MovingOrderRequest<T> withPickupDateAfter(Date pickupDate){
-       return withPickupDate(Operator.GREATER_THAN, pickupDate);
+    public MovingOrderRequest<T> withCreatedTimeAfter(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
     }
 
-    public MovingOrderRequest<T> withPickupDateBetween(Date startOfPickupDate, Date endOfPickupDate){
-       return withPickupDate(Operator.BETWEEN, startOfPickupDate, endOfPickupDate);
+    public MovingOrderRequest<T> withCreatedTimeAfter(Date createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
+    }
+
+    public MovingOrderRequest<T> withCreatedTimeBetween(Date startOfCreatedTime, Date endOfCreatedTime){
+       return withCreatedTime(Operator.BETWEEN, startOfCreatedTime, endOfCreatedTime);
     }
 
 
 
 
-    public MovingOrderRequest<T> filterByDeliveryDate(LocalDate... deliveryDate){
-      if (deliveryDate == null || deliveryDate.length == 0) {
-        throw new IllegalArgumentException("filterByDeliveryDate parameter deliveryDate cannot be empty");
+    public MovingOrderRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
+      if (updatedTime == null || updatedTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
       }
-      return appendSearchCriteria(createDeliveryDateCriteria(Operator.EQUAL, (Object[])deliveryDate));
+      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
     }
 
-    public MovingOrderRequest<T> withDeliveryDate(Operator operator, Object... values){
-       return appendSearchCriteria(createDeliveryDateCriteria(operator, values));
+    public MovingOrderRequest<T> withUpdatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
     }
 
-    public MovingOrderRequest<T> withDeliveryDateIsUnknown(){
-       return withDeliveryDate(Operator.IS_NULL);
+    public MovingOrderRequest<T> withUpdatedTimeIsUnknown(){
+       return withUpdatedTime(Operator.IS_NULL);
     }
 
-    public MovingOrderRequest<T> withDeliveryDateIsKnown(){
-       return withDeliveryDate(Operator.IS_NOT_NULL);
+    public MovingOrderRequest<T> withUpdatedTimeIsKnown(){
+       return withUpdatedTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createDeliveryDateCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(MovingOrder.DELIVERY_DATE_PROPERTY, operator, values);
+    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(MovingOrder.UPDATED_TIME_PROPERTY, operator, values);
     }
 
-    public MovingOrderRequest<T> withDeliveryDateGreaterThan(LocalDate deliveryDate){
-       return withDeliveryDate(Operator.GREATER_THAN, deliveryDate);
+    public MovingOrderRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public MovingOrderRequest<T> withDeliveryDateGreaterThanOrEqualTo(LocalDate deliveryDate){
-       return withDeliveryDate(Operator.GREATER_THAN_OR_EQUAL, deliveryDate);
+    public MovingOrderRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
     }
 
-    public MovingOrderRequest<T> withDeliveryDateLessThan(LocalDate deliveryDate){
-       return withDeliveryDate(Operator.LESS_THAN, deliveryDate);
+    public MovingOrderRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public MovingOrderRequest<T> withDeliveryDateLessThanOrEqualTo(LocalDate deliveryDate){
-       return withDeliveryDate(Operator.LESS_THAN_OR_EQUAL, deliveryDate);
+    public MovingOrderRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
     }
 
-    public MovingOrderRequest<T> withDeliveryDateBetween(LocalDate startOfDeliveryDate, LocalDate endOfDeliveryDate){
-       return withDeliveryDate(Operator.BETWEEN, startOfDeliveryDate, endOfDeliveryDate);
+    public MovingOrderRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
-    public MovingOrderRequest<T> withDeliveryDateBefore(LocalDate deliveryDate){
-       return withDeliveryDate(Operator.LESS_THAN, deliveryDate);
-    }
-
-    public MovingOrderRequest<T> withDeliveryDateBefore(Date deliveryDate){
-       return withDeliveryDate(Operator.LESS_THAN, deliveryDate);
+    public MovingOrderRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public MovingOrderRequest<T> withDeliveryDateAfter(LocalDate deliveryDate){
-       return withDeliveryDate(Operator.GREATER_THAN, deliveryDate);
+    public MovingOrderRequest<T> withUpdatedTimeBefore(Date updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public MovingOrderRequest<T> withDeliveryDateAfter(Date deliveryDate){
-       return withDeliveryDate(Operator.GREATER_THAN, deliveryDate);
+    public MovingOrderRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public MovingOrderRequest<T> withDeliveryDateBetween(Date startOfDeliveryDate, Date endOfDeliveryDate){
-       return withDeliveryDate(Operator.BETWEEN, startOfDeliveryDate, endOfDeliveryDate);
+    public MovingOrderRequest<T> withUpdatedTimeAfter(Date updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-
-
-
-    public MovingOrderRequest<T> filterBySpecialInstructions(String... specialInstructions){
-      if (specialInstructions == null || specialInstructions.length == 0) {
-        throw new IllegalArgumentException("filterBySpecialInstructions parameter specialInstructions cannot be empty");
-      }
-      return appendSearchCriteria(createSpecialInstructionsCriteria(Operator.EQUAL, (Object[])specialInstructions));
-    }
-
-    public MovingOrderRequest<T> withSpecialInstructions(Operator operator, Object... values){
-       return appendSearchCriteria(createSpecialInstructionsCriteria(operator, values));
-    }
-
-    public MovingOrderRequest<T> withSpecialInstructionsIsUnknown(){
-       return withSpecialInstructions(Operator.IS_NULL);
-    }
-
-    public MovingOrderRequest<T> withSpecialInstructionsIsKnown(){
-       return withSpecialInstructions(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createSpecialInstructionsCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(MovingOrder.SPECIAL_INSTRUCTIONS_PROPERTY, operator, values);
-    }
-
-    public MovingOrderRequest<T> withSpecialInstructionsGreaterThan(String specialInstructions){
-       return withSpecialInstructions(Operator.GREATER_THAN, specialInstructions);
-    }
-
-    public MovingOrderRequest<T> withSpecialInstructionsGreaterThanOrEqualTo(String specialInstructions){
-       return withSpecialInstructions(Operator.GREATER_THAN_OR_EQUAL, specialInstructions);
-    }
-
-    public MovingOrderRequest<T> withSpecialInstructionsLessThan(String specialInstructions){
-       return withSpecialInstructions(Operator.LESS_THAN, specialInstructions);
-    }
-
-    public MovingOrderRequest<T> withSpecialInstructionsLessThanOrEqualTo(String specialInstructions){
-       return withSpecialInstructions(Operator.LESS_THAN_OR_EQUAL, specialInstructions);
-    }
-
-    public MovingOrderRequest<T> withSpecialInstructionsBetween(String startOfSpecialInstructions, String endOfSpecialInstructions){
-       return withSpecialInstructions(Operator.BETWEEN, startOfSpecialInstructions, endOfSpecialInstructions);
-    }
-    public MovingOrderRequest<T> withSpecialInstructionsStartingWith(String specialInstructions){
-       return withSpecialInstructions(Operator.BEGIN_WITH, specialInstructions);
-    }
-    public MovingOrderRequest<T> withSpecialInstructionsContaining(String specialInstructions){
-       return withSpecialInstructions(Operator.CONTAIN, specialInstructions);
-    }
-
-    public MovingOrderRequest<T> withSpecialInstructionsEndingWith(String specialInstructions){
-       return withSpecialInstructions(Operator.END_WITH, specialInstructions);
-    }
-
-    public MovingOrderRequest<T> withSpecialInstructionsIs(String specialInstructions){
-       return withSpecialInstructions(Operator.EQUAL, specialInstructions);
-    }
-
-    public MovingOrderRequest<T> withSpecialInstructionsSoundingLike(String specialInstructions){
-       return withSpecialInstructions(Operator.SOUNDS_LIKE, specialInstructions);
-    }
-
-
-
-    public MovingOrderRequest<T> filterByCreateTime(LocalDateTime... createTime){
-      if (createTime == null || createTime.length == 0) {
-        throw new IllegalArgumentException("filterByCreateTime parameter createTime cannot be empty");
-      }
-      return appendSearchCriteria(createCreateTimeCriteria(Operator.EQUAL, (Object[])createTime));
-    }
-
-    public MovingOrderRequest<T> withCreateTime(Operator operator, Object... values){
-       return appendSearchCriteria(createCreateTimeCriteria(operator, values));
-    }
-
-    public MovingOrderRequest<T> withCreateTimeIsUnknown(){
-       return withCreateTime(Operator.IS_NULL);
-    }
-
-    public MovingOrderRequest<T> withCreateTimeIsKnown(){
-       return withCreateTime(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createCreateTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(MovingOrder.CREATE_TIME_PROPERTY, operator, values);
-    }
-
-    public MovingOrderRequest<T> withCreateTimeGreaterThan(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
-    }
-
-    public MovingOrderRequest<T> withCreateTimeGreaterThanOrEqualTo(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN_OR_EQUAL, createTime);
-    }
-
-    public MovingOrderRequest<T> withCreateTimeLessThan(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
-    }
-
-    public MovingOrderRequest<T> withCreateTimeLessThanOrEqualTo(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN_OR_EQUAL, createTime);
-    }
-
-    public MovingOrderRequest<T> withCreateTimeBetween(LocalDateTime startOfCreateTime, LocalDateTime endOfCreateTime){
-       return withCreateTime(Operator.BETWEEN, startOfCreateTime, endOfCreateTime);
-    }
-    public MovingOrderRequest<T> withCreateTimeBefore(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
-    }
-
-    public MovingOrderRequest<T> withCreateTimeBefore(Date createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
-    }
-
-    public MovingOrderRequest<T> withCreateTimeAfter(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
-    }
-
-    public MovingOrderRequest<T> withCreateTimeAfter(Date createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
-    }
-
-    public MovingOrderRequest<T> withCreateTimeBetween(Date startOfCreateTime, Date endOfCreateTime){
-       return withCreateTime(Operator.BETWEEN, startOfCreateTime, endOfCreateTime);
-    }
-
-
-
-
-    public MovingOrderRequest<T> filterByUpdateTime(LocalDateTime... updateTime){
-      if (updateTime == null || updateTime.length == 0) {
-        throw new IllegalArgumentException("filterByUpdateTime parameter updateTime cannot be empty");
-      }
-      return appendSearchCriteria(createUpdateTimeCriteria(Operator.EQUAL, (Object[])updateTime));
-    }
-
-    public MovingOrderRequest<T> withUpdateTime(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdateTimeCriteria(operator, values));
-    }
-
-    public MovingOrderRequest<T> withUpdateTimeIsUnknown(){
-       return withUpdateTime(Operator.IS_NULL);
-    }
-
-    public MovingOrderRequest<T> withUpdateTimeIsKnown(){
-       return withUpdateTime(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createUpdateTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(MovingOrder.UPDATE_TIME_PROPERTY, operator, values);
-    }
-
-    public MovingOrderRequest<T> withUpdateTimeGreaterThan(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
-    }
-
-    public MovingOrderRequest<T> withUpdateTimeGreaterThanOrEqualTo(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN_OR_EQUAL, updateTime);
-    }
-
-    public MovingOrderRequest<T> withUpdateTimeLessThan(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
-    }
-
-    public MovingOrderRequest<T> withUpdateTimeLessThanOrEqualTo(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN_OR_EQUAL, updateTime);
-    }
-
-    public MovingOrderRequest<T> withUpdateTimeBetween(LocalDateTime startOfUpdateTime, LocalDateTime endOfUpdateTime){
-       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
-    }
-    public MovingOrderRequest<T> withUpdateTimeBefore(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
-    }
-
-    public MovingOrderRequest<T> withUpdateTimeBefore(Date updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
-    }
-
-    public MovingOrderRequest<T> withUpdateTimeAfter(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
-    }
-
-    public MovingOrderRequest<T> withUpdateTimeAfter(Date updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
-    }
-
-    public MovingOrderRequest<T> withUpdateTimeBetween(Date startOfUpdateTime, Date endOfUpdateTime){
-       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    public MovingOrderRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
 
 
@@ -1165,21 +1036,6 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
     public MovingOrderRequest<T> haveNoDispatchPlans(){
         return withoutDispatchPlanListMatching(Q.dispatchPlans().unlimited());
     }
-    public MovingOrderRequest<T> withTimeSlotListMatching(TimeSlotRequest timeSlotRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(MovingOrder.ID_PROPERTY, timeSlotRequest, TimeSlot.MOVING_ORDER_PROPERTY));
-    }
-
-    public MovingOrderRequest<T> withoutTimeSlotListMatching(TimeSlotRequest timeSlotRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(MovingOrder.ID_PROPERTY, timeSlotRequest, TimeSlot.MOVING_ORDER_PROPERTY)));
-    }
-
-    public MovingOrderRequest<T> haveTimeSlots(){
-        return withTimeSlotListMatching(Q.timeSlots().unlimited());
-    }
-
-    public MovingOrderRequest<T> haveNoTimeSlots(){
-        return withoutTimeSlotListMatching(Q.timeSlots().unlimited());
-    }
     public MovingOrderRequest<T> withCargoItemListMatching(CargoItemRequest cargoItemRequest){
         return appendSearchCriteria(new SubQuerySearchCriteria(MovingOrder.ID_PROPERTY, cargoItemRequest, CargoItem.MOVING_ORDER_PROPERTY));
     }
@@ -1195,20 +1051,20 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
     public MovingOrderRequest<T> haveNoCargoItems(){
         return withoutCargoItemListMatching(Q.cargoItems().unlimited());
     }
-    public MovingOrderRequest<T> withPickupAddressListMatching(PickupAddressRequest pickupAddressRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(MovingOrder.ID_PROPERTY, pickupAddressRequest, PickupAddress.MOVING_ORDER_PROPERTY));
+    public MovingOrderRequest<T> withFeedbackReviewListMatching(FeedbackReviewRequest feedbackReviewRequest){
+        return appendSearchCriteria(new SubQuerySearchCriteria(MovingOrder.ID_PROPERTY, feedbackReviewRequest, FeedbackReview.MOVING_ORDER_PROPERTY));
     }
 
-    public MovingOrderRequest<T> withoutPickupAddressListMatching(PickupAddressRequest pickupAddressRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(MovingOrder.ID_PROPERTY, pickupAddressRequest, PickupAddress.MOVING_ORDER_PROPERTY)));
+    public MovingOrderRequest<T> withoutFeedbackReviewListMatching(FeedbackReviewRequest feedbackReviewRequest){
+        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(MovingOrder.ID_PROPERTY, feedbackReviewRequest, FeedbackReview.MOVING_ORDER_PROPERTY)));
     }
 
-    public MovingOrderRequest<T> havePickupAddresses(){
-        return withPickupAddressListMatching(Q.pickupAddresses().unlimited());
+    public MovingOrderRequest<T> haveFeedbackReviews(){
+        return withFeedbackReviewListMatching(Q.feedbackReviews().unlimited());
     }
 
-    public MovingOrderRequest<T> haveNoPickupAddresses(){
-        return withoutPickupAddressListMatching(Q.pickupAddresses().unlimited());
+    public MovingOrderRequest<T> haveNoFeedbackReviews(){
+        return withoutFeedbackReviewListMatching(Q.feedbackReviews().unlimited());
     }
     public MovingOrderRequest<T> withInvoiceListMatching(InvoiceRequest invoiceRequest){
         return appendSearchCriteria(new SubQuerySearchCriteria(MovingOrder.ID_PROPERTY, invoiceRequest, Invoice.MOVING_ORDER_PROPERTY));
@@ -1224,6 +1080,36 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
 
     public MovingOrderRequest<T> haveNoInvoices(){
         return withoutInvoiceListMatching(Q.invoices().unlimited());
+    }
+    public MovingOrderRequest<T> withClaimsRecordListMatching(ClaimsRecordRequest claimsRecordRequest){
+        return appendSearchCriteria(new SubQuerySearchCriteria(MovingOrder.ID_PROPERTY, claimsRecordRequest, ClaimsRecord.MOVING_ORDER_PROPERTY));
+    }
+
+    public MovingOrderRequest<T> withoutClaimsRecordListMatching(ClaimsRecordRequest claimsRecordRequest){
+        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(MovingOrder.ID_PROPERTY, claimsRecordRequest, ClaimsRecord.MOVING_ORDER_PROPERTY)));
+    }
+
+    public MovingOrderRequest<T> haveClaimsRecords(){
+        return withClaimsRecordListMatching(Q.claimsRecords().unlimited());
+    }
+
+    public MovingOrderRequest<T> haveNoClaimsRecords(){
+        return withoutClaimsRecordListMatching(Q.claimsRecords().unlimited());
+    }
+    public MovingOrderRequest<T> withCustomsDeclarationListMatching(CustomsDeclarationRequest customsDeclarationRequest){
+        return appendSearchCriteria(new SubQuerySearchCriteria(MovingOrder.ID_PROPERTY, customsDeclarationRequest, CustomsDeclaration.MOVING_ORDER_PROPERTY));
+    }
+
+    public MovingOrderRequest<T> withoutCustomsDeclarationListMatching(CustomsDeclarationRequest customsDeclarationRequest){
+        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(MovingOrder.ID_PROPERTY, customsDeclarationRequest, CustomsDeclaration.MOVING_ORDER_PROPERTY)));
+    }
+
+    public MovingOrderRequest<T> haveCustomsDeclarations(){
+        return withCustomsDeclarationListMatching(Q.customsDeclarations().unlimited());
+    }
+
+    public MovingOrderRequest<T> haveNoCustomsDeclarations(){
+        return withoutCustomsDeclarationListMatching(Q.customsDeclarations().unlimited());
     }
 
     public MovingOrderRequest<T> count(){
@@ -1499,9 +1385,23 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
        return this;
     }
 
+    public MovingOrderRequest<T> groupByPickupAddressWithDetails(){
+       return groupByPickupAddressWithDetails(Q.pickupAddresses().unlimited());
+    }
 
+    public MovingOrderRequest<T> groupByPickupAddressWithDetails(PickupAddressRequest subRequest){
+       aggregate(MovingOrder.PICKUP_ADDRESS_PROPERTY, subRequest);
+       return this;
+    }
 
+    public MovingOrderRequest<T> groupByDeliveryAddressWithDetails(){
+       return groupByDeliveryAddressWithDetails(Q.pickupAddresses().unlimited());
+    }
 
+    public MovingOrderRequest<T> groupByDeliveryAddressWithDetails(PickupAddressRequest subRequest){
+       aggregate(MovingOrder.DELIVERY_ADDRESS_PROPERTY, subRequest);
+       return this;
+    }
 
 
 
@@ -1514,20 +1414,24 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
        aggregate(MovingOrder.DISPATCH_PLAN_LIST_PROPERTY, subRequest);
        return this;
     }
-    public MovingOrderRequest<T> groupByTimeSlotsWithDetails(TimeSlotRequest subRequest){
-       aggregate(MovingOrder.TIME_SLOT_LIST_PROPERTY, subRequest);
-       return this;
-    }
     public MovingOrderRequest<T> groupByCargoItemsWithDetails(CargoItemRequest subRequest){
        aggregate(MovingOrder.CARGO_ITEM_LIST_PROPERTY, subRequest);
        return this;
     }
-    public MovingOrderRequest<T> groupByPickupAddressesWithDetails(PickupAddressRequest subRequest){
-       aggregate(MovingOrder.PICKUP_ADDRESS_LIST_PROPERTY, subRequest);
+    public MovingOrderRequest<T> groupByFeedbackReviewsWithDetails(FeedbackReviewRequest subRequest){
+       aggregate(MovingOrder.FEEDBACK_REVIEW_LIST_PROPERTY, subRequest);
        return this;
     }
     public MovingOrderRequest<T> groupByInvoicesWithDetails(InvoiceRequest subRequest){
        aggregate(MovingOrder.INVOICE_LIST_PROPERTY, subRequest);
+       return this;
+    }
+    public MovingOrderRequest<T> groupByClaimsRecordsWithDetails(ClaimsRecordRequest subRequest){
+       aggregate(MovingOrder.CLAIMS_RECORD_LIST_PROPERTY, subRequest);
+       return this;
+    }
+    public MovingOrderRequest<T> groupByCustomsDeclarationsWithDetails(CustomsDeclarationRequest subRequest){
+       aggregate(MovingOrder.CUSTOMS_DECLARATION_LIST_PROPERTY, subRequest);
        return this;
     }
 
@@ -1546,18 +1450,33 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
        return this;
     }
 
-    public MovingOrderRequest<T> groupByOrderId(){
-       groupBy(MovingOrder.ORDER_ID_PROPERTY);
+    public MovingOrderRequest<T> groupByOrderNumber(){
+       groupBy(MovingOrder.ORDER_NUMBER_PROPERTY);
        return this;
     }
 
-    public MovingOrderRequest<T> groupByOrderIdAs(String retName){
-       groupBy(retName, MovingOrder.ORDER_ID_PROPERTY);
+    public MovingOrderRequest<T> groupByOrderNumberAs(String retName){
+       groupBy(retName, MovingOrder.ORDER_NUMBER_PROPERTY);
        return this;
     }
 
-    public MovingOrderRequest<T> groupByOrderIdWithFunction(String retName, AggrFunction function){
-       groupBy(retName, MovingOrder.ORDER_ID_PROPERTY, function);
+    public MovingOrderRequest<T> groupByOrderNumberWithFunction(String retName, AggrFunction function){
+       groupBy(retName, MovingOrder.ORDER_NUMBER_PROPERTY, function);
+       return this;
+    }
+
+    public MovingOrderRequest<T> groupByStatus(){
+       groupBy(MovingOrder.STATUS_PROPERTY);
+       return this;
+    }
+
+    public MovingOrderRequest<T> groupByStatusAs(String retName){
+       groupBy(retName, MovingOrder.STATUS_PROPERTY);
+       return this;
+    }
+
+    public MovingOrderRequest<T> groupByStatusWithFunction(String retName, AggrFunction function){
+       groupBy(retName, MovingOrder.STATUS_PROPERTY, function);
        return this;
     }
     public MovingOrderRequest<T> groupByCustomerWith(PrivateCustomerRequest subRequest){
@@ -1578,19 +1497,40 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
        groupBy(retName, MovingOrder.CUSTOMER_PROPERTY, function);
        return this;
     }
-
-    public MovingOrderRequest<T> groupByStatus(){
-       groupBy(MovingOrder.STATUS_PROPERTY);
+    public MovingOrderRequest<T> groupByPickupAddressWith(PickupAddressRequest subRequest){
+       groupBy(MovingOrder.PICKUP_ADDRESS_PROPERTY, subRequest);
+       return this;
+    }
+    public MovingOrderRequest<T> groupByPickupAddress(){
+       groupBy(MovingOrder.PICKUP_ADDRESS_PROPERTY);
        return this;
     }
 
-    public MovingOrderRequest<T> groupByStatusAs(String retName){
-       groupBy(retName, MovingOrder.STATUS_PROPERTY);
+    public MovingOrderRequest<T> groupByPickupAddressAs(String retName){
+       groupBy(retName, MovingOrder.PICKUP_ADDRESS_PROPERTY);
        return this;
     }
 
-    public MovingOrderRequest<T> groupByStatusWithFunction(String retName, AggrFunction function){
-       groupBy(retName, MovingOrder.STATUS_PROPERTY, function);
+    public MovingOrderRequest<T> groupByPickupAddressWithFunction(String retName, AggrFunction function){
+       groupBy(retName, MovingOrder.PICKUP_ADDRESS_PROPERTY, function);
+       return this;
+    }
+    public MovingOrderRequest<T> groupByDeliveryAddressWith(PickupAddressRequest subRequest){
+       groupBy(MovingOrder.DELIVERY_ADDRESS_PROPERTY, subRequest);
+       return this;
+    }
+    public MovingOrderRequest<T> groupByDeliveryAddress(){
+       groupBy(MovingOrder.DELIVERY_ADDRESS_PROPERTY);
+       return this;
+    }
+
+    public MovingOrderRequest<T> groupByDeliveryAddressAs(String retName){
+       groupBy(retName, MovingOrder.DELIVERY_ADDRESS_PROPERTY);
+       return this;
+    }
+
+    public MovingOrderRequest<T> groupByDeliveryAddressWithFunction(String retName, AggrFunction function){
+       groupBy(retName, MovingOrder.DELIVERY_ADDRESS_PROPERTY, function);
        return this;
     }
 
@@ -1654,78 +1594,33 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
        return this;
     }
 
-    public MovingOrderRequest<T> groupByPickupDate(){
-       groupBy(MovingOrder.PICKUP_DATE_PROPERTY);
+    public MovingOrderRequest<T> groupByCreatedTime(){
+       groupBy(MovingOrder.CREATED_TIME_PROPERTY);
        return this;
     }
 
-    public MovingOrderRequest<T> groupByPickupDateAs(String retName){
-       groupBy(retName, MovingOrder.PICKUP_DATE_PROPERTY);
+    public MovingOrderRequest<T> groupByCreatedTimeAs(String retName){
+       groupBy(retName, MovingOrder.CREATED_TIME_PROPERTY);
        return this;
     }
 
-    public MovingOrderRequest<T> groupByPickupDateWithFunction(String retName, AggrFunction function){
-       groupBy(retName, MovingOrder.PICKUP_DATE_PROPERTY, function);
+    public MovingOrderRequest<T> groupByCreatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, MovingOrder.CREATED_TIME_PROPERTY, function);
        return this;
     }
 
-    public MovingOrderRequest<T> groupByDeliveryDate(){
-       groupBy(MovingOrder.DELIVERY_DATE_PROPERTY);
+    public MovingOrderRequest<T> groupByUpdatedTime(){
+       groupBy(MovingOrder.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public MovingOrderRequest<T> groupByDeliveryDateAs(String retName){
-       groupBy(retName, MovingOrder.DELIVERY_DATE_PROPERTY);
+    public MovingOrderRequest<T> groupByUpdatedTimeAs(String retName){
+       groupBy(retName, MovingOrder.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public MovingOrderRequest<T> groupByDeliveryDateWithFunction(String retName, AggrFunction function){
-       groupBy(retName, MovingOrder.DELIVERY_DATE_PROPERTY, function);
-       return this;
-    }
-
-    public MovingOrderRequest<T> groupBySpecialInstructions(){
-       groupBy(MovingOrder.SPECIAL_INSTRUCTIONS_PROPERTY);
-       return this;
-    }
-
-    public MovingOrderRequest<T> groupBySpecialInstructionsAs(String retName){
-       groupBy(retName, MovingOrder.SPECIAL_INSTRUCTIONS_PROPERTY);
-       return this;
-    }
-
-    public MovingOrderRequest<T> groupBySpecialInstructionsWithFunction(String retName, AggrFunction function){
-       groupBy(retName, MovingOrder.SPECIAL_INSTRUCTIONS_PROPERTY, function);
-       return this;
-    }
-
-    public MovingOrderRequest<T> groupByCreateTime(){
-       groupBy(MovingOrder.CREATE_TIME_PROPERTY);
-       return this;
-    }
-
-    public MovingOrderRequest<T> groupByCreateTimeAs(String retName){
-       groupBy(retName, MovingOrder.CREATE_TIME_PROPERTY);
-       return this;
-    }
-
-    public MovingOrderRequest<T> groupByCreateTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, MovingOrder.CREATE_TIME_PROPERTY, function);
-       return this;
-    }
-
-    public MovingOrderRequest<T> groupByUpdateTime(){
-       groupBy(MovingOrder.UPDATE_TIME_PROPERTY);
-       return this;
-    }
-
-    public MovingOrderRequest<T> groupByUpdateTimeAs(String retName){
-       groupBy(retName, MovingOrder.UPDATE_TIME_PROPERTY);
-       return this;
-    }
-
-    public MovingOrderRequest<T> groupByUpdateTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, MovingOrder.UPDATE_TIME_PROPERTY, function);
+    public MovingOrderRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, MovingOrder.UPDATED_TIME_PROPERTY, function);
        return this;
     }
 
@@ -1756,34 +1651,24 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
        return this;
     }
 
-    public MovingOrderRequest<T> orderByOrderIdAscending(){
-       addOrderByAscending(MovingOrder.ORDER_ID_PROPERTY);
+    public MovingOrderRequest<T> orderByOrderNumberAscending(){
+       addOrderByAscending(MovingOrder.ORDER_NUMBER_PROPERTY);
        return this;
     }
 
-    public MovingOrderRequest<T> orderByOrderIdDescending(){
-       addOrderByDescending(MovingOrder.ORDER_ID_PROPERTY);
+    public MovingOrderRequest<T> orderByOrderNumberDescending(){
+       addOrderByDescending(MovingOrder.ORDER_NUMBER_PROPERTY);
        return this;
     }
-    public MovingOrderRequest<T> orderByOrderIdAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(MovingOrder.ORDER_ID_PROPERTY);
-       return this;
-    }
-
-    public MovingOrderRequest<T> orderByOrderIdDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(MovingOrder.ORDER_ID_PROPERTY);
-       return this;
-    }
-    public MovingOrderRequest<T> orderByCustomerAscending(){
-       addOrderByAscending(MovingOrder.CUSTOMER_PROPERTY);
+    public MovingOrderRequest<T> orderByOrderNumberAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(MovingOrder.ORDER_NUMBER_PROPERTY);
        return this;
     }
 
-    public MovingOrderRequest<T> orderByCustomerDescending(){
-       addOrderByDescending(MovingOrder.CUSTOMER_PROPERTY);
+    public MovingOrderRequest<T> orderByOrderNumberDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(MovingOrder.ORDER_NUMBER_PROPERTY);
        return this;
     }
-
     public MovingOrderRequest<T> orderByStatusAscending(){
        addOrderByAscending(MovingOrder.STATUS_PROPERTY);
        return this;
@@ -1802,6 +1687,36 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
        addOrderByDescendingUsingGBK(MovingOrder.STATUS_PROPERTY);
        return this;
     }
+    public MovingOrderRequest<T> orderByCustomerAscending(){
+       addOrderByAscending(MovingOrder.CUSTOMER_PROPERTY);
+       return this;
+    }
+
+    public MovingOrderRequest<T> orderByCustomerDescending(){
+       addOrderByDescending(MovingOrder.CUSTOMER_PROPERTY);
+       return this;
+    }
+
+    public MovingOrderRequest<T> orderByPickupAddressAscending(){
+       addOrderByAscending(MovingOrder.PICKUP_ADDRESS_PROPERTY);
+       return this;
+    }
+
+    public MovingOrderRequest<T> orderByPickupAddressDescending(){
+       addOrderByDescending(MovingOrder.PICKUP_ADDRESS_PROPERTY);
+       return this;
+    }
+
+    public MovingOrderRequest<T> orderByDeliveryAddressAscending(){
+       addOrderByAscending(MovingOrder.DELIVERY_ADDRESS_PROPERTY);
+       return this;
+    }
+
+    public MovingOrderRequest<T> orderByDeliveryAddressDescending(){
+       addOrderByDescending(MovingOrder.DELIVERY_ADDRESS_PROPERTY);
+       return this;
+    }
+
     public MovingOrderRequest<T> orderByTotalWeightAscending(){
        addOrderByAscending(MovingOrder.TOTAL_WEIGHT_PROPERTY);
        return this;
@@ -1842,61 +1757,23 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
        return this;
     }
 
-    public MovingOrderRequest<T> orderByPickupDateAscending(){
-       addOrderByAscending(MovingOrder.PICKUP_DATE_PROPERTY);
+    public MovingOrderRequest<T> orderByCreatedTimeAscending(){
+       addOrderByAscending(MovingOrder.CREATED_TIME_PROPERTY);
        return this;
     }
 
-    public MovingOrderRequest<T> orderByPickupDateDescending(){
-       addOrderByDescending(MovingOrder.PICKUP_DATE_PROPERTY);
+    public MovingOrderRequest<T> orderByCreatedTimeDescending(){
+       addOrderByDescending(MovingOrder.CREATED_TIME_PROPERTY);
        return this;
     }
 
-    public MovingOrderRequest<T> orderByDeliveryDateAscending(){
-       addOrderByAscending(MovingOrder.DELIVERY_DATE_PROPERTY);
+    public MovingOrderRequest<T> orderByUpdatedTimeAscending(){
+       addOrderByAscending(MovingOrder.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public MovingOrderRequest<T> orderByDeliveryDateDescending(){
-       addOrderByDescending(MovingOrder.DELIVERY_DATE_PROPERTY);
-       return this;
-    }
-
-    public MovingOrderRequest<T> orderBySpecialInstructionsAscending(){
-       addOrderByAscending(MovingOrder.SPECIAL_INSTRUCTIONS_PROPERTY);
-       return this;
-    }
-
-    public MovingOrderRequest<T> orderBySpecialInstructionsDescending(){
-       addOrderByDescending(MovingOrder.SPECIAL_INSTRUCTIONS_PROPERTY);
-       return this;
-    }
-    public MovingOrderRequest<T> orderBySpecialInstructionsAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(MovingOrder.SPECIAL_INSTRUCTIONS_PROPERTY);
-       return this;
-    }
-
-    public MovingOrderRequest<T> orderBySpecialInstructionsDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(MovingOrder.SPECIAL_INSTRUCTIONS_PROPERTY);
-       return this;
-    }
-    public MovingOrderRequest<T> orderByCreateTimeAscending(){
-       addOrderByAscending(MovingOrder.CREATE_TIME_PROPERTY);
-       return this;
-    }
-
-    public MovingOrderRequest<T> orderByCreateTimeDescending(){
-       addOrderByDescending(MovingOrder.CREATE_TIME_PROPERTY);
-       return this;
-    }
-
-    public MovingOrderRequest<T> orderByUpdateTimeAscending(){
-       addOrderByAscending(MovingOrder.UPDATE_TIME_PROPERTY);
-       return this;
-    }
-
-    public MovingOrderRequest<T> orderByUpdateTimeDescending(){
-       addOrderByDescending(MovingOrder.UPDATE_TIME_PROPERTY);
+    public MovingOrderRequest<T> orderByUpdatedTimeDescending(){
+       addOrderByDescending(MovingOrder.UPDATED_TIME_PROPERTY);
        return this;
     }
 
@@ -1924,19 +1801,6 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
     public MovingOrderRequest<T> statsFromDispatchPlans(DispatchPlanRequest subRequest){
        return statsFromDispatchPlansAs(REFINEMENTS, subRequest);
     }
-    public MovingOrderRequest<T> statsFromTimeSlotsAs(String name, TimeSlotRequest subRequest){
-       return statsFromTimeSlotsAs(name, subRequest, false);
-    }
-
-    public MovingOrderRequest<T> statsFromTimeSlotsAs(String name, TimeSlotRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(TimeSlot.MOVING_ORDER_PROPERTY);
-       addAggregateDynamicProperty(name, subRequest, singleResult);
-       return this;
-    }
-
-    public MovingOrderRequest<T> statsFromTimeSlots(TimeSlotRequest subRequest){
-       return statsFromTimeSlotsAs(REFINEMENTS, subRequest);
-    }
     public MovingOrderRequest<T> statsFromCargoItemsAs(String name, CargoItemRequest subRequest){
        return statsFromCargoItemsAs(name, subRequest, false);
     }
@@ -1950,18 +1814,18 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
     public MovingOrderRequest<T> statsFromCargoItems(CargoItemRequest subRequest){
        return statsFromCargoItemsAs(REFINEMENTS, subRequest);
     }
-    public MovingOrderRequest<T> statsFromPickupAddressesAs(String name, PickupAddressRequest subRequest){
-       return statsFromPickupAddressesAs(name, subRequest, false);
+    public MovingOrderRequest<T> statsFromFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
+       return statsFromFeedbackReviewsAs(name, subRequest, false);
     }
 
-    public MovingOrderRequest<T> statsFromPickupAddressesAs(String name, PickupAddressRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(PickupAddress.MOVING_ORDER_PROPERTY);
+    public MovingOrderRequest<T> statsFromFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest, boolean singleResult){
+       subRequest.setPartitionProperty(FeedbackReview.MOVING_ORDER_PROPERTY);
        addAggregateDynamicProperty(name, subRequest, singleResult);
        return this;
     }
 
-    public MovingOrderRequest<T> statsFromPickupAddresses(PickupAddressRequest subRequest){
-       return statsFromPickupAddressesAs(REFINEMENTS, subRequest);
+    public MovingOrderRequest<T> statsFromFeedbackReviews(FeedbackReviewRequest subRequest){
+       return statsFromFeedbackReviewsAs(REFINEMENTS, subRequest);
     }
     public MovingOrderRequest<T> statsFromInvoicesAs(String name, InvoiceRequest subRequest){
        return statsFromInvoicesAs(name, subRequest, false);
@@ -1976,6 +1840,32 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
     public MovingOrderRequest<T> statsFromInvoices(InvoiceRequest subRequest){
        return statsFromInvoicesAs(REFINEMENTS, subRequest);
     }
+    public MovingOrderRequest<T> statsFromClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+       return statsFromClaimsRecordsAs(name, subRequest, false);
+    }
+
+    public MovingOrderRequest<T> statsFromClaimsRecordsAs(String name, ClaimsRecordRequest subRequest, boolean singleResult){
+       subRequest.setPartitionProperty(ClaimsRecord.MOVING_ORDER_PROPERTY);
+       addAggregateDynamicProperty(name, subRequest, singleResult);
+       return this;
+    }
+
+    public MovingOrderRequest<T> statsFromClaimsRecords(ClaimsRecordRequest subRequest){
+       return statsFromClaimsRecordsAs(REFINEMENTS, subRequest);
+    }
+    public MovingOrderRequest<T> statsFromCustomsDeclarationsAs(String name, CustomsDeclarationRequest subRequest){
+       return statsFromCustomsDeclarationsAs(name, subRequest, false);
+    }
+
+    public MovingOrderRequest<T> statsFromCustomsDeclarationsAs(String name, CustomsDeclarationRequest subRequest, boolean singleResult){
+       subRequest.setPartitionProperty(CustomsDeclaration.MOVING_ORDER_PROPERTY);
+       addAggregateDynamicProperty(name, subRequest, singleResult);
+       return this;
+    }
+
+    public MovingOrderRequest<T> statsFromCustomsDeclarations(CustomsDeclarationRequest subRequest){
+       return statsFromCustomsDeclarationsAs(REFINEMENTS, subRequest);
+    }
     public PrivateCustomerRequest rollUpToCustomer(){
        PrivateCustomerRequest customer = Q.privateCustomers().unlimited();
        this.withCustomerMatching(customer)
@@ -1983,9 +1873,19 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
        return customer;
     }
 
+    public PickupAddressRequest rollUpToPickupAddress(){
+       PickupAddressRequest pickupAddress = Q.pickupAddresses().unlimited();
+       this.withPickupAddressMatching(pickupAddress)
+           .groupByPickupAddressWith(pickupAddress);
+       return pickupAddress;
+    }
 
-
-
+    public PickupAddressRequest rollUpToDeliveryAddress(){
+       PickupAddressRequest deliveryAddress = Q.pickupAddresses().unlimited();
+       this.withDeliveryAddressMatching(deliveryAddress)
+           .groupByDeliveryAddressWith(deliveryAddress);
+       return deliveryAddress;
+    }
 
 
 
@@ -2005,17 +1905,6 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
     public MovingOrderRequest<T> countDispatchPlansWith(String name, DispatchPlanRequest subRequest){
         return statsFromDispatchPlansAs(name, subRequest.count(), true);
     }
-    public MovingOrderRequest<T> countTimeSlots(){
-        return countTimeSlotsAs("Count");
-    }
-
-    public MovingOrderRequest<T> countTimeSlotsAs(String name){
-        return countTimeSlotsWith(name, Q.timeSlots().unlimited());
-    }
-
-    public MovingOrderRequest<T> countTimeSlotsWith(String name, TimeSlotRequest subRequest){
-        return statsFromTimeSlotsAs(name, subRequest.count(), true);
-    }
     public MovingOrderRequest<T> countCargoItems(){
         return countCargoItemsAs("Count");
     }
@@ -2027,16 +1916,16 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
     public MovingOrderRequest<T> countCargoItemsWith(String name, CargoItemRequest subRequest){
         return statsFromCargoItemsAs(name, subRequest.count(), true);
     }
-    public MovingOrderRequest<T> countPickupAddresses(){
-        return countPickupAddressesAs("Count");
+    public MovingOrderRequest<T> countFeedbackReviews(){
+        return countFeedbackReviewsAs("Count");
     }
 
-    public MovingOrderRequest<T> countPickupAddressesAs(String name){
-        return countPickupAddressesWith(name, Q.pickupAddresses().unlimited());
+    public MovingOrderRequest<T> countFeedbackReviewsAs(String name){
+        return countFeedbackReviewsWith(name, Q.feedbackReviews().unlimited());
     }
 
-    public MovingOrderRequest<T> countPickupAddressesWith(String name, PickupAddressRequest subRequest){
-        return statsFromPickupAddressesAs(name, subRequest.count(), true);
+    public MovingOrderRequest<T> countFeedbackReviewsWith(String name, FeedbackReviewRequest subRequest){
+        return statsFromFeedbackReviewsAs(name, subRequest.count(), true);
     }
     public MovingOrderRequest<T> countInvoices(){
         return countInvoicesAs("Count");
@@ -2048,6 +1937,28 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
 
     public MovingOrderRequest<T> countInvoicesWith(String name, InvoiceRequest subRequest){
         return statsFromInvoicesAs(name, subRequest.count(), true);
+    }
+    public MovingOrderRequest<T> countClaimsRecords(){
+        return countClaimsRecordsAs("Count");
+    }
+
+    public MovingOrderRequest<T> countClaimsRecordsAs(String name){
+        return countClaimsRecordsWith(name, Q.claimsRecords().unlimited());
+    }
+
+    public MovingOrderRequest<T> countClaimsRecordsWith(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.count(), true);
+    }
+    public MovingOrderRequest<T> countCustomsDeclarations(){
+        return countCustomsDeclarationsAs("Count");
+    }
+
+    public MovingOrderRequest<T> countCustomsDeclarationsAs(String name){
+        return countCustomsDeclarationsWith(name, Q.customsDeclarations().unlimited());
+    }
+
+    public MovingOrderRequest<T> countCustomsDeclarationsWith(String name, CustomsDeclarationRequest subRequest){
+        return statsFromCustomsDeclarationsAs(name, subRequest.count(), true);
     }
     public MovingOrderRequest<T> minWeightKgOfCargoItems(){
         return minWeightKgOfCargoItemsAs("minWeightKgOfCargoItems");
@@ -2225,93 +2136,93 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
     public MovingOrderRequest<T> samplePopulationVarianceVolumeM3OfCargoItemsAs(String name, CargoItemRequest subRequest){
         return statsFromCargoItemsAs(name, subRequest.samplePopulationVarianceVolumeM3(), true);
     }
-    public MovingOrderRequest<T> minValueOfCargoItems(){
-        return minValueOfCargoItemsAs("minValueOfCargoItems");
+    public MovingOrderRequest<T> minRatingOfFeedbackReviews(){
+        return minRatingOfFeedbackReviewsAs("minRatingOfFeedbackReviews");
     }
 
-    public MovingOrderRequest<T> minValueOfCargoItemsAs(String name){
-        return minValueOfCargoItemsAs(name, Q.cargoItems().unlimited());
+    public MovingOrderRequest<T> minRatingOfFeedbackReviewsAs(String name){
+        return minRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
     }
 
-    public MovingOrderRequest<T> minValueOfCargoItemsAs(String name, CargoItemRequest subRequest){
-        return statsFromCargoItemsAs(name, subRequest.minValue(), true);
+    public MovingOrderRequest<T> minRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
+        return statsFromFeedbackReviewsAs(name, subRequest.minRating(), true);
     }
-    public MovingOrderRequest<T> maxValueOfCargoItems(){
-        return maxValueOfCargoItemsAs("maxValueOfCargoItems");
-    }
-
-    public MovingOrderRequest<T> maxValueOfCargoItemsAs(String name){
-        return maxValueOfCargoItemsAs(name, Q.cargoItems().unlimited());
+    public MovingOrderRequest<T> maxRatingOfFeedbackReviews(){
+        return maxRatingOfFeedbackReviewsAs("maxRatingOfFeedbackReviews");
     }
 
-    public MovingOrderRequest<T> maxValueOfCargoItemsAs(String name, CargoItemRequest subRequest){
-        return statsFromCargoItemsAs(name, subRequest.maxValue(), true);
-    }
-    public MovingOrderRequest<T> sumValueOfCargoItems(){
-        return sumValueOfCargoItemsAs("sumValueOfCargoItems");
+    public MovingOrderRequest<T> maxRatingOfFeedbackReviewsAs(String name){
+        return maxRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
     }
 
-    public MovingOrderRequest<T> sumValueOfCargoItemsAs(String name){
-        return sumValueOfCargoItemsAs(name, Q.cargoItems().unlimited());
+    public MovingOrderRequest<T> maxRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
+        return statsFromFeedbackReviewsAs(name, subRequest.maxRating(), true);
+    }
+    public MovingOrderRequest<T> sumRatingOfFeedbackReviews(){
+        return sumRatingOfFeedbackReviewsAs("sumRatingOfFeedbackReviews");
     }
 
-    public MovingOrderRequest<T> sumValueOfCargoItemsAs(String name, CargoItemRequest subRequest){
-        return statsFromCargoItemsAs(name, subRequest.sumValue(), true);
-    }
-    public MovingOrderRequest<T> avgValueOfCargoItems(){
-        return avgValueOfCargoItemsAs("avgValueOfCargoItems");
+    public MovingOrderRequest<T> sumRatingOfFeedbackReviewsAs(String name){
+        return sumRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
     }
 
-    public MovingOrderRequest<T> avgValueOfCargoItemsAs(String name){
-        return avgValueOfCargoItemsAs(name, Q.cargoItems().unlimited());
+    public MovingOrderRequest<T> sumRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
+        return statsFromFeedbackReviewsAs(name, subRequest.sumRating(), true);
+    }
+    public MovingOrderRequest<T> avgRatingOfFeedbackReviews(){
+        return avgRatingOfFeedbackReviewsAs("avgRatingOfFeedbackReviews");
     }
 
-    public MovingOrderRequest<T> avgValueOfCargoItemsAs(String name, CargoItemRequest subRequest){
-        return statsFromCargoItemsAs(name, subRequest.avgValue(), true);
-    }
-    public MovingOrderRequest<T> standardDeviationValueOfCargoItems(){
-        return standardDeviationValueOfCargoItemsAs("stdDevValueOfCargoItems");
+    public MovingOrderRequest<T> avgRatingOfFeedbackReviewsAs(String name){
+        return avgRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
     }
 
-    public MovingOrderRequest<T> standardDeviationValueOfCargoItemsAs(String name){
-        return standardDeviationValueOfCargoItemsAs(name, Q.cargoItems().unlimited());
+    public MovingOrderRequest<T> avgRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
+        return statsFromFeedbackReviewsAs(name, subRequest.avgRating(), true);
+    }
+    public MovingOrderRequest<T> standardDeviationRatingOfFeedbackReviews(){
+        return standardDeviationRatingOfFeedbackReviewsAs("stdDevRatingOfFeedbackReviews");
     }
 
-    public MovingOrderRequest<T> standardDeviationValueOfCargoItemsAs(String name, CargoItemRequest subRequest){
-        return statsFromCargoItemsAs(name, subRequest.standardDeviationValue(), true);
-    }
-    public MovingOrderRequest<T> squareRootOfPopulationStandardDeviationValueOfCargoItems(){
-        return squareRootOfPopulationStandardDeviationValueOfCargoItemsAs("stdDevPopValueOfCargoItems");
+    public MovingOrderRequest<T> standardDeviationRatingOfFeedbackReviewsAs(String name){
+        return standardDeviationRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
     }
 
-    public MovingOrderRequest<T> squareRootOfPopulationStandardDeviationValueOfCargoItemsAs(String name){
-        return squareRootOfPopulationStandardDeviationValueOfCargoItemsAs(name, Q.cargoItems().unlimited());
+    public MovingOrderRequest<T> standardDeviationRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
+        return statsFromFeedbackReviewsAs(name, subRequest.standardDeviationRating(), true);
+    }
+    public MovingOrderRequest<T> squareRootOfPopulationStandardDeviationRatingOfFeedbackReviews(){
+        return squareRootOfPopulationStandardDeviationRatingOfFeedbackReviewsAs("stdDevPopRatingOfFeedbackReviews");
     }
 
-    public MovingOrderRequest<T> squareRootOfPopulationStandardDeviationValueOfCargoItemsAs(String name, CargoItemRequest subRequest){
-        return statsFromCargoItemsAs(name, subRequest.squareRootOfPopulationStandardDeviationValue(), true);
-    }
-    public MovingOrderRequest<T> sampleVarianceValueOfCargoItems(){
-        return sampleVarianceValueOfCargoItemsAs("varSampValueOfCargoItems");
+    public MovingOrderRequest<T> squareRootOfPopulationStandardDeviationRatingOfFeedbackReviewsAs(String name){
+        return squareRootOfPopulationStandardDeviationRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
     }
 
-    public MovingOrderRequest<T> sampleVarianceValueOfCargoItemsAs(String name){
-        return sampleVarianceValueOfCargoItemsAs(name, Q.cargoItems().unlimited());
+    public MovingOrderRequest<T> squareRootOfPopulationStandardDeviationRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
+        return statsFromFeedbackReviewsAs(name, subRequest.squareRootOfPopulationStandardDeviationRating(), true);
+    }
+    public MovingOrderRequest<T> sampleVarianceRatingOfFeedbackReviews(){
+        return sampleVarianceRatingOfFeedbackReviewsAs("varSampRatingOfFeedbackReviews");
     }
 
-    public MovingOrderRequest<T> sampleVarianceValueOfCargoItemsAs(String name, CargoItemRequest subRequest){
-        return statsFromCargoItemsAs(name, subRequest.sampleVarianceValue(), true);
-    }
-    public MovingOrderRequest<T> samplePopulationVarianceValueOfCargoItems(){
-        return samplePopulationVarianceValueOfCargoItemsAs("varPopValueOfCargoItems");
+    public MovingOrderRequest<T> sampleVarianceRatingOfFeedbackReviewsAs(String name){
+        return sampleVarianceRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
     }
 
-    public MovingOrderRequest<T> samplePopulationVarianceValueOfCargoItemsAs(String name){
-        return samplePopulationVarianceValueOfCargoItemsAs(name, Q.cargoItems().unlimited());
+    public MovingOrderRequest<T> sampleVarianceRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
+        return statsFromFeedbackReviewsAs(name, subRequest.sampleVarianceRating(), true);
+    }
+    public MovingOrderRequest<T> samplePopulationVarianceRatingOfFeedbackReviews(){
+        return samplePopulationVarianceRatingOfFeedbackReviewsAs("varPopRatingOfFeedbackReviews");
     }
 
-    public MovingOrderRequest<T> samplePopulationVarianceValueOfCargoItemsAs(String name, CargoItemRequest subRequest){
-        return statsFromCargoItemsAs(name, subRequest.samplePopulationVarianceValue(), true);
+    public MovingOrderRequest<T> samplePopulationVarianceRatingOfFeedbackReviewsAs(String name){
+        return samplePopulationVarianceRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
+    }
+
+    public MovingOrderRequest<T> samplePopulationVarianceRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
+        return statsFromFeedbackReviewsAs(name, subRequest.samplePopulationVarianceRating(), true);
     }
     public MovingOrderRequest<T> minAmountOfInvoices(){
         return minAmountOfInvoicesAs("minAmountOfInvoices");
@@ -2401,6 +2312,182 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
     public MovingOrderRequest<T> samplePopulationVarianceAmountOfInvoicesAs(String name, InvoiceRequest subRequest){
         return statsFromInvoicesAs(name, subRequest.samplePopulationVarianceAmount(), true);
     }
+    public MovingOrderRequest<T> minClaimAmountOfClaimsRecords(){
+        return minClaimAmountOfClaimsRecordsAs("minClaimAmountOfClaimsRecords");
+    }
+
+    public MovingOrderRequest<T> minClaimAmountOfClaimsRecordsAs(String name){
+        return minClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public MovingOrderRequest<T> minClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.minClaimAmount(), true);
+    }
+    public MovingOrderRequest<T> maxClaimAmountOfClaimsRecords(){
+        return maxClaimAmountOfClaimsRecordsAs("maxClaimAmountOfClaimsRecords");
+    }
+
+    public MovingOrderRequest<T> maxClaimAmountOfClaimsRecordsAs(String name){
+        return maxClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public MovingOrderRequest<T> maxClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.maxClaimAmount(), true);
+    }
+    public MovingOrderRequest<T> sumClaimAmountOfClaimsRecords(){
+        return sumClaimAmountOfClaimsRecordsAs("sumClaimAmountOfClaimsRecords");
+    }
+
+    public MovingOrderRequest<T> sumClaimAmountOfClaimsRecordsAs(String name){
+        return sumClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public MovingOrderRequest<T> sumClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.sumClaimAmount(), true);
+    }
+    public MovingOrderRequest<T> avgClaimAmountOfClaimsRecords(){
+        return avgClaimAmountOfClaimsRecordsAs("avgClaimAmountOfClaimsRecords");
+    }
+
+    public MovingOrderRequest<T> avgClaimAmountOfClaimsRecordsAs(String name){
+        return avgClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public MovingOrderRequest<T> avgClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.avgClaimAmount(), true);
+    }
+    public MovingOrderRequest<T> standardDeviationClaimAmountOfClaimsRecords(){
+        return standardDeviationClaimAmountOfClaimsRecordsAs("stdDevClaimAmountOfClaimsRecords");
+    }
+
+    public MovingOrderRequest<T> standardDeviationClaimAmountOfClaimsRecordsAs(String name){
+        return standardDeviationClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public MovingOrderRequest<T> standardDeviationClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.standardDeviationClaimAmount(), true);
+    }
+    public MovingOrderRequest<T> squareRootOfPopulationStandardDeviationClaimAmountOfClaimsRecords(){
+        return squareRootOfPopulationStandardDeviationClaimAmountOfClaimsRecordsAs("stdDevPopClaimAmountOfClaimsRecords");
+    }
+
+    public MovingOrderRequest<T> squareRootOfPopulationStandardDeviationClaimAmountOfClaimsRecordsAs(String name){
+        return squareRootOfPopulationStandardDeviationClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public MovingOrderRequest<T> squareRootOfPopulationStandardDeviationClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.squareRootOfPopulationStandardDeviationClaimAmount(), true);
+    }
+    public MovingOrderRequest<T> sampleVarianceClaimAmountOfClaimsRecords(){
+        return sampleVarianceClaimAmountOfClaimsRecordsAs("varSampClaimAmountOfClaimsRecords");
+    }
+
+    public MovingOrderRequest<T> sampleVarianceClaimAmountOfClaimsRecordsAs(String name){
+        return sampleVarianceClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public MovingOrderRequest<T> sampleVarianceClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.sampleVarianceClaimAmount(), true);
+    }
+    public MovingOrderRequest<T> samplePopulationVarianceClaimAmountOfClaimsRecords(){
+        return samplePopulationVarianceClaimAmountOfClaimsRecordsAs("varPopClaimAmountOfClaimsRecords");
+    }
+
+    public MovingOrderRequest<T> samplePopulationVarianceClaimAmountOfClaimsRecordsAs(String name){
+        return samplePopulationVarianceClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public MovingOrderRequest<T> samplePopulationVarianceClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.samplePopulationVarianceClaimAmount(), true);
+    }
+    public MovingOrderRequest<T> minTotalValueOfCustomsDeclarations(){
+        return minTotalValueOfCustomsDeclarationsAs("minTotalValueOfCustomsDeclarations");
+    }
+
+    public MovingOrderRequest<T> minTotalValueOfCustomsDeclarationsAs(String name){
+        return minTotalValueOfCustomsDeclarationsAs(name, Q.customsDeclarations().unlimited());
+    }
+
+    public MovingOrderRequest<T> minTotalValueOfCustomsDeclarationsAs(String name, CustomsDeclarationRequest subRequest){
+        return statsFromCustomsDeclarationsAs(name, subRequest.minTotalValue(), true);
+    }
+    public MovingOrderRequest<T> maxTotalValueOfCustomsDeclarations(){
+        return maxTotalValueOfCustomsDeclarationsAs("maxTotalValueOfCustomsDeclarations");
+    }
+
+    public MovingOrderRequest<T> maxTotalValueOfCustomsDeclarationsAs(String name){
+        return maxTotalValueOfCustomsDeclarationsAs(name, Q.customsDeclarations().unlimited());
+    }
+
+    public MovingOrderRequest<T> maxTotalValueOfCustomsDeclarationsAs(String name, CustomsDeclarationRequest subRequest){
+        return statsFromCustomsDeclarationsAs(name, subRequest.maxTotalValue(), true);
+    }
+    public MovingOrderRequest<T> sumTotalValueOfCustomsDeclarations(){
+        return sumTotalValueOfCustomsDeclarationsAs("sumTotalValueOfCustomsDeclarations");
+    }
+
+    public MovingOrderRequest<T> sumTotalValueOfCustomsDeclarationsAs(String name){
+        return sumTotalValueOfCustomsDeclarationsAs(name, Q.customsDeclarations().unlimited());
+    }
+
+    public MovingOrderRequest<T> sumTotalValueOfCustomsDeclarationsAs(String name, CustomsDeclarationRequest subRequest){
+        return statsFromCustomsDeclarationsAs(name, subRequest.sumTotalValue(), true);
+    }
+    public MovingOrderRequest<T> avgTotalValueOfCustomsDeclarations(){
+        return avgTotalValueOfCustomsDeclarationsAs("avgTotalValueOfCustomsDeclarations");
+    }
+
+    public MovingOrderRequest<T> avgTotalValueOfCustomsDeclarationsAs(String name){
+        return avgTotalValueOfCustomsDeclarationsAs(name, Q.customsDeclarations().unlimited());
+    }
+
+    public MovingOrderRequest<T> avgTotalValueOfCustomsDeclarationsAs(String name, CustomsDeclarationRequest subRequest){
+        return statsFromCustomsDeclarationsAs(name, subRequest.avgTotalValue(), true);
+    }
+    public MovingOrderRequest<T> standardDeviationTotalValueOfCustomsDeclarations(){
+        return standardDeviationTotalValueOfCustomsDeclarationsAs("stdDevTotalValueOfCustomsDeclarations");
+    }
+
+    public MovingOrderRequest<T> standardDeviationTotalValueOfCustomsDeclarationsAs(String name){
+        return standardDeviationTotalValueOfCustomsDeclarationsAs(name, Q.customsDeclarations().unlimited());
+    }
+
+    public MovingOrderRequest<T> standardDeviationTotalValueOfCustomsDeclarationsAs(String name, CustomsDeclarationRequest subRequest){
+        return statsFromCustomsDeclarationsAs(name, subRequest.standardDeviationTotalValue(), true);
+    }
+    public MovingOrderRequest<T> squareRootOfPopulationStandardDeviationTotalValueOfCustomsDeclarations(){
+        return squareRootOfPopulationStandardDeviationTotalValueOfCustomsDeclarationsAs("stdDevPopTotalValueOfCustomsDeclarations");
+    }
+
+    public MovingOrderRequest<T> squareRootOfPopulationStandardDeviationTotalValueOfCustomsDeclarationsAs(String name){
+        return squareRootOfPopulationStandardDeviationTotalValueOfCustomsDeclarationsAs(name, Q.customsDeclarations().unlimited());
+    }
+
+    public MovingOrderRequest<T> squareRootOfPopulationStandardDeviationTotalValueOfCustomsDeclarationsAs(String name, CustomsDeclarationRequest subRequest){
+        return statsFromCustomsDeclarationsAs(name, subRequest.squareRootOfPopulationStandardDeviationTotalValue(), true);
+    }
+    public MovingOrderRequest<T> sampleVarianceTotalValueOfCustomsDeclarations(){
+        return sampleVarianceTotalValueOfCustomsDeclarationsAs("varSampTotalValueOfCustomsDeclarations");
+    }
+
+    public MovingOrderRequest<T> sampleVarianceTotalValueOfCustomsDeclarationsAs(String name){
+        return sampleVarianceTotalValueOfCustomsDeclarationsAs(name, Q.customsDeclarations().unlimited());
+    }
+
+    public MovingOrderRequest<T> sampleVarianceTotalValueOfCustomsDeclarationsAs(String name, CustomsDeclarationRequest subRequest){
+        return statsFromCustomsDeclarationsAs(name, subRequest.sampleVarianceTotalValue(), true);
+    }
+    public MovingOrderRequest<T> samplePopulationVarianceTotalValueOfCustomsDeclarations(){
+        return samplePopulationVarianceTotalValueOfCustomsDeclarationsAs("varPopTotalValueOfCustomsDeclarations");
+    }
+
+    public MovingOrderRequest<T> samplePopulationVarianceTotalValueOfCustomsDeclarationsAs(String name){
+        return samplePopulationVarianceTotalValueOfCustomsDeclarationsAs(name, Q.customsDeclarations().unlimited());
+    }
+
+    public MovingOrderRequest<T> samplePopulationVarianceTotalValueOfCustomsDeclarationsAs(String name, CustomsDeclarationRequest subRequest){
+        return statsFromCustomsDeclarationsAs(name, subRequest.samplePopulationVarianceTotalValue(), true);
+    }
 
    public MovingOrderRequest<T> facetByCustomerAs(String facetName, PrivateCustomerRequest customer){
        return facetByCustomerAs(facetName, customer, true);
@@ -2408,6 +2495,22 @@ public class MovingOrderRequest<T extends MovingOrder> extends BaseRequest<T> {
 
    public MovingOrderRequest<T> facetByCustomerAs(String facetName, PrivateCustomerRequest customer, boolean includeAllFacets){
        addFacet(facetName, MovingOrder.CUSTOMER_PROPERTY, customer, includeAllFacets);
+       return this;
+   }
+   public MovingOrderRequest<T> facetByPickupAddressAs(String facetName, PickupAddressRequest pickupAddress){
+       return facetByPickupAddressAs(facetName, pickupAddress, true);
+   }
+
+   public MovingOrderRequest<T> facetByPickupAddressAs(String facetName, PickupAddressRequest pickupAddress, boolean includeAllFacets){
+       addFacet(facetName, MovingOrder.PICKUP_ADDRESS_PROPERTY, pickupAddress, includeAllFacets);
+       return this;
+   }
+   public MovingOrderRequest<T> facetByDeliveryAddressAs(String facetName, PickupAddressRequest deliveryAddress){
+       return facetByDeliveryAddressAs(facetName, deliveryAddress, true);
+   }
+
+   public MovingOrderRequest<T> facetByDeliveryAddressAs(String facetName, PickupAddressRequest deliveryAddress, boolean includeAllFacets){
+       addFacet(facetName, MovingOrder.DELIVERY_ADDRESS_PROPERTY, deliveryAddress, includeAllFacets);
        return this;
    }
 

@@ -6,8 +6,8 @@ import com.doublechaintech.enterpriselogisticsservice.pallet.Pallet;
 import com.doublechaintech.enterpriselogisticsservice.pallet.PalletChecker;
 import com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainer;
 import com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainerChecker;
-import com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute;
-import com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRouteChecker;
+import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee;
+import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFeeChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
@@ -49,14 +49,6 @@ public class WarehouseChecker implements Checker<Warehouse>{
       checkStatus(_ctx, warehouse.getProperty(Warehouse.STATUS_PROPERTY), newLocation(_parentLocation, Warehouse.STATUS_PROPERTY));
       checkCreateTime(_ctx, warehouse.getProperty(Warehouse.CREATE_TIME_PROPERTY), newLocation(_parentLocation, Warehouse.CREATE_TIME_PROPERTY));
       checkUpdateTime(_ctx, warehouse.getProperty(Warehouse.UPDATE_TIME_PROPERTY), newLocation(_parentLocation, Warehouse.UPDATE_TIME_PROPERTY));
-      for(int i = 0; warehouse.getTransitRouteListAsOriginWarehouse() != null && i < warehouse.getTransitRouteListAsOriginWarehouse().size(); i++){
-         TransitRoute transitRouteAsOriginWarehouse = warehouse.getTransitRouteListAsOriginWarehouse().get(i);
-         new TransitRouteChecker().checkAndFix(_ctx, transitRouteAsOriginWarehouse, newLocation(_parentLocation, Warehouse.TRANSIT_ROUTE_LIST_AS_ORIGIN_WAREHOUSE_PROPERTY, i));
-      }
-      for(int i = 0; warehouse.getTransitRouteListAsDestinationWarehouse() != null && i < warehouse.getTransitRouteListAsDestinationWarehouse().size(); i++){
-         TransitRoute transitRouteAsDestinationWarehouse = warehouse.getTransitRouteListAsDestinationWarehouse().get(i);
-         new TransitRouteChecker().checkAndFix(_ctx, transitRouteAsDestinationWarehouse, newLocation(_parentLocation, Warehouse.TRANSIT_ROUTE_LIST_AS_DESTINATION_WAREHOUSE_PROPERTY, i));
-      }
       for(int i = 0; warehouse.getStorageContainerList() != null && i < warehouse.getStorageContainerList().size(); i++){
          StorageContainer storageContainer = warehouse.getStorageContainerList().get(i);
          new StorageContainerChecker().checkAndFix(_ctx, storageContainer, newLocation(_parentLocation, Warehouse.STORAGE_CONTAINER_LIST_PROPERTY, i));
@@ -68,6 +60,10 @@ public class WarehouseChecker implements Checker<Warehouse>{
       for(int i = 0; warehouse.getPalletList() != null && i < warehouse.getPalletList().size(); i++){
          Pallet pallet = warehouse.getPalletList().get(i);
          new PalletChecker().checkAndFix(_ctx, pallet, newLocation(_parentLocation, Warehouse.PALLET_LIST_PROPERTY, i));
+      }
+      for(int i = 0; warehouse.getStorageFeeList() != null && i < warehouse.getStorageFeeList().size(); i++){
+         StorageFee storageFee = warehouse.getStorageFeeList().get(i);
+         new StorageFeeChecker().checkAndFix(_ctx, storageFee, newLocation(_parentLocation, Warehouse.STORAGE_FEE_LIST_PROPERTY, i));
       }
     }
 

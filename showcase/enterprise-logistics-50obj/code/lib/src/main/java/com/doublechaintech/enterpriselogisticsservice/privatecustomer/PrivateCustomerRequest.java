@@ -5,10 +5,6 @@ import com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerCo
 import com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContactRequest;
 import com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyalty;
 import com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyaltyRequest;
-import com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview;
-import com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReviewRequest;
-import com.doublechaintech.enterpriselogisticsservice.invoice.Invoice;
-import com.doublechaintech.enterpriselogisticsservice.invoice.InvoiceRequest;
 import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
 import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderRequest;
 import com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote;
@@ -20,6 +16,8 @@ import io.teaql.core.SearchCriteria;
 import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseRequest<T> {
 
@@ -92,7 +90,7 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
 
     public PrivateCustomerRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectName().selectPhone().selectEmail().selectAddress().selectCity().selectCountry().selectCustomerType().selectVersion();
+        return selectId().selectName().selectPhone().selectEmail().selectAddressLine1().selectAddressLine2().selectCity().selectState().selectZipCode().selectCountry().selectCustomerType().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public PrivateCustomerRequest<T> selectSelfFields(){
@@ -101,13 +99,13 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
 
     public PrivateCustomerRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectName().selectPhone().selectEmail().selectAddress().selectCity().selectCountry().selectCustomerType().selectVersion();
+        return selectId().selectName().selectPhone().selectEmail().selectAddressLine1().selectAddressLine2().selectCity().selectState().selectZipCode().selectCountry().selectCustomerType().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public PrivateCustomerRequest<T> selectChildren(){
         super.selectAny();
-        selectMovingOrderList().selectCustomerContactList().selectServiceQuoteList().selectFeedbackReviewList().selectCustomerLoyaltyList().selectInvoiceList();
-        return selectId().selectName().selectPhone().selectEmail().selectAddress().selectCity().selectCountry().selectCustomerType().selectVersion();
+        selectMovingOrderList().selectCustomerContactList().selectServiceQuoteList().selectCustomerLoyaltyList();
+        return selectId().selectName().selectPhone().selectEmail().selectAddressLine1().selectAddressLine2().selectCity().selectState().selectZipCode().selectCountry().selectCustomerType().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
 
@@ -179,21 +177,38 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
        unselectProperty(PrivateCustomer.EMAIL_PROPERTY);
        return this;
     }
-    public PrivateCustomerRequest<T> selectAddress(){
-       selectProperty(PrivateCustomer.ADDRESS_PROPERTY);
+    public PrivateCustomerRequest<T> selectAddressLine1(){
+       selectProperty(PrivateCustomer.ADDRESS_LINE1_PROPERTY);
        return this;
     }
 
     /**
-     * fill the address with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  address) to fetch address property.
+     * fill the addressLine1 with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  addressLine1) to fetch addressLine1 property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public PrivateCustomerRequest<T> unselectAddress(){
-       unselectProperty(PrivateCustomer.ADDRESS_PROPERTY);
+    public PrivateCustomerRequest<T> unselectAddressLine1(){
+       unselectProperty(PrivateCustomer.ADDRESS_LINE1_PROPERTY);
+       return this;
+    }
+    public PrivateCustomerRequest<T> selectAddressLine2(){
+       selectProperty(PrivateCustomer.ADDRESS_LINE2_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the addressLine2 with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  addressLine2) to fetch addressLine2 property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public PrivateCustomerRequest<T> unselectAddressLine2(){
+       unselectProperty(PrivateCustomer.ADDRESS_LINE2_PROPERTY);
        return this;
     }
     public PrivateCustomerRequest<T> selectCity(){
@@ -211,6 +226,40 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
 
     public PrivateCustomerRequest<T> unselectCity(){
        unselectProperty(PrivateCustomer.CITY_PROPERTY);
+       return this;
+    }
+    public PrivateCustomerRequest<T> selectState(){
+       selectProperty(PrivateCustomer.STATE_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the state with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  state) to fetch state property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public PrivateCustomerRequest<T> unselectState(){
+       unselectProperty(PrivateCustomer.STATE_PROPERTY);
+       return this;
+    }
+    public PrivateCustomerRequest<T> selectZipCode(){
+       selectProperty(PrivateCustomer.ZIP_CODE_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the zipCode with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  zipCode) to fetch zipCode property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public PrivateCustomerRequest<T> unselectZipCode(){
+       unselectProperty(PrivateCustomer.ZIP_CODE_PROPERTY);
        return this;
     }
     public PrivateCustomerRequest<T> selectCountry(){
@@ -245,6 +294,40 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
 
     public PrivateCustomerRequest<T> unselectCustomerType(){
        unselectProperty(PrivateCustomer.CUSTOMER_TYPE_PROPERTY);
+       return this;
+    }
+    public PrivateCustomerRequest<T> selectCreatedAt(){
+       selectProperty(PrivateCustomer.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the createdAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdAt) to fetch createdAt property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public PrivateCustomerRequest<T> unselectCreatedAt(){
+       unselectProperty(PrivateCustomer.CREATED_AT_PROPERTY);
+       return this;
+    }
+    public PrivateCustomerRequest<T> selectUpdatedAt(){
+       selectProperty(PrivateCustomer.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the updatedAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedAt) to fetch updatedAt property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public PrivateCustomerRequest<T> unselectUpdatedAt(){
+       unselectProperty(PrivateCustomer.UPDATED_AT_PROPERTY);
        return this;
     }
     public PrivateCustomerRequest<T> selectVersion(){
@@ -288,28 +371,12 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
        enhanceRelation(PrivateCustomer.SERVICE_QUOTE_LIST_PROPERTY, serviceQuoteList);
        return this;
     }
-    public PrivateCustomerRequest<T> selectFeedbackReviewList(){
-       return selectFeedbackReviewListWith(Q.feedbackReviews().selectSelf());
-    }
-
-    public PrivateCustomerRequest<T> selectFeedbackReviewListWith(FeedbackReviewRequest feedbackReviewList){
-       enhanceRelation(PrivateCustomer.FEEDBACK_REVIEW_LIST_PROPERTY, feedbackReviewList);
-       return this;
-    }
     public PrivateCustomerRequest<T> selectCustomerLoyaltyList(){
        return selectCustomerLoyaltyListWith(Q.customerLoyalties().selectSelf());
     }
 
     public PrivateCustomerRequest<T> selectCustomerLoyaltyListWith(CustomerLoyaltyRequest customerLoyaltyList){
        enhanceRelation(PrivateCustomer.CUSTOMER_LOYALTY_LIST_PROPERTY, customerLoyaltyList);
-       return this;
-    }
-    public PrivateCustomerRequest<T> selectInvoiceList(){
-       return selectInvoiceListWith(Q.invoices().selectSelf());
-    }
-
-    public PrivateCustomerRequest<T> selectInvoiceListWith(InvoiceRequest invoiceList){
-       enhanceRelation(PrivateCustomer.INVOICE_LIST_PROPERTY, invoiceList);
        return this;
     }
 
@@ -519,65 +586,128 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
 
 
 
-    public PrivateCustomerRequest<T> filterByAddress(String... address){
-      if (address == null || address.length == 0) {
-        throw new IllegalArgumentException("filterByAddress parameter address cannot be empty");
+    public PrivateCustomerRequest<T> filterByAddressLine1(String... addressLine1){
+      if (addressLine1 == null || addressLine1.length == 0) {
+        throw new IllegalArgumentException("filterByAddressLine1 parameter addressLine1 cannot be empty");
       }
-      return appendSearchCriteria(createAddressCriteria(Operator.EQUAL, (Object[])address));
+      return appendSearchCriteria(createAddressLine1Criteria(Operator.EQUAL, (Object[])addressLine1));
     }
 
-    public PrivateCustomerRequest<T> withAddress(Operator operator, Object... values){
-       return appendSearchCriteria(createAddressCriteria(operator, values));
+    public PrivateCustomerRequest<T> withAddressLine1(Operator operator, Object... values){
+       return appendSearchCriteria(createAddressLine1Criteria(operator, values));
     }
 
-    public PrivateCustomerRequest<T> withAddressIsUnknown(){
-       return withAddress(Operator.IS_NULL);
+    public PrivateCustomerRequest<T> withAddressLine1IsUnknown(){
+       return withAddressLine1(Operator.IS_NULL);
     }
 
-    public PrivateCustomerRequest<T> withAddressIsKnown(){
-       return withAddress(Operator.IS_NOT_NULL);
+    public PrivateCustomerRequest<T> withAddressLine1IsKnown(){
+       return withAddressLine1(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createAddressCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(PrivateCustomer.ADDRESS_PROPERTY, operator, values);
+    public SearchCriteria createAddressLine1Criteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PrivateCustomer.ADDRESS_LINE1_PROPERTY, operator, values);
     }
 
-    public PrivateCustomerRequest<T> withAddressGreaterThan(String address){
-       return withAddress(Operator.GREATER_THAN, address);
+    public PrivateCustomerRequest<T> withAddressLine1GreaterThan(String addressLine1){
+       return withAddressLine1(Operator.GREATER_THAN, addressLine1);
     }
 
-    public PrivateCustomerRequest<T> withAddressGreaterThanOrEqualTo(String address){
-       return withAddress(Operator.GREATER_THAN_OR_EQUAL, address);
+    public PrivateCustomerRequest<T> withAddressLine1GreaterThanOrEqualTo(String addressLine1){
+       return withAddressLine1(Operator.GREATER_THAN_OR_EQUAL, addressLine1);
     }
 
-    public PrivateCustomerRequest<T> withAddressLessThan(String address){
-       return withAddress(Operator.LESS_THAN, address);
+    public PrivateCustomerRequest<T> withAddressLine1LessThan(String addressLine1){
+       return withAddressLine1(Operator.LESS_THAN, addressLine1);
     }
 
-    public PrivateCustomerRequest<T> withAddressLessThanOrEqualTo(String address){
-       return withAddress(Operator.LESS_THAN_OR_EQUAL, address);
+    public PrivateCustomerRequest<T> withAddressLine1LessThanOrEqualTo(String addressLine1){
+       return withAddressLine1(Operator.LESS_THAN_OR_EQUAL, addressLine1);
     }
 
-    public PrivateCustomerRequest<T> withAddressBetween(String startOfAddress, String endOfAddress){
-       return withAddress(Operator.BETWEEN, startOfAddress, endOfAddress);
+    public PrivateCustomerRequest<T> withAddressLine1Between(String startOfAddressLine1, String endOfAddressLine1){
+       return withAddressLine1(Operator.BETWEEN, startOfAddressLine1, endOfAddressLine1);
     }
-    public PrivateCustomerRequest<T> withAddressStartingWith(String address){
-       return withAddress(Operator.BEGIN_WITH, address);
+    public PrivateCustomerRequest<T> withAddressLine1StartingWith(String addressLine1){
+       return withAddressLine1(Operator.BEGIN_WITH, addressLine1);
     }
-    public PrivateCustomerRequest<T> withAddressContaining(String address){
-       return withAddress(Operator.CONTAIN, address);
-    }
-
-    public PrivateCustomerRequest<T> withAddressEndingWith(String address){
-       return withAddress(Operator.END_WITH, address);
+    public PrivateCustomerRequest<T> withAddressLine1Containing(String addressLine1){
+       return withAddressLine1(Operator.CONTAIN, addressLine1);
     }
 
-    public PrivateCustomerRequest<T> withAddressIs(String address){
-       return withAddress(Operator.EQUAL, address);
+    public PrivateCustomerRequest<T> withAddressLine1EndingWith(String addressLine1){
+       return withAddressLine1(Operator.END_WITH, addressLine1);
     }
 
-    public PrivateCustomerRequest<T> withAddressSoundingLike(String address){
-       return withAddress(Operator.SOUNDS_LIKE, address);
+    public PrivateCustomerRequest<T> withAddressLine1Is(String addressLine1){
+       return withAddressLine1(Operator.EQUAL, addressLine1);
+    }
+
+    public PrivateCustomerRequest<T> withAddressLine1SoundingLike(String addressLine1){
+       return withAddressLine1(Operator.SOUNDS_LIKE, addressLine1);
+    }
+
+
+
+    public PrivateCustomerRequest<T> filterByAddressLine2(String... addressLine2){
+      if (addressLine2 == null || addressLine2.length == 0) {
+        throw new IllegalArgumentException("filterByAddressLine2 parameter addressLine2 cannot be empty");
+      }
+      return appendSearchCriteria(createAddressLine2Criteria(Operator.EQUAL, (Object[])addressLine2));
+    }
+
+    public PrivateCustomerRequest<T> withAddressLine2(Operator operator, Object... values){
+       return appendSearchCriteria(createAddressLine2Criteria(operator, values));
+    }
+
+    public PrivateCustomerRequest<T> withAddressLine2IsUnknown(){
+       return withAddressLine2(Operator.IS_NULL);
+    }
+
+    public PrivateCustomerRequest<T> withAddressLine2IsKnown(){
+       return withAddressLine2(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createAddressLine2Criteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PrivateCustomer.ADDRESS_LINE2_PROPERTY, operator, values);
+    }
+
+    public PrivateCustomerRequest<T> withAddressLine2GreaterThan(String addressLine2){
+       return withAddressLine2(Operator.GREATER_THAN, addressLine2);
+    }
+
+    public PrivateCustomerRequest<T> withAddressLine2GreaterThanOrEqualTo(String addressLine2){
+       return withAddressLine2(Operator.GREATER_THAN_OR_EQUAL, addressLine2);
+    }
+
+    public PrivateCustomerRequest<T> withAddressLine2LessThan(String addressLine2){
+       return withAddressLine2(Operator.LESS_THAN, addressLine2);
+    }
+
+    public PrivateCustomerRequest<T> withAddressLine2LessThanOrEqualTo(String addressLine2){
+       return withAddressLine2(Operator.LESS_THAN_OR_EQUAL, addressLine2);
+    }
+
+    public PrivateCustomerRequest<T> withAddressLine2Between(String startOfAddressLine2, String endOfAddressLine2){
+       return withAddressLine2(Operator.BETWEEN, startOfAddressLine2, endOfAddressLine2);
+    }
+    public PrivateCustomerRequest<T> withAddressLine2StartingWith(String addressLine2){
+       return withAddressLine2(Operator.BEGIN_WITH, addressLine2);
+    }
+    public PrivateCustomerRequest<T> withAddressLine2Containing(String addressLine2){
+       return withAddressLine2(Operator.CONTAIN, addressLine2);
+    }
+
+    public PrivateCustomerRequest<T> withAddressLine2EndingWith(String addressLine2){
+       return withAddressLine2(Operator.END_WITH, addressLine2);
+    }
+
+    public PrivateCustomerRequest<T> withAddressLine2Is(String addressLine2){
+       return withAddressLine2(Operator.EQUAL, addressLine2);
+    }
+
+    public PrivateCustomerRequest<T> withAddressLine2SoundingLike(String addressLine2){
+       return withAddressLine2(Operator.SOUNDS_LIKE, addressLine2);
     }
 
 
@@ -641,6 +771,132 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
 
     public PrivateCustomerRequest<T> withCitySoundingLike(String city){
        return withCity(Operator.SOUNDS_LIKE, city);
+    }
+
+
+
+    public PrivateCustomerRequest<T> filterByState(String... state){
+      if (state == null || state.length == 0) {
+        throw new IllegalArgumentException("filterByState parameter state cannot be empty");
+      }
+      return appendSearchCriteria(createStateCriteria(Operator.EQUAL, (Object[])state));
+    }
+
+    public PrivateCustomerRequest<T> withState(Operator operator, Object... values){
+       return appendSearchCriteria(createStateCriteria(operator, values));
+    }
+
+    public PrivateCustomerRequest<T> withStateIsUnknown(){
+       return withState(Operator.IS_NULL);
+    }
+
+    public PrivateCustomerRequest<T> withStateIsKnown(){
+       return withState(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createStateCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PrivateCustomer.STATE_PROPERTY, operator, values);
+    }
+
+    public PrivateCustomerRequest<T> withStateGreaterThan(String state){
+       return withState(Operator.GREATER_THAN, state);
+    }
+
+    public PrivateCustomerRequest<T> withStateGreaterThanOrEqualTo(String state){
+       return withState(Operator.GREATER_THAN_OR_EQUAL, state);
+    }
+
+    public PrivateCustomerRequest<T> withStateLessThan(String state){
+       return withState(Operator.LESS_THAN, state);
+    }
+
+    public PrivateCustomerRequest<T> withStateLessThanOrEqualTo(String state){
+       return withState(Operator.LESS_THAN_OR_EQUAL, state);
+    }
+
+    public PrivateCustomerRequest<T> withStateBetween(String startOfState, String endOfState){
+       return withState(Operator.BETWEEN, startOfState, endOfState);
+    }
+    public PrivateCustomerRequest<T> withStateStartingWith(String state){
+       return withState(Operator.BEGIN_WITH, state);
+    }
+    public PrivateCustomerRequest<T> withStateContaining(String state){
+       return withState(Operator.CONTAIN, state);
+    }
+
+    public PrivateCustomerRequest<T> withStateEndingWith(String state){
+       return withState(Operator.END_WITH, state);
+    }
+
+    public PrivateCustomerRequest<T> withStateIs(String state){
+       return withState(Operator.EQUAL, state);
+    }
+
+    public PrivateCustomerRequest<T> withStateSoundingLike(String state){
+       return withState(Operator.SOUNDS_LIKE, state);
+    }
+
+
+
+    public PrivateCustomerRequest<T> filterByZipCode(String... zipCode){
+      if (zipCode == null || zipCode.length == 0) {
+        throw new IllegalArgumentException("filterByZipCode parameter zipCode cannot be empty");
+      }
+      return appendSearchCriteria(createZipCodeCriteria(Operator.EQUAL, (Object[])zipCode));
+    }
+
+    public PrivateCustomerRequest<T> withZipCode(Operator operator, Object... values){
+       return appendSearchCriteria(createZipCodeCriteria(operator, values));
+    }
+
+    public PrivateCustomerRequest<T> withZipCodeIsUnknown(){
+       return withZipCode(Operator.IS_NULL);
+    }
+
+    public PrivateCustomerRequest<T> withZipCodeIsKnown(){
+       return withZipCode(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createZipCodeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PrivateCustomer.ZIP_CODE_PROPERTY, operator, values);
+    }
+
+    public PrivateCustomerRequest<T> withZipCodeGreaterThan(String zipCode){
+       return withZipCode(Operator.GREATER_THAN, zipCode);
+    }
+
+    public PrivateCustomerRequest<T> withZipCodeGreaterThanOrEqualTo(String zipCode){
+       return withZipCode(Operator.GREATER_THAN_OR_EQUAL, zipCode);
+    }
+
+    public PrivateCustomerRequest<T> withZipCodeLessThan(String zipCode){
+       return withZipCode(Operator.LESS_THAN, zipCode);
+    }
+
+    public PrivateCustomerRequest<T> withZipCodeLessThanOrEqualTo(String zipCode){
+       return withZipCode(Operator.LESS_THAN_OR_EQUAL, zipCode);
+    }
+
+    public PrivateCustomerRequest<T> withZipCodeBetween(String startOfZipCode, String endOfZipCode){
+       return withZipCode(Operator.BETWEEN, startOfZipCode, endOfZipCode);
+    }
+    public PrivateCustomerRequest<T> withZipCodeStartingWith(String zipCode){
+       return withZipCode(Operator.BEGIN_WITH, zipCode);
+    }
+    public PrivateCustomerRequest<T> withZipCodeContaining(String zipCode){
+       return withZipCode(Operator.CONTAIN, zipCode);
+    }
+
+    public PrivateCustomerRequest<T> withZipCodeEndingWith(String zipCode){
+       return withZipCode(Operator.END_WITH, zipCode);
+    }
+
+    public PrivateCustomerRequest<T> withZipCodeIs(String zipCode){
+       return withZipCode(Operator.EQUAL, zipCode);
+    }
+
+    public PrivateCustomerRequest<T> withZipCodeSoundingLike(String zipCode){
+       return withZipCode(Operator.SOUNDS_LIKE, zipCode);
     }
 
 
@@ -771,6 +1027,136 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
 
 
 
+    public PrivateCustomerRequest<T> filterByCreatedAt(LocalDateTime... createdAt){
+      if (createdAt == null || createdAt.length == 0) {
+        throw new IllegalArgumentException("filterByCreatedAt parameter createdAt cannot be empty");
+      }
+      return appendSearchCriteria(createCreatedAtCriteria(Operator.EQUAL, (Object[])createdAt));
+    }
+
+    public PrivateCustomerRequest<T> withCreatedAt(Operator operator, Object... values){
+       return appendSearchCriteria(createCreatedAtCriteria(operator, values));
+    }
+
+    public PrivateCustomerRequest<T> withCreatedAtIsUnknown(){
+       return withCreatedAt(Operator.IS_NULL);
+    }
+
+    public PrivateCustomerRequest<T> withCreatedAtIsKnown(){
+       return withCreatedAt(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createCreatedAtCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PrivateCustomer.CREATED_AT_PROPERTY, operator, values);
+    }
+
+    public PrivateCustomerRequest<T> withCreatedAtGreaterThan(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public PrivateCustomerRequest<T> withCreatedAtGreaterThanOrEqualTo(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN_OR_EQUAL, createdAt);
+    }
+
+    public PrivateCustomerRequest<T> withCreatedAtLessThan(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public PrivateCustomerRequest<T> withCreatedAtLessThanOrEqualTo(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN_OR_EQUAL, createdAt);
+    }
+
+    public PrivateCustomerRequest<T> withCreatedAtBetween(LocalDateTime startOfCreatedAt, LocalDateTime endOfCreatedAt){
+       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    }
+    public PrivateCustomerRequest<T> withCreatedAtBefore(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public PrivateCustomerRequest<T> withCreatedAtBefore(Date createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public PrivateCustomerRequest<T> withCreatedAtAfter(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public PrivateCustomerRequest<T> withCreatedAtAfter(Date createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public PrivateCustomerRequest<T> withCreatedAtBetween(Date startOfCreatedAt, Date endOfCreatedAt){
+       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    }
+
+
+
+
+    public PrivateCustomerRequest<T> filterByUpdatedAt(LocalDateTime... updatedAt){
+      if (updatedAt == null || updatedAt.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedAt parameter updatedAt cannot be empty");
+      }
+      return appendSearchCriteria(createUpdatedAtCriteria(Operator.EQUAL, (Object[])updatedAt));
+    }
+
+    public PrivateCustomerRequest<T> withUpdatedAt(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedAtCriteria(operator, values));
+    }
+
+    public PrivateCustomerRequest<T> withUpdatedAtIsUnknown(){
+       return withUpdatedAt(Operator.IS_NULL);
+    }
+
+    public PrivateCustomerRequest<T> withUpdatedAtIsKnown(){
+       return withUpdatedAt(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createUpdatedAtCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PrivateCustomer.UPDATED_AT_PROPERTY, operator, values);
+    }
+
+    public PrivateCustomerRequest<T> withUpdatedAtGreaterThan(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public PrivateCustomerRequest<T> withUpdatedAtGreaterThanOrEqualTo(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN_OR_EQUAL, updatedAt);
+    }
+
+    public PrivateCustomerRequest<T> withUpdatedAtLessThan(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public PrivateCustomerRequest<T> withUpdatedAtLessThanOrEqualTo(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN_OR_EQUAL, updatedAt);
+    }
+
+    public PrivateCustomerRequest<T> withUpdatedAtBetween(LocalDateTime startOfUpdatedAt, LocalDateTime endOfUpdatedAt){
+       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    }
+    public PrivateCustomerRequest<T> withUpdatedAtBefore(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public PrivateCustomerRequest<T> withUpdatedAtBefore(Date updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public PrivateCustomerRequest<T> withUpdatedAtAfter(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public PrivateCustomerRequest<T> withUpdatedAtAfter(Date updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public PrivateCustomerRequest<T> withUpdatedAtBetween(Date startOfUpdatedAt, Date endOfUpdatedAt){
+       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    }
+
+
+
+
     public PrivateCustomerRequest<T> filterByVersion(Long... version){
       if (version == null || version.length == 0) {
         throw new IllegalArgumentException("filterByVersion parameter version cannot be empty");
@@ -859,21 +1245,6 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
     public PrivateCustomerRequest<T> haveNoServiceQuotes(){
         return withoutServiceQuoteListMatching(Q.serviceQuotes().unlimited());
     }
-    public PrivateCustomerRequest<T> withFeedbackReviewListMatching(FeedbackReviewRequest feedbackReviewRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(PrivateCustomer.ID_PROPERTY, feedbackReviewRequest, FeedbackReview.PRIVATE_CUSTOMER_PROPERTY));
-    }
-
-    public PrivateCustomerRequest<T> withoutFeedbackReviewListMatching(FeedbackReviewRequest feedbackReviewRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(PrivateCustomer.ID_PROPERTY, feedbackReviewRequest, FeedbackReview.PRIVATE_CUSTOMER_PROPERTY)));
-    }
-
-    public PrivateCustomerRequest<T> haveFeedbackReviews(){
-        return withFeedbackReviewListMatching(Q.feedbackReviews().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> haveNoFeedbackReviews(){
-        return withoutFeedbackReviewListMatching(Q.feedbackReviews().unlimited());
-    }
     public PrivateCustomerRequest<T> withCustomerLoyaltyListMatching(CustomerLoyaltyRequest customerLoyaltyRequest){
         return appendSearchCriteria(new SubQuerySearchCriteria(PrivateCustomer.ID_PROPERTY, customerLoyaltyRequest, CustomerLoyalty.PRIVATE_CUSTOMER_PROPERTY));
     }
@@ -888,21 +1259,6 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
 
     public PrivateCustomerRequest<T> haveNoCustomerLoyalties(){
         return withoutCustomerLoyaltyListMatching(Q.customerLoyalties().unlimited());
-    }
-    public PrivateCustomerRequest<T> withInvoiceListMatching(InvoiceRequest invoiceRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(PrivateCustomer.ID_PROPERTY, invoiceRequest, Invoice.CUSTOMER_PROPERTY));
-    }
-
-    public PrivateCustomerRequest<T> withoutInvoiceListMatching(InvoiceRequest invoiceRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(PrivateCustomer.ID_PROPERTY, invoiceRequest, Invoice.CUSTOMER_PROPERTY)));
-    }
-
-    public PrivateCustomerRequest<T> haveInvoices(){
-        return withInvoiceListMatching(Q.invoices().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> haveNoInvoices(){
-        return withoutInvoiceListMatching(Q.invoices().unlimited());
     }
 
     public PrivateCustomerRequest<T> count(){
@@ -925,16 +1281,8 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
        aggregate(PrivateCustomer.SERVICE_QUOTE_LIST_PROPERTY, subRequest);
        return this;
     }
-    public PrivateCustomerRequest<T> groupByFeedbackReviewsWithDetails(FeedbackReviewRequest subRequest){
-       aggregate(PrivateCustomer.FEEDBACK_REVIEW_LIST_PROPERTY, subRequest);
-       return this;
-    }
     public PrivateCustomerRequest<T> groupByCustomerLoyaltiesWithDetails(CustomerLoyaltyRequest subRequest){
        aggregate(PrivateCustomer.CUSTOMER_LOYALTY_LIST_PROPERTY, subRequest);
-       return this;
-    }
-    public PrivateCustomerRequest<T> groupByInvoicesWithDetails(InvoiceRequest subRequest){
-       aggregate(PrivateCustomer.INVOICE_LIST_PROPERTY, subRequest);
        return this;
     }
 
@@ -998,18 +1346,33 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
        return this;
     }
 
-    public PrivateCustomerRequest<T> groupByAddress(){
-       groupBy(PrivateCustomer.ADDRESS_PROPERTY);
+    public PrivateCustomerRequest<T> groupByAddressLine1(){
+       groupBy(PrivateCustomer.ADDRESS_LINE1_PROPERTY);
        return this;
     }
 
-    public PrivateCustomerRequest<T> groupByAddressAs(String retName){
-       groupBy(retName, PrivateCustomer.ADDRESS_PROPERTY);
+    public PrivateCustomerRequest<T> groupByAddressLine1As(String retName){
+       groupBy(retName, PrivateCustomer.ADDRESS_LINE1_PROPERTY);
        return this;
     }
 
-    public PrivateCustomerRequest<T> groupByAddressWithFunction(String retName, AggrFunction function){
-       groupBy(retName, PrivateCustomer.ADDRESS_PROPERTY, function);
+    public PrivateCustomerRequest<T> groupByAddressLine1WithFunction(String retName, AggrFunction function){
+       groupBy(retName, PrivateCustomer.ADDRESS_LINE1_PROPERTY, function);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByAddressLine2(){
+       groupBy(PrivateCustomer.ADDRESS_LINE2_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByAddressLine2As(String retName){
+       groupBy(retName, PrivateCustomer.ADDRESS_LINE2_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByAddressLine2WithFunction(String retName, AggrFunction function){
+       groupBy(retName, PrivateCustomer.ADDRESS_LINE2_PROPERTY, function);
        return this;
     }
 
@@ -1025,6 +1388,36 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
 
     public PrivateCustomerRequest<T> groupByCityWithFunction(String retName, AggrFunction function){
        groupBy(retName, PrivateCustomer.CITY_PROPERTY, function);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByState(){
+       groupBy(PrivateCustomer.STATE_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByStateAs(String retName){
+       groupBy(retName, PrivateCustomer.STATE_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByStateWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PrivateCustomer.STATE_PROPERTY, function);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByZipCode(){
+       groupBy(PrivateCustomer.ZIP_CODE_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByZipCodeAs(String retName){
+       groupBy(retName, PrivateCustomer.ZIP_CODE_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByZipCodeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PrivateCustomer.ZIP_CODE_PROPERTY, function);
        return this;
     }
 
@@ -1055,6 +1448,36 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
 
     public PrivateCustomerRequest<T> groupByCustomerTypeWithFunction(String retName, AggrFunction function){
        groupBy(retName, PrivateCustomer.CUSTOMER_TYPE_PROPERTY, function);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByCreatedAt(){
+       groupBy(PrivateCustomer.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByCreatedAtAs(String retName){
+       groupBy(retName, PrivateCustomer.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByCreatedAtWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PrivateCustomer.CREATED_AT_PROPERTY, function);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByUpdatedAt(){
+       groupBy(PrivateCustomer.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByUpdatedAtAs(String retName){
+       groupBy(retName, PrivateCustomer.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> groupByUpdatedAtWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PrivateCustomer.UPDATED_AT_PROPERTY, function);
        return this;
     }
 
@@ -1139,22 +1562,40 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
        addOrderByDescendingUsingGBK(PrivateCustomer.EMAIL_PROPERTY);
        return this;
     }
-    public PrivateCustomerRequest<T> orderByAddressAscending(){
-       addOrderByAscending(PrivateCustomer.ADDRESS_PROPERTY);
+    public PrivateCustomerRequest<T> orderByAddressLine1Ascending(){
+       addOrderByAscending(PrivateCustomer.ADDRESS_LINE1_PROPERTY);
        return this;
     }
 
-    public PrivateCustomerRequest<T> orderByAddressDescending(){
-       addOrderByDescending(PrivateCustomer.ADDRESS_PROPERTY);
+    public PrivateCustomerRequest<T> orderByAddressLine1Descending(){
+       addOrderByDescending(PrivateCustomer.ADDRESS_LINE1_PROPERTY);
        return this;
     }
-    public PrivateCustomerRequest<T> orderByAddressAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(PrivateCustomer.ADDRESS_PROPERTY);
+    public PrivateCustomerRequest<T> orderByAddressLine1AscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(PrivateCustomer.ADDRESS_LINE1_PROPERTY);
        return this;
     }
 
-    public PrivateCustomerRequest<T> orderByAddressDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(PrivateCustomer.ADDRESS_PROPERTY);
+    public PrivateCustomerRequest<T> orderByAddressLine1DescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(PrivateCustomer.ADDRESS_LINE1_PROPERTY);
+       return this;
+    }
+    public PrivateCustomerRequest<T> orderByAddressLine2Ascending(){
+       addOrderByAscending(PrivateCustomer.ADDRESS_LINE2_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> orderByAddressLine2Descending(){
+       addOrderByDescending(PrivateCustomer.ADDRESS_LINE2_PROPERTY);
+       return this;
+    }
+    public PrivateCustomerRequest<T> orderByAddressLine2AscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(PrivateCustomer.ADDRESS_LINE2_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> orderByAddressLine2DescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(PrivateCustomer.ADDRESS_LINE2_PROPERTY);
        return this;
     }
     public PrivateCustomerRequest<T> orderByCityAscending(){
@@ -1173,6 +1614,42 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
 
     public PrivateCustomerRequest<T> orderByCityDescendingUsingGBK(){
        addOrderByDescendingUsingGBK(PrivateCustomer.CITY_PROPERTY);
+       return this;
+    }
+    public PrivateCustomerRequest<T> orderByStateAscending(){
+       addOrderByAscending(PrivateCustomer.STATE_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> orderByStateDescending(){
+       addOrderByDescending(PrivateCustomer.STATE_PROPERTY);
+       return this;
+    }
+    public PrivateCustomerRequest<T> orderByStateAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(PrivateCustomer.STATE_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> orderByStateDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(PrivateCustomer.STATE_PROPERTY);
+       return this;
+    }
+    public PrivateCustomerRequest<T> orderByZipCodeAscending(){
+       addOrderByAscending(PrivateCustomer.ZIP_CODE_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> orderByZipCodeDescending(){
+       addOrderByDescending(PrivateCustomer.ZIP_CODE_PROPERTY);
+       return this;
+    }
+    public PrivateCustomerRequest<T> orderByZipCodeAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(PrivateCustomer.ZIP_CODE_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> orderByZipCodeDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(PrivateCustomer.ZIP_CODE_PROPERTY);
        return this;
     }
     public PrivateCustomerRequest<T> orderByCountryAscending(){
@@ -1211,6 +1688,26 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
        addOrderByDescendingUsingGBK(PrivateCustomer.CUSTOMER_TYPE_PROPERTY);
        return this;
     }
+    public PrivateCustomerRequest<T> orderByCreatedAtAscending(){
+       addOrderByAscending(PrivateCustomer.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> orderByCreatedAtDescending(){
+       addOrderByDescending(PrivateCustomer.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> orderByUpdatedAtAscending(){
+       addOrderByAscending(PrivateCustomer.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public PrivateCustomerRequest<T> orderByUpdatedAtDescending(){
+       addOrderByDescending(PrivateCustomer.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
     public PrivateCustomerRequest<T> orderByVersionAscending(){
        addOrderByAscending(PrivateCustomer.VERSION_PROPERTY);
        return this;
@@ -1261,19 +1758,6 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
     public PrivateCustomerRequest<T> statsFromServiceQuotes(ServiceQuoteRequest subRequest){
        return statsFromServiceQuotesAs(REFINEMENTS, subRequest);
     }
-    public PrivateCustomerRequest<T> statsFromFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-       return statsFromFeedbackReviewsAs(name, subRequest, false);
-    }
-
-    public PrivateCustomerRequest<T> statsFromFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(FeedbackReview.PRIVATE_CUSTOMER_PROPERTY);
-       addAggregateDynamicProperty(name, subRequest, singleResult);
-       return this;
-    }
-
-    public PrivateCustomerRequest<T> statsFromFeedbackReviews(FeedbackReviewRequest subRequest){
-       return statsFromFeedbackReviewsAs(REFINEMENTS, subRequest);
-    }
     public PrivateCustomerRequest<T> statsFromCustomerLoyaltiesAs(String name, CustomerLoyaltyRequest subRequest){
        return statsFromCustomerLoyaltiesAs(name, subRequest, false);
     }
@@ -1286,19 +1770,6 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
 
     public PrivateCustomerRequest<T> statsFromCustomerLoyalties(CustomerLoyaltyRequest subRequest){
        return statsFromCustomerLoyaltiesAs(REFINEMENTS, subRequest);
-    }
-    public PrivateCustomerRequest<T> statsFromInvoicesAs(String name, InvoiceRequest subRequest){
-       return statsFromInvoicesAs(name, subRequest, false);
-    }
-
-    public PrivateCustomerRequest<T> statsFromInvoicesAs(String name, InvoiceRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(Invoice.CUSTOMER_PROPERTY);
-       addAggregateDynamicProperty(name, subRequest, singleResult);
-       return this;
-    }
-
-    public PrivateCustomerRequest<T> statsFromInvoices(InvoiceRequest subRequest){
-       return statsFromInvoicesAs(REFINEMENTS, subRequest);
     }
     public PrivateCustomerRequest<T> countMovingOrders(){
         return countMovingOrdersAs("Count");
@@ -1333,17 +1804,6 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
     public PrivateCustomerRequest<T> countServiceQuotesWith(String name, ServiceQuoteRequest subRequest){
         return statsFromServiceQuotesAs(name, subRequest.count(), true);
     }
-    public PrivateCustomerRequest<T> countFeedbackReviews(){
-        return countFeedbackReviewsAs("Count");
-    }
-
-    public PrivateCustomerRequest<T> countFeedbackReviewsAs(String name){
-        return countFeedbackReviewsWith(name, Q.feedbackReviews().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> countFeedbackReviewsWith(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.count(), true);
-    }
     public PrivateCustomerRequest<T> countCustomerLoyalties(){
         return countCustomerLoyaltiesAs("Count");
     }
@@ -1354,17 +1814,6 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
 
     public PrivateCustomerRequest<T> countCustomerLoyaltiesWith(String name, CustomerLoyaltyRequest subRequest){
         return statsFromCustomerLoyaltiesAs(name, subRequest.count(), true);
-    }
-    public PrivateCustomerRequest<T> countInvoices(){
-        return countInvoicesAs("Count");
-    }
-
-    public PrivateCustomerRequest<T> countInvoicesAs(String name){
-        return countInvoicesWith(name, Q.invoices().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> countInvoicesWith(String name, InvoiceRequest subRequest){
-        return statsFromInvoicesAs(name, subRequest.count(), true);
     }
     public PrivateCustomerRequest<T> minTotalWeightOfMovingOrders(){
         return minTotalWeightOfMovingOrdersAs("minTotalWeightOfMovingOrders");
@@ -1806,94 +2255,6 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
     public PrivateCustomerRequest<T> samplePopulationVarianceEstimatedCostOfServiceQuotesAs(String name, ServiceQuoteRequest subRequest){
         return statsFromServiceQuotesAs(name, subRequest.samplePopulationVarianceEstimatedCost(), true);
     }
-    public PrivateCustomerRequest<T> minRatingOfFeedbackReviews(){
-        return minRatingOfFeedbackReviewsAs("minRatingOfFeedbackReviews");
-    }
-
-    public PrivateCustomerRequest<T> minRatingOfFeedbackReviewsAs(String name){
-        return minRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> minRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.minRating(), true);
-    }
-    public PrivateCustomerRequest<T> maxRatingOfFeedbackReviews(){
-        return maxRatingOfFeedbackReviewsAs("maxRatingOfFeedbackReviews");
-    }
-
-    public PrivateCustomerRequest<T> maxRatingOfFeedbackReviewsAs(String name){
-        return maxRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> maxRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.maxRating(), true);
-    }
-    public PrivateCustomerRequest<T> sumRatingOfFeedbackReviews(){
-        return sumRatingOfFeedbackReviewsAs("sumRatingOfFeedbackReviews");
-    }
-
-    public PrivateCustomerRequest<T> sumRatingOfFeedbackReviewsAs(String name){
-        return sumRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> sumRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.sumRating(), true);
-    }
-    public PrivateCustomerRequest<T> avgRatingOfFeedbackReviews(){
-        return avgRatingOfFeedbackReviewsAs("avgRatingOfFeedbackReviews");
-    }
-
-    public PrivateCustomerRequest<T> avgRatingOfFeedbackReviewsAs(String name){
-        return avgRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> avgRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.avgRating(), true);
-    }
-    public PrivateCustomerRequest<T> standardDeviationRatingOfFeedbackReviews(){
-        return standardDeviationRatingOfFeedbackReviewsAs("stdDevRatingOfFeedbackReviews");
-    }
-
-    public PrivateCustomerRequest<T> standardDeviationRatingOfFeedbackReviewsAs(String name){
-        return standardDeviationRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> standardDeviationRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.standardDeviationRating(), true);
-    }
-    public PrivateCustomerRequest<T> squareRootOfPopulationStandardDeviationRatingOfFeedbackReviews(){
-        return squareRootOfPopulationStandardDeviationRatingOfFeedbackReviewsAs("stdDevPopRatingOfFeedbackReviews");
-    }
-
-    public PrivateCustomerRequest<T> squareRootOfPopulationStandardDeviationRatingOfFeedbackReviewsAs(String name){
-        return squareRootOfPopulationStandardDeviationRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> squareRootOfPopulationStandardDeviationRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.squareRootOfPopulationStandardDeviationRating(), true);
-    }
-    public PrivateCustomerRequest<T> sampleVarianceRatingOfFeedbackReviews(){
-        return sampleVarianceRatingOfFeedbackReviewsAs("varSampRatingOfFeedbackReviews");
-    }
-
-    public PrivateCustomerRequest<T> sampleVarianceRatingOfFeedbackReviewsAs(String name){
-        return sampleVarianceRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> sampleVarianceRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.sampleVarianceRating(), true);
-    }
-    public PrivateCustomerRequest<T> samplePopulationVarianceRatingOfFeedbackReviews(){
-        return samplePopulationVarianceRatingOfFeedbackReviewsAs("varPopRatingOfFeedbackReviews");
-    }
-
-    public PrivateCustomerRequest<T> samplePopulationVarianceRatingOfFeedbackReviewsAs(String name){
-        return samplePopulationVarianceRatingOfFeedbackReviewsAs(name, Q.feedbackReviews().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> samplePopulationVarianceRatingOfFeedbackReviewsAs(String name, FeedbackReviewRequest subRequest){
-        return statsFromFeedbackReviewsAs(name, subRequest.samplePopulationVarianceRating(), true);
-    }
     public PrivateCustomerRequest<T> minPointsOfCustomerLoyalties(){
         return minPointsOfCustomerLoyaltiesAs("minPointsOfCustomerLoyalties");
     }
@@ -1981,94 +2342,6 @@ public class PrivateCustomerRequest<T extends PrivateCustomer> extends BaseReque
 
     public PrivateCustomerRequest<T> samplePopulationVariancePointsOfCustomerLoyaltiesAs(String name, CustomerLoyaltyRequest subRequest){
         return statsFromCustomerLoyaltiesAs(name, subRequest.samplePopulationVariancePoints(), true);
-    }
-    public PrivateCustomerRequest<T> minAmountOfInvoices(){
-        return minAmountOfInvoicesAs("minAmountOfInvoices");
-    }
-
-    public PrivateCustomerRequest<T> minAmountOfInvoicesAs(String name){
-        return minAmountOfInvoicesAs(name, Q.invoices().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> minAmountOfInvoicesAs(String name, InvoiceRequest subRequest){
-        return statsFromInvoicesAs(name, subRequest.minAmount(), true);
-    }
-    public PrivateCustomerRequest<T> maxAmountOfInvoices(){
-        return maxAmountOfInvoicesAs("maxAmountOfInvoices");
-    }
-
-    public PrivateCustomerRequest<T> maxAmountOfInvoicesAs(String name){
-        return maxAmountOfInvoicesAs(name, Q.invoices().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> maxAmountOfInvoicesAs(String name, InvoiceRequest subRequest){
-        return statsFromInvoicesAs(name, subRequest.maxAmount(), true);
-    }
-    public PrivateCustomerRequest<T> sumAmountOfInvoices(){
-        return sumAmountOfInvoicesAs("sumAmountOfInvoices");
-    }
-
-    public PrivateCustomerRequest<T> sumAmountOfInvoicesAs(String name){
-        return sumAmountOfInvoicesAs(name, Q.invoices().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> sumAmountOfInvoicesAs(String name, InvoiceRequest subRequest){
-        return statsFromInvoicesAs(name, subRequest.sumAmount(), true);
-    }
-    public PrivateCustomerRequest<T> avgAmountOfInvoices(){
-        return avgAmountOfInvoicesAs("avgAmountOfInvoices");
-    }
-
-    public PrivateCustomerRequest<T> avgAmountOfInvoicesAs(String name){
-        return avgAmountOfInvoicesAs(name, Q.invoices().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> avgAmountOfInvoicesAs(String name, InvoiceRequest subRequest){
-        return statsFromInvoicesAs(name, subRequest.avgAmount(), true);
-    }
-    public PrivateCustomerRequest<T> standardDeviationAmountOfInvoices(){
-        return standardDeviationAmountOfInvoicesAs("stdDevAmountOfInvoices");
-    }
-
-    public PrivateCustomerRequest<T> standardDeviationAmountOfInvoicesAs(String name){
-        return standardDeviationAmountOfInvoicesAs(name, Q.invoices().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> standardDeviationAmountOfInvoicesAs(String name, InvoiceRequest subRequest){
-        return statsFromInvoicesAs(name, subRequest.standardDeviationAmount(), true);
-    }
-    public PrivateCustomerRequest<T> squareRootOfPopulationStandardDeviationAmountOfInvoices(){
-        return squareRootOfPopulationStandardDeviationAmountOfInvoicesAs("stdDevPopAmountOfInvoices");
-    }
-
-    public PrivateCustomerRequest<T> squareRootOfPopulationStandardDeviationAmountOfInvoicesAs(String name){
-        return squareRootOfPopulationStandardDeviationAmountOfInvoicesAs(name, Q.invoices().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> squareRootOfPopulationStandardDeviationAmountOfInvoicesAs(String name, InvoiceRequest subRequest){
-        return statsFromInvoicesAs(name, subRequest.squareRootOfPopulationStandardDeviationAmount(), true);
-    }
-    public PrivateCustomerRequest<T> sampleVarianceAmountOfInvoices(){
-        return sampleVarianceAmountOfInvoicesAs("varSampAmountOfInvoices");
-    }
-
-    public PrivateCustomerRequest<T> sampleVarianceAmountOfInvoicesAs(String name){
-        return sampleVarianceAmountOfInvoicesAs(name, Q.invoices().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> sampleVarianceAmountOfInvoicesAs(String name, InvoiceRequest subRequest){
-        return statsFromInvoicesAs(name, subRequest.sampleVarianceAmount(), true);
-    }
-    public PrivateCustomerRequest<T> samplePopulationVarianceAmountOfInvoices(){
-        return samplePopulationVarianceAmountOfInvoicesAs("varPopAmountOfInvoices");
-    }
-
-    public PrivateCustomerRequest<T> samplePopulationVarianceAmountOfInvoicesAs(String name){
-        return samplePopulationVarianceAmountOfInvoicesAs(name, Q.invoices().unlimited());
-    }
-
-    public PrivateCustomerRequest<T> samplePopulationVarianceAmountOfInvoicesAs(String name, InvoiceRequest subRequest){
-        return statsFromInvoicesAs(name, subRequest.samplePopulationVarianceAmount(), true);
     }
 
 

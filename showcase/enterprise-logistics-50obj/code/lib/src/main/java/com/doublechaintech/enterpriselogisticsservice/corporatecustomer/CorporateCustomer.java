@@ -1,8 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.corporatecustomer;
 
 import com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact;
-import com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyalty;
-import com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview;
+import com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract;
 import com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
@@ -10,6 +9,7 @@ import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
 import io.teaql.core.SmartList;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -24,58 +24,61 @@ public class CorporateCustomer extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "CorporateCustomer";
 
     public static final String NAME_PROPERTY = "name";
-    public static final String CONTACT_PERSON_PROPERTY = "contactPerson";
-    public static final String PHONE_PROPERTY = "phone";
-    public static final String EMAIL_PROPERTY = "email";
-    public static final String ADDRESS_PROPERTY = "address";
-    public static final String CITY_PROPERTY = "city";
-    public static final String COUNTRY_PROPERTY = "country";
-    public static final String TAX_ID_PROPERTY = "taxId";
+    public static final String REGISTRATION_NUMBER_PROPERTY = "registrationNumber";
+    public static final String INDUSTRY_PROPERTY = "industry";
+    public static final String EMPLOYEE_COUNT_PROPERTY = "employeeCount";
+    public static final String BILLING_ADDRESS_PROPERTY = "billingAddress";
+    public static final String CONTACT_EMAIL_PROPERTY = "contactEmail";
+    public static final String CONTACT_PHONE_PROPERTY = "contactPhone";
     public static final String CUSTOMER_TYPE_PROPERTY = "customerType";
+    public static final String CREATED_AT_PROPERTY = "createdAt";
+    public static final String UPDATED_AT_PROPERTY = "updatedAt";
     public static final String CUSTOMER_CONTACT_LIST_PROPERTY = "customerContactList";
     public static final String SERVICE_QUOTE_LIST_PROPERTY = "serviceQuoteList";
-    public static final String FEEDBACK_REVIEW_LIST_PROPERTY = "feedbackReviewList";
-    public static final String CUSTOMER_LOYALTY_LIST_PROPERTY = "customerLoyaltyList";
+    public static final String SERVICE_CONTRACT_LIST_PROPERTY = "serviceContractList";
     private String name;
-    private String contactPerson;
-    private String phone;
-    private String email;
-    private String address;
-    private String city;
-    private String country;
-    private String taxId;
+    private String registrationNumber;
+    private String industry;
+    private Integer employeeCount;
+    private String billingAddress;
+    private String contactEmail;
+    private String contactPhone;
     private String customerType;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private SmartList<CustomerContact> customerContactList;
     private SmartList<ServiceQuote> serviceQuoteList;
-    private SmartList<FeedbackReview> feedbackReviewList;
-    private SmartList<CustomerLoyalty> customerLoyaltyList;
+    private SmartList<ServiceContract> serviceContractList;
 
     public String getName(){
         return this.name;
     }
-    public String getContactPerson(){
-        return this.contactPerson;
+    public String getRegistrationNumber(){
+        return this.registrationNumber;
     }
-    public String getPhone(){
-        return this.phone;
+    public String getIndustry(){
+        return this.industry;
     }
-    public String getEmail(){
-        return this.email;
+    public Integer getEmployeeCount(){
+        return this.employeeCount;
     }
-    public String getAddress(){
-        return this.address;
+    public String getBillingAddress(){
+        return this.billingAddress;
     }
-    public String getCity(){
-        return this.city;
+    public String getContactEmail(){
+        return this.contactEmail;
     }
-    public String getCountry(){
-        return this.country;
-    }
-    public String getTaxId(){
-        return this.taxId;
+    public String getContactPhone(){
+        return this.contactPhone;
     }
     public String getCustomerType(){
         return this.customerType;
+    }
+    public LocalDateTime getCreatedAt(){
+        return this.createdAt;
+    }
+    public LocalDateTime getUpdatedAt(){
+        return this.updatedAt;
     }
     public SmartList<CustomerContact> getCustomerContactList(){
         return this.customerContactList;
@@ -83,11 +86,8 @@ public class CorporateCustomer extends BaseEntity implements RemoteInput {
     public SmartList<ServiceQuote> getServiceQuoteList(){
         return this.serviceQuoteList;
     }
-    public SmartList<FeedbackReview> getFeedbackReviewList(){
-        return this.feedbackReviewList;
-    }
-    public SmartList<CustomerLoyalty> getCustomerLoyaltyList(){
-        return this.customerLoyaltyList;
+    public SmartList<ServiceContract> getServiceContractList(){
+        return this.serviceContractList;
     }
     public CorporateCustomer updateName(String name){
         name = (name == null ? null : name.trim());
@@ -98,67 +98,57 @@ public class CorporateCustomer extends BaseEntity implements RemoteInput {
         this.name = name;
         return this;
     }
-    public CorporateCustomer updateContactPerson(String contactPerson){
-        contactPerson = (contactPerson == null ? null : contactPerson.trim());
-        if(Objects.equals(this.contactPerson, contactPerson)){
+    public CorporateCustomer updateRegistrationNumber(String registrationNumber){
+        registrationNumber = (registrationNumber == null ? null : registrationNumber.trim());
+        if(Objects.equals(this.registrationNumber, registrationNumber)){
             return this;
         }
-        handleUpdate(CONTACT_PERSON_PROPERTY, getContactPerson(), contactPerson);
-        this.contactPerson = contactPerson;
+        handleUpdate(REGISTRATION_NUMBER_PROPERTY, getRegistrationNumber(), registrationNumber);
+        this.registrationNumber = registrationNumber;
         return this;
     }
-    public CorporateCustomer updatePhone(String phone){
-        phone = (phone == null ? null : phone.trim());
-        if(Objects.equals(this.phone, phone)){
+    public CorporateCustomer updateIndustry(String industry){
+        industry = (industry == null ? null : industry.trim());
+        if(Objects.equals(this.industry, industry)){
             return this;
         }
-        handleUpdate(PHONE_PROPERTY, getPhone(), phone);
-        this.phone = phone;
+        handleUpdate(INDUSTRY_PROPERTY, getIndustry(), industry);
+        this.industry = industry;
         return this;
     }
-    public CorporateCustomer updateEmail(String email){
-        email = (email == null ? null : email.trim());
-        if(Objects.equals(this.email, email)){
+    public CorporateCustomer updateEmployeeCount(Integer employeeCount){
+        if(Objects.equals(this.employeeCount, employeeCount)){
             return this;
         }
-        handleUpdate(EMAIL_PROPERTY, getEmail(), email);
-        this.email = email;
+        handleUpdate(EMPLOYEE_COUNT_PROPERTY, getEmployeeCount(), employeeCount);
+        this.employeeCount = employeeCount;
         return this;
     }
-    public CorporateCustomer updateAddress(String address){
-        address = (address == null ? null : address.trim());
-        if(Objects.equals(this.address, address)){
+    public CorporateCustomer updateBillingAddress(String billingAddress){
+        billingAddress = (billingAddress == null ? null : billingAddress.trim());
+        if(Objects.equals(this.billingAddress, billingAddress)){
             return this;
         }
-        handleUpdate(ADDRESS_PROPERTY, getAddress(), address);
-        this.address = address;
+        handleUpdate(BILLING_ADDRESS_PROPERTY, getBillingAddress(), billingAddress);
+        this.billingAddress = billingAddress;
         return this;
     }
-    public CorporateCustomer updateCity(String city){
-        city = (city == null ? null : city.trim());
-        if(Objects.equals(this.city, city)){
+    public CorporateCustomer updateContactEmail(String contactEmail){
+        contactEmail = (contactEmail == null ? null : contactEmail.trim());
+        if(Objects.equals(this.contactEmail, contactEmail)){
             return this;
         }
-        handleUpdate(CITY_PROPERTY, getCity(), city);
-        this.city = city;
+        handleUpdate(CONTACT_EMAIL_PROPERTY, getContactEmail(), contactEmail);
+        this.contactEmail = contactEmail;
         return this;
     }
-    public CorporateCustomer updateCountry(String country){
-        country = (country == null ? null : country.trim());
-        if(Objects.equals(this.country, country)){
+    public CorporateCustomer updateContactPhone(String contactPhone){
+        contactPhone = (contactPhone == null ? null : contactPhone.trim());
+        if(Objects.equals(this.contactPhone, contactPhone)){
             return this;
         }
-        handleUpdate(COUNTRY_PROPERTY, getCountry(), country);
-        this.country = country;
-        return this;
-    }
-    public CorporateCustomer updateTaxId(String taxId){
-        taxId = (taxId == null ? null : taxId.trim());
-        if(Objects.equals(this.taxId, taxId)){
-            return this;
-        }
-        handleUpdate(TAX_ID_PROPERTY, getTaxId(), taxId);
-        this.taxId = taxId;
+        handleUpdate(CONTACT_PHONE_PROPERTY, getContactPhone(), contactPhone);
+        this.contactPhone = contactPhone;
         return this;
     }
     public CorporateCustomer updateCustomerType(String customerType){
@@ -168,6 +158,22 @@ public class CorporateCustomer extends BaseEntity implements RemoteInput {
         }
         handleUpdate(CUSTOMER_TYPE_PROPERTY, getCustomerType(), customerType);
         this.customerType = customerType;
+        return this;
+    }
+    public CorporateCustomer updateCreatedAt(LocalDateTime createdAt){
+        if(Objects.equals(this.createdAt, createdAt)){
+            return this;
+        }
+        handleUpdate(CREATED_AT_PROPERTY, getCreatedAt(), createdAt);
+        this.createdAt = createdAt;
+        return this;
+    }
+    public CorporateCustomer updateUpdatedAt(LocalDateTime updatedAt){
+        if(Objects.equals(this.updatedAt, updatedAt)){
+            return this;
+        }
+        handleUpdate(UPDATED_AT_PROPERTY, getUpdatedAt(), updatedAt);
+        this.updatedAt = updatedAt;
         return this;
     }
     public CorporateCustomer addCustomerContact(CustomerContact customerContact){
@@ -196,30 +202,17 @@ public class CorporateCustomer extends BaseEntity implements RemoteInput {
         serviceQuote.cacheRelation(ServiceQuote.CORPORATE_CUSTOMER_PROPERTY, this);
         return this;
     }
-    public CorporateCustomer addFeedbackReview(FeedbackReview feedbackReview){
-        if (feedbackReview == null){
+    public CorporateCustomer addServiceContract(ServiceContract serviceContract){
+        if (serviceContract == null){
             return this;
         }
 
-        if(null == this.feedbackReviewList){
-            this.feedbackReviewList = new SmartList<>();
+        if(null == this.serviceContractList){
+            this.serviceContractList = new SmartList<>();
         }
 
-        this.feedbackReviewList.add(feedbackReview);
-        feedbackReview.cacheRelation(FeedbackReview.CORPORATE_CUSTOMER_PROPERTY, this);
-        return this;
-    }
-    public CorporateCustomer addCustomerLoyalty(CustomerLoyalty customerLoyalty){
-        if (customerLoyalty == null){
-            return this;
-        }
-
-        if(null == this.customerLoyaltyList){
-            this.customerLoyaltyList = new SmartList<>();
-        }
-
-        this.customerLoyaltyList.add(customerLoyalty);
-        customerLoyalty.cacheRelation(CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY, this);
+        this.serviceContractList.add(serviceContract);
+        serviceContract.cacheRelation(ServiceContract.CORPORATE_CUSTOMER_PROPERTY, this);
         return this;
     }
 
@@ -252,26 +245,27 @@ public class CorporateCustomer extends BaseEntity implements RemoteInput {
         switch (property) {
             case "name": this.name = (value == null ? null : ((String)value).trim()); break;
 
-            case "contactPerson": this.contactPerson = (value == null ? null : ((String)value).trim()); break;
+            case "registrationNumber": this.registrationNumber = (value == null ? null : ((String)value).trim()); break;
 
-            case "phone": this.phone = (value == null ? null : ((String)value).trim()); break;
+            case "industry": this.industry = (value == null ? null : ((String)value).trim()); break;
 
-            case "email": this.email = (value == null ? null : ((String)value).trim()); break;
+            case "employeeCount": this.employeeCount = (Integer) value; break;
 
-            case "address": this.address = (value == null ? null : ((String)value).trim()); break;
+            case "billingAddress": this.billingAddress = (value == null ? null : ((String)value).trim()); break;
 
-            case "city": this.city = (value == null ? null : ((String)value).trim()); break;
+            case "contactEmail": this.contactEmail = (value == null ? null : ((String)value).trim()); break;
 
-            case "country": this.country = (value == null ? null : ((String)value).trim()); break;
-
-            case "taxId": this.taxId = (value == null ? null : ((String)value).trim()); break;
+            case "contactPhone": this.contactPhone = (value == null ? null : ((String)value).trim()); break;
 
             case "customerType": this.customerType = (value == null ? null : ((String)value).trim()); break;
 
+            case "createdAt": this.createdAt = (LocalDateTime) value; break;
+
+            case "updatedAt": this.updatedAt = (LocalDateTime) value; break;
+
             case "customerContactList": this.customerContactList = (SmartList<CustomerContact>) value; break;
             case "serviceQuoteList": this.serviceQuoteList = (SmartList<ServiceQuote>) value; break;
-            case "feedbackReviewList": this.feedbackReviewList = (SmartList<FeedbackReview>) value; break;
-            case "customerLoyaltyList": this.customerLoyaltyList = (SmartList<CustomerLoyalty>) value; break;
+            case "serviceContractList": this.serviceContractList = (SmartList<ServiceContract>) value; break;
             default: super.__internalSet(property, value);
         }
     }
@@ -281,18 +275,18 @@ public class CorporateCustomer extends BaseEntity implements RemoteInput {
     public Object __internalGet(String property) {
         switch (property) {
             case "name": return this.name;
-            case "contactPerson": return this.contactPerson;
-            case "phone": return this.phone;
-            case "email": return this.email;
-            case "address": return this.address;
-            case "city": return this.city;
-            case "country": return this.country;
-            case "taxId": return this.taxId;
+            case "registrationNumber": return this.registrationNumber;
+            case "industry": return this.industry;
+            case "employeeCount": return this.employeeCount;
+            case "billingAddress": return this.billingAddress;
+            case "contactEmail": return this.contactEmail;
+            case "contactPhone": return this.contactPhone;
             case "customerType": return this.customerType;
+            case "createdAt": return this.createdAt;
+            case "updatedAt": return this.updatedAt;
             case "customerContactList": return this.customerContactList;
             case "serviceQuoteList": return this.serviceQuoteList;
-            case "feedbackReviewList": return this.feedbackReviewList;
-            case "customerLoyaltyList": return this.customerLoyaltyList;
+            case "serviceContractList": return this.serviceContractList;
             default: return super.__internalGet(property);
         }
     }

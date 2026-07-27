@@ -1,10 +1,11 @@
 package com.doublechaintech.enterpriselogisticsservice.gpslog;
 
-import com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle;
-import com.doublechaintech.enterpriselogisticsservice.vehicle.VehicleChecker;
+import com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice;
+import com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDeviceChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class GpsLogChecker implements Checker<GpsLog>{
@@ -25,41 +26,42 @@ public class GpsLogChecker implements Checker<GpsLog>{
          return;
       }
       if(gpsLog.newItem()){
-        if(gpsLog.getCreatedAt() == null){
-           gpsLog.updateCreatedAt(java.time.LocalDateTime.now());
+        if(gpsLog.getTimestamp() == null){
+           gpsLog.updateTimestamp(java.time.LocalDateTime.now());
         }
       }else if(gpsLog.updateItem()){
       }
-      checkVehicle(_ctx, gpsLog.getProperty(GpsLog.VEHICLE_PROPERTY), newLocation(_parentLocation, GpsLog.VEHICLE_PROPERTY));
       checkLatitude(_ctx, gpsLog.getProperty(GpsLog.LATITUDE_PROPERTY), newLocation(_parentLocation, GpsLog.LATITUDE_PROPERTY));
       checkLongitude(_ctx, gpsLog.getProperty(GpsLog.LONGITUDE_PROPERTY), newLocation(_parentLocation, GpsLog.LONGITUDE_PROPERTY));
-      checkTimestamp(_ctx, gpsLog.getProperty(GpsLog.TIMESTAMP_PROPERTY), newLocation(_parentLocation, GpsLog.TIMESTAMP_PROPERTY));
       checkSpeedKmh(_ctx, gpsLog.getProperty(GpsLog.SPEED_KMH_PROPERTY), newLocation(_parentLocation, GpsLog.SPEED_KMH_PROPERTY));
-      checkCreatedAt(_ctx, gpsLog.getProperty(GpsLog.CREATED_AT_PROPERTY), newLocation(_parentLocation, GpsLog.CREATED_AT_PROPERTY));
+      checkHeading(_ctx, gpsLog.getProperty(GpsLog.HEADING_PROPERTY), newLocation(_parentLocation, GpsLog.HEADING_PROPERTY));
+      checkTimestamp(_ctx, gpsLog.getProperty(GpsLog.TIMESTAMP_PROPERTY), newLocation(_parentLocation, GpsLog.TIMESTAMP_PROPERTY));
+      checkDevice(_ctx, gpsLog.getProperty(GpsLog.DEVICE_PROPERTY), newLocation(_parentLocation, GpsLog.DEVICE_PROPERTY));
     }
 
-    public void checkVehicle(UserContext _ctx, Vehicle vehicle, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, vehicle);
-    if((vehicle == null)){
-        return;
-    }
-    new VehicleChecker().checkAndFix(_ctx, vehicle, _parentLocation);
-    }
-    public void checkLatitude(UserContext _ctx, String latitude, ObjectLocation _parentLocation){
+    public void checkLatitude(UserContext _ctx, BigDecimal latitude, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, latitude);
     if((latitude == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, latitude);
-
     }
-    public void checkLongitude(UserContext _ctx, String longitude, ObjectLocation _parentLocation){
+    public void checkLongitude(UserContext _ctx, BigDecimal longitude, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, longitude);
     if((longitude == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, longitude);
-
+    }
+    public void checkSpeedKmh(UserContext _ctx, Integer speedKmh, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, speedKmh);
+    if((speedKmh == null)){
+        return;
+    }
+    }
+    public void checkHeading(UserContext _ctx, Integer heading, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, heading);
+    if((heading == null)){
+        return;
+    }
     }
     public void checkTimestamp(UserContext _ctx, LocalDateTime timestamp, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, timestamp);
@@ -67,18 +69,11 @@ public class GpsLogChecker implements Checker<GpsLog>{
         return;
     }
     }
-    public void checkSpeedKmh(UserContext _ctx, String speedKmh, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, speedKmh);
-    if((speedKmh == null)){
+    public void checkDevice(UserContext _ctx, TelematicsDevice device, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, device);
+    if((device == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, speedKmh);
-
-    }
-    public void checkCreatedAt(UserContext _ctx, LocalDateTime createdAt, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, createdAt);
-    if((createdAt == null)){
-        return;
-    }
+    new TelematicsDeviceChecker().checkAndFix(_ctx, device, _parentLocation);
     }
 }

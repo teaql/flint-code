@@ -5,8 +5,8 @@ import com.doublechaintech.enterpriselogisticsservice.vehicle.VehicleChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class VehicleMaintenanceChecker implements Checker<VehicleMaintenance>{
 
@@ -26,26 +26,17 @@ public class VehicleMaintenanceChecker implements Checker<VehicleMaintenance>{
          return;
       }
       if(vehicleMaintenance.newItem()){
-        if(vehicleMaintenance.getCreatedAt() == null){
-           vehicleMaintenance.updateCreatedAt(java.time.LocalDateTime.now());
-        }
       }else if(vehicleMaintenance.updateItem()){
       }
-      checkVehicle(_ctx, vehicleMaintenance.getProperty(VehicleMaintenance.VEHICLE_PROPERTY), newLocation(_parentLocation, VehicleMaintenance.VEHICLE_PROPERTY));
       checkServiceType(_ctx, vehicleMaintenance.getProperty(VehicleMaintenance.SERVICE_TYPE_PROPERTY), newLocation(_parentLocation, VehicleMaintenance.SERVICE_TYPE_PROPERTY));
-      checkServiceDate(_ctx, vehicleMaintenance.getProperty(VehicleMaintenance.SERVICE_DATE_PROPERTY), newLocation(_parentLocation, VehicleMaintenance.SERVICE_DATE_PROPERTY));
+      checkDescription(_ctx, vehicleMaintenance.getProperty(VehicleMaintenance.DESCRIPTION_PROPERTY), newLocation(_parentLocation, VehicleMaintenance.DESCRIPTION_PROPERTY));
       checkCost(_ctx, vehicleMaintenance.getProperty(VehicleMaintenance.COST_PROPERTY), newLocation(_parentLocation, VehicleMaintenance.COST_PROPERTY));
+      checkScheduledDate(_ctx, vehicleMaintenance.getProperty(VehicleMaintenance.SCHEDULED_DATE_PROPERTY), newLocation(_parentLocation, VehicleMaintenance.SCHEDULED_DATE_PROPERTY));
+      checkCompletedDate(_ctx, vehicleMaintenance.getProperty(VehicleMaintenance.COMPLETED_DATE_PROPERTY), newLocation(_parentLocation, VehicleMaintenance.COMPLETED_DATE_PROPERTY));
       checkStatus(_ctx, vehicleMaintenance.getProperty(VehicleMaintenance.STATUS_PROPERTY), newLocation(_parentLocation, VehicleMaintenance.STATUS_PROPERTY));
-      checkCreatedAt(_ctx, vehicleMaintenance.getProperty(VehicleMaintenance.CREATED_AT_PROPERTY), newLocation(_parentLocation, VehicleMaintenance.CREATED_AT_PROPERTY));
+      checkVehicle(_ctx, vehicleMaintenance.getProperty(VehicleMaintenance.VEHICLE_PROPERTY), newLocation(_parentLocation, VehicleMaintenance.VEHICLE_PROPERTY));
     }
 
-    public void checkVehicle(UserContext _ctx, Vehicle vehicle, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, vehicle);
-    if((vehicle == null)){
-        return;
-    }
-    new VehicleChecker().checkAndFix(_ctx, vehicle, _parentLocation);
-    }
     public void checkServiceType(UserContext _ctx, String serviceType, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, serviceType);
     if((serviceType == null)){
@@ -54,19 +45,31 @@ public class VehicleMaintenanceChecker implements Checker<VehicleMaintenance>{
     maxStringCheck(_ctx, _parentLocation, 100, serviceType);
 
     }
-    public void checkServiceDate(UserContext _ctx, LocalDate serviceDate, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, serviceDate);
-    if((serviceDate == null)){
+    public void checkDescription(UserContext _ctx, String description, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, description);
+    if((description == null)){
         return;
     }
+    maxStringCheck(_ctx, _parentLocation, 100, description);
+
     }
-    public void checkCost(UserContext _ctx, String cost, ObjectLocation _parentLocation){
+    public void checkCost(UserContext _ctx, BigDecimal cost, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, cost);
     if((cost == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, cost);
-
+    }
+    public void checkScheduledDate(UserContext _ctx, LocalDate scheduledDate, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, scheduledDate);
+    if((scheduledDate == null)){
+        return;
+    }
+    }
+    public void checkCompletedDate(UserContext _ctx, LocalDate completedDate, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, completedDate);
+    if((completedDate == null)){
+        return;
+    }
     }
     public void checkStatus(UserContext _ctx, String status, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, status);
@@ -76,10 +79,11 @@ public class VehicleMaintenanceChecker implements Checker<VehicleMaintenance>{
     maxStringCheck(_ctx, _parentLocation, 100, status);
 
     }
-    public void checkCreatedAt(UserContext _ctx, LocalDateTime createdAt, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, createdAt);
-    if((createdAt == null)){
+    public void checkVehicle(UserContext _ctx, Vehicle vehicle, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, vehicle);
+    if((vehicle == null)){
         return;
     }
+    new VehicleChecker().checkAndFix(_ctx, vehicle, _parentLocation);
     }
 }

@@ -1,13 +1,9 @@
 package com.doublechaintech.enterpriselogisticsservice.transitroute;
 
-import com.doublechaintech.enterpriselogisticsservice.Q;
-import com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse;
-import com.doublechaintech.enterpriselogisticsservice.warehouse.WarehouseRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
 import io.teaql.core.SearchCriteria;
-import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.math.BigDecimal;
@@ -85,7 +81,7 @@ public class TransitRouteRequest<T extends TransitRoute> extends BaseRequest<T> 
 
     public TransitRouteRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectRouteId().selectName().selectOriginWarehouseIdOnly().selectDestinationWarehouseIdOnly().selectDistanceKm().selectEstimatedDurationHours().selectStatus().selectCreateTime().selectVersion();
+        return selectId().selectRouteCode().selectOriginCity().selectDestinationCity().selectDistanceKm().selectEstimatedDurationHours().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public TransitRouteRequest<T> selectSelfFields(){
@@ -94,12 +90,12 @@ public class TransitRouteRequest<T extends TransitRoute> extends BaseRequest<T> 
 
     public TransitRouteRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectRouteId().selectName().selectOriginWarehouse().selectDestinationWarehouse().selectDistanceKm().selectEstimatedDurationHours().selectStatus().selectCreateTime().selectVersion();
+        return selectId().selectRouteCode().selectOriginCity().selectDestinationCity().selectDistanceKm().selectEstimatedDurationHours().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public TransitRouteRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectRouteId().selectName().selectOriginWarehouse().selectDestinationWarehouse().selectDistanceKm().selectEstimatedDurationHours().selectStatus().selectCreateTime().selectVersion();
+        return selectId().selectRouteCode().selectOriginCity().selectDestinationCity().selectDistanceKm().selectEstimatedDurationHours().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
 
@@ -120,76 +116,55 @@ public class TransitRouteRequest<T extends TransitRoute> extends BaseRequest<T> 
        unselectProperty(TransitRoute.ID_PROPERTY);
        return this;
     }
-    public TransitRouteRequest<T> selectRouteId(){
-       selectProperty(TransitRoute.ROUTE_ID_PROPERTY);
+    public TransitRouteRequest<T> selectRouteCode(){
+       selectProperty(TransitRoute.ROUTE_CODE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the routeId with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  routeId) to fetch routeId property.
+     * fill the routeCode with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  routeCode) to fetch routeCode property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public TransitRouteRequest<T> unselectRouteId(){
-       unselectProperty(TransitRoute.ROUTE_ID_PROPERTY);
+    public TransitRouteRequest<T> unselectRouteCode(){
+       unselectProperty(TransitRoute.ROUTE_CODE_PROPERTY);
        return this;
     }
-    public TransitRouteRequest<T> selectName(){
-       selectProperty(TransitRoute.NAME_PROPERTY);
+    public TransitRouteRequest<T> selectOriginCity(){
+       selectProperty(TransitRoute.ORIGIN_CITY_PROPERTY);
        return this;
     }
 
     /**
-     * fill the name with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  name) to fetch name property.
+     * fill the originCity with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  originCity) to fetch originCity property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public TransitRouteRequest<T> unselectName(){
-       unselectProperty(TransitRoute.NAME_PROPERTY);
+    public TransitRouteRequest<T> unselectOriginCity(){
+       unselectProperty(TransitRoute.ORIGIN_CITY_PROPERTY);
        return this;
     }
-    public TransitRouteRequest<T> selectOriginWarehouseIdOnly(){
-       selectProperty(TransitRoute.ORIGIN_WAREHOUSE_PROPERTY);
-       return this;
-    }
-
-    public TransitRouteRequest<T> selectOriginWarehouse(){
-        return selectOriginWarehouseWith(Q.warehouses().unlimited().selectSelf());
-    }
-
-    public TransitRouteRequest<T> selectOriginWarehouseWith(WarehouseRequest originWarehouse){
-       selectProperty(TransitRoute.ORIGIN_WAREHOUSE_PROPERTY);
-       enhanceRelation(TransitRoute.ORIGIN_WAREHOUSE_PROPERTY, originWarehouse);
+    public TransitRouteRequest<T> selectDestinationCity(){
+       selectProperty(TransitRoute.DESTINATION_CITY_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> unselectOriginWarehouse(){
-       unselectProperty(TransitRoute.ORIGIN_WAREHOUSE_PROPERTY);
-       return this;
-    }
-    public TransitRouteRequest<T> selectDestinationWarehouseIdOnly(){
-       selectProperty(TransitRoute.DESTINATION_WAREHOUSE_PROPERTY);
-       return this;
-    }
+    /**
+     * fill the destinationCity with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  destinationCity) to fetch destinationCity property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
 
-    public TransitRouteRequest<T> selectDestinationWarehouse(){
-        return selectDestinationWarehouseWith(Q.warehouses().unlimited().selectSelf());
-    }
 
-    public TransitRouteRequest<T> selectDestinationWarehouseWith(WarehouseRequest destinationWarehouse){
-       selectProperty(TransitRoute.DESTINATION_WAREHOUSE_PROPERTY);
-       enhanceRelation(TransitRoute.DESTINATION_WAREHOUSE_PROPERTY, destinationWarehouse);
-       return this;
-    }
 
-    public TransitRouteRequest<T> unselectDestinationWarehouse(){
-       unselectProperty(TransitRoute.DESTINATION_WAREHOUSE_PROPERTY);
+
+    public TransitRouteRequest<T> unselectDestinationCity(){
+       unselectProperty(TransitRoute.DESTINATION_CITY_PROPERTY);
        return this;
     }
     public TransitRouteRequest<T> selectDistanceKm(){
@@ -242,38 +217,38 @@ public class TransitRouteRequest<T extends TransitRoute> extends BaseRequest<T> 
        unselectProperty(TransitRoute.ESTIMATED_DURATION_HOURS_PROPERTY);
        return this;
     }
-    public TransitRouteRequest<T> selectStatus(){
-       selectProperty(TransitRoute.STATUS_PROPERTY);
+    public TransitRouteRequest<T> selectCreatedTime(){
+       selectProperty(TransitRoute.CREATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the status with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  status) to fetch status property.
+     * fill the createdTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdTime) to fetch createdTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public TransitRouteRequest<T> unselectStatus(){
-       unselectProperty(TransitRoute.STATUS_PROPERTY);
+    public TransitRouteRequest<T> unselectCreatedTime(){
+       unselectProperty(TransitRoute.CREATED_TIME_PROPERTY);
        return this;
     }
-    public TransitRouteRequest<T> selectCreateTime(){
-       selectProperty(TransitRoute.CREATE_TIME_PROPERTY);
+    public TransitRouteRequest<T> selectUpdatedTime(){
+       selectProperty(TransitRoute.UPDATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the createTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createTime) to fetch createTime property.
+     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public TransitRouteRequest<T> unselectCreateTime(){
-       unselectProperty(TransitRoute.CREATE_TIME_PROPERTY);
+    public TransitRouteRequest<T> unselectUpdatedTime(){
+       unselectProperty(TransitRoute.UPDATED_TIME_PROPERTY);
        return this;
     }
     public TransitRouteRequest<T> selectVersion(){
@@ -311,197 +286,194 @@ public class TransitRouteRequest<T extends TransitRoute> extends BaseRequest<T> 
 
 
 
-    public TransitRouteRequest<T> filterByRouteId(String... routeId){
-      if (routeId == null || routeId.length == 0) {
-        throw new IllegalArgumentException("filterByRouteId parameter routeId cannot be empty");
+    public TransitRouteRequest<T> filterByRouteCode(String... routeCode){
+      if (routeCode == null || routeCode.length == 0) {
+        throw new IllegalArgumentException("filterByRouteCode parameter routeCode cannot be empty");
       }
-      return appendSearchCriteria(createRouteIdCriteria(Operator.EQUAL, (Object[])routeId));
+      return appendSearchCriteria(createRouteCodeCriteria(Operator.EQUAL, (Object[])routeCode));
     }
 
-    public TransitRouteRequest<T> withRouteId(Operator operator, Object... values){
-       return appendSearchCriteria(createRouteIdCriteria(operator, values));
+    public TransitRouteRequest<T> withRouteCode(Operator operator, Object... values){
+       return appendSearchCriteria(createRouteCodeCriteria(operator, values));
     }
 
-    public TransitRouteRequest<T> withRouteIdIsUnknown(){
-       return withRouteId(Operator.IS_NULL);
+    public TransitRouteRequest<T> withRouteCodeIsUnknown(){
+       return withRouteCode(Operator.IS_NULL);
     }
 
-    public TransitRouteRequest<T> withRouteIdIsKnown(){
-       return withRouteId(Operator.IS_NOT_NULL);
+    public TransitRouteRequest<T> withRouteCodeIsKnown(){
+       return withRouteCode(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createRouteIdCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TransitRoute.ROUTE_ID_PROPERTY, operator, values);
+    public SearchCriteria createRouteCodeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(TransitRoute.ROUTE_CODE_PROPERTY, operator, values);
     }
 
-    public TransitRouteRequest<T> withRouteIdGreaterThan(String routeId){
-       return withRouteId(Operator.GREATER_THAN, routeId);
+    public TransitRouteRequest<T> withRouteCodeGreaterThan(String routeCode){
+       return withRouteCode(Operator.GREATER_THAN, routeCode);
     }
 
-    public TransitRouteRequest<T> withRouteIdGreaterThanOrEqualTo(String routeId){
-       return withRouteId(Operator.GREATER_THAN_OR_EQUAL, routeId);
+    public TransitRouteRequest<T> withRouteCodeGreaterThanOrEqualTo(String routeCode){
+       return withRouteCode(Operator.GREATER_THAN_OR_EQUAL, routeCode);
     }
 
-    public TransitRouteRequest<T> withRouteIdLessThan(String routeId){
-       return withRouteId(Operator.LESS_THAN, routeId);
+    public TransitRouteRequest<T> withRouteCodeLessThan(String routeCode){
+       return withRouteCode(Operator.LESS_THAN, routeCode);
     }
 
-    public TransitRouteRequest<T> withRouteIdLessThanOrEqualTo(String routeId){
-       return withRouteId(Operator.LESS_THAN_OR_EQUAL, routeId);
+    public TransitRouteRequest<T> withRouteCodeLessThanOrEqualTo(String routeCode){
+       return withRouteCode(Operator.LESS_THAN_OR_EQUAL, routeCode);
     }
 
-    public TransitRouteRequest<T> withRouteIdBetween(String startOfRouteId, String endOfRouteId){
-       return withRouteId(Operator.BETWEEN, startOfRouteId, endOfRouteId);
+    public TransitRouteRequest<T> withRouteCodeBetween(String startOfRouteCode, String endOfRouteCode){
+       return withRouteCode(Operator.BETWEEN, startOfRouteCode, endOfRouteCode);
     }
-    public TransitRouteRequest<T> withRouteIdStartingWith(String routeId){
-       return withRouteId(Operator.BEGIN_WITH, routeId);
+    public TransitRouteRequest<T> withRouteCodeStartingWith(String routeCode){
+       return withRouteCode(Operator.BEGIN_WITH, routeCode);
     }
-    public TransitRouteRequest<T> withRouteIdContaining(String routeId){
-       return withRouteId(Operator.CONTAIN, routeId);
-    }
-
-    public TransitRouteRequest<T> withRouteIdEndingWith(String routeId){
-       return withRouteId(Operator.END_WITH, routeId);
+    public TransitRouteRequest<T> withRouteCodeContaining(String routeCode){
+       return withRouteCode(Operator.CONTAIN, routeCode);
     }
 
-    public TransitRouteRequest<T> withRouteIdIs(String routeId){
-       return withRouteId(Operator.EQUAL, routeId);
+    public TransitRouteRequest<T> withRouteCodeEndingWith(String routeCode){
+       return withRouteCode(Operator.END_WITH, routeCode);
     }
 
-    public TransitRouteRequest<T> withRouteIdSoundingLike(String routeId){
-       return withRouteId(Operator.SOUNDS_LIKE, routeId);
+    public TransitRouteRequest<T> withRouteCodeIs(String routeCode){
+       return withRouteCode(Operator.EQUAL, routeCode);
+    }
+
+    public TransitRouteRequest<T> withRouteCodeSoundingLike(String routeCode){
+       return withRouteCode(Operator.SOUNDS_LIKE, routeCode);
     }
 
 
 
-    public TransitRouteRequest<T> filterByName(String... name){
-      if (name == null || name.length == 0) {
-        throw new IllegalArgumentException("filterByName parameter name cannot be empty");
+    public TransitRouteRequest<T> filterByOriginCity(String... originCity){
+      if (originCity == null || originCity.length == 0) {
+        throw new IllegalArgumentException("filterByOriginCity parameter originCity cannot be empty");
       }
-      return appendSearchCriteria(createNameCriteria(Operator.EQUAL, (Object[])name));
+      return appendSearchCriteria(createOriginCityCriteria(Operator.EQUAL, (Object[])originCity));
     }
 
-    public TransitRouteRequest<T> withName(Operator operator, Object... values){
-       return appendSearchCriteria(createNameCriteria(operator, values));
+    public TransitRouteRequest<T> withOriginCity(Operator operator, Object... values){
+       return appendSearchCriteria(createOriginCityCriteria(operator, values));
     }
 
-    public TransitRouteRequest<T> withNameIsUnknown(){
-       return withName(Operator.IS_NULL);
+    public TransitRouteRequest<T> withOriginCityIsUnknown(){
+       return withOriginCity(Operator.IS_NULL);
     }
 
-    public TransitRouteRequest<T> withNameIsKnown(){
-       return withName(Operator.IS_NOT_NULL);
+    public TransitRouteRequest<T> withOriginCityIsKnown(){
+       return withOriginCity(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createNameCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TransitRoute.NAME_PROPERTY, operator, values);
+    public SearchCriteria createOriginCityCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(TransitRoute.ORIGIN_CITY_PROPERTY, operator, values);
     }
 
-    public TransitRouteRequest<T> withNameGreaterThan(String name){
-       return withName(Operator.GREATER_THAN, name);
+    public TransitRouteRequest<T> withOriginCityGreaterThan(String originCity){
+       return withOriginCity(Operator.GREATER_THAN, originCity);
     }
 
-    public TransitRouteRequest<T> withNameGreaterThanOrEqualTo(String name){
-       return withName(Operator.GREATER_THAN_OR_EQUAL, name);
+    public TransitRouteRequest<T> withOriginCityGreaterThanOrEqualTo(String originCity){
+       return withOriginCity(Operator.GREATER_THAN_OR_EQUAL, originCity);
     }
 
-    public TransitRouteRequest<T> withNameLessThan(String name){
-       return withName(Operator.LESS_THAN, name);
+    public TransitRouteRequest<T> withOriginCityLessThan(String originCity){
+       return withOriginCity(Operator.LESS_THAN, originCity);
     }
 
-    public TransitRouteRequest<T> withNameLessThanOrEqualTo(String name){
-       return withName(Operator.LESS_THAN_OR_EQUAL, name);
+    public TransitRouteRequest<T> withOriginCityLessThanOrEqualTo(String originCity){
+       return withOriginCity(Operator.LESS_THAN_OR_EQUAL, originCity);
     }
 
-    public TransitRouteRequest<T> withNameBetween(String startOfName, String endOfName){
-       return withName(Operator.BETWEEN, startOfName, endOfName);
+    public TransitRouteRequest<T> withOriginCityBetween(String startOfOriginCity, String endOfOriginCity){
+       return withOriginCity(Operator.BETWEEN, startOfOriginCity, endOfOriginCity);
     }
-    public TransitRouteRequest<T> withNameStartingWith(String name){
-       return withName(Operator.BEGIN_WITH, name);
+    public TransitRouteRequest<T> withOriginCityStartingWith(String originCity){
+       return withOriginCity(Operator.BEGIN_WITH, originCity);
     }
-    public TransitRouteRequest<T> withNameContaining(String name){
-       return withName(Operator.CONTAIN, name);
-    }
-
-    public TransitRouteRequest<T> withNameEndingWith(String name){
-       return withName(Operator.END_WITH, name);
+    public TransitRouteRequest<T> withOriginCityContaining(String originCity){
+       return withOriginCity(Operator.CONTAIN, originCity);
     }
 
-    public TransitRouteRequest<T> withNameIs(String name){
-       return withName(Operator.EQUAL, name);
+    public TransitRouteRequest<T> withOriginCityEndingWith(String originCity){
+       return withOriginCity(Operator.END_WITH, originCity);
     }
 
-    public TransitRouteRequest<T> withNameSoundingLike(String name){
-       return withName(Operator.SOUNDS_LIKE, name);
+    public TransitRouteRequest<T> withOriginCityIs(String originCity){
+       return withOriginCity(Operator.EQUAL, originCity);
+    }
+
+    public TransitRouteRequest<T> withOriginCitySoundingLike(String originCity){
+       return withOriginCity(Operator.SOUNDS_LIKE, originCity);
     }
 
 
 
-    public TransitRouteRequest<T> filterByOriginWarehouse(Warehouse... originWarehouse){
-      if (originWarehouse == null || originWarehouse.length == 0) {
-        throw new IllegalArgumentException("filterByOriginWarehouse parameter originWarehouse cannot be empty");
+    public TransitRouteRequest<T> filterByDestinationCity(String... destinationCity){
+      if (destinationCity == null || destinationCity.length == 0) {
+        throw new IllegalArgumentException("filterByDestinationCity parameter destinationCity cannot be empty");
       }
-      return appendSearchCriteria(createOriginWarehouseCriteria(Operator.EQUAL, (Object[])originWarehouse));
+      return appendSearchCriteria(createDestinationCityCriteria(Operator.EQUAL, (Object[])destinationCity));
     }
 
-    public TransitRouteRequest<T> withOriginWarehouse(Operator operator, Object... values){
-       return appendSearchCriteria(createOriginWarehouseCriteria(operator, values));
+    public TransitRouteRequest<T> withDestinationCity(Operator operator, Object... values){
+       return appendSearchCriteria(createDestinationCityCriteria(operator, values));
     }
 
-    public TransitRouteRequest<T> withOriginWarehouseIsUnknown(){
-       return withOriginWarehouse(Operator.IS_NULL);
+    public TransitRouteRequest<T> withDestinationCityIsUnknown(){
+       return withDestinationCity(Operator.IS_NULL);
     }
 
-    public TransitRouteRequest<T> withOriginWarehouseIsKnown(){
-       return withOriginWarehouse(Operator.IS_NOT_NULL);
+    public TransitRouteRequest<T> withDestinationCityIsKnown(){
+       return withDestinationCity(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createOriginWarehouseCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TransitRoute.ORIGIN_WAREHOUSE_PROPERTY, operator, values);
+    public SearchCriteria createDestinationCityCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(TransitRoute.DESTINATION_CITY_PROPERTY, operator, values);
     }
 
-    public TransitRouteRequest<T> filterByOriginWarehouse(Long originWarehouse){
-      if(originWarehouse == null){
-         return this;
-      }
-      return withOriginWarehouse(Operator.EQUAL, originWarehouse);
-    }
-    public TransitRouteRequest<T> withOriginWarehouseMatching(WarehouseRequest originWarehouse){
-       return appendSearchCriteria(new SubQuerySearchCriteria(TransitRoute.ORIGIN_WAREHOUSE_PROPERTY, originWarehouse, Warehouse.ID_PROPERTY));
+    public TransitRouteRequest<T> withDestinationCityGreaterThan(String destinationCity){
+       return withDestinationCity(Operator.GREATER_THAN, destinationCity);
     }
 
-    public TransitRouteRequest<T> filterByDestinationWarehouse(Warehouse... destinationWarehouse){
-      if (destinationWarehouse == null || destinationWarehouse.length == 0) {
-        throw new IllegalArgumentException("filterByDestinationWarehouse parameter destinationWarehouse cannot be empty");
-      }
-      return appendSearchCriteria(createDestinationWarehouseCriteria(Operator.EQUAL, (Object[])destinationWarehouse));
+    public TransitRouteRequest<T> withDestinationCityGreaterThanOrEqualTo(String destinationCity){
+       return withDestinationCity(Operator.GREATER_THAN_OR_EQUAL, destinationCity);
     }
 
-    public TransitRouteRequest<T> withDestinationWarehouse(Operator operator, Object... values){
-       return appendSearchCriteria(createDestinationWarehouseCriteria(operator, values));
+    public TransitRouteRequest<T> withDestinationCityLessThan(String destinationCity){
+       return withDestinationCity(Operator.LESS_THAN, destinationCity);
     }
 
-    public TransitRouteRequest<T> withDestinationWarehouseIsUnknown(){
-       return withDestinationWarehouse(Operator.IS_NULL);
+    public TransitRouteRequest<T> withDestinationCityLessThanOrEqualTo(String destinationCity){
+       return withDestinationCity(Operator.LESS_THAN_OR_EQUAL, destinationCity);
     }
 
-    public TransitRouteRequest<T> withDestinationWarehouseIsKnown(){
-       return withDestinationWarehouse(Operator.IS_NOT_NULL);
+    public TransitRouteRequest<T> withDestinationCityBetween(String startOfDestinationCity, String endOfDestinationCity){
+       return withDestinationCity(Operator.BETWEEN, startOfDestinationCity, endOfDestinationCity);
+    }
+    public TransitRouteRequest<T> withDestinationCityStartingWith(String destinationCity){
+       return withDestinationCity(Operator.BEGIN_WITH, destinationCity);
+    }
+    public TransitRouteRequest<T> withDestinationCityContaining(String destinationCity){
+       return withDestinationCity(Operator.CONTAIN, destinationCity);
     }
 
-    public SearchCriteria createDestinationWarehouseCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TransitRoute.DESTINATION_WAREHOUSE_PROPERTY, operator, values);
+    public TransitRouteRequest<T> withDestinationCityEndingWith(String destinationCity){
+       return withDestinationCity(Operator.END_WITH, destinationCity);
     }
 
-    public TransitRouteRequest<T> filterByDestinationWarehouse(Long destinationWarehouse){
-      if(destinationWarehouse == null){
-         return this;
-      }
-      return withDestinationWarehouse(Operator.EQUAL, destinationWarehouse);
+    public TransitRouteRequest<T> withDestinationCityIs(String destinationCity){
+       return withDestinationCity(Operator.EQUAL, destinationCity);
     }
-    public TransitRouteRequest<T> withDestinationWarehouseMatching(WarehouseRequest destinationWarehouse){
-       return appendSearchCriteria(new SubQuerySearchCriteria(TransitRoute.DESTINATION_WAREHOUSE_PROPERTY, destinationWarehouse, Warehouse.ID_PROPERTY));
+
+    public TransitRouteRequest<T> withDestinationCitySoundingLike(String destinationCity){
+       return withDestinationCity(Operator.SOUNDS_LIKE, destinationCity);
     }
+
+
 
     public TransitRouteRequest<T> filterByDistanceKm(BigDecimal... distanceKm){
       if (distanceKm == null || distanceKm.length == 0) {
@@ -593,129 +565,131 @@ public class TransitRouteRequest<T extends TransitRoute> extends BaseRequest<T> 
 
 
 
-    public TransitRouteRequest<T> filterByStatus(String... status){
-      if (status == null || status.length == 0) {
-        throw new IllegalArgumentException("filterByStatus parameter status cannot be empty");
+    public TransitRouteRequest<T> filterByCreatedTime(LocalDateTime... createdTime){
+      if (createdTime == null || createdTime.length == 0) {
+        throw new IllegalArgumentException("filterByCreatedTime parameter createdTime cannot be empty");
       }
-      return appendSearchCriteria(createStatusCriteria(Operator.EQUAL, (Object[])status));
+      return appendSearchCriteria(createCreatedTimeCriteria(Operator.EQUAL, (Object[])createdTime));
     }
 
-    public TransitRouteRequest<T> withStatus(Operator operator, Object... values){
-       return appendSearchCriteria(createStatusCriteria(operator, values));
+    public TransitRouteRequest<T> withCreatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createCreatedTimeCriteria(operator, values));
     }
 
-    public TransitRouteRequest<T> withStatusIsUnknown(){
-       return withStatus(Operator.IS_NULL);
+    public TransitRouteRequest<T> withCreatedTimeIsUnknown(){
+       return withCreatedTime(Operator.IS_NULL);
     }
 
-    public TransitRouteRequest<T> withStatusIsKnown(){
-       return withStatus(Operator.IS_NOT_NULL);
+    public TransitRouteRequest<T> withCreatedTimeIsKnown(){
+       return withCreatedTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createStatusCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TransitRoute.STATUS_PROPERTY, operator, values);
+    public SearchCriteria createCreatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(TransitRoute.CREATED_TIME_PROPERTY, operator, values);
     }
 
-    public TransitRouteRequest<T> withStatusGreaterThan(String status){
-       return withStatus(Operator.GREATER_THAN, status);
+    public TransitRouteRequest<T> withCreatedTimeGreaterThan(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
     }
 
-    public TransitRouteRequest<T> withStatusGreaterThanOrEqualTo(String status){
-       return withStatus(Operator.GREATER_THAN_OR_EQUAL, status);
+    public TransitRouteRequest<T> withCreatedTimeGreaterThanOrEqualTo(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN_OR_EQUAL, createdTime);
     }
 
-    public TransitRouteRequest<T> withStatusLessThan(String status){
-       return withStatus(Operator.LESS_THAN, status);
+    public TransitRouteRequest<T> withCreatedTimeLessThan(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
     }
 
-    public TransitRouteRequest<T> withStatusLessThanOrEqualTo(String status){
-       return withStatus(Operator.LESS_THAN_OR_EQUAL, status);
+    public TransitRouteRequest<T> withCreatedTimeLessThanOrEqualTo(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN_OR_EQUAL, createdTime);
     }
 
-    public TransitRouteRequest<T> withStatusBetween(String startOfStatus, String endOfStatus){
-       return withStatus(Operator.BETWEEN, startOfStatus, endOfStatus);
+    public TransitRouteRequest<T> withCreatedTimeBetween(LocalDateTime startOfCreatedTime, LocalDateTime endOfCreatedTime){
+       return withCreatedTime(Operator.BETWEEN, startOfCreatedTime, endOfCreatedTime);
     }
-    public TransitRouteRequest<T> withStatusStartingWith(String status){
-       return withStatus(Operator.BEGIN_WITH, status);
-    }
-    public TransitRouteRequest<T> withStatusContaining(String status){
-       return withStatus(Operator.CONTAIN, status);
+    public TransitRouteRequest<T> withCreatedTimeBefore(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
     }
 
-    public TransitRouteRequest<T> withStatusEndingWith(String status){
-       return withStatus(Operator.END_WITH, status);
+    public TransitRouteRequest<T> withCreatedTimeBefore(Date createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
     }
 
-    public TransitRouteRequest<T> withStatusIs(String status){
-       return withStatus(Operator.EQUAL, status);
+    public TransitRouteRequest<T> withCreatedTimeAfter(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
     }
 
-    public TransitRouteRequest<T> withStatusSoundingLike(String status){
-       return withStatus(Operator.SOUNDS_LIKE, status);
+    public TransitRouteRequest<T> withCreatedTimeAfter(Date createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
+    }
+
+    public TransitRouteRequest<T> withCreatedTimeBetween(Date startOfCreatedTime, Date endOfCreatedTime){
+       return withCreatedTime(Operator.BETWEEN, startOfCreatedTime, endOfCreatedTime);
     }
 
 
 
-    public TransitRouteRequest<T> filterByCreateTime(LocalDateTime... createTime){
-      if (createTime == null || createTime.length == 0) {
-        throw new IllegalArgumentException("filterByCreateTime parameter createTime cannot be empty");
+
+    public TransitRouteRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
+      if (updatedTime == null || updatedTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
       }
-      return appendSearchCriteria(createCreateTimeCriteria(Operator.EQUAL, (Object[])createTime));
+      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
     }
 
-    public TransitRouteRequest<T> withCreateTime(Operator operator, Object... values){
-       return appendSearchCriteria(createCreateTimeCriteria(operator, values));
+    public TransitRouteRequest<T> withUpdatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
     }
 
-    public TransitRouteRequest<T> withCreateTimeIsUnknown(){
-       return withCreateTime(Operator.IS_NULL);
+    public TransitRouteRequest<T> withUpdatedTimeIsUnknown(){
+       return withUpdatedTime(Operator.IS_NULL);
     }
 
-    public TransitRouteRequest<T> withCreateTimeIsKnown(){
-       return withCreateTime(Operator.IS_NOT_NULL);
+    public TransitRouteRequest<T> withUpdatedTimeIsKnown(){
+       return withUpdatedTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCreateTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TransitRoute.CREATE_TIME_PROPERTY, operator, values);
+    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(TransitRoute.UPDATED_TIME_PROPERTY, operator, values);
     }
 
-    public TransitRouteRequest<T> withCreateTimeGreaterThan(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public TransitRouteRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public TransitRouteRequest<T> withCreateTimeGreaterThanOrEqualTo(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN_OR_EQUAL, createTime);
+    public TransitRouteRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
     }
 
-    public TransitRouteRequest<T> withCreateTimeLessThan(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
+    public TransitRouteRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public TransitRouteRequest<T> withCreateTimeLessThanOrEqualTo(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN_OR_EQUAL, createTime);
+    public TransitRouteRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
     }
 
-    public TransitRouteRequest<T> withCreateTimeBetween(LocalDateTime startOfCreateTime, LocalDateTime endOfCreateTime){
-       return withCreateTime(Operator.BETWEEN, startOfCreateTime, endOfCreateTime);
+    public TransitRouteRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
-    public TransitRouteRequest<T> withCreateTimeBefore(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
-    }
-
-    public TransitRouteRequest<T> withCreateTimeBefore(Date createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
+    public TransitRouteRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public TransitRouteRequest<T> withCreateTimeAfter(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public TransitRouteRequest<T> withUpdatedTimeBefore(Date updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public TransitRouteRequest<T> withCreateTimeAfter(Date createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public TransitRouteRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public TransitRouteRequest<T> withCreateTimeBetween(Date startOfCreateTime, Date endOfCreateTime){
-       return withCreateTime(Operator.BETWEEN, startOfCreateTime, endOfCreateTime);
+    public TransitRouteRequest<T> withUpdatedTimeAfter(Date updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public TransitRouteRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
 
 
@@ -901,29 +875,6 @@ public class TransitRouteRequest<T extends TransitRoute> extends BaseRequest<T> 
         super.samplePopulationVariance(retName, TransitRoute.ESTIMATED_DURATION_HOURS_PROPERTY);
         return this;
     }
-    public TransitRouteRequest<T> groupByOriginWarehouseWithDetails(){
-       return groupByOriginWarehouseWithDetails(Q.warehouses().unlimited());
-    }
-
-    public TransitRouteRequest<T> groupByOriginWarehouseWithDetails(WarehouseRequest subRequest){
-       aggregate(TransitRoute.ORIGIN_WAREHOUSE_PROPERTY, subRequest);
-       return this;
-    }
-
-    public TransitRouteRequest<T> groupByDestinationWarehouseWithDetails(){
-       return groupByDestinationWarehouseWithDetails(Q.warehouses().unlimited());
-    }
-
-    public TransitRouteRequest<T> groupByDestinationWarehouseWithDetails(WarehouseRequest subRequest){
-       aggregate(TransitRoute.DESTINATION_WAREHOUSE_PROPERTY, subRequest);
-       return this;
-    }
-
-
-
-
-
-
 
     public TransitRouteRequest<T> groupById(){
        groupBy(TransitRoute.ID_PROPERTY);
@@ -940,69 +891,48 @@ public class TransitRouteRequest<T extends TransitRoute> extends BaseRequest<T> 
        return this;
     }
 
-    public TransitRouteRequest<T> groupByRouteId(){
-       groupBy(TransitRoute.ROUTE_ID_PROPERTY);
+    public TransitRouteRequest<T> groupByRouteCode(){
+       groupBy(TransitRoute.ROUTE_CODE_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> groupByRouteIdAs(String retName){
-       groupBy(retName, TransitRoute.ROUTE_ID_PROPERTY);
+    public TransitRouteRequest<T> groupByRouteCodeAs(String retName){
+       groupBy(retName, TransitRoute.ROUTE_CODE_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> groupByRouteIdWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TransitRoute.ROUTE_ID_PROPERTY, function);
+    public TransitRouteRequest<T> groupByRouteCodeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, TransitRoute.ROUTE_CODE_PROPERTY, function);
        return this;
     }
 
-    public TransitRouteRequest<T> groupByName(){
-       groupBy(TransitRoute.NAME_PROPERTY);
+    public TransitRouteRequest<T> groupByOriginCity(){
+       groupBy(TransitRoute.ORIGIN_CITY_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> groupByNameAs(String retName){
-       groupBy(retName, TransitRoute.NAME_PROPERTY);
+    public TransitRouteRequest<T> groupByOriginCityAs(String retName){
+       groupBy(retName, TransitRoute.ORIGIN_CITY_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> groupByNameWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TransitRoute.NAME_PROPERTY, function);
-       return this;
-    }
-    public TransitRouteRequest<T> groupByOriginWarehouseWith(WarehouseRequest subRequest){
-       groupBy(TransitRoute.ORIGIN_WAREHOUSE_PROPERTY, subRequest);
-       return this;
-    }
-    public TransitRouteRequest<T> groupByOriginWarehouse(){
-       groupBy(TransitRoute.ORIGIN_WAREHOUSE_PROPERTY);
+    public TransitRouteRequest<T> groupByOriginCityWithFunction(String retName, AggrFunction function){
+       groupBy(retName, TransitRoute.ORIGIN_CITY_PROPERTY, function);
        return this;
     }
 
-    public TransitRouteRequest<T> groupByOriginWarehouseAs(String retName){
-       groupBy(retName, TransitRoute.ORIGIN_WAREHOUSE_PROPERTY);
+    public TransitRouteRequest<T> groupByDestinationCity(){
+       groupBy(TransitRoute.DESTINATION_CITY_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> groupByOriginWarehouseWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TransitRoute.ORIGIN_WAREHOUSE_PROPERTY, function);
-       return this;
-    }
-    public TransitRouteRequest<T> groupByDestinationWarehouseWith(WarehouseRequest subRequest){
-       groupBy(TransitRoute.DESTINATION_WAREHOUSE_PROPERTY, subRequest);
-       return this;
-    }
-    public TransitRouteRequest<T> groupByDestinationWarehouse(){
-       groupBy(TransitRoute.DESTINATION_WAREHOUSE_PROPERTY);
+    public TransitRouteRequest<T> groupByDestinationCityAs(String retName){
+       groupBy(retName, TransitRoute.DESTINATION_CITY_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> groupByDestinationWarehouseAs(String retName){
-       groupBy(retName, TransitRoute.DESTINATION_WAREHOUSE_PROPERTY);
-       return this;
-    }
-
-    public TransitRouteRequest<T> groupByDestinationWarehouseWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TransitRoute.DESTINATION_WAREHOUSE_PROPERTY, function);
+    public TransitRouteRequest<T> groupByDestinationCityWithFunction(String retName, AggrFunction function){
+       groupBy(retName, TransitRoute.DESTINATION_CITY_PROPERTY, function);
        return this;
     }
 
@@ -1036,33 +966,33 @@ public class TransitRouteRequest<T extends TransitRoute> extends BaseRequest<T> 
        return this;
     }
 
-    public TransitRouteRequest<T> groupByStatus(){
-       groupBy(TransitRoute.STATUS_PROPERTY);
+    public TransitRouteRequest<T> groupByCreatedTime(){
+       groupBy(TransitRoute.CREATED_TIME_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> groupByStatusAs(String retName){
-       groupBy(retName, TransitRoute.STATUS_PROPERTY);
+    public TransitRouteRequest<T> groupByCreatedTimeAs(String retName){
+       groupBy(retName, TransitRoute.CREATED_TIME_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> groupByStatusWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TransitRoute.STATUS_PROPERTY, function);
+    public TransitRouteRequest<T> groupByCreatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, TransitRoute.CREATED_TIME_PROPERTY, function);
        return this;
     }
 
-    public TransitRouteRequest<T> groupByCreateTime(){
-       groupBy(TransitRoute.CREATE_TIME_PROPERTY);
+    public TransitRouteRequest<T> groupByUpdatedTime(){
+       groupBy(TransitRoute.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> groupByCreateTimeAs(String retName){
-       groupBy(retName, TransitRoute.CREATE_TIME_PROPERTY);
+    public TransitRouteRequest<T> groupByUpdatedTimeAs(String retName){
+       groupBy(retName, TransitRoute.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> groupByCreateTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TransitRoute.CREATE_TIME_PROPERTY, function);
+    public TransitRouteRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, TransitRoute.UPDATED_TIME_PROPERTY, function);
        return this;
     }
 
@@ -1093,62 +1023,60 @@ public class TransitRouteRequest<T extends TransitRoute> extends BaseRequest<T> 
        return this;
     }
 
-    public TransitRouteRequest<T> orderByRouteIdAscending(){
-       addOrderByAscending(TransitRoute.ROUTE_ID_PROPERTY);
+    public TransitRouteRequest<T> orderByRouteCodeAscending(){
+       addOrderByAscending(TransitRoute.ROUTE_CODE_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> orderByRouteIdDescending(){
-       addOrderByDescending(TransitRoute.ROUTE_ID_PROPERTY);
+    public TransitRouteRequest<T> orderByRouteCodeDescending(){
+       addOrderByDescending(TransitRoute.ROUTE_CODE_PROPERTY);
        return this;
     }
-    public TransitRouteRequest<T> orderByRouteIdAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(TransitRoute.ROUTE_ID_PROPERTY);
-       return this;
-    }
-
-    public TransitRouteRequest<T> orderByRouteIdDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(TransitRoute.ROUTE_ID_PROPERTY);
-       return this;
-    }
-    public TransitRouteRequest<T> orderByNameAscending(){
-       addOrderByAscending(TransitRoute.NAME_PROPERTY);
+    public TransitRouteRequest<T> orderByRouteCodeAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(TransitRoute.ROUTE_CODE_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> orderByNameDescending(){
-       addOrderByDescending(TransitRoute.NAME_PROPERTY);
+    public TransitRouteRequest<T> orderByRouteCodeDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(TransitRoute.ROUTE_CODE_PROPERTY);
        return this;
     }
-    public TransitRouteRequest<T> orderByNameAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(TransitRoute.NAME_PROPERTY);
-       return this;
-    }
-
-    public TransitRouteRequest<T> orderByNameDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(TransitRoute.NAME_PROPERTY);
-       return this;
-    }
-    public TransitRouteRequest<T> orderByOriginWarehouseAscending(){
-       addOrderByAscending(TransitRoute.ORIGIN_WAREHOUSE_PROPERTY);
+    public TransitRouteRequest<T> orderByOriginCityAscending(){
+       addOrderByAscending(TransitRoute.ORIGIN_CITY_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> orderByOriginWarehouseDescending(){
-       addOrderByDescending(TransitRoute.ORIGIN_WAREHOUSE_PROPERTY);
+    public TransitRouteRequest<T> orderByOriginCityDescending(){
+       addOrderByDescending(TransitRoute.ORIGIN_CITY_PROPERTY);
+       return this;
+    }
+    public TransitRouteRequest<T> orderByOriginCityAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(TransitRoute.ORIGIN_CITY_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> orderByDestinationWarehouseAscending(){
-       addOrderByAscending(TransitRoute.DESTINATION_WAREHOUSE_PROPERTY);
+    public TransitRouteRequest<T> orderByOriginCityDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(TransitRoute.ORIGIN_CITY_PROPERTY);
+       return this;
+    }
+    public TransitRouteRequest<T> orderByDestinationCityAscending(){
+       addOrderByAscending(TransitRoute.DESTINATION_CITY_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> orderByDestinationWarehouseDescending(){
-       addOrderByDescending(TransitRoute.DESTINATION_WAREHOUSE_PROPERTY);
+    public TransitRouteRequest<T> orderByDestinationCityDescending(){
+       addOrderByDescending(TransitRoute.DESTINATION_CITY_PROPERTY);
+       return this;
+    }
+    public TransitRouteRequest<T> orderByDestinationCityAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(TransitRoute.DESTINATION_CITY_PROPERTY);
        return this;
     }
 
+    public TransitRouteRequest<T> orderByDestinationCityDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(TransitRoute.DESTINATION_CITY_PROPERTY);
+       return this;
+    }
     public TransitRouteRequest<T> orderByDistanceKmAscending(){
        addOrderByAscending(TransitRoute.DISTANCE_KM_PROPERTY);
        return this;
@@ -1169,31 +1097,23 @@ public class TransitRouteRequest<T extends TransitRoute> extends BaseRequest<T> 
        return this;
     }
 
-    public TransitRouteRequest<T> orderByStatusAscending(){
-       addOrderByAscending(TransitRoute.STATUS_PROPERTY);
+    public TransitRouteRequest<T> orderByCreatedTimeAscending(){
+       addOrderByAscending(TransitRoute.CREATED_TIME_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> orderByStatusDescending(){
-       addOrderByDescending(TransitRoute.STATUS_PROPERTY);
-       return this;
-    }
-    public TransitRouteRequest<T> orderByStatusAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(TransitRoute.STATUS_PROPERTY);
+    public TransitRouteRequest<T> orderByCreatedTimeDescending(){
+       addOrderByDescending(TransitRoute.CREATED_TIME_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> orderByStatusDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(TransitRoute.STATUS_PROPERTY);
-       return this;
-    }
-    public TransitRouteRequest<T> orderByCreateTimeAscending(){
-       addOrderByAscending(TransitRoute.CREATE_TIME_PROPERTY);
+    public TransitRouteRequest<T> orderByUpdatedTimeAscending(){
+       addOrderByAscending(TransitRoute.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public TransitRouteRequest<T> orderByCreateTimeDescending(){
-       addOrderByDescending(TransitRoute.CREATE_TIME_PROPERTY);
+    public TransitRouteRequest<T> orderByUpdatedTimeDescending(){
+       addOrderByDescending(TransitRoute.UPDATED_TIME_PROPERTY);
        return this;
     }
 
@@ -1208,42 +1128,7 @@ public class TransitRouteRequest<T extends TransitRoute> extends BaseRequest<T> 
     }
 
 
-    public WarehouseRequest rollUpToOriginWarehouse(){
-       WarehouseRequest originWarehouse = Q.warehouses().unlimited();
-       this.withOriginWarehouseMatching(originWarehouse)
-           .groupByOriginWarehouseWith(originWarehouse);
-       return originWarehouse;
-    }
 
-    public WarehouseRequest rollUpToDestinationWarehouse(){
-       WarehouseRequest destinationWarehouse = Q.warehouses().unlimited();
-       this.withDestinationWarehouseMatching(destinationWarehouse)
-           .groupByDestinationWarehouseWith(destinationWarehouse);
-       return destinationWarehouse;
-    }
-
-
-
-
-
-
-
-   public TransitRouteRequest<T> facetByOriginWarehouseAs(String facetName, WarehouseRequest originWarehouse){
-       return facetByOriginWarehouseAs(facetName, originWarehouse, true);
-   }
-
-   public TransitRouteRequest<T> facetByOriginWarehouseAs(String facetName, WarehouseRequest originWarehouse, boolean includeAllFacets){
-       addFacet(facetName, TransitRoute.ORIGIN_WAREHOUSE_PROPERTY, originWarehouse, includeAllFacets);
-       return this;
-   }
-   public TransitRouteRequest<T> facetByDestinationWarehouseAs(String facetName, WarehouseRequest destinationWarehouse){
-       return facetByDestinationWarehouseAs(facetName, destinationWarehouse, true);
-   }
-
-   public TransitRouteRequest<T> facetByDestinationWarehouseAs(String facetName, WarehouseRequest destinationWarehouse, boolean includeAllFacets){
-       addFacet(facetName, TransitRoute.DESTINATION_WAREHOUSE_PROPERTY, destinationWarehouse, includeAllFacets);
-       return this;
-   }
 
 
     /**

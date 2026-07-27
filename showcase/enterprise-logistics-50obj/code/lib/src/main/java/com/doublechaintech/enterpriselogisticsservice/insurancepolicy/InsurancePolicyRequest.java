@@ -1,9 +1,13 @@
 package com.doublechaintech.enterpriselogisticsservice.insurancepolicy;
 
+import com.doublechaintech.enterpriselogisticsservice.Q;
+import com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord;
+import com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecordRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
 import io.teaql.core.SearchCriteria;
+import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.math.BigDecimal;
@@ -82,7 +86,7 @@ public class InsurancePolicyRequest<T extends InsurancePolicy> extends BaseReque
 
     public InsurancePolicyRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectPolicyNumber().selectProvider().selectCoverageAmount().selectPremium().selectStartDate().selectEndDate().selectStatus().selectCreatedTime().selectUpdatedTime().selectVersion();
+        return selectId().selectPolicyNumber().selectProvider().selectCoverageAmount().selectPremium().selectStartDate().selectEndDate().selectStatus().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
     public InsurancePolicyRequest<T> selectSelfFields(){
@@ -91,12 +95,13 @@ public class InsurancePolicyRequest<T extends InsurancePolicy> extends BaseReque
 
     public InsurancePolicyRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectPolicyNumber().selectProvider().selectCoverageAmount().selectPremium().selectStartDate().selectEndDate().selectStatus().selectCreatedTime().selectUpdatedTime().selectVersion();
+        return selectId().selectPolicyNumber().selectProvider().selectCoverageAmount().selectPremium().selectStartDate().selectEndDate().selectStatus().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
     public InsurancePolicyRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectPolicyNumber().selectProvider().selectCoverageAmount().selectPremium().selectStartDate().selectEndDate().selectStatus().selectCreatedTime().selectUpdatedTime().selectVersion();
+        selectClaimsRecordList();
+        return selectId().selectPolicyNumber().selectProvider().selectCoverageAmount().selectPremium().selectStartDate().selectEndDate().selectStatus().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
 
@@ -269,21 +274,21 @@ public class InsurancePolicyRequest<T extends InsurancePolicy> extends BaseReque
        unselectProperty(InsurancePolicy.CREATED_TIME_PROPERTY);
        return this;
     }
-    public InsurancePolicyRequest<T> selectUpdatedTime(){
-       selectProperty(InsurancePolicy.UPDATED_TIME_PROPERTY);
+    public InsurancePolicyRequest<T> selectUpdateTime(){
+       selectProperty(InsurancePolicy.UPDATE_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
+     * fill the updateTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updateTime) to fetch updateTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public InsurancePolicyRequest<T> unselectUpdatedTime(){
-       unselectProperty(InsurancePolicy.UPDATED_TIME_PROPERTY);
+    public InsurancePolicyRequest<T> unselectUpdateTime(){
+       unselectProperty(InsurancePolicy.UPDATE_TIME_PROPERTY);
        return this;
     }
     public InsurancePolicyRequest<T> selectVersion(){
@@ -301,6 +306,14 @@ public class InsurancePolicyRequest<T extends InsurancePolicy> extends BaseReque
 
     public InsurancePolicyRequest<T> unselectVersion(){
        unselectProperty(InsurancePolicy.VERSION_PROPERTY);
+       return this;
+    }
+    public InsurancePolicyRequest<T> selectClaimsRecordList(){
+       return selectClaimsRecordListWith(Q.claimsRecords().selectSelf());
+    }
+
+    public InsurancePolicyRequest<T> selectClaimsRecordListWith(ClaimsRecordRequest claimsRecordList){
+       enhanceRelation(InsurancePolicy.CLAIMS_RECORD_LIST_PROPERTY, claimsRecordList);
        return this;
     }
 
@@ -795,66 +808,66 @@ public class InsurancePolicyRequest<T extends InsurancePolicy> extends BaseReque
 
 
 
-    public InsurancePolicyRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
-      if (updatedTime == null || updatedTime.length == 0) {
-        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
+    public InsurancePolicyRequest<T> filterByUpdateTime(LocalDateTime... updateTime){
+      if (updateTime == null || updateTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdateTime parameter updateTime cannot be empty");
       }
-      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
+      return appendSearchCriteria(createUpdateTimeCriteria(Operator.EQUAL, (Object[])updateTime));
     }
 
-    public InsurancePolicyRequest<T> withUpdatedTime(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
+    public InsurancePolicyRequest<T> withUpdateTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdateTimeCriteria(operator, values));
     }
 
-    public InsurancePolicyRequest<T> withUpdatedTimeIsUnknown(){
-       return withUpdatedTime(Operator.IS_NULL);
+    public InsurancePolicyRequest<T> withUpdateTimeIsUnknown(){
+       return withUpdateTime(Operator.IS_NULL);
     }
 
-    public InsurancePolicyRequest<T> withUpdatedTimeIsKnown(){
-       return withUpdatedTime(Operator.IS_NOT_NULL);
+    public InsurancePolicyRequest<T> withUpdateTimeIsKnown(){
+       return withUpdateTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(InsurancePolicy.UPDATED_TIME_PROPERTY, operator, values);
+    public SearchCriteria createUpdateTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(InsurancePolicy.UPDATE_TIME_PROPERTY, operator, values);
     }
 
-    public InsurancePolicyRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    public InsurancePolicyRequest<T> withUpdateTimeGreaterThan(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
     }
 
-    public InsurancePolicyRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
+    public InsurancePolicyRequest<T> withUpdateTimeGreaterThanOrEqualTo(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN_OR_EQUAL, updateTime);
     }
 
-    public InsurancePolicyRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    public InsurancePolicyRequest<T> withUpdateTimeLessThan(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
     }
 
-    public InsurancePolicyRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
+    public InsurancePolicyRequest<T> withUpdateTimeLessThanOrEqualTo(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN_OR_EQUAL, updateTime);
     }
 
-    public InsurancePolicyRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
-       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
+    public InsurancePolicyRequest<T> withUpdateTimeBetween(LocalDateTime startOfUpdateTime, LocalDateTime endOfUpdateTime){
+       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
     }
-    public InsurancePolicyRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
-    }
-
-    public InsurancePolicyRequest<T> withUpdatedTimeBefore(Date updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    public InsurancePolicyRequest<T> withUpdateTimeBefore(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
     }
 
-    public InsurancePolicyRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    public InsurancePolicyRequest<T> withUpdateTimeBefore(Date updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
     }
 
-    public InsurancePolicyRequest<T> withUpdatedTimeAfter(Date updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    public InsurancePolicyRequest<T> withUpdateTimeAfter(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
     }
 
-    public InsurancePolicyRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
-       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
+    public InsurancePolicyRequest<T> withUpdateTimeAfter(Date updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    }
+
+    public InsurancePolicyRequest<T> withUpdateTimeBetween(Date startOfUpdateTime, Date endOfUpdateTime){
+       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
     }
 
 
@@ -903,6 +916,21 @@ public class InsurancePolicyRequest<T extends InsurancePolicy> extends BaseReque
        return withVersion(Operator.BETWEEN, startOfVersion, endOfVersion);
     }
 
+    public InsurancePolicyRequest<T> withClaimsRecordListMatching(ClaimsRecordRequest claimsRecordRequest){
+        return appendSearchCriteria(new SubQuerySearchCriteria(InsurancePolicy.ID_PROPERTY, claimsRecordRequest, ClaimsRecord.INSURANCE_POLICY_PROPERTY));
+    }
+
+    public InsurancePolicyRequest<T> withoutClaimsRecordListMatching(ClaimsRecordRequest claimsRecordRequest){
+        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(InsurancePolicy.ID_PROPERTY, claimsRecordRequest, ClaimsRecord.INSURANCE_POLICY_PROPERTY)));
+    }
+
+    public InsurancePolicyRequest<T> haveClaimsRecords(){
+        return withClaimsRecordListMatching(Q.claimsRecords().unlimited());
+    }
+
+    public InsurancePolicyRequest<T> haveNoClaimsRecords(){
+        return withoutClaimsRecordListMatching(Q.claimsRecords().unlimited());
+    }
 
     public InsurancePolicyRequest<T> count(){
         super.count();
@@ -1040,6 +1068,10 @@ public class InsurancePolicyRequest<T extends InsurancePolicy> extends BaseReque
         super.samplePopulationVariance(retName, InsurancePolicy.PREMIUM_PROPERTY);
         return this;
     }
+    public InsurancePolicyRequest<T> groupByClaimsRecordsWithDetails(ClaimsRecordRequest subRequest){
+       aggregate(InsurancePolicy.CLAIMS_RECORD_LIST_PROPERTY, subRequest);
+       return this;
+    }
 
     public InsurancePolicyRequest<T> groupById(){
        groupBy(InsurancePolicy.ID_PROPERTY);
@@ -1176,18 +1208,18 @@ public class InsurancePolicyRequest<T extends InsurancePolicy> extends BaseReque
        return this;
     }
 
-    public InsurancePolicyRequest<T> groupByUpdatedTime(){
-       groupBy(InsurancePolicy.UPDATED_TIME_PROPERTY);
+    public InsurancePolicyRequest<T> groupByUpdateTime(){
+       groupBy(InsurancePolicy.UPDATE_TIME_PROPERTY);
        return this;
     }
 
-    public InsurancePolicyRequest<T> groupByUpdatedTimeAs(String retName){
-       groupBy(retName, InsurancePolicy.UPDATED_TIME_PROPERTY);
+    public InsurancePolicyRequest<T> groupByUpdateTimeAs(String retName){
+       groupBy(retName, InsurancePolicy.UPDATE_TIME_PROPERTY);
        return this;
     }
 
-    public InsurancePolicyRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, InsurancePolicy.UPDATED_TIME_PROPERTY, function);
+    public InsurancePolicyRequest<T> groupByUpdateTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, InsurancePolicy.UPDATE_TIME_PROPERTY, function);
        return this;
     }
 
@@ -1322,13 +1354,13 @@ public class InsurancePolicyRequest<T extends InsurancePolicy> extends BaseReque
        return this;
     }
 
-    public InsurancePolicyRequest<T> orderByUpdatedTimeAscending(){
-       addOrderByAscending(InsurancePolicy.UPDATED_TIME_PROPERTY);
+    public InsurancePolicyRequest<T> orderByUpdateTimeAscending(){
+       addOrderByAscending(InsurancePolicy.UPDATE_TIME_PROPERTY);
        return this;
     }
 
-    public InsurancePolicyRequest<T> orderByUpdatedTimeDescending(){
-       addOrderByDescending(InsurancePolicy.UPDATED_TIME_PROPERTY);
+    public InsurancePolicyRequest<T> orderByUpdateTimeDescending(){
+       addOrderByDescending(InsurancePolicy.UPDATE_TIME_PROPERTY);
        return this;
     }
 
@@ -1343,6 +1375,118 @@ public class InsurancePolicyRequest<T extends InsurancePolicy> extends BaseReque
     }
 
 
+    public InsurancePolicyRequest<T> statsFromClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+       return statsFromClaimsRecordsAs(name, subRequest, false);
+    }
+
+    public InsurancePolicyRequest<T> statsFromClaimsRecordsAs(String name, ClaimsRecordRequest subRequest, boolean singleResult){
+       subRequest.setPartitionProperty(ClaimsRecord.INSURANCE_POLICY_PROPERTY);
+       addAggregateDynamicProperty(name, subRequest, singleResult);
+       return this;
+    }
+
+    public InsurancePolicyRequest<T> statsFromClaimsRecords(ClaimsRecordRequest subRequest){
+       return statsFromClaimsRecordsAs(REFINEMENTS, subRequest);
+    }
+    public InsurancePolicyRequest<T> countClaimsRecords(){
+        return countClaimsRecordsAs("Count");
+    }
+
+    public InsurancePolicyRequest<T> countClaimsRecordsAs(String name){
+        return countClaimsRecordsWith(name, Q.claimsRecords().unlimited());
+    }
+
+    public InsurancePolicyRequest<T> countClaimsRecordsWith(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.count(), true);
+    }
+    public InsurancePolicyRequest<T> minClaimAmountOfClaimsRecords(){
+        return minClaimAmountOfClaimsRecordsAs("minClaimAmountOfClaimsRecords");
+    }
+
+    public InsurancePolicyRequest<T> minClaimAmountOfClaimsRecordsAs(String name){
+        return minClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public InsurancePolicyRequest<T> minClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.minClaimAmount(), true);
+    }
+    public InsurancePolicyRequest<T> maxClaimAmountOfClaimsRecords(){
+        return maxClaimAmountOfClaimsRecordsAs("maxClaimAmountOfClaimsRecords");
+    }
+
+    public InsurancePolicyRequest<T> maxClaimAmountOfClaimsRecordsAs(String name){
+        return maxClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public InsurancePolicyRequest<T> maxClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.maxClaimAmount(), true);
+    }
+    public InsurancePolicyRequest<T> sumClaimAmountOfClaimsRecords(){
+        return sumClaimAmountOfClaimsRecordsAs("sumClaimAmountOfClaimsRecords");
+    }
+
+    public InsurancePolicyRequest<T> sumClaimAmountOfClaimsRecordsAs(String name){
+        return sumClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public InsurancePolicyRequest<T> sumClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.sumClaimAmount(), true);
+    }
+    public InsurancePolicyRequest<T> avgClaimAmountOfClaimsRecords(){
+        return avgClaimAmountOfClaimsRecordsAs("avgClaimAmountOfClaimsRecords");
+    }
+
+    public InsurancePolicyRequest<T> avgClaimAmountOfClaimsRecordsAs(String name){
+        return avgClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public InsurancePolicyRequest<T> avgClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.avgClaimAmount(), true);
+    }
+    public InsurancePolicyRequest<T> standardDeviationClaimAmountOfClaimsRecords(){
+        return standardDeviationClaimAmountOfClaimsRecordsAs("stdDevClaimAmountOfClaimsRecords");
+    }
+
+    public InsurancePolicyRequest<T> standardDeviationClaimAmountOfClaimsRecordsAs(String name){
+        return standardDeviationClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public InsurancePolicyRequest<T> standardDeviationClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.standardDeviationClaimAmount(), true);
+    }
+    public InsurancePolicyRequest<T> squareRootOfPopulationStandardDeviationClaimAmountOfClaimsRecords(){
+        return squareRootOfPopulationStandardDeviationClaimAmountOfClaimsRecordsAs("stdDevPopClaimAmountOfClaimsRecords");
+    }
+
+    public InsurancePolicyRequest<T> squareRootOfPopulationStandardDeviationClaimAmountOfClaimsRecordsAs(String name){
+        return squareRootOfPopulationStandardDeviationClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public InsurancePolicyRequest<T> squareRootOfPopulationStandardDeviationClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.squareRootOfPopulationStandardDeviationClaimAmount(), true);
+    }
+    public InsurancePolicyRequest<T> sampleVarianceClaimAmountOfClaimsRecords(){
+        return sampleVarianceClaimAmountOfClaimsRecordsAs("varSampClaimAmountOfClaimsRecords");
+    }
+
+    public InsurancePolicyRequest<T> sampleVarianceClaimAmountOfClaimsRecordsAs(String name){
+        return sampleVarianceClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public InsurancePolicyRequest<T> sampleVarianceClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.sampleVarianceClaimAmount(), true);
+    }
+    public InsurancePolicyRequest<T> samplePopulationVarianceClaimAmountOfClaimsRecords(){
+        return samplePopulationVarianceClaimAmountOfClaimsRecordsAs("varPopClaimAmountOfClaimsRecords");
+    }
+
+    public InsurancePolicyRequest<T> samplePopulationVarianceClaimAmountOfClaimsRecordsAs(String name){
+        return samplePopulationVarianceClaimAmountOfClaimsRecordsAs(name, Q.claimsRecords().unlimited());
+    }
+
+    public InsurancePolicyRequest<T> samplePopulationVarianceClaimAmountOfClaimsRecordsAs(String name, ClaimsRecordRequest subRequest){
+        return statsFromClaimsRecordsAs(name, subRequest.samplePopulationVarianceClaimAmount(), true);
+    }
 
 
 

@@ -7,7 +7,7 @@ import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Objects;
 
 /**
@@ -22,27 +22,27 @@ public class PaymentRecord extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "PaymentRecord";
 
     public static final String NAME_PROPERTY = "name";
-    public static final String CODE_PROPERTY = "code";
+    public static final String REFERENCE_CODE_PROPERTY = "referenceCode";
     public static final String AMOUNT_PROPERTY = "amount";
     public static final String CURRENCY_PROPERTY = "currency";
+    public static final String PAYMENT_METHOD_PROPERTY = "paymentMethod";
+    public static final String PAYMENT_DATE_PROPERTY = "paymentDate";
     public static final String STATUS_PROPERTY = "status";
-    public static final String CREATED_AT_PROPERTY = "createdAt";
-    public static final String UPDATED_AT_PROPERTY = "updatedAt";
     public static final String INVOICE_PROPERTY = "invoice";
     private String name;
-    private String code;
+    private String referenceCode;
     private BigDecimal amount;
     private String currency;
+    private String paymentMethod;
+    private LocalDate paymentDate;
     private String status;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
     private Invoice invoice;
 
     public String getName(){
         return this.name;
     }
-    public String getCode(){
-        return this.code;
+    public String getReferenceCode(){
+        return this.referenceCode;
     }
     public BigDecimal getAmount(){
         return this.amount;
@@ -50,14 +50,14 @@ public class PaymentRecord extends BaseEntity implements RemoteInput {
     public String getCurrency(){
         return this.currency;
     }
+    public String getPaymentMethod(){
+        return this.paymentMethod;
+    }
+    public LocalDate getPaymentDate(){
+        return this.paymentDate;
+    }
     public String getStatus(){
         return this.status;
-    }
-    public LocalDateTime getCreatedAt(){
-        return this.createdAt;
-    }
-    public LocalDateTime getUpdatedAt(){
-        return this.updatedAt;
     }
     public Invoice getInvoice(){
         return this.invoice;
@@ -71,13 +71,13 @@ public class PaymentRecord extends BaseEntity implements RemoteInput {
         this.name = name;
         return this;
     }
-    public PaymentRecord updateCode(String code){
-        code = (code == null ? null : code.trim());
-        if(Objects.equals(this.code, code)){
+    public PaymentRecord updateReferenceCode(String referenceCode){
+        referenceCode = (referenceCode == null ? null : referenceCode.trim());
+        if(Objects.equals(this.referenceCode, referenceCode)){
             return this;
         }
-        handleUpdate(CODE_PROPERTY, getCode(), code);
-        this.code = code;
+        handleUpdate(REFERENCE_CODE_PROPERTY, getReferenceCode(), referenceCode);
+        this.referenceCode = referenceCode;
         return this;
     }
     public PaymentRecord updateAmount(BigDecimal amount){
@@ -97,6 +97,23 @@ public class PaymentRecord extends BaseEntity implements RemoteInput {
         this.currency = currency;
         return this;
     }
+    public PaymentRecord updatePaymentMethod(String paymentMethod){
+        paymentMethod = (paymentMethod == null ? null : paymentMethod.trim());
+        if(Objects.equals(this.paymentMethod, paymentMethod)){
+            return this;
+        }
+        handleUpdate(PAYMENT_METHOD_PROPERTY, getPaymentMethod(), paymentMethod);
+        this.paymentMethod = paymentMethod;
+        return this;
+    }
+    public PaymentRecord updatePaymentDate(LocalDate paymentDate){
+        if(Objects.equals(this.paymentDate, paymentDate)){
+            return this;
+        }
+        handleUpdate(PAYMENT_DATE_PROPERTY, getPaymentDate(), paymentDate);
+        this.paymentDate = paymentDate;
+        return this;
+    }
     public PaymentRecord updateStatus(String status){
         status = (status == null ? null : status.trim());
         if(Objects.equals(this.status, status)){
@@ -104,22 +121,6 @@ public class PaymentRecord extends BaseEntity implements RemoteInput {
         }
         handleUpdate(STATUS_PROPERTY, getStatus(), status);
         this.status = status;
-        return this;
-    }
-    public PaymentRecord updateCreatedAt(LocalDateTime createdAt){
-        if(Objects.equals(this.createdAt, createdAt)){
-            return this;
-        }
-        handleUpdate(CREATED_AT_PROPERTY, getCreatedAt(), createdAt);
-        this.createdAt = createdAt;
-        return this;
-    }
-    public PaymentRecord updateUpdatedAt(LocalDateTime updatedAt){
-        if(Objects.equals(this.updatedAt, updatedAt)){
-            return this;
-        }
-        handleUpdate(UPDATED_AT_PROPERTY, getUpdatedAt(), updatedAt);
-        this.updatedAt = updatedAt;
         return this;
     }
     public PaymentRecord updateInvoice(Invoice invoice){
@@ -160,17 +161,17 @@ public class PaymentRecord extends BaseEntity implements RemoteInput {
         switch (property) {
             case "name": this.name = (value == null ? null : ((String)value).trim()); break;
 
-            case "code": this.code = (value == null ? null : ((String)value).trim()); break;
+            case "referenceCode": this.referenceCode = (value == null ? null : ((String)value).trim()); break;
 
             case "amount": this.amount = (BigDecimal) value; break;
 
             case "currency": this.currency = (value == null ? null : ((String)value).trim()); break;
 
+            case "paymentMethod": this.paymentMethod = (value == null ? null : ((String)value).trim()); break;
+
+            case "paymentDate": this.paymentDate = (LocalDate) value; break;
+
             case "status": this.status = (value == null ? null : ((String)value).trim()); break;
-
-            case "createdAt": this.createdAt = (LocalDateTime) value; break;
-
-            case "updatedAt": this.updatedAt = (LocalDateTime) value; break;
 
             case "invoice": this.invoice = (Invoice) value; break;
 
@@ -183,12 +184,12 @@ public class PaymentRecord extends BaseEntity implements RemoteInput {
     public Object __internalGet(String property) {
         switch (property) {
             case "name": return this.name;
-            case "code": return this.code;
+            case "referenceCode": return this.referenceCode;
             case "amount": return this.amount;
             case "currency": return this.currency;
+            case "paymentMethod": return this.paymentMethod;
+            case "paymentDate": return this.paymentDate;
             case "status": return this.status;
-            case "createdAt": return this.createdAt;
-            case "updatedAt": return this.updatedAt;
             case "invoice": return this.invoice;
             default: return super.__internalGet(property);
         }

@@ -10,6 +10,7 @@ import io.teaql.core.SearchCriteria;
 import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
@@ -85,7 +86,7 @@ public class WorkShiftRequest<T extends WorkShift> extends BaseRequest<T> {
 
     public WorkShiftRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectName().selectStartTime().selectEndTime().selectShiftType().selectCreatedAt().selectUpdatedAt().selectVersion();
+        return selectId().selectName().selectStartTime().selectEndTime().selectShiftDate().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public WorkShiftRequest<T> selectSelfFields(){
@@ -94,13 +95,13 @@ public class WorkShiftRequest<T extends WorkShift> extends BaseRequest<T> {
 
     public WorkShiftRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectName().selectStartTime().selectEndTime().selectShiftType().selectCreatedAt().selectUpdatedAt().selectVersion();
+        return selectId().selectName().selectStartTime().selectEndTime().selectShiftDate().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public WorkShiftRequest<T> selectChildren(){
         super.selectAny();
         selectWorkedHoursList();
-        return selectId().selectName().selectStartTime().selectEndTime().selectShiftType().selectCreatedAt().selectUpdatedAt().selectVersion();
+        return selectId().selectName().selectStartTime().selectEndTime().selectShiftDate().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
 
@@ -172,21 +173,21 @@ public class WorkShiftRequest<T extends WorkShift> extends BaseRequest<T> {
        unselectProperty(WorkShift.END_TIME_PROPERTY);
        return this;
     }
-    public WorkShiftRequest<T> selectShiftType(){
-       selectProperty(WorkShift.SHIFT_TYPE_PROPERTY);
+    public WorkShiftRequest<T> selectShiftDate(){
+       selectProperty(WorkShift.SHIFT_DATE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the shiftType with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  shiftType) to fetch shiftType property.
+     * fill the shiftDate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  shiftDate) to fetch shiftDate property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public WorkShiftRequest<T> unselectShiftType(){
-       unselectProperty(WorkShift.SHIFT_TYPE_PROPERTY);
+    public WorkShiftRequest<T> unselectShiftDate(){
+       unselectProperty(WorkShift.SHIFT_DATE_PROPERTY);
        return this;
     }
     public WorkShiftRequest<T> selectCreatedAt(){
@@ -417,66 +418,68 @@ public class WorkShiftRequest<T extends WorkShift> extends BaseRequest<T> {
     }
 
 
-    public WorkShiftRequest<T> filterByShiftType(String... shiftType){
-      if (shiftType == null || shiftType.length == 0) {
-        throw new IllegalArgumentException("filterByShiftType parameter shiftType cannot be empty");
+    public WorkShiftRequest<T> filterByShiftDate(LocalDate... shiftDate){
+      if (shiftDate == null || shiftDate.length == 0) {
+        throw new IllegalArgumentException("filterByShiftDate parameter shiftDate cannot be empty");
       }
-      return appendSearchCriteria(createShiftTypeCriteria(Operator.EQUAL, (Object[])shiftType));
+      return appendSearchCriteria(createShiftDateCriteria(Operator.EQUAL, (Object[])shiftDate));
     }
 
-    public WorkShiftRequest<T> withShiftType(Operator operator, Object... values){
-       return appendSearchCriteria(createShiftTypeCriteria(operator, values));
+    public WorkShiftRequest<T> withShiftDate(Operator operator, Object... values){
+       return appendSearchCriteria(createShiftDateCriteria(operator, values));
     }
 
-    public WorkShiftRequest<T> withShiftTypeIsUnknown(){
-       return withShiftType(Operator.IS_NULL);
+    public WorkShiftRequest<T> withShiftDateIsUnknown(){
+       return withShiftDate(Operator.IS_NULL);
     }
 
-    public WorkShiftRequest<T> withShiftTypeIsKnown(){
-       return withShiftType(Operator.IS_NOT_NULL);
+    public WorkShiftRequest<T> withShiftDateIsKnown(){
+       return withShiftDate(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createShiftTypeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(WorkShift.SHIFT_TYPE_PROPERTY, operator, values);
+    public SearchCriteria createShiftDateCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(WorkShift.SHIFT_DATE_PROPERTY, operator, values);
     }
 
-    public WorkShiftRequest<T> withShiftTypeGreaterThan(String shiftType){
-       return withShiftType(Operator.GREATER_THAN, shiftType);
+    public WorkShiftRequest<T> withShiftDateGreaterThan(LocalDate shiftDate){
+       return withShiftDate(Operator.GREATER_THAN, shiftDate);
     }
 
-    public WorkShiftRequest<T> withShiftTypeGreaterThanOrEqualTo(String shiftType){
-       return withShiftType(Operator.GREATER_THAN_OR_EQUAL, shiftType);
+    public WorkShiftRequest<T> withShiftDateGreaterThanOrEqualTo(LocalDate shiftDate){
+       return withShiftDate(Operator.GREATER_THAN_OR_EQUAL, shiftDate);
     }
 
-    public WorkShiftRequest<T> withShiftTypeLessThan(String shiftType){
-       return withShiftType(Operator.LESS_THAN, shiftType);
+    public WorkShiftRequest<T> withShiftDateLessThan(LocalDate shiftDate){
+       return withShiftDate(Operator.LESS_THAN, shiftDate);
     }
 
-    public WorkShiftRequest<T> withShiftTypeLessThanOrEqualTo(String shiftType){
-       return withShiftType(Operator.LESS_THAN_OR_EQUAL, shiftType);
+    public WorkShiftRequest<T> withShiftDateLessThanOrEqualTo(LocalDate shiftDate){
+       return withShiftDate(Operator.LESS_THAN_OR_EQUAL, shiftDate);
     }
 
-    public WorkShiftRequest<T> withShiftTypeBetween(String startOfShiftType, String endOfShiftType){
-       return withShiftType(Operator.BETWEEN, startOfShiftType, endOfShiftType);
+    public WorkShiftRequest<T> withShiftDateBetween(LocalDate startOfShiftDate, LocalDate endOfShiftDate){
+       return withShiftDate(Operator.BETWEEN, startOfShiftDate, endOfShiftDate);
     }
-    public WorkShiftRequest<T> withShiftTypeStartingWith(String shiftType){
-       return withShiftType(Operator.BEGIN_WITH, shiftType);
-    }
-    public WorkShiftRequest<T> withShiftTypeContaining(String shiftType){
-       return withShiftType(Operator.CONTAIN, shiftType);
+    public WorkShiftRequest<T> withShiftDateBefore(LocalDate shiftDate){
+       return withShiftDate(Operator.LESS_THAN, shiftDate);
     }
 
-    public WorkShiftRequest<T> withShiftTypeEndingWith(String shiftType){
-       return withShiftType(Operator.END_WITH, shiftType);
+    public WorkShiftRequest<T> withShiftDateBefore(Date shiftDate){
+       return withShiftDate(Operator.LESS_THAN, shiftDate);
     }
 
-    public WorkShiftRequest<T> withShiftTypeIs(String shiftType){
-       return withShiftType(Operator.EQUAL, shiftType);
+    public WorkShiftRequest<T> withShiftDateAfter(LocalDate shiftDate){
+       return withShiftDate(Operator.GREATER_THAN, shiftDate);
     }
 
-    public WorkShiftRequest<T> withShiftTypeSoundingLike(String shiftType){
-       return withShiftType(Operator.SOUNDS_LIKE, shiftType);
+    public WorkShiftRequest<T> withShiftDateAfter(Date shiftDate){
+       return withShiftDate(Operator.GREATER_THAN, shiftDate);
     }
+
+    public WorkShiftRequest<T> withShiftDateBetween(Date startOfShiftDate, Date endOfShiftDate){
+       return withShiftDate(Operator.BETWEEN, startOfShiftDate, endOfShiftDate);
+    }
+
 
 
 
@@ -742,18 +745,18 @@ public class WorkShiftRequest<T extends WorkShift> extends BaseRequest<T> {
        return this;
     }
 
-    public WorkShiftRequest<T> groupByShiftType(){
-       groupBy(WorkShift.SHIFT_TYPE_PROPERTY);
+    public WorkShiftRequest<T> groupByShiftDate(){
+       groupBy(WorkShift.SHIFT_DATE_PROPERTY);
        return this;
     }
 
-    public WorkShiftRequest<T> groupByShiftTypeAs(String retName){
-       groupBy(retName, WorkShift.SHIFT_TYPE_PROPERTY);
+    public WorkShiftRequest<T> groupByShiftDateAs(String retName){
+       groupBy(retName, WorkShift.SHIFT_DATE_PROPERTY);
        return this;
     }
 
-    public WorkShiftRequest<T> groupByShiftTypeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, WorkShift.SHIFT_TYPE_PROPERTY, function);
+    public WorkShiftRequest<T> groupByShiftDateWithFunction(String retName, AggrFunction function){
+       groupBy(retName, WorkShift.SHIFT_DATE_PROPERTY, function);
        return this;
     }
 
@@ -852,24 +855,16 @@ public class WorkShiftRequest<T extends WorkShift> extends BaseRequest<T> {
        return this;
     }
 
-    public WorkShiftRequest<T> orderByShiftTypeAscending(){
-       addOrderByAscending(WorkShift.SHIFT_TYPE_PROPERTY);
+    public WorkShiftRequest<T> orderByShiftDateAscending(){
+       addOrderByAscending(WorkShift.SHIFT_DATE_PROPERTY);
        return this;
     }
 
-    public WorkShiftRequest<T> orderByShiftTypeDescending(){
-       addOrderByDescending(WorkShift.SHIFT_TYPE_PROPERTY);
-       return this;
-    }
-    public WorkShiftRequest<T> orderByShiftTypeAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(WorkShift.SHIFT_TYPE_PROPERTY);
+    public WorkShiftRequest<T> orderByShiftDateDescending(){
+       addOrderByDescending(WorkShift.SHIFT_DATE_PROPERTY);
        return this;
     }
 
-    public WorkShiftRequest<T> orderByShiftTypeDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(WorkShift.SHIFT_TYPE_PROPERTY);
-       return this;
-    }
     public WorkShiftRequest<T> orderByCreatedAtAscending(){
        addOrderByAscending(WorkShift.CREATED_AT_PROPERTY);
        return this;

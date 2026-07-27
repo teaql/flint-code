@@ -5,8 +5,8 @@ import com.doublechaintech.enterpriselogisticsservice.vehicle.VehicleChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class FuelLogChecker implements Checker<FuelLog>{
 
@@ -26,39 +26,40 @@ public class FuelLogChecker implements Checker<FuelLog>{
          return;
       }
       if(fuelLog.newItem()){
-        if(fuelLog.getCreatedAt() == null){
-           fuelLog.updateCreatedAt(java.time.LocalDateTime.now());
-        }
       }else if(fuelLog.updateItem()){
       }
-      checkVehicle(_ctx, fuelLog.getProperty(FuelLog.VEHICLE_PROPERTY), newLocation(_parentLocation, FuelLog.VEHICLE_PROPERTY));
-      checkFuelAmountLiters(_ctx, fuelLog.getProperty(FuelLog.FUEL_AMOUNT_LITERS_PROPERTY), newLocation(_parentLocation, FuelLog.FUEL_AMOUNT_LITERS_PROPERTY));
+      checkLiters(_ctx, fuelLog.getProperty(FuelLog.LITERS_PROPERTY), newLocation(_parentLocation, FuelLog.LITERS_PROPERTY));
       checkCost(_ctx, fuelLog.getProperty(FuelLog.COST_PROPERTY), newLocation(_parentLocation, FuelLog.COST_PROPERTY));
+      checkOdometerKm(_ctx, fuelLog.getProperty(FuelLog.ODOMETER_KM_PROPERTY), newLocation(_parentLocation, FuelLog.ODOMETER_KM_PROPERTY));
+      checkStationName(_ctx, fuelLog.getProperty(FuelLog.STATION_NAME_PROPERTY), newLocation(_parentLocation, FuelLog.STATION_NAME_PROPERTY));
       checkDate(_ctx, fuelLog.getProperty(FuelLog.DATE_PROPERTY), newLocation(_parentLocation, FuelLog.DATE_PROPERTY));
-      checkCreatedAt(_ctx, fuelLog.getProperty(FuelLog.CREATED_AT_PROPERTY), newLocation(_parentLocation, FuelLog.CREATED_AT_PROPERTY));
+      checkVehicle(_ctx, fuelLog.getProperty(FuelLog.VEHICLE_PROPERTY), newLocation(_parentLocation, FuelLog.VEHICLE_PROPERTY));
     }
 
-    public void checkVehicle(UserContext _ctx, Vehicle vehicle, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, vehicle);
-    if((vehicle == null)){
+    public void checkLiters(UserContext _ctx, BigDecimal liters, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, liters);
+    if((liters == null)){
         return;
     }
-    new VehicleChecker().checkAndFix(_ctx, vehicle, _parentLocation);
     }
-    public void checkFuelAmountLiters(UserContext _ctx, String fuelAmountLiters, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, fuelAmountLiters);
-    if((fuelAmountLiters == null)){
-        return;
-    }
-    maxStringCheck(_ctx, _parentLocation, 100, fuelAmountLiters);
-
-    }
-    public void checkCost(UserContext _ctx, String cost, ObjectLocation _parentLocation){
+    public void checkCost(UserContext _ctx, BigDecimal cost, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, cost);
     if((cost == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, cost);
+    }
+    public void checkOdometerKm(UserContext _ctx, Integer odometerKm, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, odometerKm);
+    if((odometerKm == null)){
+        return;
+    }
+    }
+    public void checkStationName(UserContext _ctx, String stationName, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, stationName);
+    if((stationName == null)){
+        return;
+    }
+    maxStringCheck(_ctx, _parentLocation, 100, stationName);
 
     }
     public void checkDate(UserContext _ctx, LocalDate date, ObjectLocation _parentLocation){
@@ -67,10 +68,11 @@ public class FuelLogChecker implements Checker<FuelLog>{
         return;
     }
     }
-    public void checkCreatedAt(UserContext _ctx, LocalDateTime createdAt, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, createdAt);
-    if((createdAt == null)){
+    public void checkVehicle(UserContext _ctx, Vehicle vehicle, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, vehicle);
+    if((vehicle == null)){
         return;
     }
+    new VehicleChecker().checkAndFix(_ctx, vehicle, _parentLocation);
     }
 }

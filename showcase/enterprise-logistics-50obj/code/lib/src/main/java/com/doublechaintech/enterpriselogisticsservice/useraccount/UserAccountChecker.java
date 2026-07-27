@@ -1,5 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.useraccount;
 
+import com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog;
+import com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLogChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
@@ -23,29 +25,33 @@ public class UserAccountChecker implements Checker<UserAccount>{
          return;
       }
       if(userAccount.newItem()){
-        if(userAccount.getCreateTime() == null){
-           userAccount.updateCreateTime(java.time.LocalDateTime.now());
-        }if(userAccount.getUpdateTime() == null){
-           userAccount.updateUpdateTime(java.time.LocalDateTime.now());
+        if(userAccount.getCreatedAt() == null){
+           userAccount.updateCreatedAt(java.time.LocalDateTime.now());
+        }if(userAccount.getUpdatedAt() == null){
+           userAccount.updateUpdatedAt(java.time.LocalDateTime.now());
         }
       }else if(userAccount.updateItem()){
-        userAccount.updateUpdateTime(java.time.LocalDateTime.now());
+        userAccount.updateUpdatedAt(java.time.LocalDateTime.now());
       }
-      checkName(_ctx, userAccount.getProperty(UserAccount.NAME_PROPERTY), newLocation(_parentLocation, UserAccount.NAME_PROPERTY));
+      checkUsername(_ctx, userAccount.getProperty(UserAccount.USERNAME_PROPERTY), newLocation(_parentLocation, UserAccount.USERNAME_PROPERTY));
       checkEmail(_ctx, userAccount.getProperty(UserAccount.EMAIL_PROPERTY), newLocation(_parentLocation, UserAccount.EMAIL_PROPERTY));
       checkPhone(_ctx, userAccount.getProperty(UserAccount.PHONE_PROPERTY), newLocation(_parentLocation, UserAccount.PHONE_PROPERTY));
-      checkPasswordHash(_ctx, userAccount.getProperty(UserAccount.PASSWORD_HASH_PROPERTY), newLocation(_parentLocation, UserAccount.PASSWORD_HASH_PROPERTY));
       checkStatus(_ctx, userAccount.getProperty(UserAccount.STATUS_PROPERTY), newLocation(_parentLocation, UserAccount.STATUS_PROPERTY));
-      checkCreateTime(_ctx, userAccount.getProperty(UserAccount.CREATE_TIME_PROPERTY), newLocation(_parentLocation, UserAccount.CREATE_TIME_PROPERTY));
-      checkUpdateTime(_ctx, userAccount.getProperty(UserAccount.UPDATE_TIME_PROPERTY), newLocation(_parentLocation, UserAccount.UPDATE_TIME_PROPERTY));
+      checkPasswordHash(_ctx, userAccount.getProperty(UserAccount.PASSWORD_HASH_PROPERTY), newLocation(_parentLocation, UserAccount.PASSWORD_HASH_PROPERTY));
+      checkCreatedAt(_ctx, userAccount.getProperty(UserAccount.CREATED_AT_PROPERTY), newLocation(_parentLocation, UserAccount.CREATED_AT_PROPERTY));
+      checkUpdatedAt(_ctx, userAccount.getProperty(UserAccount.UPDATED_AT_PROPERTY), newLocation(_parentLocation, UserAccount.UPDATED_AT_PROPERTY));
+      for(int i = 0; userAccount.getAuditLogList() != null && i < userAccount.getAuditLogList().size(); i++){
+         AuditLog auditLog = userAccount.getAuditLogList().get(i);
+         new AuditLogChecker().checkAndFix(_ctx, auditLog, newLocation(_parentLocation, UserAccount.AUDIT_LOG_LIST_PROPERTY, i));
+      }
     }
 
-    public void checkName(UserContext _ctx, String name, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, name);
-    if((name == null)){
+    public void checkUsername(UserContext _ctx, String username, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, username);
+    if((username == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, name);
+    maxStringCheck(_ctx, _parentLocation, 100, username);
 
     }
     public void checkEmail(UserContext _ctx, String email, ObjectLocation _parentLocation){
@@ -64,14 +70,6 @@ public class UserAccountChecker implements Checker<UserAccount>{
     maxStringCheck(_ctx, _parentLocation, 100, phone);
 
     }
-    public void checkPasswordHash(UserContext _ctx, String passwordHash, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, passwordHash);
-    if((passwordHash == null)){
-        return;
-    }
-    maxStringCheck(_ctx, _parentLocation, 100, passwordHash);
-
-    }
     public void checkStatus(UserContext _ctx, String status, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, status);
     if((status == null)){
@@ -80,15 +78,23 @@ public class UserAccountChecker implements Checker<UserAccount>{
     maxStringCheck(_ctx, _parentLocation, 100, status);
 
     }
-    public void checkCreateTime(UserContext _ctx, LocalDateTime createTime, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, createTime);
-    if((createTime == null)){
+    public void checkPasswordHash(UserContext _ctx, String passwordHash, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, passwordHash);
+    if((passwordHash == null)){
+        return;
+    }
+    maxStringCheck(_ctx, _parentLocation, 100, passwordHash);
+
+    }
+    public void checkCreatedAt(UserContext _ctx, LocalDateTime createdAt, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, createdAt);
+    if((createdAt == null)){
         return;
     }
     }
-    public void checkUpdateTime(UserContext _ctx, LocalDateTime updateTime, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, updateTime);
-    if((updateTime == null)){
+    public void checkUpdatedAt(UserContext _ctx, LocalDateTime updatedAt, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, updatedAt);
+    if((updatedAt == null)){
         return;
     }
     }

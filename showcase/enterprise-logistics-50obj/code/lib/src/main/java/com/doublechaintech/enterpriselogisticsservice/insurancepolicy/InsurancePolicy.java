@@ -1,10 +1,12 @@
 package com.doublechaintech.enterpriselogisticsservice.insurancepolicy;
 
+import com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
+import io.teaql.core.SmartList;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,7 +31,8 @@ public class InsurancePolicy extends BaseEntity implements RemoteInput {
     public static final String END_DATE_PROPERTY = "endDate";
     public static final String STATUS_PROPERTY = "status";
     public static final String CREATED_TIME_PROPERTY = "createdTime";
-    public static final String UPDATED_TIME_PROPERTY = "updatedTime";
+    public static final String UPDATE_TIME_PROPERTY = "updateTime";
+    public static final String CLAIMS_RECORD_LIST_PROPERTY = "claimsRecordList";
     private String policyNumber;
     private String provider;
     private BigDecimal coverageAmount;
@@ -38,7 +41,8 @@ public class InsurancePolicy extends BaseEntity implements RemoteInput {
     private LocalDate endDate;
     private String status;
     private LocalDateTime createdTime;
-    private LocalDateTime updatedTime;
+    private LocalDateTime updateTime;
+    private SmartList<ClaimsRecord> claimsRecordList;
 
     public String getPolicyNumber(){
         return this.policyNumber;
@@ -64,8 +68,11 @@ public class InsurancePolicy extends BaseEntity implements RemoteInput {
     public LocalDateTime getCreatedTime(){
         return this.createdTime;
     }
-    public LocalDateTime getUpdatedTime(){
-        return this.updatedTime;
+    public LocalDateTime getUpdateTime(){
+        return this.updateTime;
+    }
+    public SmartList<ClaimsRecord> getClaimsRecordList(){
+        return this.claimsRecordList;
     }
     public InsurancePolicy updatePolicyNumber(String policyNumber){
         policyNumber = (policyNumber == null ? null : policyNumber.trim());
@@ -134,12 +141,25 @@ public class InsurancePolicy extends BaseEntity implements RemoteInput {
         this.createdTime = createdTime;
         return this;
     }
-    public InsurancePolicy updateUpdatedTime(LocalDateTime updatedTime){
-        if(Objects.equals(this.updatedTime, updatedTime)){
+    public InsurancePolicy updateUpdateTime(LocalDateTime updateTime){
+        if(Objects.equals(this.updateTime, updateTime)){
             return this;
         }
-        handleUpdate(UPDATED_TIME_PROPERTY, getUpdatedTime(), updatedTime);
-        this.updatedTime = updatedTime;
+        handleUpdate(UPDATE_TIME_PROPERTY, getUpdateTime(), updateTime);
+        this.updateTime = updateTime;
+        return this;
+    }
+    public InsurancePolicy addClaimsRecord(ClaimsRecord claimsRecord){
+        if (claimsRecord == null){
+            return this;
+        }
+
+        if(null == this.claimsRecordList){
+            this.claimsRecordList = new SmartList<>();
+        }
+
+        this.claimsRecordList.add(claimsRecord);
+        claimsRecord.cacheRelation(ClaimsRecord.INSURANCE_POLICY_PROPERTY, this);
         return this;
     }
 
@@ -186,8 +206,9 @@ public class InsurancePolicy extends BaseEntity implements RemoteInput {
 
             case "createdTime": this.createdTime = (LocalDateTime) value; break;
 
-            case "updatedTime": this.updatedTime = (LocalDateTime) value; break;
+            case "updateTime": this.updateTime = (LocalDateTime) value; break;
 
+            case "claimsRecordList": this.claimsRecordList = (SmartList<ClaimsRecord>) value; break;
             default: super.__internalSet(property, value);
         }
     }
@@ -204,7 +225,8 @@ public class InsurancePolicy extends BaseEntity implements RemoteInput {
             case "endDate": return this.endDate;
             case "status": return this.status;
             case "createdTime": return this.createdTime;
-            case "updatedTime": return this.updatedTime;
+            case "updateTime": return this.updateTime;
+            case "claimsRecordList": return this.claimsRecordList;
             default: return super.__internalGet(property);
         }
     }

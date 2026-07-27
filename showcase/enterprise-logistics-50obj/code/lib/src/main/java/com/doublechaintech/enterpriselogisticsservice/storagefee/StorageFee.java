@@ -1,6 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.storagefee;
 
-import com.doublechaintech.enterpriselogisticsservice.invoice.Invoice;
+import com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainer;
+import com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
@@ -21,40 +22,35 @@ import java.util.Objects;
 public class StorageFee extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "StorageFee";
 
-    public static final String INVOICE_PROPERTY = "invoice";
-    public static final String FEE_AMOUNT_PROPERTY = "feeAmount";
+    public static final String WAREHOUSE_PROPERTY = "warehouse";
+    public static final String CONTAINER_PROPERTY = "container";
+    public static final String AMOUNT_PROPERTY = "amount";
     public static final String CURRENCY_PROPERTY = "currency";
-    public static final String PERIOD_START_PROPERTY = "periodStart";
-    public static final String PERIOD_END_PROPERTY = "periodEnd";
-    public static final String STATUS_PROPERTY = "status";
+    public static final String PERIOD_PROPERTY = "period";
     public static final String CREATE_TIME_PROPERTY = "createTime";
     public static final String UPDATE_TIME_PROPERTY = "updateTime";
-    private Invoice invoice;
-    private BigDecimal feeAmount;
+    private Warehouse warehouse;
+    private StorageContainer container;
+    private BigDecimal amount;
     private String currency;
-    private String periodStart;
-    private String periodEnd;
-    private String status;
+    private String period;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 
-    public Invoice getInvoice(){
-        return this.invoice;
+    public Warehouse getWarehouse(){
+        return this.warehouse;
     }
-    public BigDecimal getFeeAmount(){
-        return this.feeAmount;
+    public StorageContainer getContainer(){
+        return this.container;
+    }
+    public BigDecimal getAmount(){
+        return this.amount;
     }
     public String getCurrency(){
         return this.currency;
     }
-    public String getPeriodStart(){
-        return this.periodStart;
-    }
-    public String getPeriodEnd(){
-        return this.periodEnd;
-    }
-    public String getStatus(){
-        return this.status;
+    public String getPeriod(){
+        return this.period;
     }
     public LocalDateTime getCreateTime(){
         return this.createTime;
@@ -62,20 +58,28 @@ public class StorageFee extends BaseEntity implements RemoteInput {
     public LocalDateTime getUpdateTime(){
         return this.updateTime;
     }
-    public StorageFee updateInvoice(Invoice invoice){
-        if(Objects.equals(this.invoice, invoice)){
+    public StorageFee updateWarehouse(Warehouse warehouse){
+        if(Objects.equals(this.warehouse, warehouse)){
             return this;
         }
-        handleUpdate(INVOICE_PROPERTY, getInvoice(), invoice);
-        this.invoice = invoice;
+        handleUpdate(WAREHOUSE_PROPERTY, getWarehouse(), warehouse);
+        this.warehouse = warehouse;
         return this;
     }
-    public StorageFee updateFeeAmount(BigDecimal feeAmount){
-        if(Objects.equals(this.feeAmount, feeAmount)){
+    public StorageFee updateContainer(StorageContainer container){
+        if(Objects.equals(this.container, container)){
             return this;
         }
-        handleUpdate(FEE_AMOUNT_PROPERTY, getFeeAmount(), feeAmount);
-        this.feeAmount = feeAmount;
+        handleUpdate(CONTAINER_PROPERTY, getContainer(), container);
+        this.container = container;
+        return this;
+    }
+    public StorageFee updateAmount(BigDecimal amount){
+        if(Objects.equals(this.amount, amount)){
+            return this;
+        }
+        handleUpdate(AMOUNT_PROPERTY, getAmount(), amount);
+        this.amount = amount;
         return this;
     }
     public StorageFee updateCurrency(String currency){
@@ -87,31 +91,13 @@ public class StorageFee extends BaseEntity implements RemoteInput {
         this.currency = currency;
         return this;
     }
-    public StorageFee updatePeriodStart(String periodStart){
-        periodStart = (periodStart == null ? null : periodStart.trim());
-        if(Objects.equals(this.periodStart, periodStart)){
+    public StorageFee updatePeriod(String period){
+        period = (period == null ? null : period.trim());
+        if(Objects.equals(this.period, period)){
             return this;
         }
-        handleUpdate(PERIOD_START_PROPERTY, getPeriodStart(), periodStart);
-        this.periodStart = periodStart;
-        return this;
-    }
-    public StorageFee updatePeriodEnd(String periodEnd){
-        periodEnd = (periodEnd == null ? null : periodEnd.trim());
-        if(Objects.equals(this.periodEnd, periodEnd)){
-            return this;
-        }
-        handleUpdate(PERIOD_END_PROPERTY, getPeriodEnd(), periodEnd);
-        this.periodEnd = periodEnd;
-        return this;
-    }
-    public StorageFee updateStatus(String status){
-        status = (status == null ? null : status.trim());
-        if(Objects.equals(this.status, status)){
-            return this;
-        }
-        handleUpdate(STATUS_PROPERTY, getStatus(), status);
-        this.status = status;
+        handleUpdate(PERIOD_PROPERTY, getPeriod(), period);
+        this.period = period;
         return this;
     }
     public StorageFee updateCreateTime(LocalDateTime createTime){
@@ -158,17 +144,15 @@ public class StorageFee extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public void __internalSet(String property, Object value) {
         switch (property) {
-            case "invoice": this.invoice = (Invoice) value; break;
+            case "warehouse": this.warehouse = (Warehouse) value; break;
 
-            case "feeAmount": this.feeAmount = (BigDecimal) value; break;
+            case "container": this.container = (StorageContainer) value; break;
+
+            case "amount": this.amount = (BigDecimal) value; break;
 
             case "currency": this.currency = (value == null ? null : ((String)value).trim()); break;
 
-            case "periodStart": this.periodStart = (value == null ? null : ((String)value).trim()); break;
-
-            case "periodEnd": this.periodEnd = (value == null ? null : ((String)value).trim()); break;
-
-            case "status": this.status = (value == null ? null : ((String)value).trim()); break;
+            case "period": this.period = (value == null ? null : ((String)value).trim()); break;
 
             case "createTime": this.createTime = (LocalDateTime) value; break;
 
@@ -182,12 +166,11 @@ public class StorageFee extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public Object __internalGet(String property) {
         switch (property) {
-            case "invoice": return this.invoice;
-            case "feeAmount": return this.feeAmount;
+            case "warehouse": return this.warehouse;
+            case "container": return this.container;
+            case "amount": return this.amount;
             case "currency": return this.currency;
-            case "periodStart": return this.periodStart;
-            case "periodEnd": return this.periodEnd;
-            case "status": return this.status;
+            case "period": return this.period;
             case "createTime": return this.createTime;
             case "updateTime": return this.updateTime;
             default: return super.__internalGet(property);

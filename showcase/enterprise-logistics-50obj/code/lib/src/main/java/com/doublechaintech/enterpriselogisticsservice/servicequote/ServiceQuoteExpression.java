@@ -10,6 +10,7 @@ import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.function.Function;
 
 public class ServiceQuoteExpression<T, E, U extends ServiceQuote> extends ExpressionAdaptor<T, E, U> implements BaseEntityExpression<T, U> {
@@ -45,13 +46,6 @@ public class ServiceQuoteExpression<T, E, U extends ServiceQuote> extends Expres
        return new ServiceQuoteExpression(this, $it ->  ((ServiceQuote)$it).updateQuoteNumber(quoteNumber));
     }
 
-    public Expression<T, String> getDescription(){
-       return apply(ServiceQuote::getDescription);
-    }
-    public ServiceQuoteExpression<T, U, U> updateDescription(String description){
-       return new ServiceQuoteExpression(this, $it ->  ((ServiceQuote)$it).updateDescription(description));
-    }
-
     public Expression<T, BigDecimal> getEstimatedCost(){
        return apply(ServiceQuote::getEstimatedCost);
     }
@@ -66,18 +60,18 @@ public class ServiceQuoteExpression<T, E, U extends ServiceQuote> extends Expres
        return new ServiceQuoteExpression(this, $it ->  ((ServiceQuote)$it).updateCurrency(currency));
     }
 
-    public Expression<T, String> getStatus(){
-       return apply(ServiceQuote::getStatus);
-    }
-    public ServiceQuoteExpression<T, U, U> updateStatus(String status){
-       return new ServiceQuoteExpression(this, $it ->  ((ServiceQuote)$it).updateStatus(status));
-    }
-
     public Expression<T, LocalDate> getValidUntil(){
        return apply(ServiceQuote::getValidUntil);
     }
     public ServiceQuoteExpression<T, U, U> updateValidUntil(LocalDate validUntil){
        return new ServiceQuoteExpression(this, $it ->  ((ServiceQuote)$it).updateValidUntil(validUntil));
+    }
+
+    public Expression<T, String> getStatus(){
+       return apply(ServiceQuote::getStatus);
+    }
+    public ServiceQuoteExpression<T, U, U> updateStatus(String status){
+       return new ServiceQuoteExpression(this, $it ->  ((ServiceQuote)$it).updateStatus(status));
     }
 
     public PrivateCustomerExpression<T, U, PrivateCustomer> getPrivateCustomer(){
@@ -94,6 +88,20 @@ public class ServiceQuoteExpression<T, E, U extends ServiceQuote> extends Expres
 
     public ServiceQuoteExpression<T, U, U> updateCorporateCustomer(CorporateCustomer corporateCustomer){
        return new ServiceQuoteExpression(this, $it ->  ((ServiceQuote)$it).updateCorporateCustomer(corporateCustomer));
+    }
+
+    public Expression<T, LocalDateTime> getCreatedAt(){
+       return apply(ServiceQuote::getCreatedAt);
+    }
+    public ServiceQuoteExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
+       return new ServiceQuoteExpression(this, $it ->  ((ServiceQuote)$it).updateCreatedAt(createdAt));
+    }
+
+    public Expression<T, LocalDateTime> getUpdatedAt(){
+       return apply(ServiceQuote::getUpdatedAt);
+    }
+    public ServiceQuoteExpression<T, U, U> updateUpdatedAt(LocalDateTime updatedAt){
+       return new ServiceQuoteExpression(this, $it ->  ((ServiceQuote)$it).updateUpdatedAt(updatedAt));
     }
 
 }

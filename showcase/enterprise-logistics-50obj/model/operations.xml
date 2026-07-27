@@ -3,83 +3,80 @@
   <!-- 1. Moving Order -->
   <moving_order _name="Moving Order"
                 _module="Operations" _module_key="operations"
-                order_id="string()"
+                order_number="string()"
+                status="order_status()"
                 customer="private_customer()"
-                status="string()"
+                pickup_address="pickup_address()"
+                delivery_address="pickup_address()"
                 total_weight="500.00"
-                total_volume="10.00"
+                total_volume="10.50"
                 estimated_cost="1500.00"
-                actual_cost="1600.00"
-                pickup_date="2023-10-01"
-                delivery_date="2023-10-05"
-                special_instructions="string()"
-                create_time="createTime()"
-                update_time="updateTime()">
+                actual_cost="1550.00"
+                created_time="createTime()"
+                updated_time="updateTime()">
     <_audit_mask_fields>
-      <field name="customer" />
+      <field name="customer_id" />
     </_audit_mask_fields>
   </moving_order>
 
   <!-- 2. Dispatch Plan -->
   <dispatch_plan _name="Dispatch Plan"
                  _module="Operations" _module_key="operations"
-                 plan_id="string()"
+                 plan_number="string()"
+                 status="plan_status()"
                  moving_order="moving_order()"
                  vehicle="vehicle()"
                  driver="staff_member()"
-                 status="string()"
-                 scheduled_departure="2023-10-01T08:00:00"
-                 scheduled_arrival="2023-10-01T18:00:00"
-                 create_time="createTime()"
-                 update_time="updateTime()" />
+                 scheduled_departure="createTime()"
+                 scheduled_arrival="createTime()"
+                 created_time="createTime()"
+                 updated_time="updateTime()" />
 
   <!-- 3. Transit Route -->
   <transit_route _name="Transit Route"
                  _module="Operations" _module_key="operations"
-                 route_id="string()"
-                 name="string()"
-                 origin_warehouse="warehouse()"
-                 destination_warehouse="warehouse()"
-                 distance_km="150.00"
-                 estimated_duration_hours="3.00"
-                 status="string()"
-                 create_time="createTime()" />
+                 route_code="string()"
+                 origin_city="string()"
+                 destination_city="string()"
+                 distance_km="1200.00"
+                 estimated_duration_hours="14.00"
+                 created_time="createTime()"
+                 updated_time="updateTime()" />
 
   <!-- 4. Time Slot -->
   <time_slot _name="Time Slot"
              _module="Operations" _module_key="operations"
-             slot_id="string()"
-             moving_order="moving_order()"
-             start_time="2023-10-01T09:00:00"
-             end_time="2023-10-01T10:00:00"
-             status="string()"
-             create_time="createTime()" />
+             slot_code="string()"
+             start_time="createTime()"
+             end_time="createTime()"
+             capacity="10"
+             available_spots="5"
+             created_time="createTime()"
+             updated_time="updateTime()" />
 
   <!-- 5. Cargo Item -->
   <cargo_item _name="Cargo Item"
               _module="Operations" _module_key="operations"
-              item_id="string()"
-              moving_order="moving_order()"
+              item_code="string()"
               description="string()"
-              category="string()"
               weight_kg="25.00"
               volume_m3="0.50"
-              value="1000.00"
               fragile="true"
-              create_time="createTime()" />
+              moving_order="moving_order()"
+              created_time="createTime()"
+              updated_time="updateTime()" />
 
   <!-- 6. Pickup Address -->
   <pickup_address _name="Pickup Address"
                   _module="Operations" _module_key="operations"
-                  address_id="string()"
-                  moving_order="moving_order()"
                   address_line1="string()"
                   address_line2="string()"
                   city="string()"
-                  state="string()"
-                  zip_code="string()"
+                  state_province="string()"
+                  postal_code="string()"
                   country="string()"
-                  contact_name="string()"
-                  contact_phone="string()"
-                  create_time="createTime()" />
+                  latitude="40.7128"
+                  longitude="-74.0060"
+                  created_time="createTime()"
+                  updated_time="updateTime()" />
 </root>

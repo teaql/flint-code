@@ -1,7 +1,5 @@
 package com.doublechaintech.enterpriselogisticsservice.transitroute;
 
-import com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse;
-import com.doublechaintech.enterpriselogisticsservice.warehouse.WarehouseChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
@@ -26,50 +24,46 @@ public class TransitRouteChecker implements Checker<TransitRoute>{
          return;
       }
       if(transitRoute.newItem()){
-        if(transitRoute.getCreateTime() == null){
-           transitRoute.updateCreateTime(java.time.LocalDateTime.now());
+        if(transitRoute.getCreatedTime() == null){
+           transitRoute.updateCreatedTime(java.time.LocalDateTime.now());
+        }if(transitRoute.getUpdatedTime() == null){
+           transitRoute.updateUpdatedTime(java.time.LocalDateTime.now());
         }
       }else if(transitRoute.updateItem()){
+        transitRoute.updateUpdatedTime(java.time.LocalDateTime.now());
       }
-      checkRouteId(_ctx, transitRoute.getProperty(TransitRoute.ROUTE_ID_PROPERTY), newLocation(_parentLocation, TransitRoute.ROUTE_ID_PROPERTY));
-      checkName(_ctx, transitRoute.getProperty(TransitRoute.NAME_PROPERTY), newLocation(_parentLocation, TransitRoute.NAME_PROPERTY));
-      checkOriginWarehouse(_ctx, transitRoute.getProperty(TransitRoute.ORIGIN_WAREHOUSE_PROPERTY), newLocation(_parentLocation, TransitRoute.ORIGIN_WAREHOUSE_PROPERTY));
-      checkDestinationWarehouse(_ctx, transitRoute.getProperty(TransitRoute.DESTINATION_WAREHOUSE_PROPERTY), newLocation(_parentLocation, TransitRoute.DESTINATION_WAREHOUSE_PROPERTY));
+      checkRouteCode(_ctx, transitRoute.getProperty(TransitRoute.ROUTE_CODE_PROPERTY), newLocation(_parentLocation, TransitRoute.ROUTE_CODE_PROPERTY));
+      checkOriginCity(_ctx, transitRoute.getProperty(TransitRoute.ORIGIN_CITY_PROPERTY), newLocation(_parentLocation, TransitRoute.ORIGIN_CITY_PROPERTY));
+      checkDestinationCity(_ctx, transitRoute.getProperty(TransitRoute.DESTINATION_CITY_PROPERTY), newLocation(_parentLocation, TransitRoute.DESTINATION_CITY_PROPERTY));
       checkDistanceKm(_ctx, transitRoute.getProperty(TransitRoute.DISTANCE_KM_PROPERTY), newLocation(_parentLocation, TransitRoute.DISTANCE_KM_PROPERTY));
       checkEstimatedDurationHours(_ctx, transitRoute.getProperty(TransitRoute.ESTIMATED_DURATION_HOURS_PROPERTY), newLocation(_parentLocation, TransitRoute.ESTIMATED_DURATION_HOURS_PROPERTY));
-      checkStatus(_ctx, transitRoute.getProperty(TransitRoute.STATUS_PROPERTY), newLocation(_parentLocation, TransitRoute.STATUS_PROPERTY));
-      checkCreateTime(_ctx, transitRoute.getProperty(TransitRoute.CREATE_TIME_PROPERTY), newLocation(_parentLocation, TransitRoute.CREATE_TIME_PROPERTY));
+      checkCreatedTime(_ctx, transitRoute.getProperty(TransitRoute.CREATED_TIME_PROPERTY), newLocation(_parentLocation, TransitRoute.CREATED_TIME_PROPERTY));
+      checkUpdatedTime(_ctx, transitRoute.getProperty(TransitRoute.UPDATED_TIME_PROPERTY), newLocation(_parentLocation, TransitRoute.UPDATED_TIME_PROPERTY));
     }
 
-    public void checkRouteId(UserContext _ctx, String routeId, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, routeId);
-    if((routeId == null)){
+    public void checkRouteCode(UserContext _ctx, String routeCode, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, routeCode);
+    if((routeCode == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, routeId);
+    maxStringCheck(_ctx, _parentLocation, 100, routeCode);
 
     }
-    public void checkName(UserContext _ctx, String name, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, name);
-    if((name == null)){
+    public void checkOriginCity(UserContext _ctx, String originCity, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, originCity);
+    if((originCity == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, name);
+    maxStringCheck(_ctx, _parentLocation, 100, originCity);
 
     }
-    public void checkOriginWarehouse(UserContext _ctx, Warehouse originWarehouse, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, originWarehouse);
-    if((originWarehouse == null)){
+    public void checkDestinationCity(UserContext _ctx, String destinationCity, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, destinationCity);
+    if((destinationCity == null)){
         return;
     }
-    new WarehouseChecker().checkAndFix(_ctx, originWarehouse, _parentLocation);
-    }
-    public void checkDestinationWarehouse(UserContext _ctx, Warehouse destinationWarehouse, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, destinationWarehouse);
-    if((destinationWarehouse == null)){
-        return;
-    }
-    new WarehouseChecker().checkAndFix(_ctx, destinationWarehouse, _parentLocation);
+    maxStringCheck(_ctx, _parentLocation, 100, destinationCity);
+
     }
     public void checkDistanceKm(UserContext _ctx, BigDecimal distanceKm, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, distanceKm);
@@ -83,17 +77,15 @@ public class TransitRouteChecker implements Checker<TransitRoute>{
         return;
     }
     }
-    public void checkStatus(UserContext _ctx, String status, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, status);
-    if((status == null)){
+    public void checkCreatedTime(UserContext _ctx, LocalDateTime createdTime, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, createdTime);
+    if((createdTime == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, status);
-
     }
-    public void checkCreateTime(UserContext _ctx, LocalDateTime createTime, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, createTime);
-    if((createTime == null)){
+    public void checkUpdatedTime(UserContext _ctx, LocalDateTime updatedTime, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, updatedTime);
+    if((updatedTime == null)){
         return;
     }
     }

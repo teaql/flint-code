@@ -7,7 +7,6 @@ import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.function.Function;
 
 public class TaxRecordExpression<T, E, U extends TaxRecord> extends ExpressionAdaptor<T, E, U> implements BaseEntityExpression<T, U> {
@@ -43,18 +42,18 @@ public class TaxRecordExpression<T, E, U extends TaxRecord> extends ExpressionAd
        return new TaxRecordExpression(this, $it ->  ((TaxRecord)$it).updateName(name));
     }
 
-    public Expression<T, String> getCode(){
-       return apply(TaxRecord::getCode);
+    public Expression<T, String> getTaxCode(){
+       return apply(TaxRecord::getTaxCode);
     }
-    public TaxRecordExpression<T, U, U> updateCode(String code){
-       return new TaxRecordExpression(this, $it ->  ((TaxRecord)$it).updateCode(code));
+    public TaxRecordExpression<T, U, U> updateTaxCode(String taxCode){
+       return new TaxRecordExpression(this, $it ->  ((TaxRecord)$it).updateTaxCode(taxCode));
     }
 
-    public Expression<T, BigDecimal> getAmount(){
-       return apply(TaxRecord::getAmount);
+    public Expression<T, BigDecimal> getTaxAmount(){
+       return apply(TaxRecord::getTaxAmount);
     }
-    public TaxRecordExpression<T, U, U> updateAmount(BigDecimal amount){
-       return new TaxRecordExpression(this, $it ->  ((TaxRecord)$it).updateAmount(amount));
+    public TaxRecordExpression<T, U, U> updateTaxAmount(BigDecimal taxAmount){
+       return new TaxRecordExpression(this, $it ->  ((TaxRecord)$it).updateTaxAmount(taxAmount));
     }
 
     public Expression<T, String> getCurrency(){
@@ -71,25 +70,18 @@ public class TaxRecordExpression<T, E, U extends TaxRecord> extends ExpressionAd
        return new TaxRecordExpression(this, $it ->  ((TaxRecord)$it).updateTaxRate(taxRate));
     }
 
-    public Expression<T, String> getTaxType(){
-       return apply(TaxRecord::getTaxType);
+    public Expression<T, String> getTaxPeriod(){
+       return apply(TaxRecord::getTaxPeriod);
     }
-    public TaxRecordExpression<T, U, U> updateTaxType(String taxType){
-       return new TaxRecordExpression(this, $it ->  ((TaxRecord)$it).updateTaxType(taxType));
-    }
-
-    public Expression<T, LocalDateTime> getCreatedAt(){
-       return apply(TaxRecord::getCreatedAt);
-    }
-    public TaxRecordExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
-       return new TaxRecordExpression(this, $it ->  ((TaxRecord)$it).updateCreatedAt(createdAt));
+    public TaxRecordExpression<T, U, U> updateTaxPeriod(String taxPeriod){
+       return new TaxRecordExpression(this, $it ->  ((TaxRecord)$it).updateTaxPeriod(taxPeriod));
     }
 
-    public Expression<T, LocalDateTime> getUpdatedAt(){
-       return apply(TaxRecord::getUpdatedAt);
+    public Expression<T, String> getFilingStatus(){
+       return apply(TaxRecord::getFilingStatus);
     }
-    public TaxRecordExpression<T, U, U> updateUpdatedAt(LocalDateTime updatedAt){
-       return new TaxRecordExpression(this, $it ->  ((TaxRecord)$it).updateUpdatedAt(updatedAt));
+    public TaxRecordExpression<T, U, U> updateFilingStatus(String filingStatus){
+       return new TaxRecordExpression(this, $it ->  ((TaxRecord)$it).updateFilingStatus(filingStatus));
     }
 
     public InvoiceExpression<T, U, Invoice> getInvoice(){

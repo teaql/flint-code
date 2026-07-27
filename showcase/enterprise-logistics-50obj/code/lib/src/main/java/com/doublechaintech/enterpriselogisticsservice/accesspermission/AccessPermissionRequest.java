@@ -1,13 +1,9 @@
 package com.doublechaintech.enterpriselogisticsservice.accesspermission;
 
-import com.doublechaintech.enterpriselogisticsservice.Q;
-import com.doublechaintech.enterpriselogisticsservice.userrole.UserRole;
-import com.doublechaintech.enterpriselogisticsservice.userrole.UserRoleRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
 import io.teaql.core.SearchCriteria;
-import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 
@@ -82,7 +78,7 @@ public class AccessPermissionRequest<T extends AccessPermission> extends BaseReq
 
     public AccessPermissionRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectName().selectResource().selectAction().selectRoleIdOnly().selectVersion();
+        return selectId().selectPermissionCode().selectResource().selectAction().selectDescription().selectVersion();
     }
 
     public AccessPermissionRequest<T> selectSelfFields(){
@@ -91,12 +87,12 @@ public class AccessPermissionRequest<T extends AccessPermission> extends BaseReq
 
     public AccessPermissionRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectName().selectResource().selectAction().selectRole().selectVersion();
+        return selectId().selectPermissionCode().selectResource().selectAction().selectDescription().selectVersion();
     }
 
     public AccessPermissionRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectName().selectResource().selectAction().selectRole().selectVersion();
+        return selectId().selectPermissionCode().selectResource().selectAction().selectDescription().selectVersion();
     }
 
 
@@ -117,21 +113,21 @@ public class AccessPermissionRequest<T extends AccessPermission> extends BaseReq
        unselectProperty(AccessPermission.ID_PROPERTY);
        return this;
     }
-    public AccessPermissionRequest<T> selectName(){
-       selectProperty(AccessPermission.NAME_PROPERTY);
+    public AccessPermissionRequest<T> selectPermissionCode(){
+       selectProperty(AccessPermission.PERMISSION_CODE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the name with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  name) to fetch name property.
+     * fill the permissionCode with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  permissionCode) to fetch permissionCode property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public AccessPermissionRequest<T> unselectName(){
-       unselectProperty(AccessPermission.NAME_PROPERTY);
+    public AccessPermissionRequest<T> unselectPermissionCode(){
+       unselectProperty(AccessPermission.PERMISSION_CODE_PROPERTY);
        return this;
     }
     public AccessPermissionRequest<T> selectResource(){
@@ -168,23 +164,21 @@ public class AccessPermissionRequest<T extends AccessPermission> extends BaseReq
        unselectProperty(AccessPermission.ACTION_PROPERTY);
        return this;
     }
-    public AccessPermissionRequest<T> selectRoleIdOnly(){
-       selectProperty(AccessPermission.ROLE_PROPERTY);
+    public AccessPermissionRequest<T> selectDescription(){
+       selectProperty(AccessPermission.DESCRIPTION_PROPERTY);
        return this;
     }
 
-    public AccessPermissionRequest<T> selectRole(){
-        return selectRoleWith(Q.userRoles().unlimited().selectSelf());
-    }
+    /**
+     * fill the description with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  description) to fetch description property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
 
-    public AccessPermissionRequest<T> selectRoleWith(UserRoleRequest role){
-       selectProperty(AccessPermission.ROLE_PROPERTY);
-       enhanceRelation(AccessPermission.ROLE_PROPERTY, role);
-       return this;
-    }
 
-    public AccessPermissionRequest<T> unselectRole(){
-       unselectProperty(AccessPermission.ROLE_PROPERTY);
+
+
+    public AccessPermissionRequest<T> unselectDescription(){
+       unselectProperty(AccessPermission.DESCRIPTION_PROPERTY);
        return this;
     }
     public AccessPermissionRequest<T> selectVersion(){
@@ -222,65 +216,65 @@ public class AccessPermissionRequest<T extends AccessPermission> extends BaseReq
 
 
 
-    public AccessPermissionRequest<T> filterByName(String... name){
-      if (name == null || name.length == 0) {
-        throw new IllegalArgumentException("filterByName parameter name cannot be empty");
+    public AccessPermissionRequest<T> filterByPermissionCode(String... permissionCode){
+      if (permissionCode == null || permissionCode.length == 0) {
+        throw new IllegalArgumentException("filterByPermissionCode parameter permissionCode cannot be empty");
       }
-      return appendSearchCriteria(createNameCriteria(Operator.EQUAL, (Object[])name));
+      return appendSearchCriteria(createPermissionCodeCriteria(Operator.EQUAL, (Object[])permissionCode));
     }
 
-    public AccessPermissionRequest<T> withName(Operator operator, Object... values){
-       return appendSearchCriteria(createNameCriteria(operator, values));
+    public AccessPermissionRequest<T> withPermissionCode(Operator operator, Object... values){
+       return appendSearchCriteria(createPermissionCodeCriteria(operator, values));
     }
 
-    public AccessPermissionRequest<T> withNameIsUnknown(){
-       return withName(Operator.IS_NULL);
+    public AccessPermissionRequest<T> withPermissionCodeIsUnknown(){
+       return withPermissionCode(Operator.IS_NULL);
     }
 
-    public AccessPermissionRequest<T> withNameIsKnown(){
-       return withName(Operator.IS_NOT_NULL);
+    public AccessPermissionRequest<T> withPermissionCodeIsKnown(){
+       return withPermissionCode(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createNameCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(AccessPermission.NAME_PROPERTY, operator, values);
+    public SearchCriteria createPermissionCodeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(AccessPermission.PERMISSION_CODE_PROPERTY, operator, values);
     }
 
-    public AccessPermissionRequest<T> withNameGreaterThan(String name){
-       return withName(Operator.GREATER_THAN, name);
+    public AccessPermissionRequest<T> withPermissionCodeGreaterThan(String permissionCode){
+       return withPermissionCode(Operator.GREATER_THAN, permissionCode);
     }
 
-    public AccessPermissionRequest<T> withNameGreaterThanOrEqualTo(String name){
-       return withName(Operator.GREATER_THAN_OR_EQUAL, name);
+    public AccessPermissionRequest<T> withPermissionCodeGreaterThanOrEqualTo(String permissionCode){
+       return withPermissionCode(Operator.GREATER_THAN_OR_EQUAL, permissionCode);
     }
 
-    public AccessPermissionRequest<T> withNameLessThan(String name){
-       return withName(Operator.LESS_THAN, name);
+    public AccessPermissionRequest<T> withPermissionCodeLessThan(String permissionCode){
+       return withPermissionCode(Operator.LESS_THAN, permissionCode);
     }
 
-    public AccessPermissionRequest<T> withNameLessThanOrEqualTo(String name){
-       return withName(Operator.LESS_THAN_OR_EQUAL, name);
+    public AccessPermissionRequest<T> withPermissionCodeLessThanOrEqualTo(String permissionCode){
+       return withPermissionCode(Operator.LESS_THAN_OR_EQUAL, permissionCode);
     }
 
-    public AccessPermissionRequest<T> withNameBetween(String startOfName, String endOfName){
-       return withName(Operator.BETWEEN, startOfName, endOfName);
+    public AccessPermissionRequest<T> withPermissionCodeBetween(String startOfPermissionCode, String endOfPermissionCode){
+       return withPermissionCode(Operator.BETWEEN, startOfPermissionCode, endOfPermissionCode);
     }
-    public AccessPermissionRequest<T> withNameStartingWith(String name){
-       return withName(Operator.BEGIN_WITH, name);
+    public AccessPermissionRequest<T> withPermissionCodeStartingWith(String permissionCode){
+       return withPermissionCode(Operator.BEGIN_WITH, permissionCode);
     }
-    public AccessPermissionRequest<T> withNameContaining(String name){
-       return withName(Operator.CONTAIN, name);
-    }
-
-    public AccessPermissionRequest<T> withNameEndingWith(String name){
-       return withName(Operator.END_WITH, name);
+    public AccessPermissionRequest<T> withPermissionCodeContaining(String permissionCode){
+       return withPermissionCode(Operator.CONTAIN, permissionCode);
     }
 
-    public AccessPermissionRequest<T> withNameIs(String name){
-       return withName(Operator.EQUAL, name);
+    public AccessPermissionRequest<T> withPermissionCodeEndingWith(String permissionCode){
+       return withPermissionCode(Operator.END_WITH, permissionCode);
     }
 
-    public AccessPermissionRequest<T> withNameSoundingLike(String name){
-       return withName(Operator.SOUNDS_LIKE, name);
+    public AccessPermissionRequest<T> withPermissionCodeIs(String permissionCode){
+       return withPermissionCode(Operator.EQUAL, permissionCode);
+    }
+
+    public AccessPermissionRequest<T> withPermissionCodeSoundingLike(String permissionCode){
+       return withPermissionCode(Operator.SOUNDS_LIKE, permissionCode);
     }
 
 
@@ -411,38 +405,68 @@ public class AccessPermissionRequest<T extends AccessPermission> extends BaseReq
 
 
 
-    public AccessPermissionRequest<T> filterByRole(UserRole... role){
-      if (role == null || role.length == 0) {
-        throw new IllegalArgumentException("filterByRole parameter role cannot be empty");
+    public AccessPermissionRequest<T> filterByDescription(String... description){
+      if (description == null || description.length == 0) {
+        throw new IllegalArgumentException("filterByDescription parameter description cannot be empty");
       }
-      return appendSearchCriteria(createRoleCriteria(Operator.EQUAL, (Object[])role));
+      return appendSearchCriteria(createDescriptionCriteria(Operator.EQUAL, (Object[])description));
     }
 
-    public AccessPermissionRequest<T> withRole(Operator operator, Object... values){
-       return appendSearchCriteria(createRoleCriteria(operator, values));
+    public AccessPermissionRequest<T> withDescription(Operator operator, Object... values){
+       return appendSearchCriteria(createDescriptionCriteria(operator, values));
     }
 
-    public AccessPermissionRequest<T> withRoleIsUnknown(){
-       return withRole(Operator.IS_NULL);
+    public AccessPermissionRequest<T> withDescriptionIsUnknown(){
+       return withDescription(Operator.IS_NULL);
     }
 
-    public AccessPermissionRequest<T> withRoleIsKnown(){
-       return withRole(Operator.IS_NOT_NULL);
+    public AccessPermissionRequest<T> withDescriptionIsKnown(){
+       return withDescription(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createRoleCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(AccessPermission.ROLE_PROPERTY, operator, values);
+    public SearchCriteria createDescriptionCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(AccessPermission.DESCRIPTION_PROPERTY, operator, values);
     }
 
-    public AccessPermissionRequest<T> filterByRole(Long role){
-      if(role == null){
-         return this;
-      }
-      return withRole(Operator.EQUAL, role);
+    public AccessPermissionRequest<T> withDescriptionGreaterThan(String description){
+       return withDescription(Operator.GREATER_THAN, description);
     }
-    public AccessPermissionRequest<T> withRoleMatching(UserRoleRequest role){
-       return appendSearchCriteria(new SubQuerySearchCriteria(AccessPermission.ROLE_PROPERTY, role, UserRole.ID_PROPERTY));
+
+    public AccessPermissionRequest<T> withDescriptionGreaterThanOrEqualTo(String description){
+       return withDescription(Operator.GREATER_THAN_OR_EQUAL, description);
     }
+
+    public AccessPermissionRequest<T> withDescriptionLessThan(String description){
+       return withDescription(Operator.LESS_THAN, description);
+    }
+
+    public AccessPermissionRequest<T> withDescriptionLessThanOrEqualTo(String description){
+       return withDescription(Operator.LESS_THAN_OR_EQUAL, description);
+    }
+
+    public AccessPermissionRequest<T> withDescriptionBetween(String startOfDescription, String endOfDescription){
+       return withDescription(Operator.BETWEEN, startOfDescription, endOfDescription);
+    }
+    public AccessPermissionRequest<T> withDescriptionStartingWith(String description){
+       return withDescription(Operator.BEGIN_WITH, description);
+    }
+    public AccessPermissionRequest<T> withDescriptionContaining(String description){
+       return withDescription(Operator.CONTAIN, description);
+    }
+
+    public AccessPermissionRequest<T> withDescriptionEndingWith(String description){
+       return withDescription(Operator.END_WITH, description);
+    }
+
+    public AccessPermissionRequest<T> withDescriptionIs(String description){
+       return withDescription(Operator.EQUAL, description);
+    }
+
+    public AccessPermissionRequest<T> withDescriptionSoundingLike(String description){
+       return withDescription(Operator.SOUNDS_LIKE, description);
+    }
+
+
 
     public AccessPermissionRequest<T> filterByVersion(Long... version){
       if (version == null || version.length == 0) {
@@ -496,16 +520,6 @@ public class AccessPermissionRequest<T extends AccessPermission> extends BaseReq
         super.count(retName);
         return this;
     }
-    public AccessPermissionRequest<T> groupByRoleWithDetails(){
-       return groupByRoleWithDetails(Q.userRoles().unlimited());
-    }
-
-    public AccessPermissionRequest<T> groupByRoleWithDetails(UserRoleRequest subRequest){
-       aggregate(AccessPermission.ROLE_PROPERTY, subRequest);
-       return this;
-    }
-
-
 
     public AccessPermissionRequest<T> groupById(){
        groupBy(AccessPermission.ID_PROPERTY);
@@ -522,18 +536,18 @@ public class AccessPermissionRequest<T extends AccessPermission> extends BaseReq
        return this;
     }
 
-    public AccessPermissionRequest<T> groupByName(){
-       groupBy(AccessPermission.NAME_PROPERTY);
+    public AccessPermissionRequest<T> groupByPermissionCode(){
+       groupBy(AccessPermission.PERMISSION_CODE_PROPERTY);
        return this;
     }
 
-    public AccessPermissionRequest<T> groupByNameAs(String retName){
-       groupBy(retName, AccessPermission.NAME_PROPERTY);
+    public AccessPermissionRequest<T> groupByPermissionCodeAs(String retName){
+       groupBy(retName, AccessPermission.PERMISSION_CODE_PROPERTY);
        return this;
     }
 
-    public AccessPermissionRequest<T> groupByNameWithFunction(String retName, AggrFunction function){
-       groupBy(retName, AccessPermission.NAME_PROPERTY, function);
+    public AccessPermissionRequest<T> groupByPermissionCodeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, AccessPermission.PERMISSION_CODE_PROPERTY, function);
        return this;
     }
 
@@ -566,22 +580,19 @@ public class AccessPermissionRequest<T extends AccessPermission> extends BaseReq
        groupBy(retName, AccessPermission.ACTION_PROPERTY, function);
        return this;
     }
-    public AccessPermissionRequest<T> groupByRoleWith(UserRoleRequest subRequest){
-       groupBy(AccessPermission.ROLE_PROPERTY, subRequest);
-       return this;
-    }
-    public AccessPermissionRequest<T> groupByRole(){
-       groupBy(AccessPermission.ROLE_PROPERTY);
+
+    public AccessPermissionRequest<T> groupByDescription(){
+       groupBy(AccessPermission.DESCRIPTION_PROPERTY);
        return this;
     }
 
-    public AccessPermissionRequest<T> groupByRoleAs(String retName){
-       groupBy(retName, AccessPermission.ROLE_PROPERTY);
+    public AccessPermissionRequest<T> groupByDescriptionAs(String retName){
+       groupBy(retName, AccessPermission.DESCRIPTION_PROPERTY);
        return this;
     }
 
-    public AccessPermissionRequest<T> groupByRoleWithFunction(String retName, AggrFunction function){
-       groupBy(retName, AccessPermission.ROLE_PROPERTY, function);
+    public AccessPermissionRequest<T> groupByDescriptionWithFunction(String retName, AggrFunction function){
+       groupBy(retName, AccessPermission.DESCRIPTION_PROPERTY, function);
        return this;
     }
 
@@ -600,30 +611,6 @@ public class AccessPermissionRequest<T extends AccessPermission> extends BaseReq
        return this;
     }
 
-    public AccessPermissionRequest<T> withRoleIsAdmin(){
-       filterByRole(com.doublechaintech.enterpriselogisticsservice.Constants.USER_ROLE_ADMIN);
-       return this;
-    }
-
-
-    public AccessPermissionRequest<T> withRoleIsDispatcher(){
-       filterByRole(com.doublechaintech.enterpriselogisticsservice.Constants.USER_ROLE_DISPATCHER);
-       return this;
-    }
-
-
-    public AccessPermissionRequest<T> withRoleIsDriver(){
-       filterByRole(com.doublechaintech.enterpriselogisticsservice.Constants.USER_ROLE_DRIVER);
-       return this;
-    }
-
-
-    public AccessPermissionRequest<T> withRoleIsCs(){
-       filterByRole(com.doublechaintech.enterpriselogisticsservice.Constants.USER_ROLE_CS);
-       return this;
-    }
-
-
 
 
     public AccessPermissionRequest<T> orderByIdAscending(){
@@ -636,22 +623,22 @@ public class AccessPermissionRequest<T extends AccessPermission> extends BaseReq
        return this;
     }
 
-    public AccessPermissionRequest<T> orderByNameAscending(){
-       addOrderByAscending(AccessPermission.NAME_PROPERTY);
+    public AccessPermissionRequest<T> orderByPermissionCodeAscending(){
+       addOrderByAscending(AccessPermission.PERMISSION_CODE_PROPERTY);
        return this;
     }
 
-    public AccessPermissionRequest<T> orderByNameDescending(){
-       addOrderByDescending(AccessPermission.NAME_PROPERTY);
+    public AccessPermissionRequest<T> orderByPermissionCodeDescending(){
+       addOrderByDescending(AccessPermission.PERMISSION_CODE_PROPERTY);
        return this;
     }
-    public AccessPermissionRequest<T> orderByNameAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(AccessPermission.NAME_PROPERTY);
+    public AccessPermissionRequest<T> orderByPermissionCodeAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(AccessPermission.PERMISSION_CODE_PROPERTY);
        return this;
     }
 
-    public AccessPermissionRequest<T> orderByNameDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(AccessPermission.NAME_PROPERTY);
+    public AccessPermissionRequest<T> orderByPermissionCodeDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(AccessPermission.PERMISSION_CODE_PROPERTY);
        return this;
     }
     public AccessPermissionRequest<T> orderByResourceAscending(){
@@ -690,16 +677,24 @@ public class AccessPermissionRequest<T extends AccessPermission> extends BaseReq
        addOrderByDescendingUsingGBK(AccessPermission.ACTION_PROPERTY);
        return this;
     }
-    public AccessPermissionRequest<T> orderByRoleAscending(){
-       addOrderByAscending(AccessPermission.ROLE_PROPERTY);
+    public AccessPermissionRequest<T> orderByDescriptionAscending(){
+       addOrderByAscending(AccessPermission.DESCRIPTION_PROPERTY);
        return this;
     }
 
-    public AccessPermissionRequest<T> orderByRoleDescending(){
-       addOrderByDescending(AccessPermission.ROLE_PROPERTY);
+    public AccessPermissionRequest<T> orderByDescriptionDescending(){
+       addOrderByDescending(AccessPermission.DESCRIPTION_PROPERTY);
+       return this;
+    }
+    public AccessPermissionRequest<T> orderByDescriptionAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(AccessPermission.DESCRIPTION_PROPERTY);
        return this;
     }
 
+    public AccessPermissionRequest<T> orderByDescriptionDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(AccessPermission.DESCRIPTION_PROPERTY);
+       return this;
+    }
     public AccessPermissionRequest<T> orderByVersionAscending(){
        addOrderByAscending(AccessPermission.VERSION_PROPERTY);
        return this;
@@ -711,23 +706,7 @@ public class AccessPermissionRequest<T extends AccessPermission> extends BaseReq
     }
 
 
-    public UserRoleRequest rollUpToRole(){
-       UserRoleRequest role = Q.userRoles().unlimited();
-       this.withRoleMatching(role)
-           .groupByRoleWith(role);
-       return role;
-    }
 
-
-
-   public AccessPermissionRequest<T> facetByRoleAs(String facetName, UserRoleRequest role){
-       return facetByRoleAs(facetName, role, true);
-   }
-
-   public AccessPermissionRequest<T> facetByRoleAs(String facetName, UserRoleRequest role, boolean includeAllFacets){
-       addFacet(facetName, AccessPermission.ROLE_PROPERTY, role, includeAllFacets);
-       return this;
-   }
 
 
     /**

@@ -6,8 +6,6 @@ import com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAss
 import com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignmentChecker;
 import com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog;
 import com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLogChecker;
-import com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog;
-import com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLogChecker;
 import com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice;
 import com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDeviceChecker;
 import com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance;
@@ -15,7 +13,6 @@ import com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.Vehicle
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class VehicleChecker implements Checker<Vehicle>{
@@ -44,8 +41,8 @@ public class VehicleChecker implements Checker<Vehicle>{
       }else if(vehicle.updateItem()){
         vehicle.updateUpdatedAt(java.time.LocalDateTime.now());
       }
-      checkName(_ctx, vehicle.getProperty(Vehicle.NAME_PROPERTY), newLocation(_parentLocation, Vehicle.NAME_PROPERTY));
-      checkLicensePlate(_ctx, vehicle.getProperty(Vehicle.LICENSE_PLATE_PROPERTY), newLocation(_parentLocation, Vehicle.LICENSE_PLATE_PROPERTY));
+      checkPlateNumber(_ctx, vehicle.getProperty(Vehicle.PLATE_NUMBER_PROPERTY), newLocation(_parentLocation, Vehicle.PLATE_NUMBER_PROPERTY));
+      checkVin(_ctx, vehicle.getProperty(Vehicle.VIN_PROPERTY), newLocation(_parentLocation, Vehicle.VIN_PROPERTY));
       checkMake(_ctx, vehicle.getProperty(Vehicle.MAKE_PROPERTY), newLocation(_parentLocation, Vehicle.MAKE_PROPERTY));
       checkModel(_ctx, vehicle.getProperty(Vehicle.MODEL_PROPERTY), newLocation(_parentLocation, Vehicle.MODEL_PROPERTY));
       checkYear(_ctx, vehicle.getProperty(Vehicle.YEAR_PROPERTY), newLocation(_parentLocation, Vehicle.YEAR_PROPERTY));
@@ -57,13 +54,9 @@ public class VehicleChecker implements Checker<Vehicle>{
          DispatchPlan dispatchPlan = vehicle.getDispatchPlanList().get(i);
          new DispatchPlanChecker().checkAndFix(_ctx, dispatchPlan, newLocation(_parentLocation, Vehicle.DISPATCH_PLAN_LIST_PROPERTY, i));
       }
-      for(int i = 0; vehicle.getDriverAssignmentList() != null && i < vehicle.getDriverAssignmentList().size(); i++){
-         DriverAssignment driverAssignment = vehicle.getDriverAssignmentList().get(i);
-         new DriverAssignmentChecker().checkAndFix(_ctx, driverAssignment, newLocation(_parentLocation, Vehicle.DRIVER_ASSIGNMENT_LIST_PROPERTY, i));
-      }
-      for(int i = 0; vehicle.getGpsLogList() != null && i < vehicle.getGpsLogList().size(); i++){
-         GpsLog gpsLog = vehicle.getGpsLogList().get(i);
-         new GpsLogChecker().checkAndFix(_ctx, gpsLog, newLocation(_parentLocation, Vehicle.GPS_LOG_LIST_PROPERTY, i));
+      for(int i = 0; vehicle.getTelematicsDeviceList() != null && i < vehicle.getTelematicsDeviceList().size(); i++){
+         TelematicsDevice telematicsDevice = vehicle.getTelematicsDeviceList().get(i);
+         new TelematicsDeviceChecker().checkAndFix(_ctx, telematicsDevice, newLocation(_parentLocation, Vehicle.TELEMATICS_DEVICE_LIST_PROPERTY, i));
       }
       for(int i = 0; vehicle.getFuelLogList() != null && i < vehicle.getFuelLogList().size(); i++){
          FuelLog fuelLog = vehicle.getFuelLogList().get(i);
@@ -73,26 +66,26 @@ public class VehicleChecker implements Checker<Vehicle>{
          VehicleMaintenance vehicleMaintenance = vehicle.getVehicleMaintenanceList().get(i);
          new VehicleMaintenanceChecker().checkAndFix(_ctx, vehicleMaintenance, newLocation(_parentLocation, Vehicle.VEHICLE_MAINTENANCE_LIST_PROPERTY, i));
       }
-      for(int i = 0; vehicle.getTelematicsDeviceList() != null && i < vehicle.getTelematicsDeviceList().size(); i++){
-         TelematicsDevice telematicsDevice = vehicle.getTelematicsDeviceList().get(i);
-         new TelematicsDeviceChecker().checkAndFix(_ctx, telematicsDevice, newLocation(_parentLocation, Vehicle.TELEMATICS_DEVICE_LIST_PROPERTY, i));
+      for(int i = 0; vehicle.getDriverAssignmentList() != null && i < vehicle.getDriverAssignmentList().size(); i++){
+         DriverAssignment driverAssignment = vehicle.getDriverAssignmentList().get(i);
+         new DriverAssignmentChecker().checkAndFix(_ctx, driverAssignment, newLocation(_parentLocation, Vehicle.DRIVER_ASSIGNMENT_LIST_PROPERTY, i));
       }
     }
 
-    public void checkName(UserContext _ctx, String name, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, name);
-    if((name == null)){
+    public void checkPlateNumber(UserContext _ctx, String plateNumber, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, plateNumber);
+    if((plateNumber == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, name);
+    maxStringCheck(_ctx, _parentLocation, 100, plateNumber);
 
     }
-    public void checkLicensePlate(UserContext _ctx, String licensePlate, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, licensePlate);
-    if((licensePlate == null)){
+    public void checkVin(UserContext _ctx, String vin, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, vin);
+    if((vin == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, licensePlate);
+    maxStringCheck(_ctx, _parentLocation, 100, vin);
 
     }
     public void checkMake(UserContext _ctx, String make, ObjectLocation _parentLocation){
@@ -117,7 +110,7 @@ public class VehicleChecker implements Checker<Vehicle>{
         return;
     }
     }
-    public void checkCapacityKg(UserContext _ctx, BigDecimal capacityKg, ObjectLocation _parentLocation){
+    public void checkCapacityKg(UserContext _ctx, Integer capacityKg, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, capacityKg);
     if((capacityKg == null)){
         return;

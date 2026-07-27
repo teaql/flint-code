@@ -88,7 +88,7 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
 
     public DispatchPlanRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectPlanId().selectMovingOrderIdOnly().selectVehicleIdOnly().selectDriverIdOnly().selectStatus().selectScheduledDeparture().selectScheduledArrival().selectCreateTime().selectUpdateTime().selectVersion();
+        return selectId().selectPlanNumber().selectStatus().selectMovingOrderIdOnly().selectVehicleIdOnly().selectDriverIdOnly().selectScheduledDeparture().selectScheduledArrival().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public DispatchPlanRequest<T> selectSelfFields(){
@@ -97,12 +97,12 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
 
     public DispatchPlanRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectPlanId().selectMovingOrder().selectVehicle().selectDriver().selectStatus().selectScheduledDeparture().selectScheduledArrival().selectCreateTime().selectUpdateTime().selectVersion();
+        return selectId().selectPlanNumber().selectStatus().selectMovingOrder().selectVehicle().selectDriver().selectScheduledDeparture().selectScheduledArrival().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public DispatchPlanRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectPlanId().selectMovingOrder().selectVehicle().selectDriver().selectStatus().selectScheduledDeparture().selectScheduledArrival().selectCreateTime().selectUpdateTime().selectVersion();
+        return selectId().selectPlanNumber().selectStatus().selectMovingOrder().selectVehicle().selectDriver().selectScheduledDeparture().selectScheduledArrival().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
 
@@ -123,21 +123,38 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
        unselectProperty(DispatchPlan.ID_PROPERTY);
        return this;
     }
-    public DispatchPlanRequest<T> selectPlanId(){
-       selectProperty(DispatchPlan.PLAN_ID_PROPERTY);
+    public DispatchPlanRequest<T> selectPlanNumber(){
+       selectProperty(DispatchPlan.PLAN_NUMBER_PROPERTY);
        return this;
     }
 
     /**
-     * fill the planId with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  planId) to fetch planId property.
+     * fill the planNumber with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  planNumber) to fetch planNumber property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public DispatchPlanRequest<T> unselectPlanId(){
-       unselectProperty(DispatchPlan.PLAN_ID_PROPERTY);
+    public DispatchPlanRequest<T> unselectPlanNumber(){
+       unselectProperty(DispatchPlan.PLAN_NUMBER_PROPERTY);
+       return this;
+    }
+    public DispatchPlanRequest<T> selectStatus(){
+       selectProperty(DispatchPlan.STATUS_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the status with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  status) to fetch status property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public DispatchPlanRequest<T> unselectStatus(){
+       unselectProperty(DispatchPlan.STATUS_PROPERTY);
        return this;
     }
     public DispatchPlanRequest<T> selectMovingOrderIdOnly(){
@@ -197,23 +214,6 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
        unselectProperty(DispatchPlan.DRIVER_PROPERTY);
        return this;
     }
-    public DispatchPlanRequest<T> selectStatus(){
-       selectProperty(DispatchPlan.STATUS_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the status with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  status) to fetch status property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public DispatchPlanRequest<T> unselectStatus(){
-       unselectProperty(DispatchPlan.STATUS_PROPERTY);
-       return this;
-    }
     public DispatchPlanRequest<T> selectScheduledDeparture(){
        selectProperty(DispatchPlan.SCHEDULED_DEPARTURE_PROPERTY);
        return this;
@@ -248,38 +248,38 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
        unselectProperty(DispatchPlan.SCHEDULED_ARRIVAL_PROPERTY);
        return this;
     }
-    public DispatchPlanRequest<T> selectCreateTime(){
-       selectProperty(DispatchPlan.CREATE_TIME_PROPERTY);
+    public DispatchPlanRequest<T> selectCreatedTime(){
+       selectProperty(DispatchPlan.CREATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the createTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createTime) to fetch createTime property.
+     * fill the createdTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdTime) to fetch createdTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public DispatchPlanRequest<T> unselectCreateTime(){
-       unselectProperty(DispatchPlan.CREATE_TIME_PROPERTY);
+    public DispatchPlanRequest<T> unselectCreatedTime(){
+       unselectProperty(DispatchPlan.CREATED_TIME_PROPERTY);
        return this;
     }
-    public DispatchPlanRequest<T> selectUpdateTime(){
-       selectProperty(DispatchPlan.UPDATE_TIME_PROPERTY);
+    public DispatchPlanRequest<T> selectUpdatedTime(){
+       selectProperty(DispatchPlan.UPDATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the updateTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updateTime) to fetch updateTime property.
+     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public DispatchPlanRequest<T> unselectUpdateTime(){
-       unselectProperty(DispatchPlan.UPDATE_TIME_PROPERTY);
+    public DispatchPlanRequest<T> unselectUpdatedTime(){
+       unselectProperty(DispatchPlan.UPDATED_TIME_PROPERTY);
        return this;
     }
     public DispatchPlanRequest<T> selectVersion(){
@@ -317,65 +317,128 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
 
 
 
-    public DispatchPlanRequest<T> filterByPlanId(String... planId){
-      if (planId == null || planId.length == 0) {
-        throw new IllegalArgumentException("filterByPlanId parameter planId cannot be empty");
+    public DispatchPlanRequest<T> filterByPlanNumber(String... planNumber){
+      if (planNumber == null || planNumber.length == 0) {
+        throw new IllegalArgumentException("filterByPlanNumber parameter planNumber cannot be empty");
       }
-      return appendSearchCriteria(createPlanIdCriteria(Operator.EQUAL, (Object[])planId));
+      return appendSearchCriteria(createPlanNumberCriteria(Operator.EQUAL, (Object[])planNumber));
     }
 
-    public DispatchPlanRequest<T> withPlanId(Operator operator, Object... values){
-       return appendSearchCriteria(createPlanIdCriteria(operator, values));
+    public DispatchPlanRequest<T> withPlanNumber(Operator operator, Object... values){
+       return appendSearchCriteria(createPlanNumberCriteria(operator, values));
     }
 
-    public DispatchPlanRequest<T> withPlanIdIsUnknown(){
-       return withPlanId(Operator.IS_NULL);
+    public DispatchPlanRequest<T> withPlanNumberIsUnknown(){
+       return withPlanNumber(Operator.IS_NULL);
     }
 
-    public DispatchPlanRequest<T> withPlanIdIsKnown(){
-       return withPlanId(Operator.IS_NOT_NULL);
+    public DispatchPlanRequest<T> withPlanNumberIsKnown(){
+       return withPlanNumber(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createPlanIdCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(DispatchPlan.PLAN_ID_PROPERTY, operator, values);
+    public SearchCriteria createPlanNumberCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DispatchPlan.PLAN_NUMBER_PROPERTY, operator, values);
     }
 
-    public DispatchPlanRequest<T> withPlanIdGreaterThan(String planId){
-       return withPlanId(Operator.GREATER_THAN, planId);
+    public DispatchPlanRequest<T> withPlanNumberGreaterThan(String planNumber){
+       return withPlanNumber(Operator.GREATER_THAN, planNumber);
     }
 
-    public DispatchPlanRequest<T> withPlanIdGreaterThanOrEqualTo(String planId){
-       return withPlanId(Operator.GREATER_THAN_OR_EQUAL, planId);
+    public DispatchPlanRequest<T> withPlanNumberGreaterThanOrEqualTo(String planNumber){
+       return withPlanNumber(Operator.GREATER_THAN_OR_EQUAL, planNumber);
     }
 
-    public DispatchPlanRequest<T> withPlanIdLessThan(String planId){
-       return withPlanId(Operator.LESS_THAN, planId);
+    public DispatchPlanRequest<T> withPlanNumberLessThan(String planNumber){
+       return withPlanNumber(Operator.LESS_THAN, planNumber);
     }
 
-    public DispatchPlanRequest<T> withPlanIdLessThanOrEqualTo(String planId){
-       return withPlanId(Operator.LESS_THAN_OR_EQUAL, planId);
+    public DispatchPlanRequest<T> withPlanNumberLessThanOrEqualTo(String planNumber){
+       return withPlanNumber(Operator.LESS_THAN_OR_EQUAL, planNumber);
     }
 
-    public DispatchPlanRequest<T> withPlanIdBetween(String startOfPlanId, String endOfPlanId){
-       return withPlanId(Operator.BETWEEN, startOfPlanId, endOfPlanId);
+    public DispatchPlanRequest<T> withPlanNumberBetween(String startOfPlanNumber, String endOfPlanNumber){
+       return withPlanNumber(Operator.BETWEEN, startOfPlanNumber, endOfPlanNumber);
     }
-    public DispatchPlanRequest<T> withPlanIdStartingWith(String planId){
-       return withPlanId(Operator.BEGIN_WITH, planId);
+    public DispatchPlanRequest<T> withPlanNumberStartingWith(String planNumber){
+       return withPlanNumber(Operator.BEGIN_WITH, planNumber);
     }
-    public DispatchPlanRequest<T> withPlanIdContaining(String planId){
-       return withPlanId(Operator.CONTAIN, planId);
-    }
-
-    public DispatchPlanRequest<T> withPlanIdEndingWith(String planId){
-       return withPlanId(Operator.END_WITH, planId);
+    public DispatchPlanRequest<T> withPlanNumberContaining(String planNumber){
+       return withPlanNumber(Operator.CONTAIN, planNumber);
     }
 
-    public DispatchPlanRequest<T> withPlanIdIs(String planId){
-       return withPlanId(Operator.EQUAL, planId);
+    public DispatchPlanRequest<T> withPlanNumberEndingWith(String planNumber){
+       return withPlanNumber(Operator.END_WITH, planNumber);
     }
 
-    public DispatchPlanRequest<T> withPlanIdSoundingLike(String planId){
-       return withPlanId(Operator.SOUNDS_LIKE, planId);
+    public DispatchPlanRequest<T> withPlanNumberIs(String planNumber){
+       return withPlanNumber(Operator.EQUAL, planNumber);
+    }
+
+    public DispatchPlanRequest<T> withPlanNumberSoundingLike(String planNumber){
+       return withPlanNumber(Operator.SOUNDS_LIKE, planNumber);
+    }
+
+
+
+    public DispatchPlanRequest<T> filterByStatus(String... status){
+      if (status == null || status.length == 0) {
+        throw new IllegalArgumentException("filterByStatus parameter status cannot be empty");
+      }
+      return appendSearchCriteria(createStatusCriteria(Operator.EQUAL, (Object[])status));
+    }
+
+    public DispatchPlanRequest<T> withStatus(Operator operator, Object... values){
+       return appendSearchCriteria(createStatusCriteria(operator, values));
+    }
+
+    public DispatchPlanRequest<T> withStatusIsUnknown(){
+       return withStatus(Operator.IS_NULL);
+    }
+
+    public DispatchPlanRequest<T> withStatusIsKnown(){
+       return withStatus(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createStatusCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DispatchPlan.STATUS_PROPERTY, operator, values);
+    }
+
+    public DispatchPlanRequest<T> withStatusGreaterThan(String status){
+       return withStatus(Operator.GREATER_THAN, status);
+    }
+
+    public DispatchPlanRequest<T> withStatusGreaterThanOrEqualTo(String status){
+       return withStatus(Operator.GREATER_THAN_OR_EQUAL, status);
+    }
+
+    public DispatchPlanRequest<T> withStatusLessThan(String status){
+       return withStatus(Operator.LESS_THAN, status);
+    }
+
+    public DispatchPlanRequest<T> withStatusLessThanOrEqualTo(String status){
+       return withStatus(Operator.LESS_THAN_OR_EQUAL, status);
+    }
+
+    public DispatchPlanRequest<T> withStatusBetween(String startOfStatus, String endOfStatus){
+       return withStatus(Operator.BETWEEN, startOfStatus, endOfStatus);
+    }
+    public DispatchPlanRequest<T> withStatusStartingWith(String status){
+       return withStatus(Operator.BEGIN_WITH, status);
+    }
+    public DispatchPlanRequest<T> withStatusContaining(String status){
+       return withStatus(Operator.CONTAIN, status);
+    }
+
+    public DispatchPlanRequest<T> withStatusEndingWith(String status){
+       return withStatus(Operator.END_WITH, status);
+    }
+
+    public DispatchPlanRequest<T> withStatusIs(String status){
+       return withStatus(Operator.EQUAL, status);
+    }
+
+    public DispatchPlanRequest<T> withStatusSoundingLike(String status){
+       return withStatus(Operator.SOUNDS_LIKE, status);
     }
 
 
@@ -479,70 +542,7 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
        return appendSearchCriteria(new SubQuerySearchCriteria(DispatchPlan.DRIVER_PROPERTY, driver, StaffMember.ID_PROPERTY));
     }
 
-    public DispatchPlanRequest<T> filterByStatus(String... status){
-      if (status == null || status.length == 0) {
-        throw new IllegalArgumentException("filterByStatus parameter status cannot be empty");
-      }
-      return appendSearchCriteria(createStatusCriteria(Operator.EQUAL, (Object[])status));
-    }
-
-    public DispatchPlanRequest<T> withStatus(Operator operator, Object... values){
-       return appendSearchCriteria(createStatusCriteria(operator, values));
-    }
-
-    public DispatchPlanRequest<T> withStatusIsUnknown(){
-       return withStatus(Operator.IS_NULL);
-    }
-
-    public DispatchPlanRequest<T> withStatusIsKnown(){
-       return withStatus(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createStatusCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(DispatchPlan.STATUS_PROPERTY, operator, values);
-    }
-
-    public DispatchPlanRequest<T> withStatusGreaterThan(String status){
-       return withStatus(Operator.GREATER_THAN, status);
-    }
-
-    public DispatchPlanRequest<T> withStatusGreaterThanOrEqualTo(String status){
-       return withStatus(Operator.GREATER_THAN_OR_EQUAL, status);
-    }
-
-    public DispatchPlanRequest<T> withStatusLessThan(String status){
-       return withStatus(Operator.LESS_THAN, status);
-    }
-
-    public DispatchPlanRequest<T> withStatusLessThanOrEqualTo(String status){
-       return withStatus(Operator.LESS_THAN_OR_EQUAL, status);
-    }
-
-    public DispatchPlanRequest<T> withStatusBetween(String startOfStatus, String endOfStatus){
-       return withStatus(Operator.BETWEEN, startOfStatus, endOfStatus);
-    }
-    public DispatchPlanRequest<T> withStatusStartingWith(String status){
-       return withStatus(Operator.BEGIN_WITH, status);
-    }
-    public DispatchPlanRequest<T> withStatusContaining(String status){
-       return withStatus(Operator.CONTAIN, status);
-    }
-
-    public DispatchPlanRequest<T> withStatusEndingWith(String status){
-       return withStatus(Operator.END_WITH, status);
-    }
-
-    public DispatchPlanRequest<T> withStatusIs(String status){
-       return withStatus(Operator.EQUAL, status);
-    }
-
-    public DispatchPlanRequest<T> withStatusSoundingLike(String status){
-       return withStatus(Operator.SOUNDS_LIKE, status);
-    }
-
-
-
-    public DispatchPlanRequest<T> filterByScheduledDeparture(String... scheduledDeparture){
+    public DispatchPlanRequest<T> filterByScheduledDeparture(LocalDateTime... scheduledDeparture){
       if (scheduledDeparture == null || scheduledDeparture.length == 0) {
         throw new IllegalArgumentException("filterByScheduledDeparture parameter scheduledDeparture cannot be empty");
       }
@@ -565,47 +565,49 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
         return createBasicSearchCriteria(DispatchPlan.SCHEDULED_DEPARTURE_PROPERTY, operator, values);
     }
 
-    public DispatchPlanRequest<T> withScheduledDepartureGreaterThan(String scheduledDeparture){
+    public DispatchPlanRequest<T> withScheduledDepartureGreaterThan(LocalDateTime scheduledDeparture){
        return withScheduledDeparture(Operator.GREATER_THAN, scheduledDeparture);
     }
 
-    public DispatchPlanRequest<T> withScheduledDepartureGreaterThanOrEqualTo(String scheduledDeparture){
+    public DispatchPlanRequest<T> withScheduledDepartureGreaterThanOrEqualTo(LocalDateTime scheduledDeparture){
        return withScheduledDeparture(Operator.GREATER_THAN_OR_EQUAL, scheduledDeparture);
     }
 
-    public DispatchPlanRequest<T> withScheduledDepartureLessThan(String scheduledDeparture){
+    public DispatchPlanRequest<T> withScheduledDepartureLessThan(LocalDateTime scheduledDeparture){
        return withScheduledDeparture(Operator.LESS_THAN, scheduledDeparture);
     }
 
-    public DispatchPlanRequest<T> withScheduledDepartureLessThanOrEqualTo(String scheduledDeparture){
+    public DispatchPlanRequest<T> withScheduledDepartureLessThanOrEqualTo(LocalDateTime scheduledDeparture){
        return withScheduledDeparture(Operator.LESS_THAN_OR_EQUAL, scheduledDeparture);
     }
 
-    public DispatchPlanRequest<T> withScheduledDepartureBetween(String startOfScheduledDeparture, String endOfScheduledDeparture){
+    public DispatchPlanRequest<T> withScheduledDepartureBetween(LocalDateTime startOfScheduledDeparture, LocalDateTime endOfScheduledDeparture){
        return withScheduledDeparture(Operator.BETWEEN, startOfScheduledDeparture, endOfScheduledDeparture);
     }
-    public DispatchPlanRequest<T> withScheduledDepartureStartingWith(String scheduledDeparture){
-       return withScheduledDeparture(Operator.BEGIN_WITH, scheduledDeparture);
-    }
-    public DispatchPlanRequest<T> withScheduledDepartureContaining(String scheduledDeparture){
-       return withScheduledDeparture(Operator.CONTAIN, scheduledDeparture);
+    public DispatchPlanRequest<T> withScheduledDepartureBefore(LocalDateTime scheduledDeparture){
+       return withScheduledDeparture(Operator.LESS_THAN, scheduledDeparture);
     }
 
-    public DispatchPlanRequest<T> withScheduledDepartureEndingWith(String scheduledDeparture){
-       return withScheduledDeparture(Operator.END_WITH, scheduledDeparture);
+    public DispatchPlanRequest<T> withScheduledDepartureBefore(Date scheduledDeparture){
+       return withScheduledDeparture(Operator.LESS_THAN, scheduledDeparture);
     }
 
-    public DispatchPlanRequest<T> withScheduledDepartureIs(String scheduledDeparture){
-       return withScheduledDeparture(Operator.EQUAL, scheduledDeparture);
+    public DispatchPlanRequest<T> withScheduledDepartureAfter(LocalDateTime scheduledDeparture){
+       return withScheduledDeparture(Operator.GREATER_THAN, scheduledDeparture);
     }
 
-    public DispatchPlanRequest<T> withScheduledDepartureSoundingLike(String scheduledDeparture){
-       return withScheduledDeparture(Operator.SOUNDS_LIKE, scheduledDeparture);
+    public DispatchPlanRequest<T> withScheduledDepartureAfter(Date scheduledDeparture){
+       return withScheduledDeparture(Operator.GREATER_THAN, scheduledDeparture);
+    }
+
+    public DispatchPlanRequest<T> withScheduledDepartureBetween(Date startOfScheduledDeparture, Date endOfScheduledDeparture){
+       return withScheduledDeparture(Operator.BETWEEN, startOfScheduledDeparture, endOfScheduledDeparture);
     }
 
 
 
-    public DispatchPlanRequest<T> filterByScheduledArrival(String... scheduledArrival){
+
+    public DispatchPlanRequest<T> filterByScheduledArrival(LocalDateTime... scheduledArrival){
       if (scheduledArrival == null || scheduledArrival.length == 0) {
         throw new IllegalArgumentException("filterByScheduledArrival parameter scheduledArrival cannot be empty");
       }
@@ -628,171 +630,173 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
         return createBasicSearchCriteria(DispatchPlan.SCHEDULED_ARRIVAL_PROPERTY, operator, values);
     }
 
-    public DispatchPlanRequest<T> withScheduledArrivalGreaterThan(String scheduledArrival){
+    public DispatchPlanRequest<T> withScheduledArrivalGreaterThan(LocalDateTime scheduledArrival){
        return withScheduledArrival(Operator.GREATER_THAN, scheduledArrival);
     }
 
-    public DispatchPlanRequest<T> withScheduledArrivalGreaterThanOrEqualTo(String scheduledArrival){
+    public DispatchPlanRequest<T> withScheduledArrivalGreaterThanOrEqualTo(LocalDateTime scheduledArrival){
        return withScheduledArrival(Operator.GREATER_THAN_OR_EQUAL, scheduledArrival);
     }
 
-    public DispatchPlanRequest<T> withScheduledArrivalLessThan(String scheduledArrival){
+    public DispatchPlanRequest<T> withScheduledArrivalLessThan(LocalDateTime scheduledArrival){
        return withScheduledArrival(Operator.LESS_THAN, scheduledArrival);
     }
 
-    public DispatchPlanRequest<T> withScheduledArrivalLessThanOrEqualTo(String scheduledArrival){
+    public DispatchPlanRequest<T> withScheduledArrivalLessThanOrEqualTo(LocalDateTime scheduledArrival){
        return withScheduledArrival(Operator.LESS_THAN_OR_EQUAL, scheduledArrival);
     }
 
-    public DispatchPlanRequest<T> withScheduledArrivalBetween(String startOfScheduledArrival, String endOfScheduledArrival){
+    public DispatchPlanRequest<T> withScheduledArrivalBetween(LocalDateTime startOfScheduledArrival, LocalDateTime endOfScheduledArrival){
        return withScheduledArrival(Operator.BETWEEN, startOfScheduledArrival, endOfScheduledArrival);
     }
-    public DispatchPlanRequest<T> withScheduledArrivalStartingWith(String scheduledArrival){
-       return withScheduledArrival(Operator.BEGIN_WITH, scheduledArrival);
-    }
-    public DispatchPlanRequest<T> withScheduledArrivalContaining(String scheduledArrival){
-       return withScheduledArrival(Operator.CONTAIN, scheduledArrival);
+    public DispatchPlanRequest<T> withScheduledArrivalBefore(LocalDateTime scheduledArrival){
+       return withScheduledArrival(Operator.LESS_THAN, scheduledArrival);
     }
 
-    public DispatchPlanRequest<T> withScheduledArrivalEndingWith(String scheduledArrival){
-       return withScheduledArrival(Operator.END_WITH, scheduledArrival);
+    public DispatchPlanRequest<T> withScheduledArrivalBefore(Date scheduledArrival){
+       return withScheduledArrival(Operator.LESS_THAN, scheduledArrival);
     }
 
-    public DispatchPlanRequest<T> withScheduledArrivalIs(String scheduledArrival){
-       return withScheduledArrival(Operator.EQUAL, scheduledArrival);
+    public DispatchPlanRequest<T> withScheduledArrivalAfter(LocalDateTime scheduledArrival){
+       return withScheduledArrival(Operator.GREATER_THAN, scheduledArrival);
     }
 
-    public DispatchPlanRequest<T> withScheduledArrivalSoundingLike(String scheduledArrival){
-       return withScheduledArrival(Operator.SOUNDS_LIKE, scheduledArrival);
+    public DispatchPlanRequest<T> withScheduledArrivalAfter(Date scheduledArrival){
+       return withScheduledArrival(Operator.GREATER_THAN, scheduledArrival);
+    }
+
+    public DispatchPlanRequest<T> withScheduledArrivalBetween(Date startOfScheduledArrival, Date endOfScheduledArrival){
+       return withScheduledArrival(Operator.BETWEEN, startOfScheduledArrival, endOfScheduledArrival);
     }
 
 
 
-    public DispatchPlanRequest<T> filterByCreateTime(LocalDateTime... createTime){
-      if (createTime == null || createTime.length == 0) {
-        throw new IllegalArgumentException("filterByCreateTime parameter createTime cannot be empty");
+
+    public DispatchPlanRequest<T> filterByCreatedTime(LocalDateTime... createdTime){
+      if (createdTime == null || createdTime.length == 0) {
+        throw new IllegalArgumentException("filterByCreatedTime parameter createdTime cannot be empty");
       }
-      return appendSearchCriteria(createCreateTimeCriteria(Operator.EQUAL, (Object[])createTime));
+      return appendSearchCriteria(createCreatedTimeCriteria(Operator.EQUAL, (Object[])createdTime));
     }
 
-    public DispatchPlanRequest<T> withCreateTime(Operator operator, Object... values){
-       return appendSearchCriteria(createCreateTimeCriteria(operator, values));
+    public DispatchPlanRequest<T> withCreatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createCreatedTimeCriteria(operator, values));
     }
 
-    public DispatchPlanRequest<T> withCreateTimeIsUnknown(){
-       return withCreateTime(Operator.IS_NULL);
+    public DispatchPlanRequest<T> withCreatedTimeIsUnknown(){
+       return withCreatedTime(Operator.IS_NULL);
     }
 
-    public DispatchPlanRequest<T> withCreateTimeIsKnown(){
-       return withCreateTime(Operator.IS_NOT_NULL);
+    public DispatchPlanRequest<T> withCreatedTimeIsKnown(){
+       return withCreatedTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCreateTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(DispatchPlan.CREATE_TIME_PROPERTY, operator, values);
+    public SearchCriteria createCreatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DispatchPlan.CREATED_TIME_PROPERTY, operator, values);
     }
 
-    public DispatchPlanRequest<T> withCreateTimeGreaterThan(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public DispatchPlanRequest<T> withCreatedTimeGreaterThan(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
     }
 
-    public DispatchPlanRequest<T> withCreateTimeGreaterThanOrEqualTo(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN_OR_EQUAL, createTime);
+    public DispatchPlanRequest<T> withCreatedTimeGreaterThanOrEqualTo(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN_OR_EQUAL, createdTime);
     }
 
-    public DispatchPlanRequest<T> withCreateTimeLessThan(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
+    public DispatchPlanRequest<T> withCreatedTimeLessThan(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
     }
 
-    public DispatchPlanRequest<T> withCreateTimeLessThanOrEqualTo(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN_OR_EQUAL, createTime);
+    public DispatchPlanRequest<T> withCreatedTimeLessThanOrEqualTo(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN_OR_EQUAL, createdTime);
     }
 
-    public DispatchPlanRequest<T> withCreateTimeBetween(LocalDateTime startOfCreateTime, LocalDateTime endOfCreateTime){
-       return withCreateTime(Operator.BETWEEN, startOfCreateTime, endOfCreateTime);
+    public DispatchPlanRequest<T> withCreatedTimeBetween(LocalDateTime startOfCreatedTime, LocalDateTime endOfCreatedTime){
+       return withCreatedTime(Operator.BETWEEN, startOfCreatedTime, endOfCreatedTime);
     }
-    public DispatchPlanRequest<T> withCreateTimeBefore(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
-    }
-
-    public DispatchPlanRequest<T> withCreateTimeBefore(Date createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
+    public DispatchPlanRequest<T> withCreatedTimeBefore(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
     }
 
-    public DispatchPlanRequest<T> withCreateTimeAfter(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public DispatchPlanRequest<T> withCreatedTimeBefore(Date createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
     }
 
-    public DispatchPlanRequest<T> withCreateTimeAfter(Date createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public DispatchPlanRequest<T> withCreatedTimeAfter(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
     }
 
-    public DispatchPlanRequest<T> withCreateTimeBetween(Date startOfCreateTime, Date endOfCreateTime){
-       return withCreateTime(Operator.BETWEEN, startOfCreateTime, endOfCreateTime);
+    public DispatchPlanRequest<T> withCreatedTimeAfter(Date createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
+    }
+
+    public DispatchPlanRequest<T> withCreatedTimeBetween(Date startOfCreatedTime, Date endOfCreatedTime){
+       return withCreatedTime(Operator.BETWEEN, startOfCreatedTime, endOfCreatedTime);
     }
 
 
 
 
-    public DispatchPlanRequest<T> filterByUpdateTime(LocalDateTime... updateTime){
-      if (updateTime == null || updateTime.length == 0) {
-        throw new IllegalArgumentException("filterByUpdateTime parameter updateTime cannot be empty");
+    public DispatchPlanRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
+      if (updatedTime == null || updatedTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
       }
-      return appendSearchCriteria(createUpdateTimeCriteria(Operator.EQUAL, (Object[])updateTime));
+      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
     }
 
-    public DispatchPlanRequest<T> withUpdateTime(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdateTimeCriteria(operator, values));
+    public DispatchPlanRequest<T> withUpdatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
     }
 
-    public DispatchPlanRequest<T> withUpdateTimeIsUnknown(){
-       return withUpdateTime(Operator.IS_NULL);
+    public DispatchPlanRequest<T> withUpdatedTimeIsUnknown(){
+       return withUpdatedTime(Operator.IS_NULL);
     }
 
-    public DispatchPlanRequest<T> withUpdateTimeIsKnown(){
-       return withUpdateTime(Operator.IS_NOT_NULL);
+    public DispatchPlanRequest<T> withUpdatedTimeIsKnown(){
+       return withUpdatedTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createUpdateTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(DispatchPlan.UPDATE_TIME_PROPERTY, operator, values);
+    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DispatchPlan.UPDATED_TIME_PROPERTY, operator, values);
     }
 
-    public DispatchPlanRequest<T> withUpdateTimeGreaterThan(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public DispatchPlanRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public DispatchPlanRequest<T> withUpdateTimeGreaterThanOrEqualTo(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN_OR_EQUAL, updateTime);
+    public DispatchPlanRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
     }
 
-    public DispatchPlanRequest<T> withUpdateTimeLessThan(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    public DispatchPlanRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public DispatchPlanRequest<T> withUpdateTimeLessThanOrEqualTo(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN_OR_EQUAL, updateTime);
+    public DispatchPlanRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
     }
 
-    public DispatchPlanRequest<T> withUpdateTimeBetween(LocalDateTime startOfUpdateTime, LocalDateTime endOfUpdateTime){
-       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    public DispatchPlanRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
-    public DispatchPlanRequest<T> withUpdateTimeBefore(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
-    }
-
-    public DispatchPlanRequest<T> withUpdateTimeBefore(Date updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    public DispatchPlanRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public DispatchPlanRequest<T> withUpdateTimeAfter(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public DispatchPlanRequest<T> withUpdatedTimeBefore(Date updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public DispatchPlanRequest<T> withUpdateTimeAfter(Date updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public DispatchPlanRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public DispatchPlanRequest<T> withUpdateTimeBetween(Date startOfUpdateTime, Date endOfUpdateTime){
-       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    public DispatchPlanRequest<T> withUpdatedTimeAfter(Date updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public DispatchPlanRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
 
 
@@ -883,7 +887,6 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
 
 
 
-
     public DispatchPlanRequest<T> groupById(){
        groupBy(DispatchPlan.ID_PROPERTY);
        return this;
@@ -899,18 +902,33 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
        return this;
     }
 
-    public DispatchPlanRequest<T> groupByPlanId(){
-       groupBy(DispatchPlan.PLAN_ID_PROPERTY);
+    public DispatchPlanRequest<T> groupByPlanNumber(){
+       groupBy(DispatchPlan.PLAN_NUMBER_PROPERTY);
        return this;
     }
 
-    public DispatchPlanRequest<T> groupByPlanIdAs(String retName){
-       groupBy(retName, DispatchPlan.PLAN_ID_PROPERTY);
+    public DispatchPlanRequest<T> groupByPlanNumberAs(String retName){
+       groupBy(retName, DispatchPlan.PLAN_NUMBER_PROPERTY);
        return this;
     }
 
-    public DispatchPlanRequest<T> groupByPlanIdWithFunction(String retName, AggrFunction function){
-       groupBy(retName, DispatchPlan.PLAN_ID_PROPERTY, function);
+    public DispatchPlanRequest<T> groupByPlanNumberWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DispatchPlan.PLAN_NUMBER_PROPERTY, function);
+       return this;
+    }
+
+    public DispatchPlanRequest<T> groupByStatus(){
+       groupBy(DispatchPlan.STATUS_PROPERTY);
+       return this;
+    }
+
+    public DispatchPlanRequest<T> groupByStatusAs(String retName){
+       groupBy(retName, DispatchPlan.STATUS_PROPERTY);
+       return this;
+    }
+
+    public DispatchPlanRequest<T> groupByStatusWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DispatchPlan.STATUS_PROPERTY, function);
        return this;
     }
     public DispatchPlanRequest<T> groupByMovingOrderWith(MovingOrderRequest subRequest){
@@ -968,21 +986,6 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
        return this;
     }
 
-    public DispatchPlanRequest<T> groupByStatus(){
-       groupBy(DispatchPlan.STATUS_PROPERTY);
-       return this;
-    }
-
-    public DispatchPlanRequest<T> groupByStatusAs(String retName){
-       groupBy(retName, DispatchPlan.STATUS_PROPERTY);
-       return this;
-    }
-
-    public DispatchPlanRequest<T> groupByStatusWithFunction(String retName, AggrFunction function){
-       groupBy(retName, DispatchPlan.STATUS_PROPERTY, function);
-       return this;
-    }
-
     public DispatchPlanRequest<T> groupByScheduledDeparture(){
        groupBy(DispatchPlan.SCHEDULED_DEPARTURE_PROPERTY);
        return this;
@@ -1013,33 +1016,33 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
        return this;
     }
 
-    public DispatchPlanRequest<T> groupByCreateTime(){
-       groupBy(DispatchPlan.CREATE_TIME_PROPERTY);
+    public DispatchPlanRequest<T> groupByCreatedTime(){
+       groupBy(DispatchPlan.CREATED_TIME_PROPERTY);
        return this;
     }
 
-    public DispatchPlanRequest<T> groupByCreateTimeAs(String retName){
-       groupBy(retName, DispatchPlan.CREATE_TIME_PROPERTY);
+    public DispatchPlanRequest<T> groupByCreatedTimeAs(String retName){
+       groupBy(retName, DispatchPlan.CREATED_TIME_PROPERTY);
        return this;
     }
 
-    public DispatchPlanRequest<T> groupByCreateTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, DispatchPlan.CREATE_TIME_PROPERTY, function);
+    public DispatchPlanRequest<T> groupByCreatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DispatchPlan.CREATED_TIME_PROPERTY, function);
        return this;
     }
 
-    public DispatchPlanRequest<T> groupByUpdateTime(){
-       groupBy(DispatchPlan.UPDATE_TIME_PROPERTY);
+    public DispatchPlanRequest<T> groupByUpdatedTime(){
+       groupBy(DispatchPlan.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public DispatchPlanRequest<T> groupByUpdateTimeAs(String retName){
-       groupBy(retName, DispatchPlan.UPDATE_TIME_PROPERTY);
+    public DispatchPlanRequest<T> groupByUpdatedTimeAs(String retName){
+       groupBy(retName, DispatchPlan.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public DispatchPlanRequest<T> groupByUpdateTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, DispatchPlan.UPDATE_TIME_PROPERTY, function);
+    public DispatchPlanRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DispatchPlan.UPDATED_TIME_PROPERTY, function);
        return this;
     }
 
@@ -1070,22 +1073,40 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
        return this;
     }
 
-    public DispatchPlanRequest<T> orderByPlanIdAscending(){
-       addOrderByAscending(DispatchPlan.PLAN_ID_PROPERTY);
+    public DispatchPlanRequest<T> orderByPlanNumberAscending(){
+       addOrderByAscending(DispatchPlan.PLAN_NUMBER_PROPERTY);
        return this;
     }
 
-    public DispatchPlanRequest<T> orderByPlanIdDescending(){
-       addOrderByDescending(DispatchPlan.PLAN_ID_PROPERTY);
+    public DispatchPlanRequest<T> orderByPlanNumberDescending(){
+       addOrderByDescending(DispatchPlan.PLAN_NUMBER_PROPERTY);
        return this;
     }
-    public DispatchPlanRequest<T> orderByPlanIdAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(DispatchPlan.PLAN_ID_PROPERTY);
+    public DispatchPlanRequest<T> orderByPlanNumberAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(DispatchPlan.PLAN_NUMBER_PROPERTY);
        return this;
     }
 
-    public DispatchPlanRequest<T> orderByPlanIdDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(DispatchPlan.PLAN_ID_PROPERTY);
+    public DispatchPlanRequest<T> orderByPlanNumberDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(DispatchPlan.PLAN_NUMBER_PROPERTY);
+       return this;
+    }
+    public DispatchPlanRequest<T> orderByStatusAscending(){
+       addOrderByAscending(DispatchPlan.STATUS_PROPERTY);
+       return this;
+    }
+
+    public DispatchPlanRequest<T> orderByStatusDescending(){
+       addOrderByDescending(DispatchPlan.STATUS_PROPERTY);
+       return this;
+    }
+    public DispatchPlanRequest<T> orderByStatusAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(DispatchPlan.STATUS_PROPERTY);
+       return this;
+    }
+
+    public DispatchPlanRequest<T> orderByStatusDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(DispatchPlan.STATUS_PROPERTY);
        return this;
     }
     public DispatchPlanRequest<T> orderByMovingOrderAscending(){
@@ -1118,24 +1139,6 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
        return this;
     }
 
-    public DispatchPlanRequest<T> orderByStatusAscending(){
-       addOrderByAscending(DispatchPlan.STATUS_PROPERTY);
-       return this;
-    }
-
-    public DispatchPlanRequest<T> orderByStatusDescending(){
-       addOrderByDescending(DispatchPlan.STATUS_PROPERTY);
-       return this;
-    }
-    public DispatchPlanRequest<T> orderByStatusAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(DispatchPlan.STATUS_PROPERTY);
-       return this;
-    }
-
-    public DispatchPlanRequest<T> orderByStatusDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(DispatchPlan.STATUS_PROPERTY);
-       return this;
-    }
     public DispatchPlanRequest<T> orderByScheduledDepartureAscending(){
        addOrderByAscending(DispatchPlan.SCHEDULED_DEPARTURE_PROPERTY);
        return this;
@@ -1145,15 +1148,7 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
        addOrderByDescending(DispatchPlan.SCHEDULED_DEPARTURE_PROPERTY);
        return this;
     }
-    public DispatchPlanRequest<T> orderByScheduledDepartureAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(DispatchPlan.SCHEDULED_DEPARTURE_PROPERTY);
-       return this;
-    }
 
-    public DispatchPlanRequest<T> orderByScheduledDepartureDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(DispatchPlan.SCHEDULED_DEPARTURE_PROPERTY);
-       return this;
-    }
     public DispatchPlanRequest<T> orderByScheduledArrivalAscending(){
        addOrderByAscending(DispatchPlan.SCHEDULED_ARRIVAL_PROPERTY);
        return this;
@@ -1163,32 +1158,24 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
        addOrderByDescending(DispatchPlan.SCHEDULED_ARRIVAL_PROPERTY);
        return this;
     }
-    public DispatchPlanRequest<T> orderByScheduledArrivalAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(DispatchPlan.SCHEDULED_ARRIVAL_PROPERTY);
+
+    public DispatchPlanRequest<T> orderByCreatedTimeAscending(){
+       addOrderByAscending(DispatchPlan.CREATED_TIME_PROPERTY);
        return this;
     }
 
-    public DispatchPlanRequest<T> orderByScheduledArrivalDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(DispatchPlan.SCHEDULED_ARRIVAL_PROPERTY);
-       return this;
-    }
-    public DispatchPlanRequest<T> orderByCreateTimeAscending(){
-       addOrderByAscending(DispatchPlan.CREATE_TIME_PROPERTY);
+    public DispatchPlanRequest<T> orderByCreatedTimeDescending(){
+       addOrderByDescending(DispatchPlan.CREATED_TIME_PROPERTY);
        return this;
     }
 
-    public DispatchPlanRequest<T> orderByCreateTimeDescending(){
-       addOrderByDescending(DispatchPlan.CREATE_TIME_PROPERTY);
+    public DispatchPlanRequest<T> orderByUpdatedTimeAscending(){
+       addOrderByAscending(DispatchPlan.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public DispatchPlanRequest<T> orderByUpdateTimeAscending(){
-       addOrderByAscending(DispatchPlan.UPDATE_TIME_PROPERTY);
-       return this;
-    }
-
-    public DispatchPlanRequest<T> orderByUpdateTimeDescending(){
-       addOrderByDescending(DispatchPlan.UPDATE_TIME_PROPERTY);
+    public DispatchPlanRequest<T> orderByUpdatedTimeDescending(){
+       addOrderByDescending(DispatchPlan.UPDATED_TIME_PROPERTY);
        return this;
     }
 
@@ -1223,7 +1210,6 @@ public class DispatchPlanRequest<T extends DispatchPlan> extends BaseRequest<T> 
            .groupByDriverWith(driver);
        return driver;
     }
-
 
 
 

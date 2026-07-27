@@ -1,14 +1,12 @@
 package com.doublechaintech.enterpriselogisticsservice.feedbackreview;
 
-import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomerExpression;
-import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomerExpression;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.function.Function;
 
 public class FeedbackReviewExpression<T, E, U extends FeedbackReview> extends ExpressionAdaptor<T, E, U> implements BaseEntityExpression<T, U> {
@@ -44,6 +42,13 @@ public class FeedbackReviewExpression<T, E, U extends FeedbackReview> extends Ex
        return new FeedbackReviewExpression(this, $it ->  ((FeedbackReview)$it).updateRating(rating));
     }
 
+    public Expression<T, String> getTitle(){
+       return apply(FeedbackReview::getTitle);
+    }
+    public FeedbackReviewExpression<T, U, U> updateTitle(String title){
+       return new FeedbackReviewExpression(this, $it ->  ((FeedbackReview)$it).updateTitle(title));
+    }
+
     public Expression<T, String> getComment(){
        return apply(FeedbackReview::getComment);
     }
@@ -51,27 +56,26 @@ public class FeedbackReviewExpression<T, E, U extends FeedbackReview> extends Ex
        return new FeedbackReviewExpression(this, $it ->  ((FeedbackReview)$it).updateComment(comment));
     }
 
-    public Expression<T, LocalDate> getReviewDate(){
-       return apply(FeedbackReview::getReviewDate);
-    }
-    public FeedbackReviewExpression<T, U, U> updateReviewDate(LocalDate reviewDate){
-       return new FeedbackReviewExpression(this, $it ->  ((FeedbackReview)$it).updateReviewDate(reviewDate));
+    public MovingOrderExpression<T, U, MovingOrder> getMovingOrder(){
+       return new MovingOrderExpression(this, $it ->  ((FeedbackReview)$it).getMovingOrder());
     }
 
-    public PrivateCustomerExpression<T, U, PrivateCustomer> getPrivateCustomer(){
-       return new PrivateCustomerExpression(this, $it ->  ((FeedbackReview)$it).getPrivateCustomer());
+    public FeedbackReviewExpression<T, U, U> updateMovingOrder(MovingOrder movingOrder){
+       return new FeedbackReviewExpression(this, $it ->  ((FeedbackReview)$it).updateMovingOrder(movingOrder));
     }
 
-    public FeedbackReviewExpression<T, U, U> updatePrivateCustomer(PrivateCustomer privateCustomer){
-       return new FeedbackReviewExpression(this, $it ->  ((FeedbackReview)$it).updatePrivateCustomer(privateCustomer));
+    public Expression<T, LocalDateTime> getCreatedAt(){
+       return apply(FeedbackReview::getCreatedAt);
+    }
+    public FeedbackReviewExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
+       return new FeedbackReviewExpression(this, $it ->  ((FeedbackReview)$it).updateCreatedAt(createdAt));
     }
 
-    public CorporateCustomerExpression<T, U, CorporateCustomer> getCorporateCustomer(){
-       return new CorporateCustomerExpression(this, $it ->  ((FeedbackReview)$it).getCorporateCustomer());
+    public Expression<T, LocalDateTime> getUpdatedAt(){
+       return apply(FeedbackReview::getUpdatedAt);
     }
-
-    public FeedbackReviewExpression<T, U, U> updateCorporateCustomer(CorporateCustomer corporateCustomer){
-       return new FeedbackReviewExpression(this, $it ->  ((FeedbackReview)$it).updateCorporateCustomer(corporateCustomer));
+    public FeedbackReviewExpression<T, U, U> updateUpdatedAt(LocalDateTime updatedAt){
+       return new FeedbackReviewExpression(this, $it ->  ((FeedbackReview)$it).updateUpdatedAt(updatedAt));
     }
 
 }

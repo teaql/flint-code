@@ -22,36 +22,56 @@ public class DiscountCoupon extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "DiscountCoupon";
 
     public static final String CODE_PROPERTY = "code";
+    public static final String DESCRIPTION_PROPERTY = "description";
     public static final String DISCOUNT_PERCENTAGE_PROPERTY = "discountPercentage";
-    public static final String MAX_USES_PROPERTY = "maxUses";
-    public static final String CURRENT_USES_PROPERTY = "currentUses";
-    public static final String EXPIRY_DATE_PROPERTY = "expiryDate";
+    public static final String MIN_ORDER_AMOUNT_PROPERTY = "minOrderAmount";
+    public static final String MAX_DISCOUNT_AMOUNT_PROPERTY = "maxDiscountAmount";
+    public static final String USAGE_LIMIT_PROPERTY = "usageLimit";
+    public static final String USED_COUNT_PROPERTY = "usedCount";
+    public static final String START_DATE_PROPERTY = "startDate";
+    public static final String END_DATE_PROPERTY = "endDate";
     public static final String STATUS_PROPERTY = "status";
     public static final String CREATED_TIME_PROPERTY = "createdTime";
-    public static final String UPDATE_TIME_PROPERTY = "updateTime";
+    public static final String UPDATED_TIME_PROPERTY = "updatedTime";
     private String code;
+    private String description;
     private BigDecimal discountPercentage;
-    private Integer maxUses;
-    private Integer currentUses;
-    private LocalDate expiryDate;
+    private BigDecimal minOrderAmount;
+    private BigDecimal maxDiscountAmount;
+    private Integer usageLimit;
+    private Integer usedCount;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private String status;
     private LocalDateTime createdTime;
-    private LocalDateTime updateTime;
+    private LocalDateTime updatedTime;
 
     public String getCode(){
         return this.code;
     }
+    public String getDescription(){
+        return this.description;
+    }
     public BigDecimal getDiscountPercentage(){
         return this.discountPercentage;
     }
-    public Integer getMaxUses(){
-        return this.maxUses;
+    public BigDecimal getMinOrderAmount(){
+        return this.minOrderAmount;
     }
-    public Integer getCurrentUses(){
-        return this.currentUses;
+    public BigDecimal getMaxDiscountAmount(){
+        return this.maxDiscountAmount;
     }
-    public LocalDate getExpiryDate(){
-        return this.expiryDate;
+    public Integer getUsageLimit(){
+        return this.usageLimit;
+    }
+    public Integer getUsedCount(){
+        return this.usedCount;
+    }
+    public LocalDate getStartDate(){
+        return this.startDate;
+    }
+    public LocalDate getEndDate(){
+        return this.endDate;
     }
     public String getStatus(){
         return this.status;
@@ -59,8 +79,8 @@ public class DiscountCoupon extends BaseEntity implements RemoteInput {
     public LocalDateTime getCreatedTime(){
         return this.createdTime;
     }
-    public LocalDateTime getUpdateTime(){
-        return this.updateTime;
+    public LocalDateTime getUpdatedTime(){
+        return this.updatedTime;
     }
     public DiscountCoupon updateCode(String code){
         code = (code == null ? null : code.trim());
@@ -71,6 +91,15 @@ public class DiscountCoupon extends BaseEntity implements RemoteInput {
         this.code = code;
         return this;
     }
+    public DiscountCoupon updateDescription(String description){
+        description = (description == null ? null : description.trim());
+        if(Objects.equals(this.description, description)){
+            return this;
+        }
+        handleUpdate(DESCRIPTION_PROPERTY, getDescription(), description);
+        this.description = description;
+        return this;
+    }
     public DiscountCoupon updateDiscountPercentage(BigDecimal discountPercentage){
         if(Objects.equals(this.discountPercentage, discountPercentage)){
             return this;
@@ -79,28 +108,52 @@ public class DiscountCoupon extends BaseEntity implements RemoteInput {
         this.discountPercentage = discountPercentage;
         return this;
     }
-    public DiscountCoupon updateMaxUses(Integer maxUses){
-        if(Objects.equals(this.maxUses, maxUses)){
+    public DiscountCoupon updateMinOrderAmount(BigDecimal minOrderAmount){
+        if(Objects.equals(this.minOrderAmount, minOrderAmount)){
             return this;
         }
-        handleUpdate(MAX_USES_PROPERTY, getMaxUses(), maxUses);
-        this.maxUses = maxUses;
+        handleUpdate(MIN_ORDER_AMOUNT_PROPERTY, getMinOrderAmount(), minOrderAmount);
+        this.minOrderAmount = minOrderAmount;
         return this;
     }
-    public DiscountCoupon updateCurrentUses(Integer currentUses){
-        if(Objects.equals(this.currentUses, currentUses)){
+    public DiscountCoupon updateMaxDiscountAmount(BigDecimal maxDiscountAmount){
+        if(Objects.equals(this.maxDiscountAmount, maxDiscountAmount)){
             return this;
         }
-        handleUpdate(CURRENT_USES_PROPERTY, getCurrentUses(), currentUses);
-        this.currentUses = currentUses;
+        handleUpdate(MAX_DISCOUNT_AMOUNT_PROPERTY, getMaxDiscountAmount(), maxDiscountAmount);
+        this.maxDiscountAmount = maxDiscountAmount;
         return this;
     }
-    public DiscountCoupon updateExpiryDate(LocalDate expiryDate){
-        if(Objects.equals(this.expiryDate, expiryDate)){
+    public DiscountCoupon updateUsageLimit(Integer usageLimit){
+        if(Objects.equals(this.usageLimit, usageLimit)){
             return this;
         }
-        handleUpdate(EXPIRY_DATE_PROPERTY, getExpiryDate(), expiryDate);
-        this.expiryDate = expiryDate;
+        handleUpdate(USAGE_LIMIT_PROPERTY, getUsageLimit(), usageLimit);
+        this.usageLimit = usageLimit;
+        return this;
+    }
+    public DiscountCoupon updateUsedCount(Integer usedCount){
+        if(Objects.equals(this.usedCount, usedCount)){
+            return this;
+        }
+        handleUpdate(USED_COUNT_PROPERTY, getUsedCount(), usedCount);
+        this.usedCount = usedCount;
+        return this;
+    }
+    public DiscountCoupon updateStartDate(LocalDate startDate){
+        if(Objects.equals(this.startDate, startDate)){
+            return this;
+        }
+        handleUpdate(START_DATE_PROPERTY, getStartDate(), startDate);
+        this.startDate = startDate;
+        return this;
+    }
+    public DiscountCoupon updateEndDate(LocalDate endDate){
+        if(Objects.equals(this.endDate, endDate)){
+            return this;
+        }
+        handleUpdate(END_DATE_PROPERTY, getEndDate(), endDate);
+        this.endDate = endDate;
         return this;
     }
     public DiscountCoupon updateStatus(String status){
@@ -120,12 +173,12 @@ public class DiscountCoupon extends BaseEntity implements RemoteInput {
         this.createdTime = createdTime;
         return this;
     }
-    public DiscountCoupon updateUpdateTime(LocalDateTime updateTime){
-        if(Objects.equals(this.updateTime, updateTime)){
+    public DiscountCoupon updateUpdatedTime(LocalDateTime updatedTime){
+        if(Objects.equals(this.updatedTime, updatedTime)){
             return this;
         }
-        handleUpdate(UPDATE_TIME_PROPERTY, getUpdateTime(), updateTime);
-        this.updateTime = updateTime;
+        handleUpdate(UPDATED_TIME_PROPERTY, getUpdatedTime(), updatedTime);
+        this.updatedTime = updatedTime;
         return this;
     }
 
@@ -158,19 +211,27 @@ public class DiscountCoupon extends BaseEntity implements RemoteInput {
         switch (property) {
             case "code": this.code = (value == null ? null : ((String)value).trim()); break;
 
+            case "description": this.description = (value == null ? null : ((String)value).trim()); break;
+
             case "discountPercentage": this.discountPercentage = (BigDecimal) value; break;
 
-            case "maxUses": this.maxUses = (Integer) value; break;
+            case "minOrderAmount": this.minOrderAmount = (BigDecimal) value; break;
 
-            case "currentUses": this.currentUses = (Integer) value; break;
+            case "maxDiscountAmount": this.maxDiscountAmount = (BigDecimal) value; break;
 
-            case "expiryDate": this.expiryDate = (LocalDate) value; break;
+            case "usageLimit": this.usageLimit = (Integer) value; break;
+
+            case "usedCount": this.usedCount = (Integer) value; break;
+
+            case "startDate": this.startDate = (LocalDate) value; break;
+
+            case "endDate": this.endDate = (LocalDate) value; break;
 
             case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
             case "createdTime": this.createdTime = (LocalDateTime) value; break;
 
-            case "updateTime": this.updateTime = (LocalDateTime) value; break;
+            case "updatedTime": this.updatedTime = (LocalDateTime) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -181,13 +242,17 @@ public class DiscountCoupon extends BaseEntity implements RemoteInput {
     public Object __internalGet(String property) {
         switch (property) {
             case "code": return this.code;
+            case "description": return this.description;
             case "discountPercentage": return this.discountPercentage;
-            case "maxUses": return this.maxUses;
-            case "currentUses": return this.currentUses;
-            case "expiryDate": return this.expiryDate;
+            case "minOrderAmount": return this.minOrderAmount;
+            case "maxDiscountAmount": return this.maxDiscountAmount;
+            case "usageLimit": return this.usageLimit;
+            case "usedCount": return this.usedCount;
+            case "startDate": return this.startDate;
+            case "endDate": return this.endDate;
             case "status": return this.status;
             case "createdTime": return this.createdTime;
-            case "updateTime": return this.updateTime;
+            case "updatedTime": return this.updatedTime;
             default: return super.__internalGet(property);
         }
     }

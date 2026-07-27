@@ -7,8 +7,6 @@ import com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAss
 import com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignmentRequest;
 import com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog;
 import com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLogRequest;
-import com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog;
-import com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLogRequest;
 import com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice;
 import com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDeviceRequest;
 import com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance;
@@ -20,7 +18,6 @@ import io.teaql.core.SearchCriteria;
 import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -95,7 +92,7 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
 
     public VehicleRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectName().selectLicensePlate().selectMake().selectModel().selectYear().selectCapacityKg().selectStatus().selectCreatedAt().selectUpdatedAt().selectVersion();
+        return selectId().selectPlateNumber().selectVin().selectMake().selectModel().selectYear().selectCapacityKg().selectStatus().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public VehicleRequest<T> selectSelfFields(){
@@ -104,13 +101,13 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
 
     public VehicleRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectName().selectLicensePlate().selectMake().selectModel().selectYear().selectCapacityKg().selectStatus().selectCreatedAt().selectUpdatedAt().selectVersion();
+        return selectId().selectPlateNumber().selectVin().selectMake().selectModel().selectYear().selectCapacityKg().selectStatus().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public VehicleRequest<T> selectChildren(){
         super.selectAny();
-        selectDispatchPlanList().selectDriverAssignmentList().selectGpsLogList().selectFuelLogList().selectVehicleMaintenanceList().selectTelematicsDeviceList();
-        return selectId().selectName().selectLicensePlate().selectMake().selectModel().selectYear().selectCapacityKg().selectStatus().selectCreatedAt().selectUpdatedAt().selectVersion();
+        selectDispatchPlanList().selectTelematicsDeviceList().selectFuelLogList().selectVehicleMaintenanceList().selectDriverAssignmentList();
+        return selectId().selectPlateNumber().selectVin().selectMake().selectModel().selectYear().selectCapacityKg().selectStatus().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
 
@@ -131,38 +128,38 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
        unselectProperty(Vehicle.ID_PROPERTY);
        return this;
     }
-    public VehicleRequest<T> selectName(){
-       selectProperty(Vehicle.NAME_PROPERTY);
+    public VehicleRequest<T> selectPlateNumber(){
+       selectProperty(Vehicle.PLATE_NUMBER_PROPERTY);
        return this;
     }
 
     /**
-     * fill the name with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  name) to fetch name property.
+     * fill the plateNumber with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  plateNumber) to fetch plateNumber property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public VehicleRequest<T> unselectName(){
-       unselectProperty(Vehicle.NAME_PROPERTY);
+    public VehicleRequest<T> unselectPlateNumber(){
+       unselectProperty(Vehicle.PLATE_NUMBER_PROPERTY);
        return this;
     }
-    public VehicleRequest<T> selectLicensePlate(){
-       selectProperty(Vehicle.LICENSE_PLATE_PROPERTY);
+    public VehicleRequest<T> selectVin(){
+       selectProperty(Vehicle.VIN_PROPERTY);
        return this;
     }
 
     /**
-     * fill the licensePlate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  licensePlate) to fetch licensePlate property.
+     * fill the vin with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  vin) to fetch vin property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public VehicleRequest<T> unselectLicensePlate(){
-       unselectProperty(Vehicle.LICENSE_PLATE_PROPERTY);
+    public VehicleRequest<T> unselectVin(){
+       unselectProperty(Vehicle.VIN_PROPERTY);
        return this;
     }
     public VehicleRequest<T> selectMake(){
@@ -325,20 +322,12 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
        enhanceRelation(Vehicle.DISPATCH_PLAN_LIST_PROPERTY, dispatchPlanList);
        return this;
     }
-    public VehicleRequest<T> selectDriverAssignmentList(){
-       return selectDriverAssignmentListWith(Q.driverAssignments().selectSelf());
+    public VehicleRequest<T> selectTelematicsDeviceList(){
+       return selectTelematicsDeviceListWith(Q.telematicsDevices().selectSelf());
     }
 
-    public VehicleRequest<T> selectDriverAssignmentListWith(DriverAssignmentRequest driverAssignmentList){
-       enhanceRelation(Vehicle.DRIVER_ASSIGNMENT_LIST_PROPERTY, driverAssignmentList);
-       return this;
-    }
-    public VehicleRequest<T> selectGpsLogList(){
-       return selectGpsLogListWith(Q.gpsLogs().selectSelf());
-    }
-
-    public VehicleRequest<T> selectGpsLogListWith(GpsLogRequest gpsLogList){
-       enhanceRelation(Vehicle.GPS_LOG_LIST_PROPERTY, gpsLogList);
+    public VehicleRequest<T> selectTelematicsDeviceListWith(TelematicsDeviceRequest telematicsDeviceList){
+       enhanceRelation(Vehicle.TELEMATICS_DEVICE_LIST_PROPERTY, telematicsDeviceList);
        return this;
     }
     public VehicleRequest<T> selectFuelLogList(){
@@ -357,12 +346,12 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
        enhanceRelation(Vehicle.VEHICLE_MAINTENANCE_LIST_PROPERTY, vehicleMaintenanceList);
        return this;
     }
-    public VehicleRequest<T> selectTelematicsDeviceList(){
-       return selectTelematicsDeviceListWith(Q.telematicsDevices().selectSelf());
+    public VehicleRequest<T> selectDriverAssignmentList(){
+       return selectDriverAssignmentListWith(Q.driverAssignments().selectSelf());
     }
 
-    public VehicleRequest<T> selectTelematicsDeviceListWith(TelematicsDeviceRequest telematicsDeviceList){
-       enhanceRelation(Vehicle.TELEMATICS_DEVICE_LIST_PROPERTY, telematicsDeviceList);
+    public VehicleRequest<T> selectDriverAssignmentListWith(DriverAssignmentRequest driverAssignmentList){
+       enhanceRelation(Vehicle.DRIVER_ASSIGNMENT_LIST_PROPERTY, driverAssignmentList);
        return this;
     }
 
@@ -383,128 +372,128 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
 
 
 
-    public VehicleRequest<T> filterByName(String... name){
-      if (name == null || name.length == 0) {
-        throw new IllegalArgumentException("filterByName parameter name cannot be empty");
+    public VehicleRequest<T> filterByPlateNumber(String... plateNumber){
+      if (plateNumber == null || plateNumber.length == 0) {
+        throw new IllegalArgumentException("filterByPlateNumber parameter plateNumber cannot be empty");
       }
-      return appendSearchCriteria(createNameCriteria(Operator.EQUAL, (Object[])name));
+      return appendSearchCriteria(createPlateNumberCriteria(Operator.EQUAL, (Object[])plateNumber));
     }
 
-    public VehicleRequest<T> withName(Operator operator, Object... values){
-       return appendSearchCriteria(createNameCriteria(operator, values));
+    public VehicleRequest<T> withPlateNumber(Operator operator, Object... values){
+       return appendSearchCriteria(createPlateNumberCriteria(operator, values));
     }
 
-    public VehicleRequest<T> withNameIsUnknown(){
-       return withName(Operator.IS_NULL);
+    public VehicleRequest<T> withPlateNumberIsUnknown(){
+       return withPlateNumber(Operator.IS_NULL);
     }
 
-    public VehicleRequest<T> withNameIsKnown(){
-       return withName(Operator.IS_NOT_NULL);
+    public VehicleRequest<T> withPlateNumberIsKnown(){
+       return withPlateNumber(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createNameCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(Vehicle.NAME_PROPERTY, operator, values);
+    public SearchCriteria createPlateNumberCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(Vehicle.PLATE_NUMBER_PROPERTY, operator, values);
     }
 
-    public VehicleRequest<T> withNameGreaterThan(String name){
-       return withName(Operator.GREATER_THAN, name);
+    public VehicleRequest<T> withPlateNumberGreaterThan(String plateNumber){
+       return withPlateNumber(Operator.GREATER_THAN, plateNumber);
     }
 
-    public VehicleRequest<T> withNameGreaterThanOrEqualTo(String name){
-       return withName(Operator.GREATER_THAN_OR_EQUAL, name);
+    public VehicleRequest<T> withPlateNumberGreaterThanOrEqualTo(String plateNumber){
+       return withPlateNumber(Operator.GREATER_THAN_OR_EQUAL, plateNumber);
     }
 
-    public VehicleRequest<T> withNameLessThan(String name){
-       return withName(Operator.LESS_THAN, name);
+    public VehicleRequest<T> withPlateNumberLessThan(String plateNumber){
+       return withPlateNumber(Operator.LESS_THAN, plateNumber);
     }
 
-    public VehicleRequest<T> withNameLessThanOrEqualTo(String name){
-       return withName(Operator.LESS_THAN_OR_EQUAL, name);
+    public VehicleRequest<T> withPlateNumberLessThanOrEqualTo(String plateNumber){
+       return withPlateNumber(Operator.LESS_THAN_OR_EQUAL, plateNumber);
     }
 
-    public VehicleRequest<T> withNameBetween(String startOfName, String endOfName){
-       return withName(Operator.BETWEEN, startOfName, endOfName);
+    public VehicleRequest<T> withPlateNumberBetween(String startOfPlateNumber, String endOfPlateNumber){
+       return withPlateNumber(Operator.BETWEEN, startOfPlateNumber, endOfPlateNumber);
     }
-    public VehicleRequest<T> withNameStartingWith(String name){
-       return withName(Operator.BEGIN_WITH, name);
+    public VehicleRequest<T> withPlateNumberStartingWith(String plateNumber){
+       return withPlateNumber(Operator.BEGIN_WITH, plateNumber);
     }
-    public VehicleRequest<T> withNameContaining(String name){
-       return withName(Operator.CONTAIN, name);
-    }
-
-    public VehicleRequest<T> withNameEndingWith(String name){
-       return withName(Operator.END_WITH, name);
+    public VehicleRequest<T> withPlateNumberContaining(String plateNumber){
+       return withPlateNumber(Operator.CONTAIN, plateNumber);
     }
 
-    public VehicleRequest<T> withNameIs(String name){
-       return withName(Operator.EQUAL, name);
+    public VehicleRequest<T> withPlateNumberEndingWith(String plateNumber){
+       return withPlateNumber(Operator.END_WITH, plateNumber);
     }
 
-    public VehicleRequest<T> withNameSoundingLike(String name){
-       return withName(Operator.SOUNDS_LIKE, name);
+    public VehicleRequest<T> withPlateNumberIs(String plateNumber){
+       return withPlateNumber(Operator.EQUAL, plateNumber);
+    }
+
+    public VehicleRequest<T> withPlateNumberSoundingLike(String plateNumber){
+       return withPlateNumber(Operator.SOUNDS_LIKE, plateNumber);
     }
 
 
 
-    public VehicleRequest<T> filterByLicensePlate(String... licensePlate){
-      if (licensePlate == null || licensePlate.length == 0) {
-        throw new IllegalArgumentException("filterByLicensePlate parameter licensePlate cannot be empty");
+    public VehicleRequest<T> filterByVin(String... vin){
+      if (vin == null || vin.length == 0) {
+        throw new IllegalArgumentException("filterByVin parameter vin cannot be empty");
       }
-      return appendSearchCriteria(createLicensePlateCriteria(Operator.EQUAL, (Object[])licensePlate));
+      return appendSearchCriteria(createVinCriteria(Operator.EQUAL, (Object[])vin));
     }
 
-    public VehicleRequest<T> withLicensePlate(Operator operator, Object... values){
-       return appendSearchCriteria(createLicensePlateCriteria(operator, values));
+    public VehicleRequest<T> withVin(Operator operator, Object... values){
+       return appendSearchCriteria(createVinCriteria(operator, values));
     }
 
-    public VehicleRequest<T> withLicensePlateIsUnknown(){
-       return withLicensePlate(Operator.IS_NULL);
+    public VehicleRequest<T> withVinIsUnknown(){
+       return withVin(Operator.IS_NULL);
     }
 
-    public VehicleRequest<T> withLicensePlateIsKnown(){
-       return withLicensePlate(Operator.IS_NOT_NULL);
+    public VehicleRequest<T> withVinIsKnown(){
+       return withVin(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createLicensePlateCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(Vehicle.LICENSE_PLATE_PROPERTY, operator, values);
+    public SearchCriteria createVinCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(Vehicle.VIN_PROPERTY, operator, values);
     }
 
-    public VehicleRequest<T> withLicensePlateGreaterThan(String licensePlate){
-       return withLicensePlate(Operator.GREATER_THAN, licensePlate);
+    public VehicleRequest<T> withVinGreaterThan(String vin){
+       return withVin(Operator.GREATER_THAN, vin);
     }
 
-    public VehicleRequest<T> withLicensePlateGreaterThanOrEqualTo(String licensePlate){
-       return withLicensePlate(Operator.GREATER_THAN_OR_EQUAL, licensePlate);
+    public VehicleRequest<T> withVinGreaterThanOrEqualTo(String vin){
+       return withVin(Operator.GREATER_THAN_OR_EQUAL, vin);
     }
 
-    public VehicleRequest<T> withLicensePlateLessThan(String licensePlate){
-       return withLicensePlate(Operator.LESS_THAN, licensePlate);
+    public VehicleRequest<T> withVinLessThan(String vin){
+       return withVin(Operator.LESS_THAN, vin);
     }
 
-    public VehicleRequest<T> withLicensePlateLessThanOrEqualTo(String licensePlate){
-       return withLicensePlate(Operator.LESS_THAN_OR_EQUAL, licensePlate);
+    public VehicleRequest<T> withVinLessThanOrEqualTo(String vin){
+       return withVin(Operator.LESS_THAN_OR_EQUAL, vin);
     }
 
-    public VehicleRequest<T> withLicensePlateBetween(String startOfLicensePlate, String endOfLicensePlate){
-       return withLicensePlate(Operator.BETWEEN, startOfLicensePlate, endOfLicensePlate);
+    public VehicleRequest<T> withVinBetween(String startOfVin, String endOfVin){
+       return withVin(Operator.BETWEEN, startOfVin, endOfVin);
     }
-    public VehicleRequest<T> withLicensePlateStartingWith(String licensePlate){
-       return withLicensePlate(Operator.BEGIN_WITH, licensePlate);
+    public VehicleRequest<T> withVinStartingWith(String vin){
+       return withVin(Operator.BEGIN_WITH, vin);
     }
-    public VehicleRequest<T> withLicensePlateContaining(String licensePlate){
-       return withLicensePlate(Operator.CONTAIN, licensePlate);
-    }
-
-    public VehicleRequest<T> withLicensePlateEndingWith(String licensePlate){
-       return withLicensePlate(Operator.END_WITH, licensePlate);
+    public VehicleRequest<T> withVinContaining(String vin){
+       return withVin(Operator.CONTAIN, vin);
     }
 
-    public VehicleRequest<T> withLicensePlateIs(String licensePlate){
-       return withLicensePlate(Operator.EQUAL, licensePlate);
+    public VehicleRequest<T> withVinEndingWith(String vin){
+       return withVin(Operator.END_WITH, vin);
     }
 
-    public VehicleRequest<T> withLicensePlateSoundingLike(String licensePlate){
-       return withLicensePlate(Operator.SOUNDS_LIKE, licensePlate);
+    public VehicleRequest<T> withVinIs(String vin){
+       return withVin(Operator.EQUAL, vin);
+    }
+
+    public VehicleRequest<T> withVinSoundingLike(String vin){
+       return withVin(Operator.SOUNDS_LIKE, vin);
     }
 
 
@@ -680,7 +669,7 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
 
 
 
-    public VehicleRequest<T> filterByCapacityKg(BigDecimal... capacityKg){
+    public VehicleRequest<T> filterByCapacityKg(Integer... capacityKg){
       if (capacityKg == null || capacityKg.length == 0) {
         throw new IllegalArgumentException("filterByCapacityKg parameter capacityKg cannot be empty");
       }
@@ -703,23 +692,23 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
         return createBasicSearchCriteria(Vehicle.CAPACITY_KG_PROPERTY, operator, values);
     }
 
-    public VehicleRequest<T> withCapacityKgGreaterThan(BigDecimal capacityKg){
+    public VehicleRequest<T> withCapacityKgGreaterThan(Integer capacityKg){
        return withCapacityKg(Operator.GREATER_THAN, capacityKg);
     }
 
-    public VehicleRequest<T> withCapacityKgGreaterThanOrEqualTo(BigDecimal capacityKg){
+    public VehicleRequest<T> withCapacityKgGreaterThanOrEqualTo(Integer capacityKg){
        return withCapacityKg(Operator.GREATER_THAN_OR_EQUAL, capacityKg);
     }
 
-    public VehicleRequest<T> withCapacityKgLessThan(BigDecimal capacityKg){
+    public VehicleRequest<T> withCapacityKgLessThan(Integer capacityKg){
        return withCapacityKg(Operator.LESS_THAN, capacityKg);
     }
 
-    public VehicleRequest<T> withCapacityKgLessThanOrEqualTo(BigDecimal capacityKg){
+    public VehicleRequest<T> withCapacityKgLessThanOrEqualTo(Integer capacityKg){
        return withCapacityKg(Operator.LESS_THAN_OR_EQUAL, capacityKg);
     }
 
-    public VehicleRequest<T> withCapacityKgBetween(BigDecimal startOfCapacityKg, BigDecimal endOfCapacityKg){
+    public VehicleRequest<T> withCapacityKgBetween(Integer startOfCapacityKg, Integer endOfCapacityKg){
        return withCapacityKg(Operator.BETWEEN, startOfCapacityKg, endOfCapacityKg);
     }
 
@@ -976,35 +965,20 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
     public VehicleRequest<T> haveNoDispatchPlans(){
         return withoutDispatchPlanListMatching(Q.dispatchPlans().unlimited());
     }
-    public VehicleRequest<T> withDriverAssignmentListMatching(DriverAssignmentRequest driverAssignmentRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(Vehicle.ID_PROPERTY, driverAssignmentRequest, DriverAssignment.VEHICLE_PROPERTY));
+    public VehicleRequest<T> withTelematicsDeviceListMatching(TelematicsDeviceRequest telematicsDeviceRequest){
+        return appendSearchCriteria(new SubQuerySearchCriteria(Vehicle.ID_PROPERTY, telematicsDeviceRequest, TelematicsDevice.VEHICLE_PROPERTY));
     }
 
-    public VehicleRequest<T> withoutDriverAssignmentListMatching(DriverAssignmentRequest driverAssignmentRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(Vehicle.ID_PROPERTY, driverAssignmentRequest, DriverAssignment.VEHICLE_PROPERTY)));
+    public VehicleRequest<T> withoutTelematicsDeviceListMatching(TelematicsDeviceRequest telematicsDeviceRequest){
+        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(Vehicle.ID_PROPERTY, telematicsDeviceRequest, TelematicsDevice.VEHICLE_PROPERTY)));
     }
 
-    public VehicleRequest<T> haveDriverAssignments(){
-        return withDriverAssignmentListMatching(Q.driverAssignments().unlimited());
+    public VehicleRequest<T> haveTelematicsDevices(){
+        return withTelematicsDeviceListMatching(Q.telematicsDevices().unlimited());
     }
 
-    public VehicleRequest<T> haveNoDriverAssignments(){
-        return withoutDriverAssignmentListMatching(Q.driverAssignments().unlimited());
-    }
-    public VehicleRequest<T> withGpsLogListMatching(GpsLogRequest gpsLogRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(Vehicle.ID_PROPERTY, gpsLogRequest, GpsLog.VEHICLE_PROPERTY));
-    }
-
-    public VehicleRequest<T> withoutGpsLogListMatching(GpsLogRequest gpsLogRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(Vehicle.ID_PROPERTY, gpsLogRequest, GpsLog.VEHICLE_PROPERTY)));
-    }
-
-    public VehicleRequest<T> haveGpsLogs(){
-        return withGpsLogListMatching(Q.gpsLogs().unlimited());
-    }
-
-    public VehicleRequest<T> haveNoGpsLogs(){
-        return withoutGpsLogListMatching(Q.gpsLogs().unlimited());
+    public VehicleRequest<T> haveNoTelematicsDevices(){
+        return withoutTelematicsDeviceListMatching(Q.telematicsDevices().unlimited());
     }
     public VehicleRequest<T> withFuelLogListMatching(FuelLogRequest fuelLogRequest){
         return appendSearchCriteria(new SubQuerySearchCriteria(Vehicle.ID_PROPERTY, fuelLogRequest, FuelLog.VEHICLE_PROPERTY));
@@ -1036,20 +1010,20 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
     public VehicleRequest<T> haveNoVehicleMaintenances(){
         return withoutVehicleMaintenanceListMatching(Q.vehicleMaintenances().unlimited());
     }
-    public VehicleRequest<T> withTelematicsDeviceListMatching(TelematicsDeviceRequest telematicsDeviceRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(Vehicle.ID_PROPERTY, telematicsDeviceRequest, TelematicsDevice.VEHICLE_PROPERTY));
+    public VehicleRequest<T> withDriverAssignmentListMatching(DriverAssignmentRequest driverAssignmentRequest){
+        return appendSearchCriteria(new SubQuerySearchCriteria(Vehicle.ID_PROPERTY, driverAssignmentRequest, DriverAssignment.VEHICLE_PROPERTY));
     }
 
-    public VehicleRequest<T> withoutTelematicsDeviceListMatching(TelematicsDeviceRequest telematicsDeviceRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(Vehicle.ID_PROPERTY, telematicsDeviceRequest, TelematicsDevice.VEHICLE_PROPERTY)));
+    public VehicleRequest<T> withoutDriverAssignmentListMatching(DriverAssignmentRequest driverAssignmentRequest){
+        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(Vehicle.ID_PROPERTY, driverAssignmentRequest, DriverAssignment.VEHICLE_PROPERTY)));
     }
 
-    public VehicleRequest<T> haveTelematicsDevices(){
-        return withTelematicsDeviceListMatching(Q.telematicsDevices().unlimited());
+    public VehicleRequest<T> haveDriverAssignments(){
+        return withDriverAssignmentListMatching(Q.driverAssignments().unlimited());
     }
 
-    public VehicleRequest<T> haveNoTelematicsDevices(){
-        return withoutTelematicsDeviceListMatching(Q.telematicsDevices().unlimited());
+    public VehicleRequest<T> haveNoDriverAssignments(){
+        return withoutDriverAssignmentListMatching(Q.driverAssignments().unlimited());
     }
 
     public VehicleRequest<T> count(){
@@ -1192,12 +1166,8 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
        aggregate(Vehicle.DISPATCH_PLAN_LIST_PROPERTY, subRequest);
        return this;
     }
-    public VehicleRequest<T> groupByDriverAssignmentsWithDetails(DriverAssignmentRequest subRequest){
-       aggregate(Vehicle.DRIVER_ASSIGNMENT_LIST_PROPERTY, subRequest);
-       return this;
-    }
-    public VehicleRequest<T> groupByGpsLogsWithDetails(GpsLogRequest subRequest){
-       aggregate(Vehicle.GPS_LOG_LIST_PROPERTY, subRequest);
+    public VehicleRequest<T> groupByTelematicsDevicesWithDetails(TelematicsDeviceRequest subRequest){
+       aggregate(Vehicle.TELEMATICS_DEVICE_LIST_PROPERTY, subRequest);
        return this;
     }
     public VehicleRequest<T> groupByFuelLogsWithDetails(FuelLogRequest subRequest){
@@ -1208,8 +1178,8 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
        aggregate(Vehicle.VEHICLE_MAINTENANCE_LIST_PROPERTY, subRequest);
        return this;
     }
-    public VehicleRequest<T> groupByTelematicsDevicesWithDetails(TelematicsDeviceRequest subRequest){
-       aggregate(Vehicle.TELEMATICS_DEVICE_LIST_PROPERTY, subRequest);
+    public VehicleRequest<T> groupByDriverAssignmentsWithDetails(DriverAssignmentRequest subRequest){
+       aggregate(Vehicle.DRIVER_ASSIGNMENT_LIST_PROPERTY, subRequest);
        return this;
     }
 
@@ -1228,33 +1198,33 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
        return this;
     }
 
-    public VehicleRequest<T> groupByName(){
-       groupBy(Vehicle.NAME_PROPERTY);
+    public VehicleRequest<T> groupByPlateNumber(){
+       groupBy(Vehicle.PLATE_NUMBER_PROPERTY);
        return this;
     }
 
-    public VehicleRequest<T> groupByNameAs(String retName){
-       groupBy(retName, Vehicle.NAME_PROPERTY);
+    public VehicleRequest<T> groupByPlateNumberAs(String retName){
+       groupBy(retName, Vehicle.PLATE_NUMBER_PROPERTY);
        return this;
     }
 
-    public VehicleRequest<T> groupByNameWithFunction(String retName, AggrFunction function){
-       groupBy(retName, Vehicle.NAME_PROPERTY, function);
+    public VehicleRequest<T> groupByPlateNumberWithFunction(String retName, AggrFunction function){
+       groupBy(retName, Vehicle.PLATE_NUMBER_PROPERTY, function);
        return this;
     }
 
-    public VehicleRequest<T> groupByLicensePlate(){
-       groupBy(Vehicle.LICENSE_PLATE_PROPERTY);
+    public VehicleRequest<T> groupByVin(){
+       groupBy(Vehicle.VIN_PROPERTY);
        return this;
     }
 
-    public VehicleRequest<T> groupByLicensePlateAs(String retName){
-       groupBy(retName, Vehicle.LICENSE_PLATE_PROPERTY);
+    public VehicleRequest<T> groupByVinAs(String retName){
+       groupBy(retName, Vehicle.VIN_PROPERTY);
        return this;
     }
 
-    public VehicleRequest<T> groupByLicensePlateWithFunction(String retName, AggrFunction function){
-       groupBy(retName, Vehicle.LICENSE_PLATE_PROPERTY, function);
+    public VehicleRequest<T> groupByVinWithFunction(String retName, AggrFunction function){
+       groupBy(retName, Vehicle.VIN_PROPERTY, function);
        return this;
     }
 
@@ -1390,40 +1360,40 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
        return this;
     }
 
-    public VehicleRequest<T> orderByNameAscending(){
-       addOrderByAscending(Vehicle.NAME_PROPERTY);
+    public VehicleRequest<T> orderByPlateNumberAscending(){
+       addOrderByAscending(Vehicle.PLATE_NUMBER_PROPERTY);
        return this;
     }
 
-    public VehicleRequest<T> orderByNameDescending(){
-       addOrderByDescending(Vehicle.NAME_PROPERTY);
+    public VehicleRequest<T> orderByPlateNumberDescending(){
+       addOrderByDescending(Vehicle.PLATE_NUMBER_PROPERTY);
        return this;
     }
-    public VehicleRequest<T> orderByNameAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(Vehicle.NAME_PROPERTY);
-       return this;
-    }
-
-    public VehicleRequest<T> orderByNameDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(Vehicle.NAME_PROPERTY);
-       return this;
-    }
-    public VehicleRequest<T> orderByLicensePlateAscending(){
-       addOrderByAscending(Vehicle.LICENSE_PLATE_PROPERTY);
+    public VehicleRequest<T> orderByPlateNumberAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(Vehicle.PLATE_NUMBER_PROPERTY);
        return this;
     }
 
-    public VehicleRequest<T> orderByLicensePlateDescending(){
-       addOrderByDescending(Vehicle.LICENSE_PLATE_PROPERTY);
+    public VehicleRequest<T> orderByPlateNumberDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(Vehicle.PLATE_NUMBER_PROPERTY);
        return this;
     }
-    public VehicleRequest<T> orderByLicensePlateAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(Vehicle.LICENSE_PLATE_PROPERTY);
+    public VehicleRequest<T> orderByVinAscending(){
+       addOrderByAscending(Vehicle.VIN_PROPERTY);
        return this;
     }
 
-    public VehicleRequest<T> orderByLicensePlateDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(Vehicle.LICENSE_PLATE_PROPERTY);
+    public VehicleRequest<T> orderByVinDescending(){
+       addOrderByDescending(Vehicle.VIN_PROPERTY);
+       return this;
+    }
+    public VehicleRequest<T> orderByVinAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(Vehicle.VIN_PROPERTY);
+       return this;
+    }
+
+    public VehicleRequest<T> orderByVinDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(Vehicle.VIN_PROPERTY);
        return this;
     }
     public VehicleRequest<T> orderByMakeAscending(){
@@ -1544,31 +1514,18 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
     public VehicleRequest<T> statsFromDispatchPlans(DispatchPlanRequest subRequest){
        return statsFromDispatchPlansAs(REFINEMENTS, subRequest);
     }
-    public VehicleRequest<T> statsFromDriverAssignmentsAs(String name, DriverAssignmentRequest subRequest){
-       return statsFromDriverAssignmentsAs(name, subRequest, false);
+    public VehicleRequest<T> statsFromTelematicsDevicesAs(String name, TelematicsDeviceRequest subRequest){
+       return statsFromTelematicsDevicesAs(name, subRequest, false);
     }
 
-    public VehicleRequest<T> statsFromDriverAssignmentsAs(String name, DriverAssignmentRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(DriverAssignment.VEHICLE_PROPERTY);
+    public VehicleRequest<T> statsFromTelematicsDevicesAs(String name, TelematicsDeviceRequest subRequest, boolean singleResult){
+       subRequest.setPartitionProperty(TelematicsDevice.VEHICLE_PROPERTY);
        addAggregateDynamicProperty(name, subRequest, singleResult);
        return this;
     }
 
-    public VehicleRequest<T> statsFromDriverAssignments(DriverAssignmentRequest subRequest){
-       return statsFromDriverAssignmentsAs(REFINEMENTS, subRequest);
-    }
-    public VehicleRequest<T> statsFromGpsLogsAs(String name, GpsLogRequest subRequest){
-       return statsFromGpsLogsAs(name, subRequest, false);
-    }
-
-    public VehicleRequest<T> statsFromGpsLogsAs(String name, GpsLogRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(GpsLog.VEHICLE_PROPERTY);
-       addAggregateDynamicProperty(name, subRequest, singleResult);
-       return this;
-    }
-
-    public VehicleRequest<T> statsFromGpsLogs(GpsLogRequest subRequest){
-       return statsFromGpsLogsAs(REFINEMENTS, subRequest);
+    public VehicleRequest<T> statsFromTelematicsDevices(TelematicsDeviceRequest subRequest){
+       return statsFromTelematicsDevicesAs(REFINEMENTS, subRequest);
     }
     public VehicleRequest<T> statsFromFuelLogsAs(String name, FuelLogRequest subRequest){
        return statsFromFuelLogsAs(name, subRequest, false);
@@ -1596,18 +1553,18 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
     public VehicleRequest<T> statsFromVehicleMaintenances(VehicleMaintenanceRequest subRequest){
        return statsFromVehicleMaintenancesAs(REFINEMENTS, subRequest);
     }
-    public VehicleRequest<T> statsFromTelematicsDevicesAs(String name, TelematicsDeviceRequest subRequest){
-       return statsFromTelematicsDevicesAs(name, subRequest, false);
+    public VehicleRequest<T> statsFromDriverAssignmentsAs(String name, DriverAssignmentRequest subRequest){
+       return statsFromDriverAssignmentsAs(name, subRequest, false);
     }
 
-    public VehicleRequest<T> statsFromTelematicsDevicesAs(String name, TelematicsDeviceRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(TelematicsDevice.VEHICLE_PROPERTY);
+    public VehicleRequest<T> statsFromDriverAssignmentsAs(String name, DriverAssignmentRequest subRequest, boolean singleResult){
+       subRequest.setPartitionProperty(DriverAssignment.VEHICLE_PROPERTY);
        addAggregateDynamicProperty(name, subRequest, singleResult);
        return this;
     }
 
-    public VehicleRequest<T> statsFromTelematicsDevices(TelematicsDeviceRequest subRequest){
-       return statsFromTelematicsDevicesAs(REFINEMENTS, subRequest);
+    public VehicleRequest<T> statsFromDriverAssignments(DriverAssignmentRequest subRequest){
+       return statsFromDriverAssignmentsAs(REFINEMENTS, subRequest);
     }
     public VehicleRequest<T> countDispatchPlans(){
         return countDispatchPlansAs("Count");
@@ -1620,27 +1577,16 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
     public VehicleRequest<T> countDispatchPlansWith(String name, DispatchPlanRequest subRequest){
         return statsFromDispatchPlansAs(name, subRequest.count(), true);
     }
-    public VehicleRequest<T> countDriverAssignments(){
-        return countDriverAssignmentsAs("Count");
+    public VehicleRequest<T> countTelematicsDevices(){
+        return countTelematicsDevicesAs("Count");
     }
 
-    public VehicleRequest<T> countDriverAssignmentsAs(String name){
-        return countDriverAssignmentsWith(name, Q.driverAssignments().unlimited());
+    public VehicleRequest<T> countTelematicsDevicesAs(String name){
+        return countTelematicsDevicesWith(name, Q.telematicsDevices().unlimited());
     }
 
-    public VehicleRequest<T> countDriverAssignmentsWith(String name, DriverAssignmentRequest subRequest){
-        return statsFromDriverAssignmentsAs(name, subRequest.count(), true);
-    }
-    public VehicleRequest<T> countGpsLogs(){
-        return countGpsLogsAs("Count");
-    }
-
-    public VehicleRequest<T> countGpsLogsAs(String name){
-        return countGpsLogsWith(name, Q.gpsLogs().unlimited());
-    }
-
-    public VehicleRequest<T> countGpsLogsWith(String name, GpsLogRequest subRequest){
-        return statsFromGpsLogsAs(name, subRequest.count(), true);
+    public VehicleRequest<T> countTelematicsDevicesWith(String name, TelematicsDeviceRequest subRequest){
+        return statsFromTelematicsDevicesAs(name, subRequest.count(), true);
     }
     public VehicleRequest<T> countFuelLogs(){
         return countFuelLogsAs("Count");
@@ -1664,16 +1610,368 @@ public class VehicleRequest<T extends Vehicle> extends BaseRequest<T> {
     public VehicleRequest<T> countVehicleMaintenancesWith(String name, VehicleMaintenanceRequest subRequest){
         return statsFromVehicleMaintenancesAs(name, subRequest.count(), true);
     }
-    public VehicleRequest<T> countTelematicsDevices(){
-        return countTelematicsDevicesAs("Count");
+    public VehicleRequest<T> countDriverAssignments(){
+        return countDriverAssignmentsAs("Count");
     }
 
-    public VehicleRequest<T> countTelematicsDevicesAs(String name){
-        return countTelematicsDevicesWith(name, Q.telematicsDevices().unlimited());
+    public VehicleRequest<T> countDriverAssignmentsAs(String name){
+        return countDriverAssignmentsWith(name, Q.driverAssignments().unlimited());
     }
 
-    public VehicleRequest<T> countTelematicsDevicesWith(String name, TelematicsDeviceRequest subRequest){
-        return statsFromTelematicsDevicesAs(name, subRequest.count(), true);
+    public VehicleRequest<T> countDriverAssignmentsWith(String name, DriverAssignmentRequest subRequest){
+        return statsFromDriverAssignmentsAs(name, subRequest.count(), true);
+    }
+    public VehicleRequest<T> minLitersOfFuelLogs(){
+        return minLitersOfFuelLogsAs("minLitersOfFuelLogs");
+    }
+
+    public VehicleRequest<T> minLitersOfFuelLogsAs(String name){
+        return minLitersOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> minLitersOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.minLiters(), true);
+    }
+    public VehicleRequest<T> maxLitersOfFuelLogs(){
+        return maxLitersOfFuelLogsAs("maxLitersOfFuelLogs");
+    }
+
+    public VehicleRequest<T> maxLitersOfFuelLogsAs(String name){
+        return maxLitersOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> maxLitersOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.maxLiters(), true);
+    }
+    public VehicleRequest<T> sumLitersOfFuelLogs(){
+        return sumLitersOfFuelLogsAs("sumLitersOfFuelLogs");
+    }
+
+    public VehicleRequest<T> sumLitersOfFuelLogsAs(String name){
+        return sumLitersOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> sumLitersOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.sumLiters(), true);
+    }
+    public VehicleRequest<T> avgLitersOfFuelLogs(){
+        return avgLitersOfFuelLogsAs("avgLitersOfFuelLogs");
+    }
+
+    public VehicleRequest<T> avgLitersOfFuelLogsAs(String name){
+        return avgLitersOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> avgLitersOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.avgLiters(), true);
+    }
+    public VehicleRequest<T> standardDeviationLitersOfFuelLogs(){
+        return standardDeviationLitersOfFuelLogsAs("stdDevLitersOfFuelLogs");
+    }
+
+    public VehicleRequest<T> standardDeviationLitersOfFuelLogsAs(String name){
+        return standardDeviationLitersOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> standardDeviationLitersOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.standardDeviationLiters(), true);
+    }
+    public VehicleRequest<T> squareRootOfPopulationStandardDeviationLitersOfFuelLogs(){
+        return squareRootOfPopulationStandardDeviationLitersOfFuelLogsAs("stdDevPopLitersOfFuelLogs");
+    }
+
+    public VehicleRequest<T> squareRootOfPopulationStandardDeviationLitersOfFuelLogsAs(String name){
+        return squareRootOfPopulationStandardDeviationLitersOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> squareRootOfPopulationStandardDeviationLitersOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.squareRootOfPopulationStandardDeviationLiters(), true);
+    }
+    public VehicleRequest<T> sampleVarianceLitersOfFuelLogs(){
+        return sampleVarianceLitersOfFuelLogsAs("varSampLitersOfFuelLogs");
+    }
+
+    public VehicleRequest<T> sampleVarianceLitersOfFuelLogsAs(String name){
+        return sampleVarianceLitersOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> sampleVarianceLitersOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.sampleVarianceLiters(), true);
+    }
+    public VehicleRequest<T> samplePopulationVarianceLitersOfFuelLogs(){
+        return samplePopulationVarianceLitersOfFuelLogsAs("varPopLitersOfFuelLogs");
+    }
+
+    public VehicleRequest<T> samplePopulationVarianceLitersOfFuelLogsAs(String name){
+        return samplePopulationVarianceLitersOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> samplePopulationVarianceLitersOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.samplePopulationVarianceLiters(), true);
+    }
+    public VehicleRequest<T> minCostOfFuelLogs(){
+        return minCostOfFuelLogsAs("minCostOfFuelLogs");
+    }
+
+    public VehicleRequest<T> minCostOfFuelLogsAs(String name){
+        return minCostOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> minCostOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.minCost(), true);
+    }
+    public VehicleRequest<T> maxCostOfFuelLogs(){
+        return maxCostOfFuelLogsAs("maxCostOfFuelLogs");
+    }
+
+    public VehicleRequest<T> maxCostOfFuelLogsAs(String name){
+        return maxCostOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> maxCostOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.maxCost(), true);
+    }
+    public VehicleRequest<T> sumCostOfFuelLogs(){
+        return sumCostOfFuelLogsAs("sumCostOfFuelLogs");
+    }
+
+    public VehicleRequest<T> sumCostOfFuelLogsAs(String name){
+        return sumCostOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> sumCostOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.sumCost(), true);
+    }
+    public VehicleRequest<T> avgCostOfFuelLogs(){
+        return avgCostOfFuelLogsAs("avgCostOfFuelLogs");
+    }
+
+    public VehicleRequest<T> avgCostOfFuelLogsAs(String name){
+        return avgCostOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> avgCostOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.avgCost(), true);
+    }
+    public VehicleRequest<T> standardDeviationCostOfFuelLogs(){
+        return standardDeviationCostOfFuelLogsAs("stdDevCostOfFuelLogs");
+    }
+
+    public VehicleRequest<T> standardDeviationCostOfFuelLogsAs(String name){
+        return standardDeviationCostOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> standardDeviationCostOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.standardDeviationCost(), true);
+    }
+    public VehicleRequest<T> squareRootOfPopulationStandardDeviationCostOfFuelLogs(){
+        return squareRootOfPopulationStandardDeviationCostOfFuelLogsAs("stdDevPopCostOfFuelLogs");
+    }
+
+    public VehicleRequest<T> squareRootOfPopulationStandardDeviationCostOfFuelLogsAs(String name){
+        return squareRootOfPopulationStandardDeviationCostOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> squareRootOfPopulationStandardDeviationCostOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.squareRootOfPopulationStandardDeviationCost(), true);
+    }
+    public VehicleRequest<T> sampleVarianceCostOfFuelLogs(){
+        return sampleVarianceCostOfFuelLogsAs("varSampCostOfFuelLogs");
+    }
+
+    public VehicleRequest<T> sampleVarianceCostOfFuelLogsAs(String name){
+        return sampleVarianceCostOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> sampleVarianceCostOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.sampleVarianceCost(), true);
+    }
+    public VehicleRequest<T> samplePopulationVarianceCostOfFuelLogs(){
+        return samplePopulationVarianceCostOfFuelLogsAs("varPopCostOfFuelLogs");
+    }
+
+    public VehicleRequest<T> samplePopulationVarianceCostOfFuelLogsAs(String name){
+        return samplePopulationVarianceCostOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> samplePopulationVarianceCostOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.samplePopulationVarianceCost(), true);
+    }
+    public VehicleRequest<T> minOdometerKmOfFuelLogs(){
+        return minOdometerKmOfFuelLogsAs("minOdometerKmOfFuelLogs");
+    }
+
+    public VehicleRequest<T> minOdometerKmOfFuelLogsAs(String name){
+        return minOdometerKmOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> minOdometerKmOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.minOdometerKm(), true);
+    }
+    public VehicleRequest<T> maxOdometerKmOfFuelLogs(){
+        return maxOdometerKmOfFuelLogsAs("maxOdometerKmOfFuelLogs");
+    }
+
+    public VehicleRequest<T> maxOdometerKmOfFuelLogsAs(String name){
+        return maxOdometerKmOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> maxOdometerKmOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.maxOdometerKm(), true);
+    }
+    public VehicleRequest<T> sumOdometerKmOfFuelLogs(){
+        return sumOdometerKmOfFuelLogsAs("sumOdometerKmOfFuelLogs");
+    }
+
+    public VehicleRequest<T> sumOdometerKmOfFuelLogsAs(String name){
+        return sumOdometerKmOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> sumOdometerKmOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.sumOdometerKm(), true);
+    }
+    public VehicleRequest<T> avgOdometerKmOfFuelLogs(){
+        return avgOdometerKmOfFuelLogsAs("avgOdometerKmOfFuelLogs");
+    }
+
+    public VehicleRequest<T> avgOdometerKmOfFuelLogsAs(String name){
+        return avgOdometerKmOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> avgOdometerKmOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.avgOdometerKm(), true);
+    }
+    public VehicleRequest<T> standardDeviationOdometerKmOfFuelLogs(){
+        return standardDeviationOdometerKmOfFuelLogsAs("stdDevOdometerKmOfFuelLogs");
+    }
+
+    public VehicleRequest<T> standardDeviationOdometerKmOfFuelLogsAs(String name){
+        return standardDeviationOdometerKmOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> standardDeviationOdometerKmOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.standardDeviationOdometerKm(), true);
+    }
+    public VehicleRequest<T> squareRootOfPopulationStandardDeviationOdometerKmOfFuelLogs(){
+        return squareRootOfPopulationStandardDeviationOdometerKmOfFuelLogsAs("stdDevPopOdometerKmOfFuelLogs");
+    }
+
+    public VehicleRequest<T> squareRootOfPopulationStandardDeviationOdometerKmOfFuelLogsAs(String name){
+        return squareRootOfPopulationStandardDeviationOdometerKmOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> squareRootOfPopulationStandardDeviationOdometerKmOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.squareRootOfPopulationStandardDeviationOdometerKm(), true);
+    }
+    public VehicleRequest<T> sampleVarianceOdometerKmOfFuelLogs(){
+        return sampleVarianceOdometerKmOfFuelLogsAs("varSampOdometerKmOfFuelLogs");
+    }
+
+    public VehicleRequest<T> sampleVarianceOdometerKmOfFuelLogsAs(String name){
+        return sampleVarianceOdometerKmOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> sampleVarianceOdometerKmOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.sampleVarianceOdometerKm(), true);
+    }
+    public VehicleRequest<T> samplePopulationVarianceOdometerKmOfFuelLogs(){
+        return samplePopulationVarianceOdometerKmOfFuelLogsAs("varPopOdometerKmOfFuelLogs");
+    }
+
+    public VehicleRequest<T> samplePopulationVarianceOdometerKmOfFuelLogsAs(String name){
+        return samplePopulationVarianceOdometerKmOfFuelLogsAs(name, Q.fuelLogs().unlimited());
+    }
+
+    public VehicleRequest<T> samplePopulationVarianceOdometerKmOfFuelLogsAs(String name, FuelLogRequest subRequest){
+        return statsFromFuelLogsAs(name, subRequest.samplePopulationVarianceOdometerKm(), true);
+    }
+    public VehicleRequest<T> minCostOfVehicleMaintenances(){
+        return minCostOfVehicleMaintenancesAs("minCostOfVehicleMaintenances");
+    }
+
+    public VehicleRequest<T> minCostOfVehicleMaintenancesAs(String name){
+        return minCostOfVehicleMaintenancesAs(name, Q.vehicleMaintenances().unlimited());
+    }
+
+    public VehicleRequest<T> minCostOfVehicleMaintenancesAs(String name, VehicleMaintenanceRequest subRequest){
+        return statsFromVehicleMaintenancesAs(name, subRequest.minCost(), true);
+    }
+    public VehicleRequest<T> maxCostOfVehicleMaintenances(){
+        return maxCostOfVehicleMaintenancesAs("maxCostOfVehicleMaintenances");
+    }
+
+    public VehicleRequest<T> maxCostOfVehicleMaintenancesAs(String name){
+        return maxCostOfVehicleMaintenancesAs(name, Q.vehicleMaintenances().unlimited());
+    }
+
+    public VehicleRequest<T> maxCostOfVehicleMaintenancesAs(String name, VehicleMaintenanceRequest subRequest){
+        return statsFromVehicleMaintenancesAs(name, subRequest.maxCost(), true);
+    }
+    public VehicleRequest<T> sumCostOfVehicleMaintenances(){
+        return sumCostOfVehicleMaintenancesAs("sumCostOfVehicleMaintenances");
+    }
+
+    public VehicleRequest<T> sumCostOfVehicleMaintenancesAs(String name){
+        return sumCostOfVehicleMaintenancesAs(name, Q.vehicleMaintenances().unlimited());
+    }
+
+    public VehicleRequest<T> sumCostOfVehicleMaintenancesAs(String name, VehicleMaintenanceRequest subRequest){
+        return statsFromVehicleMaintenancesAs(name, subRequest.sumCost(), true);
+    }
+    public VehicleRequest<T> avgCostOfVehicleMaintenances(){
+        return avgCostOfVehicleMaintenancesAs("avgCostOfVehicleMaintenances");
+    }
+
+    public VehicleRequest<T> avgCostOfVehicleMaintenancesAs(String name){
+        return avgCostOfVehicleMaintenancesAs(name, Q.vehicleMaintenances().unlimited());
+    }
+
+    public VehicleRequest<T> avgCostOfVehicleMaintenancesAs(String name, VehicleMaintenanceRequest subRequest){
+        return statsFromVehicleMaintenancesAs(name, subRequest.avgCost(), true);
+    }
+    public VehicleRequest<T> standardDeviationCostOfVehicleMaintenances(){
+        return standardDeviationCostOfVehicleMaintenancesAs("stdDevCostOfVehicleMaintenances");
+    }
+
+    public VehicleRequest<T> standardDeviationCostOfVehicleMaintenancesAs(String name){
+        return standardDeviationCostOfVehicleMaintenancesAs(name, Q.vehicleMaintenances().unlimited());
+    }
+
+    public VehicleRequest<T> standardDeviationCostOfVehicleMaintenancesAs(String name, VehicleMaintenanceRequest subRequest){
+        return statsFromVehicleMaintenancesAs(name, subRequest.standardDeviationCost(), true);
+    }
+    public VehicleRequest<T> squareRootOfPopulationStandardDeviationCostOfVehicleMaintenances(){
+        return squareRootOfPopulationStandardDeviationCostOfVehicleMaintenancesAs("stdDevPopCostOfVehicleMaintenances");
+    }
+
+    public VehicleRequest<T> squareRootOfPopulationStandardDeviationCostOfVehicleMaintenancesAs(String name){
+        return squareRootOfPopulationStandardDeviationCostOfVehicleMaintenancesAs(name, Q.vehicleMaintenances().unlimited());
+    }
+
+    public VehicleRequest<T> squareRootOfPopulationStandardDeviationCostOfVehicleMaintenancesAs(String name, VehicleMaintenanceRequest subRequest){
+        return statsFromVehicleMaintenancesAs(name, subRequest.squareRootOfPopulationStandardDeviationCost(), true);
+    }
+    public VehicleRequest<T> sampleVarianceCostOfVehicleMaintenances(){
+        return sampleVarianceCostOfVehicleMaintenancesAs("varSampCostOfVehicleMaintenances");
+    }
+
+    public VehicleRequest<T> sampleVarianceCostOfVehicleMaintenancesAs(String name){
+        return sampleVarianceCostOfVehicleMaintenancesAs(name, Q.vehicleMaintenances().unlimited());
+    }
+
+    public VehicleRequest<T> sampleVarianceCostOfVehicleMaintenancesAs(String name, VehicleMaintenanceRequest subRequest){
+        return statsFromVehicleMaintenancesAs(name, subRequest.sampleVarianceCost(), true);
+    }
+    public VehicleRequest<T> samplePopulationVarianceCostOfVehicleMaintenances(){
+        return samplePopulationVarianceCostOfVehicleMaintenancesAs("varPopCostOfVehicleMaintenances");
+    }
+
+    public VehicleRequest<T> samplePopulationVarianceCostOfVehicleMaintenancesAs(String name){
+        return samplePopulationVarianceCostOfVehicleMaintenancesAs(name, Q.vehicleMaintenances().unlimited());
+    }
+
+    public VehicleRequest<T> samplePopulationVarianceCostOfVehicleMaintenancesAs(String name, VehicleMaintenanceRequest subRequest){
+        return statsFromVehicleMaintenancesAs(name, subRequest.samplePopulationVarianceCost(), true);
     }
 
 

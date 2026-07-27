@@ -6,7 +6,6 @@ import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 public class TaxRecordChecker implements Checker<TaxRecord>{
 
@@ -26,22 +25,15 @@ public class TaxRecordChecker implements Checker<TaxRecord>{
          return;
       }
       if(taxRecord.newItem()){
-        if(taxRecord.getCreatedAt() == null){
-           taxRecord.updateCreatedAt(java.time.LocalDateTime.now());
-        }if(taxRecord.getUpdatedAt() == null){
-           taxRecord.updateUpdatedAt(java.time.LocalDateTime.now());
-        }
       }else if(taxRecord.updateItem()){
-        taxRecord.updateUpdatedAt(java.time.LocalDateTime.now());
       }
       checkName(_ctx, taxRecord.getProperty(TaxRecord.NAME_PROPERTY), newLocation(_parentLocation, TaxRecord.NAME_PROPERTY));
-      checkCode(_ctx, taxRecord.getProperty(TaxRecord.CODE_PROPERTY), newLocation(_parentLocation, TaxRecord.CODE_PROPERTY));
-      checkAmount(_ctx, taxRecord.getProperty(TaxRecord.AMOUNT_PROPERTY), newLocation(_parentLocation, TaxRecord.AMOUNT_PROPERTY));
+      checkTaxCode(_ctx, taxRecord.getProperty(TaxRecord.TAX_CODE_PROPERTY), newLocation(_parentLocation, TaxRecord.TAX_CODE_PROPERTY));
+      checkTaxAmount(_ctx, taxRecord.getProperty(TaxRecord.TAX_AMOUNT_PROPERTY), newLocation(_parentLocation, TaxRecord.TAX_AMOUNT_PROPERTY));
       checkCurrency(_ctx, taxRecord.getProperty(TaxRecord.CURRENCY_PROPERTY), newLocation(_parentLocation, TaxRecord.CURRENCY_PROPERTY));
       checkTaxRate(_ctx, taxRecord.getProperty(TaxRecord.TAX_RATE_PROPERTY), newLocation(_parentLocation, TaxRecord.TAX_RATE_PROPERTY));
-      checkTaxType(_ctx, taxRecord.getProperty(TaxRecord.TAX_TYPE_PROPERTY), newLocation(_parentLocation, TaxRecord.TAX_TYPE_PROPERTY));
-      checkCreatedAt(_ctx, taxRecord.getProperty(TaxRecord.CREATED_AT_PROPERTY), newLocation(_parentLocation, TaxRecord.CREATED_AT_PROPERTY));
-      checkUpdatedAt(_ctx, taxRecord.getProperty(TaxRecord.UPDATED_AT_PROPERTY), newLocation(_parentLocation, TaxRecord.UPDATED_AT_PROPERTY));
+      checkTaxPeriod(_ctx, taxRecord.getProperty(TaxRecord.TAX_PERIOD_PROPERTY), newLocation(_parentLocation, TaxRecord.TAX_PERIOD_PROPERTY));
+      checkFilingStatus(_ctx, taxRecord.getProperty(TaxRecord.FILING_STATUS_PROPERTY), newLocation(_parentLocation, TaxRecord.FILING_STATUS_PROPERTY));
       checkInvoice(_ctx, taxRecord.getProperty(TaxRecord.INVOICE_PROPERTY), newLocation(_parentLocation, TaxRecord.INVOICE_PROPERTY));
     }
 
@@ -53,17 +45,17 @@ public class TaxRecordChecker implements Checker<TaxRecord>{
     maxStringCheck(_ctx, _parentLocation, 100, name);
 
     }
-    public void checkCode(UserContext _ctx, String code, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, code);
-    if((code == null)){
+    public void checkTaxCode(UserContext _ctx, String taxCode, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, taxCode);
+    if((taxCode == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, code);
+    maxStringCheck(_ctx, _parentLocation, 100, taxCode);
 
     }
-    public void checkAmount(UserContext _ctx, BigDecimal amount, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, amount);
-    if((amount == null)){
+    public void checkTaxAmount(UserContext _ctx, BigDecimal taxAmount, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, taxAmount);
+    if((taxAmount == null)){
         return;
     }
     }
@@ -81,25 +73,21 @@ public class TaxRecordChecker implements Checker<TaxRecord>{
         return;
     }
     }
-    public void checkTaxType(UserContext _ctx, String taxType, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, taxType);
-    if((taxType == null)){
+    public void checkTaxPeriod(UserContext _ctx, String taxPeriod, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, taxPeriod);
+    if((taxPeriod == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, taxType);
+    maxStringCheck(_ctx, _parentLocation, 100, taxPeriod);
 
     }
-    public void checkCreatedAt(UserContext _ctx, LocalDateTime createdAt, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, createdAt);
-    if((createdAt == null)){
+    public void checkFilingStatus(UserContext _ctx, String filingStatus, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, filingStatus);
+    if((filingStatus == null)){
         return;
     }
-    }
-    public void checkUpdatedAt(UserContext _ctx, LocalDateTime updatedAt, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, updatedAt);
-    if((updatedAt == null)){
-        return;
-    }
+    maxStringCheck(_ctx, _parentLocation, 100, filingStatus);
+
     }
     public void checkInvoice(UserContext _ctx, Invoice invoice, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, invoice);

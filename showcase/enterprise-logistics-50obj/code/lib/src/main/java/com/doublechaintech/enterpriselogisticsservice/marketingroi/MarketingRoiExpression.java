@@ -2,6 +2,8 @@ package com.doublechaintech.enterpriselogisticsservice.marketingroi;
 
 import com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign;
 import com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaignExpression;
+import com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel;
+import com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannelExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
@@ -45,18 +47,26 @@ public class MarketingRoiExpression<T, E, U extends MarketingRoi> extends Expres
        return new MarketingRoiExpression(this, $it ->  ((MarketingRoi)$it).updateCampaign(campaign));
     }
 
-    public Expression<T, BigDecimal> getTotalSpend(){
-       return apply(MarketingRoi::getTotalSpend);
-    }
-    public MarketingRoiExpression<T, U, U> updateTotalSpend(BigDecimal totalSpend){
-       return new MarketingRoiExpression(this, $it ->  ((MarketingRoi)$it).updateTotalSpend(totalSpend));
+    public SalesChannelExpression<T, U, SalesChannel> getChannel(){
+       return new SalesChannelExpression(this, $it ->  ((MarketingRoi)$it).getChannel());
     }
 
-    public Expression<T, BigDecimal> getTotalRevenue(){
-       return apply(MarketingRoi::getTotalRevenue);
+    public MarketingRoiExpression<T, U, U> updateChannel(SalesChannel channel){
+       return new MarketingRoiExpression(this, $it ->  ((MarketingRoi)$it).updateChannel(channel));
     }
-    public MarketingRoiExpression<T, U, U> updateTotalRevenue(BigDecimal totalRevenue){
-       return new MarketingRoiExpression(this, $it ->  ((MarketingRoi)$it).updateTotalRevenue(totalRevenue));
+
+    public Expression<T, BigDecimal> getSpend(){
+       return apply(MarketingRoi::getSpend);
+    }
+    public MarketingRoiExpression<T, U, U> updateSpend(BigDecimal spend){
+       return new MarketingRoiExpression(this, $it ->  ((MarketingRoi)$it).updateSpend(spend));
+    }
+
+    public Expression<T, BigDecimal> getRevenue(){
+       return apply(MarketingRoi::getRevenue);
+    }
+    public MarketingRoiExpression<T, U, U> updateRevenue(BigDecimal revenue){
+       return new MarketingRoiExpression(this, $it ->  ((MarketingRoi)$it).updateRevenue(revenue));
     }
 
     public Expression<T, BigDecimal> getRoiPercentage(){
@@ -80,11 +90,11 @@ public class MarketingRoiExpression<T, E, U extends MarketingRoi> extends Expres
        return new MarketingRoiExpression(this, $it ->  ((MarketingRoi)$it).updateCreatedTime(createdTime));
     }
 
-    public Expression<T, LocalDateTime> getUpdateTime(){
-       return apply(MarketingRoi::getUpdateTime);
+    public Expression<T, LocalDateTime> getUpdatedTime(){
+       return apply(MarketingRoi::getUpdatedTime);
     }
-    public MarketingRoiExpression<T, U, U> updateUpdateTime(LocalDateTime updateTime){
-       return new MarketingRoiExpression(this, $it ->  ((MarketingRoi)$it).updateUpdateTime(updateTime));
+    public MarketingRoiExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
+       return new MarketingRoiExpression(this, $it ->  ((MarketingRoi)$it).updateUpdatedTime(updatedTime));
     }
 
 }

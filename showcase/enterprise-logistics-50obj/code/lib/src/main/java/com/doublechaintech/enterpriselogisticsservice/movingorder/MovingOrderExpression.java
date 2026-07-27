@@ -2,22 +2,25 @@ package com.doublechaintech.enterpriselogisticsservice.movingorder;
 
 import com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem;
 import com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItemListExpression;
+import com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord;
+import com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecordListExpression;
+import com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration;
+import com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclarationListExpression;
 import com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan;
 import com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlanListExpression;
+import com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview;
+import com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReviewListExpression;
 import com.doublechaintech.enterpriselogisticsservice.invoice.Invoice;
 import com.doublechaintech.enterpriselogisticsservice.invoice.InvoiceListExpression;
 import com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress;
-import com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddressListExpression;
+import com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddressExpression;
 import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
 import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomerExpression;
-import com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot;
-import com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlotListExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.function.Function;
 
@@ -47,11 +50,18 @@ public class MovingOrderExpression<T, E, U extends MovingOrder> extends Expressi
      }
 
 
-    public Expression<T, String> getOrderId(){
-       return apply(MovingOrder::getOrderId);
+    public Expression<T, String> getOrderNumber(){
+       return apply(MovingOrder::getOrderNumber);
     }
-    public MovingOrderExpression<T, U, U> updateOrderId(String orderId){
-       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updateOrderId(orderId));
+    public MovingOrderExpression<T, U, U> updateOrderNumber(String orderNumber){
+       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updateOrderNumber(orderNumber));
+    }
+
+    public Expression<T, String> getStatus(){
+       return apply(MovingOrder::getStatus);
+    }
+    public MovingOrderExpression<T, U, U> updateStatus(String status){
+       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updateStatus(status));
     }
 
     public PrivateCustomerExpression<T, U, PrivateCustomer> getCustomer(){
@@ -62,11 +72,20 @@ public class MovingOrderExpression<T, E, U extends MovingOrder> extends Expressi
        return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updateCustomer(customer));
     }
 
-    public Expression<T, String> getStatus(){
-       return apply(MovingOrder::getStatus);
+    public PickupAddressExpression<T, U, PickupAddress> getPickupAddress(){
+       return new PickupAddressExpression(this, $it ->  ((MovingOrder)$it).getPickupAddress());
     }
-    public MovingOrderExpression<T, U, U> updateStatus(String status){
-       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updateStatus(status));
+
+    public MovingOrderExpression<T, U, U> updatePickupAddress(PickupAddress pickupAddress){
+       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updatePickupAddress(pickupAddress));
+    }
+
+    public PickupAddressExpression<T, U, PickupAddress> getDeliveryAddress(){
+       return new PickupAddressExpression(this, $it ->  ((MovingOrder)$it).getDeliveryAddress());
+    }
+
+    public MovingOrderExpression<T, U, U> updateDeliveryAddress(PickupAddress deliveryAddress){
+       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updateDeliveryAddress(deliveryAddress));
     }
 
     public Expression<T, BigDecimal> getTotalWeight(){
@@ -97,69 +116,54 @@ public class MovingOrderExpression<T, E, U extends MovingOrder> extends Expressi
        return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updateActualCost(actualCost));
     }
 
-    public Expression<T, LocalDate> getPickupDate(){
-       return apply(MovingOrder::getPickupDate);
+    public Expression<T, LocalDateTime> getCreatedTime(){
+       return apply(MovingOrder::getCreatedTime);
     }
-    public MovingOrderExpression<T, U, U> updatePickupDate(LocalDate pickupDate){
-       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updatePickupDate(pickupDate));
-    }
-
-    public Expression<T, LocalDate> getDeliveryDate(){
-       return apply(MovingOrder::getDeliveryDate);
-    }
-    public MovingOrderExpression<T, U, U> updateDeliveryDate(LocalDate deliveryDate){
-       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updateDeliveryDate(deliveryDate));
+    public MovingOrderExpression<T, U, U> updateCreatedTime(LocalDateTime createdTime){
+       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updateCreatedTime(createdTime));
     }
 
-    public Expression<T, String> getSpecialInstructions(){
-       return apply(MovingOrder::getSpecialInstructions);
+    public Expression<T, LocalDateTime> getUpdatedTime(){
+       return apply(MovingOrder::getUpdatedTime);
     }
-    public MovingOrderExpression<T, U, U> updateSpecialInstructions(String specialInstructions){
-       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updateSpecialInstructions(specialInstructions));
-    }
-
-    public Expression<T, LocalDateTime> getCreateTime(){
-       return apply(MovingOrder::getCreateTime);
-    }
-    public MovingOrderExpression<T, U, U> updateCreateTime(LocalDateTime createTime){
-       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updateCreateTime(createTime));
-    }
-
-    public Expression<T, LocalDateTime> getUpdateTime(){
-       return apply(MovingOrder::getUpdateTime);
-    }
-    public MovingOrderExpression<T, U, U> updateUpdateTime(LocalDateTime updateTime){
-       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updateUpdateTime(updateTime));
+    public MovingOrderExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
+       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).updateUpdatedTime(updatedTime));
     }
 
     public DispatchPlanListExpression<T, U, DispatchPlan> getDispatchPlanList(){
         return new DispatchPlanListExpression(this, $it ->  ((MovingOrder)$it).getDispatchPlanList());
     }
-    public TimeSlotListExpression<T, U, TimeSlot> getTimeSlotList(){
-        return new TimeSlotListExpression(this, $it ->  ((MovingOrder)$it).getTimeSlotList());
-    }
     public CargoItemListExpression<T, U, CargoItem> getCargoItemList(){
         return new CargoItemListExpression(this, $it ->  ((MovingOrder)$it).getCargoItemList());
     }
-    public PickupAddressListExpression<T, U, PickupAddress> getPickupAddressList(){
-        return new PickupAddressListExpression(this, $it ->  ((MovingOrder)$it).getPickupAddressList());
+    public FeedbackReviewListExpression<T, U, FeedbackReview> getFeedbackReviewList(){
+        return new FeedbackReviewListExpression(this, $it ->  ((MovingOrder)$it).getFeedbackReviewList());
     }
     public InvoiceListExpression<T, U, Invoice> getInvoiceList(){
         return new InvoiceListExpression(this, $it ->  ((MovingOrder)$it).getInvoiceList());
     }
+    public ClaimsRecordListExpression<T, U, ClaimsRecord> getClaimsRecordList(){
+        return new ClaimsRecordListExpression(this, $it ->  ((MovingOrder)$it).getClaimsRecordList());
+    }
+    public CustomsDeclarationListExpression<T, U, CustomsDeclaration> getCustomsDeclarationList(){
+        return new CustomsDeclarationListExpression(this, $it ->  ((MovingOrder)$it).getCustomsDeclarationList());
+    }
     public MovingOrderExpression<T, U, U> addDispatchPlan(DispatchPlan dispatchPlan){
        return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).addDispatchPlan(dispatchPlan));
-    }
-    public MovingOrderExpression<T, U, U> addTimeSlot(TimeSlot timeSlot){
-       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).addTimeSlot(timeSlot));
     }
     public MovingOrderExpression<T, U, U> addCargoItem(CargoItem cargoItem){
        return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).addCargoItem(cargoItem));
     }
-    public MovingOrderExpression<T, U, U> addPickupAddress(PickupAddress pickupAddress){
-       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).addPickupAddress(pickupAddress));
+    public MovingOrderExpression<T, U, U> addFeedbackReview(FeedbackReview feedbackReview){
+       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).addFeedbackReview(feedbackReview));
     }
     public MovingOrderExpression<T, U, U> addInvoice(Invoice invoice){
        return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).addInvoice(invoice));
+    }
+    public MovingOrderExpression<T, U, U> addClaimsRecord(ClaimsRecord claimsRecord){
+       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).addClaimsRecord(claimsRecord));
+    }
+    public MovingOrderExpression<T, U, U> addCustomsDeclaration(CustomsDeclaration customsDeclaration){
+       return new MovingOrderExpression(this, $it ->  ((MovingOrder)$it).addCustomsDeclaration(customsDeclaration));
     }
 }

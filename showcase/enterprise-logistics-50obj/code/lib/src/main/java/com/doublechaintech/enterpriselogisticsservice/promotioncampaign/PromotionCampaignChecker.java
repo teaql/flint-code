@@ -29,20 +29,20 @@ public class PromotionCampaignChecker implements Checker<PromotionCampaign>{
       if(promotionCampaign.newItem()){
         if(promotionCampaign.getCreatedTime() == null){
            promotionCampaign.updateCreatedTime(java.time.LocalDateTime.now());
-        }if(promotionCampaign.getUpdateTime() == null){
-           promotionCampaign.updateUpdateTime(java.time.LocalDateTime.now());
+        }if(promotionCampaign.getUpdatedTime() == null){
+           promotionCampaign.updateUpdatedTime(java.time.LocalDateTime.now());
         }
       }else if(promotionCampaign.updateItem()){
-        promotionCampaign.updateUpdateTime(java.time.LocalDateTime.now());
+        promotionCampaign.updateUpdatedTime(java.time.LocalDateTime.now());
       }
       checkName(_ctx, promotionCampaign.getProperty(PromotionCampaign.NAME_PROPERTY), newLocation(_parentLocation, PromotionCampaign.NAME_PROPERTY));
+      checkDescription(_ctx, promotionCampaign.getProperty(PromotionCampaign.DESCRIPTION_PROPERTY), newLocation(_parentLocation, PromotionCampaign.DESCRIPTION_PROPERTY));
       checkStartDate(_ctx, promotionCampaign.getProperty(PromotionCampaign.START_DATE_PROPERTY), newLocation(_parentLocation, PromotionCampaign.START_DATE_PROPERTY));
       checkEndDate(_ctx, promotionCampaign.getProperty(PromotionCampaign.END_DATE_PROPERTY), newLocation(_parentLocation, PromotionCampaign.END_DATE_PROPERTY));
       checkBudget(_ctx, promotionCampaign.getProperty(PromotionCampaign.BUDGET_PROPERTY), newLocation(_parentLocation, PromotionCampaign.BUDGET_PROPERTY));
       checkStatus(_ctx, promotionCampaign.getProperty(PromotionCampaign.STATUS_PROPERTY), newLocation(_parentLocation, PromotionCampaign.STATUS_PROPERTY));
-      checkDescription(_ctx, promotionCampaign.getProperty(PromotionCampaign.DESCRIPTION_PROPERTY), newLocation(_parentLocation, PromotionCampaign.DESCRIPTION_PROPERTY));
       checkCreatedTime(_ctx, promotionCampaign.getProperty(PromotionCampaign.CREATED_TIME_PROPERTY), newLocation(_parentLocation, PromotionCampaign.CREATED_TIME_PROPERTY));
-      checkUpdateTime(_ctx, promotionCampaign.getProperty(PromotionCampaign.UPDATE_TIME_PROPERTY), newLocation(_parentLocation, PromotionCampaign.UPDATE_TIME_PROPERTY));
+      checkUpdatedTime(_ctx, promotionCampaign.getProperty(PromotionCampaign.UPDATED_TIME_PROPERTY), newLocation(_parentLocation, PromotionCampaign.UPDATED_TIME_PROPERTY));
       for(int i = 0; promotionCampaign.getMarketingRoiList() != null && i < promotionCampaign.getMarketingRoiList().size(); i++){
          MarketingRoi marketingRoi = promotionCampaign.getMarketingRoiList().get(i);
          new MarketingRoiChecker().checkAndFix(_ctx, marketingRoi, newLocation(_parentLocation, PromotionCampaign.MARKETING_ROI_LIST_PROPERTY, i));
@@ -55,6 +55,14 @@ public class PromotionCampaignChecker implements Checker<PromotionCampaign>{
         return;
     }
     maxStringCheck(_ctx, _parentLocation, 100, name);
+
+    }
+    public void checkDescription(UserContext _ctx, String description, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, description);
+    if((description == null)){
+        return;
+    }
+    maxStringCheck(_ctx, _parentLocation, 100, description);
 
     }
     public void checkStartDate(UserContext _ctx, LocalDate startDate, ObjectLocation _parentLocation){
@@ -83,23 +91,15 @@ public class PromotionCampaignChecker implements Checker<PromotionCampaign>{
     maxStringCheck(_ctx, _parentLocation, 100, status);
 
     }
-    public void checkDescription(UserContext _ctx, String description, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, description);
-    if((description == null)){
-        return;
-    }
-    maxStringCheck(_ctx, _parentLocation, 100, description);
-
-    }
     public void checkCreatedTime(UserContext _ctx, LocalDateTime createdTime, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, createdTime);
     if((createdTime == null)){
         return;
     }
     }
-    public void checkUpdateTime(UserContext _ctx, LocalDateTime updateTime, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, updateTime);
-    if((updateTime == null)){
+    public void checkUpdatedTime(UserContext _ctx, LocalDateTime updatedTime, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, updatedTime);
+    if((updatedTime == null)){
         return;
     }
     }

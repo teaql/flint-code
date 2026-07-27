@@ -6,7 +6,6 @@ import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.function.Function;
 
@@ -49,13 +48,6 @@ public class PalletExpression<T, E, U extends Pallet> extends ExpressionAdaptor<
     }
     public PalletExpression<T, U, U> updatePalletId(String palletId){
        return new PalletExpression(this, $it ->  ((Pallet)$it).updatePalletId(palletId));
-    }
-
-    public Expression<T, BigDecimal> getLoadWeight(){
-       return apply(Pallet::getLoadWeight);
-    }
-    public PalletExpression<T, U, U> updateLoadWeight(BigDecimal loadWeight){
-       return new PalletExpression(this, $it ->  ((Pallet)$it).updateLoadWeight(loadWeight));
     }
 
     public Expression<T, String> getStatus(){

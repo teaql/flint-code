@@ -22,27 +22,30 @@ import java.util.Objects;
 public class DispatchPlan extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "DispatchPlan";
 
-    public static final String PLAN_ID_PROPERTY = "planId";
+    public static final String PLAN_NUMBER_PROPERTY = "planNumber";
+    public static final String STATUS_PROPERTY = "status";
     public static final String MOVING_ORDER_PROPERTY = "movingOrder";
     public static final String VEHICLE_PROPERTY = "vehicle";
     public static final String DRIVER_PROPERTY = "driver";
-    public static final String STATUS_PROPERTY = "status";
     public static final String SCHEDULED_DEPARTURE_PROPERTY = "scheduledDeparture";
     public static final String SCHEDULED_ARRIVAL_PROPERTY = "scheduledArrival";
-    public static final String CREATE_TIME_PROPERTY = "createTime";
-    public static final String UPDATE_TIME_PROPERTY = "updateTime";
-    private String planId;
+    public static final String CREATED_TIME_PROPERTY = "createdTime";
+    public static final String UPDATED_TIME_PROPERTY = "updatedTime";
+    private String planNumber;
+    private String status;
     private MovingOrder movingOrder;
     private Vehicle vehicle;
     private StaffMember driver;
-    private String status;
-    private String scheduledDeparture;
-    private String scheduledArrival;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
+    private LocalDateTime scheduledDeparture;
+    private LocalDateTime scheduledArrival;
+    private LocalDateTime createdTime;
+    private LocalDateTime updatedTime;
 
-    public String getPlanId(){
-        return this.planId;
+    public String getPlanNumber(){
+        return this.planNumber;
+    }
+    public String getStatus(){
+        return this.status;
     }
     public MovingOrder getMovingOrder(){
         return this.movingOrder;
@@ -53,28 +56,34 @@ public class DispatchPlan extends BaseEntity implements RemoteInput {
     public StaffMember getDriver(){
         return this.driver;
     }
-    public String getStatus(){
-        return this.status;
-    }
-    public String getScheduledDeparture(){
+    public LocalDateTime getScheduledDeparture(){
         return this.scheduledDeparture;
     }
-    public String getScheduledArrival(){
+    public LocalDateTime getScheduledArrival(){
         return this.scheduledArrival;
     }
-    public LocalDateTime getCreateTime(){
-        return this.createTime;
+    public LocalDateTime getCreatedTime(){
+        return this.createdTime;
     }
-    public LocalDateTime getUpdateTime(){
-        return this.updateTime;
+    public LocalDateTime getUpdatedTime(){
+        return this.updatedTime;
     }
-    public DispatchPlan updatePlanId(String planId){
-        planId = (planId == null ? null : planId.trim());
-        if(Objects.equals(this.planId, planId)){
+    public DispatchPlan updatePlanNumber(String planNumber){
+        planNumber = (planNumber == null ? null : planNumber.trim());
+        if(Objects.equals(this.planNumber, planNumber)){
             return this;
         }
-        handleUpdate(PLAN_ID_PROPERTY, getPlanId(), planId);
-        this.planId = planId;
+        handleUpdate(PLAN_NUMBER_PROPERTY, getPlanNumber(), planNumber);
+        this.planNumber = planNumber;
+        return this;
+    }
+    public DispatchPlan updateStatus(String status){
+        status = (status == null ? null : status.trim());
+        if(Objects.equals(this.status, status)){
+            return this;
+        }
+        handleUpdate(STATUS_PROPERTY, getStatus(), status);
+        this.status = status;
         return this;
     }
     public DispatchPlan updateMovingOrder(MovingOrder movingOrder){
@@ -101,17 +110,7 @@ public class DispatchPlan extends BaseEntity implements RemoteInput {
         this.driver = driver;
         return this;
     }
-    public DispatchPlan updateStatus(String status){
-        status = (status == null ? null : status.trim());
-        if(Objects.equals(this.status, status)){
-            return this;
-        }
-        handleUpdate(STATUS_PROPERTY, getStatus(), status);
-        this.status = status;
-        return this;
-    }
-    public DispatchPlan updateScheduledDeparture(String scheduledDeparture){
-        scheduledDeparture = (scheduledDeparture == null ? null : scheduledDeparture.trim());
+    public DispatchPlan updateScheduledDeparture(LocalDateTime scheduledDeparture){
         if(Objects.equals(this.scheduledDeparture, scheduledDeparture)){
             return this;
         }
@@ -119,8 +118,7 @@ public class DispatchPlan extends BaseEntity implements RemoteInput {
         this.scheduledDeparture = scheduledDeparture;
         return this;
     }
-    public DispatchPlan updateScheduledArrival(String scheduledArrival){
-        scheduledArrival = (scheduledArrival == null ? null : scheduledArrival.trim());
+    public DispatchPlan updateScheduledArrival(LocalDateTime scheduledArrival){
         if(Objects.equals(this.scheduledArrival, scheduledArrival)){
             return this;
         }
@@ -128,20 +126,20 @@ public class DispatchPlan extends BaseEntity implements RemoteInput {
         this.scheduledArrival = scheduledArrival;
         return this;
     }
-    public DispatchPlan updateCreateTime(LocalDateTime createTime){
-        if(Objects.equals(this.createTime, createTime)){
+    public DispatchPlan updateCreatedTime(LocalDateTime createdTime){
+        if(Objects.equals(this.createdTime, createdTime)){
             return this;
         }
-        handleUpdate(CREATE_TIME_PROPERTY, getCreateTime(), createTime);
-        this.createTime = createTime;
+        handleUpdate(CREATED_TIME_PROPERTY, getCreatedTime(), createdTime);
+        this.createdTime = createdTime;
         return this;
     }
-    public DispatchPlan updateUpdateTime(LocalDateTime updateTime){
-        if(Objects.equals(this.updateTime, updateTime)){
+    public DispatchPlan updateUpdatedTime(LocalDateTime updatedTime){
+        if(Objects.equals(this.updatedTime, updatedTime)){
             return this;
         }
-        handleUpdate(UPDATE_TIME_PROPERTY, getUpdateTime(), updateTime);
-        this.updateTime = updateTime;
+        handleUpdate(UPDATED_TIME_PROPERTY, getUpdatedTime(), updatedTime);
+        this.updatedTime = updatedTime;
         return this;
     }
 
@@ -172,7 +170,9 @@ public class DispatchPlan extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public void __internalSet(String property, Object value) {
         switch (property) {
-            case "planId": this.planId = (value == null ? null : ((String)value).trim()); break;
+            case "planNumber": this.planNumber = (value == null ? null : ((String)value).trim()); break;
+
+            case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
             case "movingOrder": this.movingOrder = (MovingOrder) value; break;
 
@@ -180,15 +180,13 @@ public class DispatchPlan extends BaseEntity implements RemoteInput {
 
             case "driver": this.driver = (StaffMember) value; break;
 
-            case "status": this.status = (value == null ? null : ((String)value).trim()); break;
+            case "scheduledDeparture": this.scheduledDeparture = (LocalDateTime) value; break;
 
-            case "scheduledDeparture": this.scheduledDeparture = (value == null ? null : ((String)value).trim()); break;
+            case "scheduledArrival": this.scheduledArrival = (LocalDateTime) value; break;
 
-            case "scheduledArrival": this.scheduledArrival = (value == null ? null : ((String)value).trim()); break;
+            case "createdTime": this.createdTime = (LocalDateTime) value; break;
 
-            case "createTime": this.createTime = (LocalDateTime) value; break;
-
-            case "updateTime": this.updateTime = (LocalDateTime) value; break;
+            case "updatedTime": this.updatedTime = (LocalDateTime) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -198,15 +196,15 @@ public class DispatchPlan extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public Object __internalGet(String property) {
         switch (property) {
-            case "planId": return this.planId;
+            case "planNumber": return this.planNumber;
+            case "status": return this.status;
             case "movingOrder": return this.movingOrder;
             case "vehicle": return this.vehicle;
             case "driver": return this.driver;
-            case "status": return this.status;
             case "scheduledDeparture": return this.scheduledDeparture;
             case "scheduledArrival": return this.scheduledArrival;
-            case "createTime": return this.createTime;
-            case "updateTime": return this.updateTime;
+            case "createdTime": return this.createdTime;
+            case "updatedTime": return this.updatedTime;
             default: return super.__internalGet(property);
         }
     }

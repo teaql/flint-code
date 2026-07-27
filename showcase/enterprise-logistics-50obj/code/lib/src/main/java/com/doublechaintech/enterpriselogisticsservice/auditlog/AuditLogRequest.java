@@ -1,9 +1,13 @@
 package com.doublechaintech.enterpriselogisticsservice.auditlog;
 
+import com.doublechaintech.enterpriselogisticsservice.Q;
+import com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount;
+import com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccountRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
 import io.teaql.core.SearchCriteria;
+import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.time.LocalDateTime;
@@ -80,7 +84,7 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
 
     public AuditLogRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectAction().selectEntityType().selectEntityId().selectUserId().selectIpAddress().selectDetails().selectCreatedTime().selectVersion();
+        return selectId().selectAction().selectEntityType().selectEntityId().selectUserAccountIdOnly().selectIpAddress().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
     public AuditLogRequest<T> selectSelfFields(){
@@ -89,12 +93,12 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
 
     public AuditLogRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectAction().selectEntityType().selectEntityId().selectUserId().selectIpAddress().selectDetails().selectCreatedTime().selectVersion();
+        return selectId().selectAction().selectEntityType().selectEntityId().selectUserAccount().selectIpAddress().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
     public AuditLogRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectAction().selectEntityType().selectEntityId().selectUserId().selectIpAddress().selectDetails().selectCreatedTime().selectVersion();
+        return selectId().selectAction().selectEntityType().selectEntityId().selectUserAccount().selectIpAddress().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
 
@@ -166,21 +170,23 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
        unselectProperty(AuditLog.ENTITY_ID_PROPERTY);
        return this;
     }
-    public AuditLogRequest<T> selectUserId(){
-       selectProperty(AuditLog.USER_ID_PROPERTY);
+    public AuditLogRequest<T> selectUserAccountIdOnly(){
+       selectProperty(AuditLog.USER_ACCOUNT_PROPERTY);
        return this;
     }
 
-    /**
-     * fill the userId with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  userId) to fetch userId property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
+    public AuditLogRequest<T> selectUserAccount(){
+        return selectUserAccountWith(Q.userAccounts().unlimited().selectSelf());
+    }
 
+    public AuditLogRequest<T> selectUserAccountWith(UserAccountRequest userAccount){
+       selectProperty(AuditLog.USER_ACCOUNT_PROPERTY);
+       enhanceRelation(AuditLog.USER_ACCOUNT_PROPERTY, userAccount);
+       return this;
+    }
 
-
-
-    public AuditLogRequest<T> unselectUserId(){
-       unselectProperty(AuditLog.USER_ID_PROPERTY);
+    public AuditLogRequest<T> unselectUserAccount(){
+       unselectProperty(AuditLog.USER_ACCOUNT_PROPERTY);
        return this;
     }
     public AuditLogRequest<T> selectIpAddress(){
@@ -200,23 +206,6 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
        unselectProperty(AuditLog.IP_ADDRESS_PROPERTY);
        return this;
     }
-    public AuditLogRequest<T> selectDetails(){
-       selectProperty(AuditLog.DETAILS_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the details with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  details) to fetch details property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public AuditLogRequest<T> unselectDetails(){
-       unselectProperty(AuditLog.DETAILS_PROPERTY);
-       return this;
-    }
     public AuditLogRequest<T> selectCreatedTime(){
        selectProperty(AuditLog.CREATED_TIME_PROPERTY);
        return this;
@@ -232,6 +221,23 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
 
     public AuditLogRequest<T> unselectCreatedTime(){
        unselectProperty(AuditLog.CREATED_TIME_PROPERTY);
+       return this;
+    }
+    public AuditLogRequest<T> selectUpdateTime(){
+       selectProperty(AuditLog.UPDATE_TIME_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the updateTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updateTime) to fetch updateTime property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public AuditLogRequest<T> unselectUpdateTime(){
+       unselectProperty(AuditLog.UPDATE_TIME_PROPERTY);
        return this;
     }
     public AuditLogRequest<T> selectVersion(){
@@ -458,68 +464,38 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
 
 
 
-    public AuditLogRequest<T> filterByUserId(String... userId){
-      if (userId == null || userId.length == 0) {
-        throw new IllegalArgumentException("filterByUserId parameter userId cannot be empty");
+    public AuditLogRequest<T> filterByUserAccount(UserAccount... userAccount){
+      if (userAccount == null || userAccount.length == 0) {
+        throw new IllegalArgumentException("filterByUserAccount parameter userAccount cannot be empty");
       }
-      return appendSearchCriteria(createUserIdCriteria(Operator.EQUAL, (Object[])userId));
+      return appendSearchCriteria(createUserAccountCriteria(Operator.EQUAL, (Object[])userAccount));
     }
 
-    public AuditLogRequest<T> withUserId(Operator operator, Object... values){
-       return appendSearchCriteria(createUserIdCriteria(operator, values));
+    public AuditLogRequest<T> withUserAccount(Operator operator, Object... values){
+       return appendSearchCriteria(createUserAccountCriteria(operator, values));
     }
 
-    public AuditLogRequest<T> withUserIdIsUnknown(){
-       return withUserId(Operator.IS_NULL);
+    public AuditLogRequest<T> withUserAccountIsUnknown(){
+       return withUserAccount(Operator.IS_NULL);
     }
 
-    public AuditLogRequest<T> withUserIdIsKnown(){
-       return withUserId(Operator.IS_NOT_NULL);
+    public AuditLogRequest<T> withUserAccountIsKnown(){
+       return withUserAccount(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createUserIdCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(AuditLog.USER_ID_PROPERTY, operator, values);
+    public SearchCriteria createUserAccountCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(AuditLog.USER_ACCOUNT_PROPERTY, operator, values);
     }
 
-    public AuditLogRequest<T> withUserIdGreaterThan(String userId){
-       return withUserId(Operator.GREATER_THAN, userId);
+    public AuditLogRequest<T> filterByUserAccount(Long userAccount){
+      if(userAccount == null){
+         return this;
+      }
+      return withUserAccount(Operator.EQUAL, userAccount);
     }
-
-    public AuditLogRequest<T> withUserIdGreaterThanOrEqualTo(String userId){
-       return withUserId(Operator.GREATER_THAN_OR_EQUAL, userId);
+    public AuditLogRequest<T> withUserAccountMatching(UserAccountRequest userAccount){
+       return appendSearchCriteria(new SubQuerySearchCriteria(AuditLog.USER_ACCOUNT_PROPERTY, userAccount, UserAccount.ID_PROPERTY));
     }
-
-    public AuditLogRequest<T> withUserIdLessThan(String userId){
-       return withUserId(Operator.LESS_THAN, userId);
-    }
-
-    public AuditLogRequest<T> withUserIdLessThanOrEqualTo(String userId){
-       return withUserId(Operator.LESS_THAN_OR_EQUAL, userId);
-    }
-
-    public AuditLogRequest<T> withUserIdBetween(String startOfUserId, String endOfUserId){
-       return withUserId(Operator.BETWEEN, startOfUserId, endOfUserId);
-    }
-    public AuditLogRequest<T> withUserIdStartingWith(String userId){
-       return withUserId(Operator.BEGIN_WITH, userId);
-    }
-    public AuditLogRequest<T> withUserIdContaining(String userId){
-       return withUserId(Operator.CONTAIN, userId);
-    }
-
-    public AuditLogRequest<T> withUserIdEndingWith(String userId){
-       return withUserId(Operator.END_WITH, userId);
-    }
-
-    public AuditLogRequest<T> withUserIdIs(String userId){
-       return withUserId(Operator.EQUAL, userId);
-    }
-
-    public AuditLogRequest<T> withUserIdSoundingLike(String userId){
-       return withUserId(Operator.SOUNDS_LIKE, userId);
-    }
-
-
 
     public AuditLogRequest<T> filterByIpAddress(String... ipAddress){
       if (ipAddress == null || ipAddress.length == 0) {
@@ -580,69 +556,6 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
 
     public AuditLogRequest<T> withIpAddressSoundingLike(String ipAddress){
        return withIpAddress(Operator.SOUNDS_LIKE, ipAddress);
-    }
-
-
-
-    public AuditLogRequest<T> filterByDetails(String... details){
-      if (details == null || details.length == 0) {
-        throw new IllegalArgumentException("filterByDetails parameter details cannot be empty");
-      }
-      return appendSearchCriteria(createDetailsCriteria(Operator.EQUAL, (Object[])details));
-    }
-
-    public AuditLogRequest<T> withDetails(Operator operator, Object... values){
-       return appendSearchCriteria(createDetailsCriteria(operator, values));
-    }
-
-    public AuditLogRequest<T> withDetailsIsUnknown(){
-       return withDetails(Operator.IS_NULL);
-    }
-
-    public AuditLogRequest<T> withDetailsIsKnown(){
-       return withDetails(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createDetailsCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(AuditLog.DETAILS_PROPERTY, operator, values);
-    }
-
-    public AuditLogRequest<T> withDetailsGreaterThan(String details){
-       return withDetails(Operator.GREATER_THAN, details);
-    }
-
-    public AuditLogRequest<T> withDetailsGreaterThanOrEqualTo(String details){
-       return withDetails(Operator.GREATER_THAN_OR_EQUAL, details);
-    }
-
-    public AuditLogRequest<T> withDetailsLessThan(String details){
-       return withDetails(Operator.LESS_THAN, details);
-    }
-
-    public AuditLogRequest<T> withDetailsLessThanOrEqualTo(String details){
-       return withDetails(Operator.LESS_THAN_OR_EQUAL, details);
-    }
-
-    public AuditLogRequest<T> withDetailsBetween(String startOfDetails, String endOfDetails){
-       return withDetails(Operator.BETWEEN, startOfDetails, endOfDetails);
-    }
-    public AuditLogRequest<T> withDetailsStartingWith(String details){
-       return withDetails(Operator.BEGIN_WITH, details);
-    }
-    public AuditLogRequest<T> withDetailsContaining(String details){
-       return withDetails(Operator.CONTAIN, details);
-    }
-
-    public AuditLogRequest<T> withDetailsEndingWith(String details){
-       return withDetails(Operator.END_WITH, details);
-    }
-
-    public AuditLogRequest<T> withDetailsIs(String details){
-       return withDetails(Operator.EQUAL, details);
-    }
-
-    public AuditLogRequest<T> withDetailsSoundingLike(String details){
-       return withDetails(Operator.SOUNDS_LIKE, details);
     }
 
 
@@ -712,6 +625,71 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
 
 
 
+    public AuditLogRequest<T> filterByUpdateTime(LocalDateTime... updateTime){
+      if (updateTime == null || updateTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdateTime parameter updateTime cannot be empty");
+      }
+      return appendSearchCriteria(createUpdateTimeCriteria(Operator.EQUAL, (Object[])updateTime));
+    }
+
+    public AuditLogRequest<T> withUpdateTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdateTimeCriteria(operator, values));
+    }
+
+    public AuditLogRequest<T> withUpdateTimeIsUnknown(){
+       return withUpdateTime(Operator.IS_NULL);
+    }
+
+    public AuditLogRequest<T> withUpdateTimeIsKnown(){
+       return withUpdateTime(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createUpdateTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(AuditLog.UPDATE_TIME_PROPERTY, operator, values);
+    }
+
+    public AuditLogRequest<T> withUpdateTimeGreaterThan(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    }
+
+    public AuditLogRequest<T> withUpdateTimeGreaterThanOrEqualTo(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN_OR_EQUAL, updateTime);
+    }
+
+    public AuditLogRequest<T> withUpdateTimeLessThan(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    }
+
+    public AuditLogRequest<T> withUpdateTimeLessThanOrEqualTo(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN_OR_EQUAL, updateTime);
+    }
+
+    public AuditLogRequest<T> withUpdateTimeBetween(LocalDateTime startOfUpdateTime, LocalDateTime endOfUpdateTime){
+       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    }
+    public AuditLogRequest<T> withUpdateTimeBefore(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    }
+
+    public AuditLogRequest<T> withUpdateTimeBefore(Date updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    }
+
+    public AuditLogRequest<T> withUpdateTimeAfter(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    }
+
+    public AuditLogRequest<T> withUpdateTimeAfter(Date updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    }
+
+    public AuditLogRequest<T> withUpdateTimeBetween(Date startOfUpdateTime, Date endOfUpdateTime){
+       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    }
+
+
+
+
     public AuditLogRequest<T> filterByVersion(Long... version){
       if (version == null || version.length == 0) {
         throw new IllegalArgumentException("filterByVersion parameter version cannot be empty");
@@ -764,6 +742,19 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
         super.count(retName);
         return this;
     }
+    public AuditLogRequest<T> groupByUserAccountWithDetails(){
+       return groupByUserAccountWithDetails(Q.userAccounts().unlimited());
+    }
+
+    public AuditLogRequest<T> groupByUserAccountWithDetails(UserAccountRequest subRequest){
+       aggregate(AuditLog.USER_ACCOUNT_PROPERTY, subRequest);
+       return this;
+    }
+
+
+
+
+
 
     public AuditLogRequest<T> groupById(){
        groupBy(AuditLog.ID_PROPERTY);
@@ -824,19 +815,22 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
        groupBy(retName, AuditLog.ENTITY_ID_PROPERTY, function);
        return this;
     }
-
-    public AuditLogRequest<T> groupByUserId(){
-       groupBy(AuditLog.USER_ID_PROPERTY);
+    public AuditLogRequest<T> groupByUserAccountWith(UserAccountRequest subRequest){
+       groupBy(AuditLog.USER_ACCOUNT_PROPERTY, subRequest);
+       return this;
+    }
+    public AuditLogRequest<T> groupByUserAccount(){
+       groupBy(AuditLog.USER_ACCOUNT_PROPERTY);
        return this;
     }
 
-    public AuditLogRequest<T> groupByUserIdAs(String retName){
-       groupBy(retName, AuditLog.USER_ID_PROPERTY);
+    public AuditLogRequest<T> groupByUserAccountAs(String retName){
+       groupBy(retName, AuditLog.USER_ACCOUNT_PROPERTY);
        return this;
     }
 
-    public AuditLogRequest<T> groupByUserIdWithFunction(String retName, AggrFunction function){
-       groupBy(retName, AuditLog.USER_ID_PROPERTY, function);
+    public AuditLogRequest<T> groupByUserAccountWithFunction(String retName, AggrFunction function){
+       groupBy(retName, AuditLog.USER_ACCOUNT_PROPERTY, function);
        return this;
     }
 
@@ -855,21 +849,6 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
        return this;
     }
 
-    public AuditLogRequest<T> groupByDetails(){
-       groupBy(AuditLog.DETAILS_PROPERTY);
-       return this;
-    }
-
-    public AuditLogRequest<T> groupByDetailsAs(String retName){
-       groupBy(retName, AuditLog.DETAILS_PROPERTY);
-       return this;
-    }
-
-    public AuditLogRequest<T> groupByDetailsWithFunction(String retName, AggrFunction function){
-       groupBy(retName, AuditLog.DETAILS_PROPERTY, function);
-       return this;
-    }
-
     public AuditLogRequest<T> groupByCreatedTime(){
        groupBy(AuditLog.CREATED_TIME_PROPERTY);
        return this;
@@ -882,6 +861,21 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
 
     public AuditLogRequest<T> groupByCreatedTimeWithFunction(String retName, AggrFunction function){
        groupBy(retName, AuditLog.CREATED_TIME_PROPERTY, function);
+       return this;
+    }
+
+    public AuditLogRequest<T> groupByUpdateTime(){
+       groupBy(AuditLog.UPDATE_TIME_PROPERTY);
+       return this;
+    }
+
+    public AuditLogRequest<T> groupByUpdateTimeAs(String retName){
+       groupBy(retName, AuditLog.UPDATE_TIME_PROPERTY);
+       return this;
+    }
+
+    public AuditLogRequest<T> groupByUpdateTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, AuditLog.UPDATE_TIME_PROPERTY, function);
        return this;
     }
 
@@ -966,24 +960,16 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
        addOrderByDescendingUsingGBK(AuditLog.ENTITY_ID_PROPERTY);
        return this;
     }
-    public AuditLogRequest<T> orderByUserIdAscending(){
-       addOrderByAscending(AuditLog.USER_ID_PROPERTY);
+    public AuditLogRequest<T> orderByUserAccountAscending(){
+       addOrderByAscending(AuditLog.USER_ACCOUNT_PROPERTY);
        return this;
     }
 
-    public AuditLogRequest<T> orderByUserIdDescending(){
-       addOrderByDescending(AuditLog.USER_ID_PROPERTY);
-       return this;
-    }
-    public AuditLogRequest<T> orderByUserIdAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(AuditLog.USER_ID_PROPERTY);
+    public AuditLogRequest<T> orderByUserAccountDescending(){
+       addOrderByDescending(AuditLog.USER_ACCOUNT_PROPERTY);
        return this;
     }
 
-    public AuditLogRequest<T> orderByUserIdDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(AuditLog.USER_ID_PROPERTY);
-       return this;
-    }
     public AuditLogRequest<T> orderByIpAddressAscending(){
        addOrderByAscending(AuditLog.IP_ADDRESS_PROPERTY);
        return this;
@@ -1002,24 +988,6 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
        addOrderByDescendingUsingGBK(AuditLog.IP_ADDRESS_PROPERTY);
        return this;
     }
-    public AuditLogRequest<T> orderByDetailsAscending(){
-       addOrderByAscending(AuditLog.DETAILS_PROPERTY);
-       return this;
-    }
-
-    public AuditLogRequest<T> orderByDetailsDescending(){
-       addOrderByDescending(AuditLog.DETAILS_PROPERTY);
-       return this;
-    }
-    public AuditLogRequest<T> orderByDetailsAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(AuditLog.DETAILS_PROPERTY);
-       return this;
-    }
-
-    public AuditLogRequest<T> orderByDetailsDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(AuditLog.DETAILS_PROPERTY);
-       return this;
-    }
     public AuditLogRequest<T> orderByCreatedTimeAscending(){
        addOrderByAscending(AuditLog.CREATED_TIME_PROPERTY);
        return this;
@@ -1027,6 +995,16 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
 
     public AuditLogRequest<T> orderByCreatedTimeDescending(){
        addOrderByDescending(AuditLog.CREATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public AuditLogRequest<T> orderByUpdateTimeAscending(){
+       addOrderByAscending(AuditLog.UPDATE_TIME_PROPERTY);
+       return this;
+    }
+
+    public AuditLogRequest<T> orderByUpdateTimeDescending(){
+       addOrderByDescending(AuditLog.UPDATE_TIME_PROPERTY);
        return this;
     }
 
@@ -1041,7 +1019,26 @@ public class AuditLogRequest<T extends AuditLog> extends BaseRequest<T> {
     }
 
 
+    public UserAccountRequest rollUpToUserAccount(){
+       UserAccountRequest userAccount = Q.userAccounts().unlimited();
+       this.withUserAccountMatching(userAccount)
+           .groupByUserAccountWith(userAccount);
+       return userAccount;
+    }
 
+
+
+
+
+
+   public AuditLogRequest<T> facetByUserAccountAs(String facetName, UserAccountRequest userAccount){
+       return facetByUserAccountAs(facetName, userAccount, true);
+   }
+
+   public AuditLogRequest<T> facetByUserAccountAs(String facetName, UserAccountRequest userAccount, boolean includeAllFacets){
+       addFacet(facetName, AuditLog.USER_ACCOUNT_PROPERTY, userAccount, includeAllFacets);
+       return this;
+   }
 
 
     /**

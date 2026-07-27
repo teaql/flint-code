@@ -1,12 +1,15 @@
 package com.doublechaintech.enterpriselogisticsservice.saleslead;
 
+import com.doublechaintech.enterpriselogisticsservice.Q;
+import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember;
+import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMemberRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
 import io.teaql.core.SearchCriteria;
+import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -81,7 +84,7 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
 
     public SalesLeadRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectName().selectEmail().selectPhone().selectSource().selectStatus().selectEstimatedValue().selectCreatedTime().selectUpdateTime().selectVersion();
+        return selectId().selectName().selectCompany().selectEmail().selectPhone().selectSource().selectStatus().selectAssignedToIdOnly().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public SalesLeadRequest<T> selectSelfFields(){
@@ -90,12 +93,12 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
 
     public SalesLeadRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectName().selectEmail().selectPhone().selectSource().selectStatus().selectEstimatedValue().selectCreatedTime().selectUpdateTime().selectVersion();
+        return selectId().selectName().selectCompany().selectEmail().selectPhone().selectSource().selectStatus().selectAssignedTo().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public SalesLeadRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectName().selectEmail().selectPhone().selectSource().selectStatus().selectEstimatedValue().selectCreatedTime().selectUpdateTime().selectVersion();
+        return selectId().selectName().selectCompany().selectEmail().selectPhone().selectSource().selectStatus().selectAssignedTo().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
 
@@ -133,6 +136,23 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
        unselectProperty(SalesLead.NAME_PROPERTY);
        return this;
     }
+    public SalesLeadRequest<T> selectCompany(){
+       selectProperty(SalesLead.COMPANY_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the company with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  company) to fetch company property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public SalesLeadRequest<T> unselectCompany(){
+       unselectProperty(SalesLead.COMPANY_PROPERTY);
+       return this;
+    }
     public SalesLeadRequest<T> selectEmail(){
        selectProperty(SalesLead.EMAIL_PROPERTY);
        return this;
@@ -161,14 +181,6 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
      */
 
 
-    /**
-     * fill the phone with customized aggrFunction, TEAQL uses ({aggrFunction}(phone) AS phone to fetch phone property.
-     * @param aggrFunction  aggrFunction
-     */
-    public SalesLeadRequest<T> selectPhone(AggrFunction aggrFunction){
-       selectProperty(SalesLead.PHONE_PROPERTY, aggrFunction);
-       return this;
-    }
 
 
     public SalesLeadRequest<T> unselectPhone(){
@@ -209,29 +221,23 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
        unselectProperty(SalesLead.STATUS_PROPERTY);
        return this;
     }
-    public SalesLeadRequest<T> selectEstimatedValue(){
-       selectProperty(SalesLead.ESTIMATED_VALUE_PROPERTY);
+    public SalesLeadRequest<T> selectAssignedToIdOnly(){
+       selectProperty(SalesLead.ASSIGNED_TO_PROPERTY);
        return this;
     }
 
-    /**
-     * fill the estimatedValue with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  estimatedValue) to fetch estimatedValue property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
+    public SalesLeadRequest<T> selectAssignedTo(){
+        return selectAssignedToWith(Q.staffMembers().unlimited().selectSelf());
+    }
 
-
-    /**
-     * fill the estimatedValue with customized aggrFunction, TEAQL uses ({aggrFunction}(estimatedValue) AS estimatedValue to fetch estimatedValue property.
-     * @param aggrFunction  aggrFunction
-     */
-    public SalesLeadRequest<T> selectEstimatedValue(AggrFunction aggrFunction){
-       selectProperty(SalesLead.ESTIMATED_VALUE_PROPERTY, aggrFunction);
+    public SalesLeadRequest<T> selectAssignedToWith(StaffMemberRequest assignedTo){
+       selectProperty(SalesLead.ASSIGNED_TO_PROPERTY);
+       enhanceRelation(SalesLead.ASSIGNED_TO_PROPERTY, assignedTo);
        return this;
     }
 
-
-    public SalesLeadRequest<T> unselectEstimatedValue(){
-       unselectProperty(SalesLead.ESTIMATED_VALUE_PROPERTY);
+    public SalesLeadRequest<T> unselectAssignedTo(){
+       unselectProperty(SalesLead.ASSIGNED_TO_PROPERTY);
        return this;
     }
     public SalesLeadRequest<T> selectCreatedTime(){
@@ -251,21 +257,21 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
        unselectProperty(SalesLead.CREATED_TIME_PROPERTY);
        return this;
     }
-    public SalesLeadRequest<T> selectUpdateTime(){
-       selectProperty(SalesLead.UPDATE_TIME_PROPERTY);
+    public SalesLeadRequest<T> selectUpdatedTime(){
+       selectProperty(SalesLead.UPDATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the updateTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updateTime) to fetch updateTime property.
+     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public SalesLeadRequest<T> unselectUpdateTime(){
-       unselectProperty(SalesLead.UPDATE_TIME_PROPERTY);
+    public SalesLeadRequest<T> unselectUpdatedTime(){
+       unselectProperty(SalesLead.UPDATED_TIME_PROPERTY);
        return this;
     }
     public SalesLeadRequest<T> selectVersion(){
@@ -366,6 +372,69 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
 
 
 
+    public SalesLeadRequest<T> filterByCompany(String... company){
+      if (company == null || company.length == 0) {
+        throw new IllegalArgumentException("filterByCompany parameter company cannot be empty");
+      }
+      return appendSearchCriteria(createCompanyCriteria(Operator.EQUAL, (Object[])company));
+    }
+
+    public SalesLeadRequest<T> withCompany(Operator operator, Object... values){
+       return appendSearchCriteria(createCompanyCriteria(operator, values));
+    }
+
+    public SalesLeadRequest<T> withCompanyIsUnknown(){
+       return withCompany(Operator.IS_NULL);
+    }
+
+    public SalesLeadRequest<T> withCompanyIsKnown(){
+       return withCompany(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createCompanyCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(SalesLead.COMPANY_PROPERTY, operator, values);
+    }
+
+    public SalesLeadRequest<T> withCompanyGreaterThan(String company){
+       return withCompany(Operator.GREATER_THAN, company);
+    }
+
+    public SalesLeadRequest<T> withCompanyGreaterThanOrEqualTo(String company){
+       return withCompany(Operator.GREATER_THAN_OR_EQUAL, company);
+    }
+
+    public SalesLeadRequest<T> withCompanyLessThan(String company){
+       return withCompany(Operator.LESS_THAN, company);
+    }
+
+    public SalesLeadRequest<T> withCompanyLessThanOrEqualTo(String company){
+       return withCompany(Operator.LESS_THAN_OR_EQUAL, company);
+    }
+
+    public SalesLeadRequest<T> withCompanyBetween(String startOfCompany, String endOfCompany){
+       return withCompany(Operator.BETWEEN, startOfCompany, endOfCompany);
+    }
+    public SalesLeadRequest<T> withCompanyStartingWith(String company){
+       return withCompany(Operator.BEGIN_WITH, company);
+    }
+    public SalesLeadRequest<T> withCompanyContaining(String company){
+       return withCompany(Operator.CONTAIN, company);
+    }
+
+    public SalesLeadRequest<T> withCompanyEndingWith(String company){
+       return withCompany(Operator.END_WITH, company);
+    }
+
+    public SalesLeadRequest<T> withCompanyIs(String company){
+       return withCompany(Operator.EQUAL, company);
+    }
+
+    public SalesLeadRequest<T> withCompanySoundingLike(String company){
+       return withCompany(Operator.SOUNDS_LIKE, company);
+    }
+
+
+
     public SalesLeadRequest<T> filterByEmail(String... email){
       if (email == null || email.length == 0) {
         throw new IllegalArgumentException("filterByEmail parameter email cannot be empty");
@@ -429,7 +498,7 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
 
 
 
-    public SalesLeadRequest<T> filterByPhone(Integer... phone){
+    public SalesLeadRequest<T> filterByPhone(String... phone){
       if (phone == null || phone.length == 0) {
         throw new IllegalArgumentException("filterByPhone parameter phone cannot be empty");
       }
@@ -452,24 +521,42 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
         return createBasicSearchCriteria(SalesLead.PHONE_PROPERTY, operator, values);
     }
 
-    public SalesLeadRequest<T> withPhoneGreaterThan(Integer phone){
+    public SalesLeadRequest<T> withPhoneGreaterThan(String phone){
        return withPhone(Operator.GREATER_THAN, phone);
     }
 
-    public SalesLeadRequest<T> withPhoneGreaterThanOrEqualTo(Integer phone){
+    public SalesLeadRequest<T> withPhoneGreaterThanOrEqualTo(String phone){
        return withPhone(Operator.GREATER_THAN_OR_EQUAL, phone);
     }
 
-    public SalesLeadRequest<T> withPhoneLessThan(Integer phone){
+    public SalesLeadRequest<T> withPhoneLessThan(String phone){
        return withPhone(Operator.LESS_THAN, phone);
     }
 
-    public SalesLeadRequest<T> withPhoneLessThanOrEqualTo(Integer phone){
+    public SalesLeadRequest<T> withPhoneLessThanOrEqualTo(String phone){
        return withPhone(Operator.LESS_THAN_OR_EQUAL, phone);
     }
 
-    public SalesLeadRequest<T> withPhoneBetween(Integer startOfPhone, Integer endOfPhone){
+    public SalesLeadRequest<T> withPhoneBetween(String startOfPhone, String endOfPhone){
        return withPhone(Operator.BETWEEN, startOfPhone, endOfPhone);
+    }
+    public SalesLeadRequest<T> withPhoneStartingWith(String phone){
+       return withPhone(Operator.BEGIN_WITH, phone);
+    }
+    public SalesLeadRequest<T> withPhoneContaining(String phone){
+       return withPhone(Operator.CONTAIN, phone);
+    }
+
+    public SalesLeadRequest<T> withPhoneEndingWith(String phone){
+       return withPhone(Operator.END_WITH, phone);
+    }
+
+    public SalesLeadRequest<T> withPhoneIs(String phone){
+       return withPhone(Operator.EQUAL, phone);
+    }
+
+    public SalesLeadRequest<T> withPhoneSoundingLike(String phone){
+       return withPhone(Operator.SOUNDS_LIKE, phone);
     }
 
 
@@ -600,50 +687,38 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
 
 
 
-    public SalesLeadRequest<T> filterByEstimatedValue(BigDecimal... estimatedValue){
-      if (estimatedValue == null || estimatedValue.length == 0) {
-        throw new IllegalArgumentException("filterByEstimatedValue parameter estimatedValue cannot be empty");
+    public SalesLeadRequest<T> filterByAssignedTo(StaffMember... assignedTo){
+      if (assignedTo == null || assignedTo.length == 0) {
+        throw new IllegalArgumentException("filterByAssignedTo parameter assignedTo cannot be empty");
       }
-      return appendSearchCriteria(createEstimatedValueCriteria(Operator.EQUAL, (Object[])estimatedValue));
+      return appendSearchCriteria(createAssignedToCriteria(Operator.EQUAL, (Object[])assignedTo));
     }
 
-    public SalesLeadRequest<T> withEstimatedValue(Operator operator, Object... values){
-       return appendSearchCriteria(createEstimatedValueCriteria(operator, values));
+    public SalesLeadRequest<T> withAssignedTo(Operator operator, Object... values){
+       return appendSearchCriteria(createAssignedToCriteria(operator, values));
     }
 
-    public SalesLeadRequest<T> withEstimatedValueIsUnknown(){
-       return withEstimatedValue(Operator.IS_NULL);
+    public SalesLeadRequest<T> withAssignedToIsUnknown(){
+       return withAssignedTo(Operator.IS_NULL);
     }
 
-    public SalesLeadRequest<T> withEstimatedValueIsKnown(){
-       return withEstimatedValue(Operator.IS_NOT_NULL);
+    public SalesLeadRequest<T> withAssignedToIsKnown(){
+       return withAssignedTo(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createEstimatedValueCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(SalesLead.ESTIMATED_VALUE_PROPERTY, operator, values);
+    public SearchCriteria createAssignedToCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(SalesLead.ASSIGNED_TO_PROPERTY, operator, values);
     }
 
-    public SalesLeadRequest<T> withEstimatedValueGreaterThan(BigDecimal estimatedValue){
-       return withEstimatedValue(Operator.GREATER_THAN, estimatedValue);
+    public SalesLeadRequest<T> filterByAssignedTo(Long assignedTo){
+      if(assignedTo == null){
+         return this;
+      }
+      return withAssignedTo(Operator.EQUAL, assignedTo);
     }
-
-    public SalesLeadRequest<T> withEstimatedValueGreaterThanOrEqualTo(BigDecimal estimatedValue){
-       return withEstimatedValue(Operator.GREATER_THAN_OR_EQUAL, estimatedValue);
+    public SalesLeadRequest<T> withAssignedToMatching(StaffMemberRequest assignedTo){
+       return appendSearchCriteria(new SubQuerySearchCriteria(SalesLead.ASSIGNED_TO_PROPERTY, assignedTo, StaffMember.ID_PROPERTY));
     }
-
-    public SalesLeadRequest<T> withEstimatedValueLessThan(BigDecimal estimatedValue){
-       return withEstimatedValue(Operator.LESS_THAN, estimatedValue);
-    }
-
-    public SalesLeadRequest<T> withEstimatedValueLessThanOrEqualTo(BigDecimal estimatedValue){
-       return withEstimatedValue(Operator.LESS_THAN_OR_EQUAL, estimatedValue);
-    }
-
-    public SalesLeadRequest<T> withEstimatedValueBetween(BigDecimal startOfEstimatedValue, BigDecimal endOfEstimatedValue){
-       return withEstimatedValue(Operator.BETWEEN, startOfEstimatedValue, endOfEstimatedValue);
-    }
-
-
 
     public SalesLeadRequest<T> filterByCreatedTime(LocalDateTime... createdTime){
       if (createdTime == null || createdTime.length == 0) {
@@ -710,66 +785,66 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
 
 
 
-    public SalesLeadRequest<T> filterByUpdateTime(LocalDateTime... updateTime){
-      if (updateTime == null || updateTime.length == 0) {
-        throw new IllegalArgumentException("filterByUpdateTime parameter updateTime cannot be empty");
+    public SalesLeadRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
+      if (updatedTime == null || updatedTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
       }
-      return appendSearchCriteria(createUpdateTimeCriteria(Operator.EQUAL, (Object[])updateTime));
+      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
     }
 
-    public SalesLeadRequest<T> withUpdateTime(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdateTimeCriteria(operator, values));
+    public SalesLeadRequest<T> withUpdatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
     }
 
-    public SalesLeadRequest<T> withUpdateTimeIsUnknown(){
-       return withUpdateTime(Operator.IS_NULL);
+    public SalesLeadRequest<T> withUpdatedTimeIsUnknown(){
+       return withUpdatedTime(Operator.IS_NULL);
     }
 
-    public SalesLeadRequest<T> withUpdateTimeIsKnown(){
-       return withUpdateTime(Operator.IS_NOT_NULL);
+    public SalesLeadRequest<T> withUpdatedTimeIsKnown(){
+       return withUpdatedTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createUpdateTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(SalesLead.UPDATE_TIME_PROPERTY, operator, values);
+    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(SalesLead.UPDATED_TIME_PROPERTY, operator, values);
     }
 
-    public SalesLeadRequest<T> withUpdateTimeGreaterThan(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public SalesLeadRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public SalesLeadRequest<T> withUpdateTimeGreaterThanOrEqualTo(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN_OR_EQUAL, updateTime);
+    public SalesLeadRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
     }
 
-    public SalesLeadRequest<T> withUpdateTimeLessThan(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    public SalesLeadRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public SalesLeadRequest<T> withUpdateTimeLessThanOrEqualTo(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN_OR_EQUAL, updateTime);
+    public SalesLeadRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
     }
 
-    public SalesLeadRequest<T> withUpdateTimeBetween(LocalDateTime startOfUpdateTime, LocalDateTime endOfUpdateTime){
-       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    public SalesLeadRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
-    public SalesLeadRequest<T> withUpdateTimeBefore(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
-    }
-
-    public SalesLeadRequest<T> withUpdateTimeBefore(Date updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    public SalesLeadRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public SalesLeadRequest<T> withUpdateTimeAfter(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public SalesLeadRequest<T> withUpdatedTimeBefore(Date updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public SalesLeadRequest<T> withUpdateTimeAfter(Date updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public SalesLeadRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public SalesLeadRequest<T> withUpdateTimeBetween(Date startOfUpdateTime, Date endOfUpdateTime){
-       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    public SalesLeadRequest<T> withUpdatedTimeAfter(Date updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public SalesLeadRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
 
 
@@ -827,134 +902,18 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
         super.count(retName);
         return this;
     }
-    public SalesLeadRequest minPhone(){
-        return minPhoneAs(prefix("minOf",SalesLead.PHONE_PROPERTY));
+    public SalesLeadRequest<T> groupByAssignedToWithDetails(){
+       return groupByAssignedToWithDetails(Q.staffMembers().unlimited());
     }
 
-    public SalesLeadRequest minPhoneAs(String retName){
-        super.min(retName, SalesLead.PHONE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest maxPhone(){
-        return maxPhoneAs(prefix("maxOf",SalesLead.PHONE_PROPERTY));
+    public SalesLeadRequest<T> groupByAssignedToWithDetails(StaffMemberRequest subRequest){
+       aggregate(SalesLead.ASSIGNED_TO_PROPERTY, subRequest);
+       return this;
     }
 
-    public SalesLeadRequest maxPhoneAs(String retName){
-        super.max(retName, SalesLead.PHONE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest sumPhone(){
-        return sumPhoneAs(prefix("sumOf",SalesLead.PHONE_PROPERTY));
-    }
 
-    public SalesLeadRequest sumPhoneAs(String retName){
-        super.sum(retName, SalesLead.PHONE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest avgPhone(){
-        return avgPhoneAs(prefix("avgOf",SalesLead.PHONE_PROPERTY));
-    }
 
-    public SalesLeadRequest avgPhoneAs(String retName){
-        super.avg(retName, SalesLead.PHONE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest standardDeviationPhone(){
-        return standardDeviationPhoneAs(prefix("standardDeviationOf",SalesLead.PHONE_PROPERTY));
-    }
 
-    public SalesLeadRequest standardDeviationPhoneAs(String retName){
-        super.standardDeviation(retName, SalesLead.PHONE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest squareRootOfPopulationStandardDeviationPhone(){
-        return squareRootOfPopulationStandardDeviationPhoneAs(prefix("squareRootOfPopulationStandardDeviationOf",SalesLead.PHONE_PROPERTY));
-    }
-
-    public SalesLeadRequest squareRootOfPopulationStandardDeviationPhoneAs(String retName){
-        super.squareRootOfPopulationStandardDeviation(retName, SalesLead.PHONE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest sampleVariancePhone(){
-        return sampleVariancePhoneAs(prefix("sampleVarianceOf",SalesLead.PHONE_PROPERTY));
-    }
-
-    public SalesLeadRequest sampleVariancePhoneAs(String retName){
-        super.sampleVariance(retName, SalesLead.PHONE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest samplePopulationVariancePhone(){
-        return samplePopulationVariancePhoneAs(prefix("samplePopulationVarianceOf",SalesLead.PHONE_PROPERTY));
-    }
-
-    public SalesLeadRequest samplePopulationVariancePhoneAs(String retName){
-        super.samplePopulationVariance(retName, SalesLead.PHONE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest minEstimatedValue(){
-        return minEstimatedValueAs(prefix("minOf",SalesLead.ESTIMATED_VALUE_PROPERTY));
-    }
-
-    public SalesLeadRequest minEstimatedValueAs(String retName){
-        super.min(retName, SalesLead.ESTIMATED_VALUE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest maxEstimatedValue(){
-        return maxEstimatedValueAs(prefix("maxOf",SalesLead.ESTIMATED_VALUE_PROPERTY));
-    }
-
-    public SalesLeadRequest maxEstimatedValueAs(String retName){
-        super.max(retName, SalesLead.ESTIMATED_VALUE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest sumEstimatedValue(){
-        return sumEstimatedValueAs(prefix("sumOf",SalesLead.ESTIMATED_VALUE_PROPERTY));
-    }
-
-    public SalesLeadRequest sumEstimatedValueAs(String retName){
-        super.sum(retName, SalesLead.ESTIMATED_VALUE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest avgEstimatedValue(){
-        return avgEstimatedValueAs(prefix("avgOf",SalesLead.ESTIMATED_VALUE_PROPERTY));
-    }
-
-    public SalesLeadRequest avgEstimatedValueAs(String retName){
-        super.avg(retName, SalesLead.ESTIMATED_VALUE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest standardDeviationEstimatedValue(){
-        return standardDeviationEstimatedValueAs(prefix("standardDeviationOf",SalesLead.ESTIMATED_VALUE_PROPERTY));
-    }
-
-    public SalesLeadRequest standardDeviationEstimatedValueAs(String retName){
-        super.standardDeviation(retName, SalesLead.ESTIMATED_VALUE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest squareRootOfPopulationStandardDeviationEstimatedValue(){
-        return squareRootOfPopulationStandardDeviationEstimatedValueAs(prefix("squareRootOfPopulationStandardDeviationOf",SalesLead.ESTIMATED_VALUE_PROPERTY));
-    }
-
-    public SalesLeadRequest squareRootOfPopulationStandardDeviationEstimatedValueAs(String retName){
-        super.squareRootOfPopulationStandardDeviation(retName, SalesLead.ESTIMATED_VALUE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest sampleVarianceEstimatedValue(){
-        return sampleVarianceEstimatedValueAs(prefix("sampleVarianceOf",SalesLead.ESTIMATED_VALUE_PROPERTY));
-    }
-
-    public SalesLeadRequest sampleVarianceEstimatedValueAs(String retName){
-        super.sampleVariance(retName, SalesLead.ESTIMATED_VALUE_PROPERTY);
-        return this;
-    }
-    public SalesLeadRequest samplePopulationVarianceEstimatedValue(){
-        return samplePopulationVarianceEstimatedValueAs(prefix("samplePopulationVarianceOf",SalesLead.ESTIMATED_VALUE_PROPERTY));
-    }
-
-    public SalesLeadRequest samplePopulationVarianceEstimatedValueAs(String retName){
-        super.samplePopulationVariance(retName, SalesLead.ESTIMATED_VALUE_PROPERTY);
-        return this;
-    }
 
     public SalesLeadRequest<T> groupById(){
        groupBy(SalesLead.ID_PROPERTY);
@@ -983,6 +942,21 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
 
     public SalesLeadRequest<T> groupByNameWithFunction(String retName, AggrFunction function){
        groupBy(retName, SalesLead.NAME_PROPERTY, function);
+       return this;
+    }
+
+    public SalesLeadRequest<T> groupByCompany(){
+       groupBy(SalesLead.COMPANY_PROPERTY);
+       return this;
+    }
+
+    public SalesLeadRequest<T> groupByCompanyAs(String retName){
+       groupBy(retName, SalesLead.COMPANY_PROPERTY);
+       return this;
+    }
+
+    public SalesLeadRequest<T> groupByCompanyWithFunction(String retName, AggrFunction function){
+       groupBy(retName, SalesLead.COMPANY_PROPERTY, function);
        return this;
     }
 
@@ -1045,19 +1019,22 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
        groupBy(retName, SalesLead.STATUS_PROPERTY, function);
        return this;
     }
-
-    public SalesLeadRequest<T> groupByEstimatedValue(){
-       groupBy(SalesLead.ESTIMATED_VALUE_PROPERTY);
+    public SalesLeadRequest<T> groupByAssignedToWith(StaffMemberRequest subRequest){
+       groupBy(SalesLead.ASSIGNED_TO_PROPERTY, subRequest);
+       return this;
+    }
+    public SalesLeadRequest<T> groupByAssignedTo(){
+       groupBy(SalesLead.ASSIGNED_TO_PROPERTY);
        return this;
     }
 
-    public SalesLeadRequest<T> groupByEstimatedValueAs(String retName){
-       groupBy(retName, SalesLead.ESTIMATED_VALUE_PROPERTY);
+    public SalesLeadRequest<T> groupByAssignedToAs(String retName){
+       groupBy(retName, SalesLead.ASSIGNED_TO_PROPERTY);
        return this;
     }
 
-    public SalesLeadRequest<T> groupByEstimatedValueWithFunction(String retName, AggrFunction function){
-       groupBy(retName, SalesLead.ESTIMATED_VALUE_PROPERTY, function);
+    public SalesLeadRequest<T> groupByAssignedToWithFunction(String retName, AggrFunction function){
+       groupBy(retName, SalesLead.ASSIGNED_TO_PROPERTY, function);
        return this;
     }
 
@@ -1076,18 +1053,18 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
        return this;
     }
 
-    public SalesLeadRequest<T> groupByUpdateTime(){
-       groupBy(SalesLead.UPDATE_TIME_PROPERTY);
+    public SalesLeadRequest<T> groupByUpdatedTime(){
+       groupBy(SalesLead.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public SalesLeadRequest<T> groupByUpdateTimeAs(String retName){
-       groupBy(retName, SalesLead.UPDATE_TIME_PROPERTY);
+    public SalesLeadRequest<T> groupByUpdatedTimeAs(String retName){
+       groupBy(retName, SalesLead.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public SalesLeadRequest<T> groupByUpdateTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, SalesLead.UPDATE_TIME_PROPERTY, function);
+    public SalesLeadRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, SalesLead.UPDATED_TIME_PROPERTY, function);
        return this;
     }
 
@@ -1136,6 +1113,24 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
        addOrderByDescendingUsingGBK(SalesLead.NAME_PROPERTY);
        return this;
     }
+    public SalesLeadRequest<T> orderByCompanyAscending(){
+       addOrderByAscending(SalesLead.COMPANY_PROPERTY);
+       return this;
+    }
+
+    public SalesLeadRequest<T> orderByCompanyDescending(){
+       addOrderByDescending(SalesLead.COMPANY_PROPERTY);
+       return this;
+    }
+    public SalesLeadRequest<T> orderByCompanyAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(SalesLead.COMPANY_PROPERTY);
+       return this;
+    }
+
+    public SalesLeadRequest<T> orderByCompanyDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(SalesLead.COMPANY_PROPERTY);
+       return this;
+    }
     public SalesLeadRequest<T> orderByEmailAscending(){
        addOrderByAscending(SalesLead.EMAIL_PROPERTY);
        return this;
@@ -1163,7 +1158,15 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
        addOrderByDescending(SalesLead.PHONE_PROPERTY);
        return this;
     }
+    public SalesLeadRequest<T> orderByPhoneAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(SalesLead.PHONE_PROPERTY);
+       return this;
+    }
 
+    public SalesLeadRequest<T> orderByPhoneDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(SalesLead.PHONE_PROPERTY);
+       return this;
+    }
     public SalesLeadRequest<T> orderBySourceAscending(){
        addOrderByAscending(SalesLead.SOURCE_PROPERTY);
        return this;
@@ -1200,13 +1203,13 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
        addOrderByDescendingUsingGBK(SalesLead.STATUS_PROPERTY);
        return this;
     }
-    public SalesLeadRequest<T> orderByEstimatedValueAscending(){
-       addOrderByAscending(SalesLead.ESTIMATED_VALUE_PROPERTY);
+    public SalesLeadRequest<T> orderByAssignedToAscending(){
+       addOrderByAscending(SalesLead.ASSIGNED_TO_PROPERTY);
        return this;
     }
 
-    public SalesLeadRequest<T> orderByEstimatedValueDescending(){
-       addOrderByDescending(SalesLead.ESTIMATED_VALUE_PROPERTY);
+    public SalesLeadRequest<T> orderByAssignedToDescending(){
+       addOrderByDescending(SalesLead.ASSIGNED_TO_PROPERTY);
        return this;
     }
 
@@ -1220,13 +1223,13 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
        return this;
     }
 
-    public SalesLeadRequest<T> orderByUpdateTimeAscending(){
-       addOrderByAscending(SalesLead.UPDATE_TIME_PROPERTY);
+    public SalesLeadRequest<T> orderByUpdatedTimeAscending(){
+       addOrderByAscending(SalesLead.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public SalesLeadRequest<T> orderByUpdateTimeDescending(){
-       addOrderByDescending(SalesLead.UPDATE_TIME_PROPERTY);
+    public SalesLeadRequest<T> orderByUpdatedTimeDescending(){
+       addOrderByDescending(SalesLead.UPDATED_TIME_PROPERTY);
        return this;
     }
 
@@ -1241,7 +1244,25 @@ public class SalesLeadRequest<T extends SalesLead> extends BaseRequest<T> {
     }
 
 
+    public StaffMemberRequest rollUpToAssignedTo(){
+       StaffMemberRequest assignedTo = Q.staffMembers().unlimited();
+       this.withAssignedToMatching(assignedTo)
+           .groupByAssignedToWith(assignedTo);
+       return assignedTo;
+    }
 
+
+
+
+
+   public SalesLeadRequest<T> facetByAssignedToAs(String facetName, StaffMemberRequest assignedTo){
+       return facetByAssignedToAs(facetName, assignedTo, true);
+   }
+
+   public SalesLeadRequest<T> facetByAssignedToAs(String facetName, StaffMemberRequest assignedTo, boolean includeAllFacets){
+       addFacet(facetName, SalesLead.ASSIGNED_TO_PROPERTY, assignedTo, includeAllFacets);
+       return this;
+   }
 
 
     /**

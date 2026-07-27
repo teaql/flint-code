@@ -1,5 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.saleschannel;
 
+import com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi;
+import com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoiListExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
@@ -40,6 +42,13 @@ public class SalesChannelExpression<T, E, U extends SalesChannel> extends Expres
        return new SalesChannelExpression(this, $it ->  ((SalesChannel)$it).updateName(name));
     }
 
+    public Expression<T, String> getDescription(){
+       return apply(SalesChannel::getDescription);
+    }
+    public SalesChannelExpression<T, U, U> updateDescription(String description){
+       return new SalesChannelExpression(this, $it ->  ((SalesChannel)$it).updateDescription(description));
+    }
+
     public Expression<T, String> getChannelType(){
        return apply(SalesChannel::getChannelType);
     }
@@ -47,18 +56,11 @@ public class SalesChannelExpression<T, E, U extends SalesChannel> extends Expres
        return new SalesChannelExpression(this, $it ->  ((SalesChannel)$it).updateChannelType(channelType));
     }
 
-    public Expression<T, String> getUrl(){
-       return apply(SalesChannel::getUrl);
+    public Expression<T, Boolean> isIsActive(){
+       return apply(SalesChannel::isIsActive);
     }
-    public SalesChannelExpression<T, U, U> updateUrl(String url){
-       return new SalesChannelExpression(this, $it ->  ((SalesChannel)$it).updateUrl(url));
-    }
-
-    public Expression<T, String> getStatus(){
-       return apply(SalesChannel::getStatus);
-    }
-    public SalesChannelExpression<T, U, U> updateStatus(String status){
-       return new SalesChannelExpression(this, $it ->  ((SalesChannel)$it).updateStatus(status));
+    public SalesChannelExpression<T, U, U> updateIsActive(Boolean isActive){
+       return new SalesChannelExpression(this, $it ->  ((SalesChannel)$it).updateIsActive(isActive));
     }
 
     public Expression<T, LocalDateTime> getCreatedTime(){
@@ -68,11 +70,17 @@ public class SalesChannelExpression<T, E, U extends SalesChannel> extends Expres
        return new SalesChannelExpression(this, $it ->  ((SalesChannel)$it).updateCreatedTime(createdTime));
     }
 
-    public Expression<T, LocalDateTime> getUpdateTime(){
-       return apply(SalesChannel::getUpdateTime);
+    public Expression<T, LocalDateTime> getUpdatedTime(){
+       return apply(SalesChannel::getUpdatedTime);
     }
-    public SalesChannelExpression<T, U, U> updateUpdateTime(LocalDateTime updateTime){
-       return new SalesChannelExpression(this, $it ->  ((SalesChannel)$it).updateUpdateTime(updateTime));
+    public SalesChannelExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
+       return new SalesChannelExpression(this, $it ->  ((SalesChannel)$it).updateUpdatedTime(updatedTime));
     }
 
+    public MarketingRoiListExpression<T, U, MarketingRoi> getMarketingRoiList(){
+        return new MarketingRoiListExpression(this, $it ->  ((SalesChannel)$it).getMarketingRoiList());
+    }
+    public SalesChannelExpression<T, U, U> addMarketingRoi(MarketingRoi marketingRoi){
+       return new SalesChannelExpression(this, $it ->  ((SalesChannel)$it).addMarketingRoi(marketingRoi));
+    }
 }

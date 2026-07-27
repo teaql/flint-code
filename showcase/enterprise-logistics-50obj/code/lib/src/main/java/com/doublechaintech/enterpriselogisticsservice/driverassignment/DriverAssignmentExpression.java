@@ -6,7 +6,6 @@ import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.function.Function;
 
@@ -36,6 +35,27 @@ public class DriverAssignmentExpression<T, E, U extends DriverAssignment> extend
      }
 
 
+    public Expression<T, LocalDateTime> getStartTime(){
+       return apply(DriverAssignment::getStartTime);
+    }
+    public DriverAssignmentExpression<T, U, U> updateStartTime(LocalDateTime startTime){
+       return new DriverAssignmentExpression(this, $it ->  ((DriverAssignment)$it).updateStartTime(startTime));
+    }
+
+    public Expression<T, LocalDateTime> getEndTime(){
+       return apply(DriverAssignment::getEndTime);
+    }
+    public DriverAssignmentExpression<T, U, U> updateEndTime(LocalDateTime endTime){
+       return new DriverAssignmentExpression(this, $it ->  ((DriverAssignment)$it).updateEndTime(endTime));
+    }
+
+    public Expression<T, String> getStatus(){
+       return apply(DriverAssignment::getStatus);
+    }
+    public DriverAssignmentExpression<T, U, U> updateStatus(String status){
+       return new DriverAssignmentExpression(this, $it ->  ((DriverAssignment)$it).updateStatus(status));
+    }
+
     public VehicleExpression<T, U, Vehicle> getVehicle(){
        return new VehicleExpression(this, $it ->  ((DriverAssignment)$it).getVehicle());
     }
@@ -49,34 +69,6 @@ public class DriverAssignmentExpression<T, E, U extends DriverAssignment> extend
     }
     public DriverAssignmentExpression<T, U, U> updateDriver(String driver){
        return new DriverAssignmentExpression(this, $it ->  ((DriverAssignment)$it).updateDriver(driver));
-    }
-
-    public Expression<T, LocalDate> getStartDate(){
-       return apply(DriverAssignment::getStartDate);
-    }
-    public DriverAssignmentExpression<T, U, U> updateStartDate(LocalDate startDate){
-       return new DriverAssignmentExpression(this, $it ->  ((DriverAssignment)$it).updateStartDate(startDate));
-    }
-
-    public Expression<T, LocalDate> getEndDate(){
-       return apply(DriverAssignment::getEndDate);
-    }
-    public DriverAssignmentExpression<T, U, U> updateEndDate(LocalDate endDate){
-       return new DriverAssignmentExpression(this, $it ->  ((DriverAssignment)$it).updateEndDate(endDate));
-    }
-
-    public Expression<T, String> getStatus(){
-       return apply(DriverAssignment::getStatus);
-    }
-    public DriverAssignmentExpression<T, U, U> updateStatus(String status){
-       return new DriverAssignmentExpression(this, $it ->  ((DriverAssignment)$it).updateStatus(status));
-    }
-
-    public Expression<T, LocalDateTime> getCreatedAt(){
-       return apply(DriverAssignment::getCreatedAt);
-    }
-    public DriverAssignmentExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
-       return new DriverAssignmentExpression(this, $it ->  ((DriverAssignment)$it).updateCreatedAt(createdAt));
     }
 
 }

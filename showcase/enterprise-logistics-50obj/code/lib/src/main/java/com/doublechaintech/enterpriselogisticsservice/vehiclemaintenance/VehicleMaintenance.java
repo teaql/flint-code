@@ -6,8 +6,8 @@ import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -21,44 +21,41 @@ import java.util.Objects;
 public class VehicleMaintenance extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "VehicleMaintenance";
 
-    public static final String VEHICLE_PROPERTY = "vehicle";
     public static final String SERVICE_TYPE_PROPERTY = "serviceType";
-    public static final String SERVICE_DATE_PROPERTY = "serviceDate";
+    public static final String DESCRIPTION_PROPERTY = "description";
     public static final String COST_PROPERTY = "cost";
+    public static final String SCHEDULED_DATE_PROPERTY = "scheduledDate";
+    public static final String COMPLETED_DATE_PROPERTY = "completedDate";
     public static final String STATUS_PROPERTY = "status";
-    public static final String CREATED_AT_PROPERTY = "createdAt";
-    private Vehicle vehicle;
+    public static final String VEHICLE_PROPERTY = "vehicle";
     private String serviceType;
-    private LocalDate serviceDate;
-    private String cost;
+    private String description;
+    private BigDecimal cost;
+    private LocalDate scheduledDate;
+    private LocalDate completedDate;
     private String status;
-    private LocalDateTime createdAt;
+    private Vehicle vehicle;
 
-    public Vehicle getVehicle(){
-        return this.vehicle;
-    }
     public String getServiceType(){
         return this.serviceType;
     }
-    public LocalDate getServiceDate(){
-        return this.serviceDate;
+    public String getDescription(){
+        return this.description;
     }
-    public String getCost(){
+    public BigDecimal getCost(){
         return this.cost;
+    }
+    public LocalDate getScheduledDate(){
+        return this.scheduledDate;
+    }
+    public LocalDate getCompletedDate(){
+        return this.completedDate;
     }
     public String getStatus(){
         return this.status;
     }
-    public LocalDateTime getCreatedAt(){
-        return this.createdAt;
-    }
-    public VehicleMaintenance updateVehicle(Vehicle vehicle){
-        if(Objects.equals(this.vehicle, vehicle)){
-            return this;
-        }
-        handleUpdate(VEHICLE_PROPERTY, getVehicle(), vehicle);
-        this.vehicle = vehicle;
-        return this;
+    public Vehicle getVehicle(){
+        return this.vehicle;
     }
     public VehicleMaintenance updateServiceType(String serviceType){
         serviceType = (serviceType == null ? null : serviceType.trim());
@@ -69,21 +66,37 @@ public class VehicleMaintenance extends BaseEntity implements RemoteInput {
         this.serviceType = serviceType;
         return this;
     }
-    public VehicleMaintenance updateServiceDate(LocalDate serviceDate){
-        if(Objects.equals(this.serviceDate, serviceDate)){
+    public VehicleMaintenance updateDescription(String description){
+        description = (description == null ? null : description.trim());
+        if(Objects.equals(this.description, description)){
             return this;
         }
-        handleUpdate(SERVICE_DATE_PROPERTY, getServiceDate(), serviceDate);
-        this.serviceDate = serviceDate;
+        handleUpdate(DESCRIPTION_PROPERTY, getDescription(), description);
+        this.description = description;
         return this;
     }
-    public VehicleMaintenance updateCost(String cost){
-        cost = (cost == null ? null : cost.trim());
+    public VehicleMaintenance updateCost(BigDecimal cost){
         if(Objects.equals(this.cost, cost)){
             return this;
         }
         handleUpdate(COST_PROPERTY, getCost(), cost);
         this.cost = cost;
+        return this;
+    }
+    public VehicleMaintenance updateScheduledDate(LocalDate scheduledDate){
+        if(Objects.equals(this.scheduledDate, scheduledDate)){
+            return this;
+        }
+        handleUpdate(SCHEDULED_DATE_PROPERTY, getScheduledDate(), scheduledDate);
+        this.scheduledDate = scheduledDate;
+        return this;
+    }
+    public VehicleMaintenance updateCompletedDate(LocalDate completedDate){
+        if(Objects.equals(this.completedDate, completedDate)){
+            return this;
+        }
+        handleUpdate(COMPLETED_DATE_PROPERTY, getCompletedDate(), completedDate);
+        this.completedDate = completedDate;
         return this;
     }
     public VehicleMaintenance updateStatus(String status){
@@ -95,12 +108,12 @@ public class VehicleMaintenance extends BaseEntity implements RemoteInput {
         this.status = status;
         return this;
     }
-    public VehicleMaintenance updateCreatedAt(LocalDateTime createdAt){
-        if(Objects.equals(this.createdAt, createdAt)){
+    public VehicleMaintenance updateVehicle(Vehicle vehicle){
+        if(Objects.equals(this.vehicle, vehicle)){
             return this;
         }
-        handleUpdate(CREATED_AT_PROPERTY, getCreatedAt(), createdAt);
-        this.createdAt = createdAt;
+        handleUpdate(VEHICLE_PROPERTY, getVehicle(), vehicle);
+        this.vehicle = vehicle;
         return this;
     }
 
@@ -131,17 +144,19 @@ public class VehicleMaintenance extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public void __internalSet(String property, Object value) {
         switch (property) {
-            case "vehicle": this.vehicle = (Vehicle) value; break;
-
             case "serviceType": this.serviceType = (value == null ? null : ((String)value).trim()); break;
 
-            case "serviceDate": this.serviceDate = (LocalDate) value; break;
+            case "description": this.description = (value == null ? null : ((String)value).trim()); break;
 
-            case "cost": this.cost = (value == null ? null : ((String)value).trim()); break;
+            case "cost": this.cost = (BigDecimal) value; break;
+
+            case "scheduledDate": this.scheduledDate = (LocalDate) value; break;
+
+            case "completedDate": this.completedDate = (LocalDate) value; break;
 
             case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
-            case "createdAt": this.createdAt = (LocalDateTime) value; break;
+            case "vehicle": this.vehicle = (Vehicle) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -151,12 +166,13 @@ public class VehicleMaintenance extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public Object __internalGet(String property) {
         switch (property) {
-            case "vehicle": return this.vehicle;
             case "serviceType": return this.serviceType;
-            case "serviceDate": return this.serviceDate;
+            case "description": return this.description;
             case "cost": return this.cost;
+            case "scheduledDate": return this.scheduledDate;
+            case "completedDate": return this.completedDate;
             case "status": return this.status;
-            case "createdAt": return this.createdAt;
+            case "vehicle": return this.vehicle;
             default: return super.__internalGet(property);
         }
     }

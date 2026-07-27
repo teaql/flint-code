@@ -6,8 +6,8 @@ import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.function.Function;
 
 public class VehicleMaintenanceExpression<T, E, U extends VehicleMaintenance> extends ExpressionAdaptor<T, E, U> implements BaseEntityExpression<T, U> {
@@ -36,14 +36,6 @@ public class VehicleMaintenanceExpression<T, E, U extends VehicleMaintenance> ex
      }
 
 
-    public VehicleExpression<T, U, Vehicle> getVehicle(){
-       return new VehicleExpression(this, $it ->  ((VehicleMaintenance)$it).getVehicle());
-    }
-
-    public VehicleMaintenanceExpression<T, U, U> updateVehicle(Vehicle vehicle){
-       return new VehicleMaintenanceExpression(this, $it ->  ((VehicleMaintenance)$it).updateVehicle(vehicle));
-    }
-
     public Expression<T, String> getServiceType(){
        return apply(VehicleMaintenance::getServiceType);
     }
@@ -51,18 +43,32 @@ public class VehicleMaintenanceExpression<T, E, U extends VehicleMaintenance> ex
        return new VehicleMaintenanceExpression(this, $it ->  ((VehicleMaintenance)$it).updateServiceType(serviceType));
     }
 
-    public Expression<T, LocalDate> getServiceDate(){
-       return apply(VehicleMaintenance::getServiceDate);
+    public Expression<T, String> getDescription(){
+       return apply(VehicleMaintenance::getDescription);
     }
-    public VehicleMaintenanceExpression<T, U, U> updateServiceDate(LocalDate serviceDate){
-       return new VehicleMaintenanceExpression(this, $it ->  ((VehicleMaintenance)$it).updateServiceDate(serviceDate));
+    public VehicleMaintenanceExpression<T, U, U> updateDescription(String description){
+       return new VehicleMaintenanceExpression(this, $it ->  ((VehicleMaintenance)$it).updateDescription(description));
     }
 
-    public Expression<T, String> getCost(){
+    public Expression<T, BigDecimal> getCost(){
        return apply(VehicleMaintenance::getCost);
     }
-    public VehicleMaintenanceExpression<T, U, U> updateCost(String cost){
+    public VehicleMaintenanceExpression<T, U, U> updateCost(BigDecimal cost){
        return new VehicleMaintenanceExpression(this, $it ->  ((VehicleMaintenance)$it).updateCost(cost));
+    }
+
+    public Expression<T, LocalDate> getScheduledDate(){
+       return apply(VehicleMaintenance::getScheduledDate);
+    }
+    public VehicleMaintenanceExpression<T, U, U> updateScheduledDate(LocalDate scheduledDate){
+       return new VehicleMaintenanceExpression(this, $it ->  ((VehicleMaintenance)$it).updateScheduledDate(scheduledDate));
+    }
+
+    public Expression<T, LocalDate> getCompletedDate(){
+       return apply(VehicleMaintenance::getCompletedDate);
+    }
+    public VehicleMaintenanceExpression<T, U, U> updateCompletedDate(LocalDate completedDate){
+       return new VehicleMaintenanceExpression(this, $it ->  ((VehicleMaintenance)$it).updateCompletedDate(completedDate));
     }
 
     public Expression<T, String> getStatus(){
@@ -72,11 +78,12 @@ public class VehicleMaintenanceExpression<T, E, U extends VehicleMaintenance> ex
        return new VehicleMaintenanceExpression(this, $it ->  ((VehicleMaintenance)$it).updateStatus(status));
     }
 
-    public Expression<T, LocalDateTime> getCreatedAt(){
-       return apply(VehicleMaintenance::getCreatedAt);
+    public VehicleExpression<T, U, Vehicle> getVehicle(){
+       return new VehicleExpression(this, $it ->  ((VehicleMaintenance)$it).getVehicle());
     }
-    public VehicleMaintenanceExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
-       return new VehicleMaintenanceExpression(this, $it ->  ((VehicleMaintenance)$it).updateCreatedAt(createdAt));
+
+    public VehicleMaintenanceExpression<T, U, U> updateVehicle(Vehicle vehicle){
+       return new VehicleMaintenanceExpression(this, $it ->  ((VehicleMaintenance)$it).updateVehicle(vehicle));
     }
 
 }

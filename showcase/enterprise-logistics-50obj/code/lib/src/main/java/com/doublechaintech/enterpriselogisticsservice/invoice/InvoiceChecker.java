@@ -4,17 +4,13 @@ import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
 import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderChecker;
 import com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord;
 import com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecordChecker;
-import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomerChecker;
-import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee;
-import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFeeChecker;
 import com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord;
 import com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecordChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class InvoiceChecker implements Checker<Invoice>{
 
@@ -34,27 +30,17 @@ public class InvoiceChecker implements Checker<Invoice>{
          return;
       }
       if(invoice.newItem()){
-        if(invoice.getCreatedAt() == null){
-           invoice.updateCreatedAt(java.time.LocalDateTime.now());
-        }if(invoice.getUpdatedAt() == null){
-           invoice.updateUpdatedAt(java.time.LocalDateTime.now());
-        }
       }else if(invoice.updateItem()){
-        invoice.updateUpdatedAt(java.time.LocalDateTime.now());
       }
       checkName(_ctx, invoice.getProperty(Invoice.NAME_PROPERTY), newLocation(_parentLocation, Invoice.NAME_PROPERTY));
       checkCode(_ctx, invoice.getProperty(Invoice.CODE_PROPERTY), newLocation(_parentLocation, Invoice.CODE_PROPERTY));
       checkAmount(_ctx, invoice.getProperty(Invoice.AMOUNT_PROPERTY), newLocation(_parentLocation, Invoice.AMOUNT_PROPERTY));
       checkCurrency(_ctx, invoice.getProperty(Invoice.CURRENCY_PROPERTY), newLocation(_parentLocation, Invoice.CURRENCY_PROPERTY));
       checkStatus(_ctx, invoice.getProperty(Invoice.STATUS_PROPERTY), newLocation(_parentLocation, Invoice.STATUS_PROPERTY));
-      checkCreatedAt(_ctx, invoice.getProperty(Invoice.CREATED_AT_PROPERTY), newLocation(_parentLocation, Invoice.CREATED_AT_PROPERTY));
-      checkUpdatedAt(_ctx, invoice.getProperty(Invoice.UPDATED_AT_PROPERTY), newLocation(_parentLocation, Invoice.UPDATED_AT_PROPERTY));
+      checkIssueDate(_ctx, invoice.getProperty(Invoice.ISSUE_DATE_PROPERTY), newLocation(_parentLocation, Invoice.ISSUE_DATE_PROPERTY));
+      checkDueDate(_ctx, invoice.getProperty(Invoice.DUE_DATE_PROPERTY), newLocation(_parentLocation, Invoice.DUE_DATE_PROPERTY));
       checkMovingOrder(_ctx, invoice.getProperty(Invoice.MOVING_ORDER_PROPERTY), newLocation(_parentLocation, Invoice.MOVING_ORDER_PROPERTY));
       checkCustomer(_ctx, invoice.getProperty(Invoice.CUSTOMER_PROPERTY), newLocation(_parentLocation, Invoice.CUSTOMER_PROPERTY));
-      for(int i = 0; invoice.getStorageFeeList() != null && i < invoice.getStorageFeeList().size(); i++){
-         StorageFee storageFee = invoice.getStorageFeeList().get(i);
-         new StorageFeeChecker().checkAndFix(_ctx, storageFee, newLocation(_parentLocation, Invoice.STORAGE_FEE_LIST_PROPERTY, i));
-      }
       for(int i = 0; invoice.getPaymentRecordList() != null && i < invoice.getPaymentRecordList().size(); i++){
          PaymentRecord paymentRecord = invoice.getPaymentRecordList().get(i);
          new PaymentRecordChecker().checkAndFix(_ctx, paymentRecord, newLocation(_parentLocation, Invoice.PAYMENT_RECORD_LIST_PROPERTY, i));
@@ -103,15 +89,15 @@ public class InvoiceChecker implements Checker<Invoice>{
     maxStringCheck(_ctx, _parentLocation, 100, status);
 
     }
-    public void checkCreatedAt(UserContext _ctx, LocalDateTime createdAt, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, createdAt);
-    if((createdAt == null)){
+    public void checkIssueDate(UserContext _ctx, LocalDate issueDate, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, issueDate);
+    if((issueDate == null)){
         return;
     }
     }
-    public void checkUpdatedAt(UserContext _ctx, LocalDateTime updatedAt, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, updatedAt);
-    if((updatedAt == null)){
+    public void checkDueDate(UserContext _ctx, LocalDate dueDate, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, dueDate);
+    if((dueDate == null)){
         return;
     }
     }
@@ -122,11 +108,12 @@ public class InvoiceChecker implements Checker<Invoice>{
     }
     new MovingOrderChecker().checkAndFix(_ctx, movingOrder, _parentLocation);
     }
-    public void checkCustomer(UserContext _ctx, PrivateCustomer customer, ObjectLocation _parentLocation){
+    public void checkCustomer(UserContext _ctx, String customer, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, customer);
     if((customer == null)){
         return;
     }
-    new PrivateCustomerChecker().checkAndFix(_ctx, customer, _parentLocation);
+    maxStringCheck(_ctx, _parentLocation, 100, customer);
+
     }
 }

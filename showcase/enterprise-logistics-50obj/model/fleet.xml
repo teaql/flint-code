@@ -3,44 +3,75 @@
   <!-- 1. Vehicle -->
   <vehicle _name="Vehicle"
            _module="Fleet" _module_key="fleet"
-           id="id()" name="string()" license_plate="string()" make="string()" model="string()" year="2023"
-           capacity_kg="5000.00" status="string()" created_at="createTime()" updated_at="updateTime()">
-    <_value id="1" name="Truck Alpha" license_plate="TRK-001" make="Volvo" model="FH16" year="2023" capacity_kg="5000.00" status="Active" />
-    <_value id="2" name="Van Beta" license_plate="VAN-002" make="Mercedes" model="Sprinter" year="2022" capacity_kg="2000.00" status="Active" />
+           plate_number="string()"
+           vin="string()"
+           make="string()"
+           model="string()"
+           year="2023"
+           capacity_kg="5000"
+           status="active"
+           created_at="createTime()"
+           updated_at="updateTime()">
+    <_audit_mask_fields />
   </vehicle>
 
-  <!-- 2. Driver Assignment -->
-  <driver_assignment _name="Driver Assignment"
+  <!-- 2. Telematics Device -->
+  <telematics_device _name="Telematics Device"
                      _module="Fleet" _module_key="fleet"
-                     id="id()" vehicle="vehicle()" driver="employee()" start_date="date()" end_date="date()" status="string()" created_at="createTime()">
-    <_value id="1" vehicle="vehicle()" driver="employee()" start_date="2023-01-01" end_date="2023-12-31" status="Active" />
-  </driver_assignment>
+                     device_id="string()"
+                     imei="string()"
+                     status="active"
+                     vehicle="vehicle()"
+                     created_at="createTime()"
+                     updated_at="updateTime()">
+    <_audit_mask_fields />
+  </telematics_device>
 
   <!-- 3. GPS Log -->
   <gps_log _name="GPS Log"
            _module="Fleet" _module_key="fleet"
-           id="id()" vehicle="vehicle()" latitude="double()" longitude="double()" timestamp="datetime()" speed_kmh="double()" created_at="createTime()">
-    <_value id="1" vehicle="vehicle()" latitude="40.7128" longitude="-74.0060" timestamp="2023-10-01T10:00:00" speed_kmh="60.5" />
+           latitude="0.000000"
+           longitude="0.000000"
+           speed_kmh="0"
+           heading="0"
+           timestamp="createTime()"
+           device="telematics_device()">
+    <_audit_mask_fields />
   </gps_log>
 
   <!-- 4. Fuel Log -->
   <fuel_log _name="Fuel Log"
             _module="Fleet" _module_key="fleet"
-            id="id()" vehicle="vehicle()" fuel_amount_liters="double()" cost="double()" date="date()" created_at="createTime()">
-    <_value id="1" vehicle="vehicle()" fuel_amount_liters="50.0" cost="75.00" date="2023-10-01" />
+            liters="100.00"
+            cost="150.00"
+            odometer_km="10000"
+            station_name="Shell"
+            date="2023-10-01"
+            vehicle="vehicle()">
+    <_audit_mask_fields />
   </fuel_log>
 
   <!-- 5. Vehicle Maintenance -->
   <vehicle_maintenance _name="Vehicle Maintenance"
                        _module="Fleet" _module_key="fleet"
-                       id="id()" vehicle="vehicle()" service_type="string()" service_date="date()" cost="double()" status="string()" created_at="createTime()">
-    <_value id="1" vehicle="vehicle()" service_type="Oil Change" service_date="2023-09-15" cost="150.00" status="Completed" />
+                       service_type="oil_change"
+                       description="string()"
+                       cost="200.00"
+                       scheduled_date="2023-11-01"
+                       completed_date="2023-11-02"
+                       status="completed"
+                       vehicle="vehicle()">
+    <_audit_mask_fields />
   </vehicle_maintenance>
 
-  <!-- 6. Telematics Device -->
-  <telematics_device _name="Telematics Device"
+  <!-- 6. Driver Assignment -->
+  <driver_assignment _name="Driver Assignment"
                      _module="Fleet" _module_key="fleet"
-                     id="id()" device_id="string()" vehicle="vehicle()" firmware_version="string()" status="string()" created_at="createTime()">
-    <_value id="1" device_id="TEL-001" vehicle="vehicle()" firmware_version="1.2.0" status="Active" />
-  </telematics_device>
+                     start_time="createTime()"
+                     end_time="updateTime()"
+                     status="active"
+                     vehicle="vehicle()"
+                     driver="employee()">
+    <_audit_mask_fields />
+  </driver_assignment>
 </root>

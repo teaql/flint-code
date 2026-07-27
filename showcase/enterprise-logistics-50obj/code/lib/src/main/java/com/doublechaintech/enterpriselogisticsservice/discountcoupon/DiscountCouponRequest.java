@@ -82,7 +82,7 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
 
     public DiscountCouponRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectCode().selectDiscountPercentage().selectMaxUses().selectCurrentUses().selectExpiryDate().selectStatus().selectCreatedTime().selectUpdateTime().selectVersion();
+        return selectId().selectCode().selectDescription().selectDiscountPercentage().selectMinOrderAmount().selectMaxDiscountAmount().selectUsageLimit().selectUsedCount().selectStartDate().selectEndDate().selectStatus().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public DiscountCouponRequest<T> selectSelfFields(){
@@ -91,12 +91,12 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
 
     public DiscountCouponRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectCode().selectDiscountPercentage().selectMaxUses().selectCurrentUses().selectExpiryDate().selectStatus().selectCreatedTime().selectUpdateTime().selectVersion();
+        return selectId().selectCode().selectDescription().selectDiscountPercentage().selectMinOrderAmount().selectMaxDiscountAmount().selectUsageLimit().selectUsedCount().selectStartDate().selectEndDate().selectStatus().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public DiscountCouponRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectCode().selectDiscountPercentage().selectMaxUses().selectCurrentUses().selectExpiryDate().selectStatus().selectCreatedTime().selectUpdateTime().selectVersion();
+        return selectId().selectCode().selectDescription().selectDiscountPercentage().selectMinOrderAmount().selectMaxDiscountAmount().selectUsageLimit().selectUsedCount().selectStartDate().selectEndDate().selectStatus().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
 
@@ -134,6 +134,23 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
        unselectProperty(DiscountCoupon.CODE_PROPERTY);
        return this;
     }
+    public DiscountCouponRequest<T> selectDescription(){
+       selectProperty(DiscountCoupon.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the description with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  description) to fetch description property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public DiscountCouponRequest<T> unselectDescription(){
+       unselectProperty(DiscountCoupon.DESCRIPTION_PROPERTY);
+       return this;
+    }
     public DiscountCouponRequest<T> selectDiscountPercentage(){
        selectProperty(DiscountCoupon.DISCOUNT_PERCENTAGE_PROPERTY);
        return this;
@@ -159,71 +176,138 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
        unselectProperty(DiscountCoupon.DISCOUNT_PERCENTAGE_PROPERTY);
        return this;
     }
-    public DiscountCouponRequest<T> selectMaxUses(){
-       selectProperty(DiscountCoupon.MAX_USES_PROPERTY);
+    public DiscountCouponRequest<T> selectMinOrderAmount(){
+       selectProperty(DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY);
        return this;
     }
 
     /**
-     * fill the maxUses with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  maxUses) to fetch maxUses property.
+     * fill the minOrderAmount with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  minOrderAmount) to fetch minOrderAmount property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
     /**
-     * fill the maxUses with customized aggrFunction, TEAQL uses ({aggrFunction}(maxUses) AS maxUses to fetch maxUses property.
+     * fill the minOrderAmount with customized aggrFunction, TEAQL uses ({aggrFunction}(minOrderAmount) AS minOrderAmount to fetch minOrderAmount property.
      * @param aggrFunction  aggrFunction
      */
-    public DiscountCouponRequest<T> selectMaxUses(AggrFunction aggrFunction){
-       selectProperty(DiscountCoupon.MAX_USES_PROPERTY, aggrFunction);
+    public DiscountCouponRequest<T> selectMinOrderAmount(AggrFunction aggrFunction){
+       selectProperty(DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY, aggrFunction);
        return this;
     }
 
 
-    public DiscountCouponRequest<T> unselectMaxUses(){
-       unselectProperty(DiscountCoupon.MAX_USES_PROPERTY);
+    public DiscountCouponRequest<T> unselectMinOrderAmount(){
+       unselectProperty(DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY);
        return this;
     }
-    public DiscountCouponRequest<T> selectCurrentUses(){
-       selectProperty(DiscountCoupon.CURRENT_USES_PROPERTY);
+    public DiscountCouponRequest<T> selectMaxDiscountAmount(){
+       selectProperty(DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY);
        return this;
     }
 
     /**
-     * fill the currentUses with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  currentUses) to fetch currentUses property.
+     * fill the maxDiscountAmount with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  maxDiscountAmount) to fetch maxDiscountAmount property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
     /**
-     * fill the currentUses with customized aggrFunction, TEAQL uses ({aggrFunction}(currentUses) AS currentUses to fetch currentUses property.
+     * fill the maxDiscountAmount with customized aggrFunction, TEAQL uses ({aggrFunction}(maxDiscountAmount) AS maxDiscountAmount to fetch maxDiscountAmount property.
      * @param aggrFunction  aggrFunction
      */
-    public DiscountCouponRequest<T> selectCurrentUses(AggrFunction aggrFunction){
-       selectProperty(DiscountCoupon.CURRENT_USES_PROPERTY, aggrFunction);
+    public DiscountCouponRequest<T> selectMaxDiscountAmount(AggrFunction aggrFunction){
+       selectProperty(DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY, aggrFunction);
        return this;
     }
 
 
-    public DiscountCouponRequest<T> unselectCurrentUses(){
-       unselectProperty(DiscountCoupon.CURRENT_USES_PROPERTY);
+    public DiscountCouponRequest<T> unselectMaxDiscountAmount(){
+       unselectProperty(DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY);
        return this;
     }
-    public DiscountCouponRequest<T> selectExpiryDate(){
-       selectProperty(DiscountCoupon.EXPIRY_DATE_PROPERTY);
+    public DiscountCouponRequest<T> selectUsageLimit(){
+       selectProperty(DiscountCoupon.USAGE_LIMIT_PROPERTY);
        return this;
     }
 
     /**
-     * fill the expiryDate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  expiryDate) to fetch expiryDate property.
+     * fill the usageLimit with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  usageLimit) to fetch usageLimit property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+    /**
+     * fill the usageLimit with customized aggrFunction, TEAQL uses ({aggrFunction}(usageLimit) AS usageLimit to fetch usageLimit property.
+     * @param aggrFunction  aggrFunction
+     */
+    public DiscountCouponRequest<T> selectUsageLimit(AggrFunction aggrFunction){
+       selectProperty(DiscountCoupon.USAGE_LIMIT_PROPERTY, aggrFunction);
+       return this;
+    }
+
+
+    public DiscountCouponRequest<T> unselectUsageLimit(){
+       unselectProperty(DiscountCoupon.USAGE_LIMIT_PROPERTY);
+       return this;
+    }
+    public DiscountCouponRequest<T> selectUsedCount(){
+       selectProperty(DiscountCoupon.USED_COUNT_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the usedCount with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  usedCount) to fetch usedCount property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+    /**
+     * fill the usedCount with customized aggrFunction, TEAQL uses ({aggrFunction}(usedCount) AS usedCount to fetch usedCount property.
+     * @param aggrFunction  aggrFunction
+     */
+    public DiscountCouponRequest<T> selectUsedCount(AggrFunction aggrFunction){
+       selectProperty(DiscountCoupon.USED_COUNT_PROPERTY, aggrFunction);
+       return this;
+    }
+
+
+    public DiscountCouponRequest<T> unselectUsedCount(){
+       unselectProperty(DiscountCoupon.USED_COUNT_PROPERTY);
+       return this;
+    }
+    public DiscountCouponRequest<T> selectStartDate(){
+       selectProperty(DiscountCoupon.START_DATE_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the startDate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  startDate) to fetch startDate property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public DiscountCouponRequest<T> unselectExpiryDate(){
-       unselectProperty(DiscountCoupon.EXPIRY_DATE_PROPERTY);
+    public DiscountCouponRequest<T> unselectStartDate(){
+       unselectProperty(DiscountCoupon.START_DATE_PROPERTY);
+       return this;
+    }
+    public DiscountCouponRequest<T> selectEndDate(){
+       selectProperty(DiscountCoupon.END_DATE_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the endDate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  endDate) to fetch endDate property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public DiscountCouponRequest<T> unselectEndDate(){
+       unselectProperty(DiscountCoupon.END_DATE_PROPERTY);
        return this;
     }
     public DiscountCouponRequest<T> selectStatus(){
@@ -260,21 +344,21 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
        unselectProperty(DiscountCoupon.CREATED_TIME_PROPERTY);
        return this;
     }
-    public DiscountCouponRequest<T> selectUpdateTime(){
-       selectProperty(DiscountCoupon.UPDATE_TIME_PROPERTY);
+    public DiscountCouponRequest<T> selectUpdatedTime(){
+       selectProperty(DiscountCoupon.UPDATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the updateTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updateTime) to fetch updateTime property.
+     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public DiscountCouponRequest<T> unselectUpdateTime(){
-       unselectProperty(DiscountCoupon.UPDATE_TIME_PROPERTY);
+    public DiscountCouponRequest<T> unselectUpdatedTime(){
+       unselectProperty(DiscountCoupon.UPDATED_TIME_PROPERTY);
        return this;
     }
     public DiscountCouponRequest<T> selectVersion(){
@@ -375,6 +459,69 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
 
 
 
+    public DiscountCouponRequest<T> filterByDescription(String... description){
+      if (description == null || description.length == 0) {
+        throw new IllegalArgumentException("filterByDescription parameter description cannot be empty");
+      }
+      return appendSearchCriteria(createDescriptionCriteria(Operator.EQUAL, (Object[])description));
+    }
+
+    public DiscountCouponRequest<T> withDescription(Operator operator, Object... values){
+       return appendSearchCriteria(createDescriptionCriteria(operator, values));
+    }
+
+    public DiscountCouponRequest<T> withDescriptionIsUnknown(){
+       return withDescription(Operator.IS_NULL);
+    }
+
+    public DiscountCouponRequest<T> withDescriptionIsKnown(){
+       return withDescription(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createDescriptionCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DiscountCoupon.DESCRIPTION_PROPERTY, operator, values);
+    }
+
+    public DiscountCouponRequest<T> withDescriptionGreaterThan(String description){
+       return withDescription(Operator.GREATER_THAN, description);
+    }
+
+    public DiscountCouponRequest<T> withDescriptionGreaterThanOrEqualTo(String description){
+       return withDescription(Operator.GREATER_THAN_OR_EQUAL, description);
+    }
+
+    public DiscountCouponRequest<T> withDescriptionLessThan(String description){
+       return withDescription(Operator.LESS_THAN, description);
+    }
+
+    public DiscountCouponRequest<T> withDescriptionLessThanOrEqualTo(String description){
+       return withDescription(Operator.LESS_THAN_OR_EQUAL, description);
+    }
+
+    public DiscountCouponRequest<T> withDescriptionBetween(String startOfDescription, String endOfDescription){
+       return withDescription(Operator.BETWEEN, startOfDescription, endOfDescription);
+    }
+    public DiscountCouponRequest<T> withDescriptionStartingWith(String description){
+       return withDescription(Operator.BEGIN_WITH, description);
+    }
+    public DiscountCouponRequest<T> withDescriptionContaining(String description){
+       return withDescription(Operator.CONTAIN, description);
+    }
+
+    public DiscountCouponRequest<T> withDescriptionEndingWith(String description){
+       return withDescription(Operator.END_WITH, description);
+    }
+
+    public DiscountCouponRequest<T> withDescriptionIs(String description){
+       return withDescription(Operator.EQUAL, description);
+    }
+
+    public DiscountCouponRequest<T> withDescriptionSoundingLike(String description){
+       return withDescription(Operator.SOUNDS_LIKE, description);
+    }
+
+
+
     public DiscountCouponRequest<T> filterByDiscountPercentage(BigDecimal... discountPercentage){
       if (discountPercentage == null || discountPercentage.length == 0) {
         throw new IllegalArgumentException("filterByDiscountPercentage parameter discountPercentage cannot be empty");
@@ -420,156 +567,311 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
 
 
 
-    public DiscountCouponRequest<T> filterByMaxUses(Integer... maxUses){
-      if (maxUses == null || maxUses.length == 0) {
-        throw new IllegalArgumentException("filterByMaxUses parameter maxUses cannot be empty");
+    public DiscountCouponRequest<T> filterByMinOrderAmount(BigDecimal... minOrderAmount){
+      if (minOrderAmount == null || minOrderAmount.length == 0) {
+        throw new IllegalArgumentException("filterByMinOrderAmount parameter minOrderAmount cannot be empty");
       }
-      return appendSearchCriteria(createMaxUsesCriteria(Operator.EQUAL, (Object[])maxUses));
+      return appendSearchCriteria(createMinOrderAmountCriteria(Operator.EQUAL, (Object[])minOrderAmount));
     }
 
-    public DiscountCouponRequest<T> withMaxUses(Operator operator, Object... values){
-       return appendSearchCriteria(createMaxUsesCriteria(operator, values));
+    public DiscountCouponRequest<T> withMinOrderAmount(Operator operator, Object... values){
+       return appendSearchCriteria(createMinOrderAmountCriteria(operator, values));
     }
 
-    public DiscountCouponRequest<T> withMaxUsesIsUnknown(){
-       return withMaxUses(Operator.IS_NULL);
+    public DiscountCouponRequest<T> withMinOrderAmountIsUnknown(){
+       return withMinOrderAmount(Operator.IS_NULL);
     }
 
-    public DiscountCouponRequest<T> withMaxUsesIsKnown(){
-       return withMaxUses(Operator.IS_NOT_NULL);
+    public DiscountCouponRequest<T> withMinOrderAmountIsKnown(){
+       return withMinOrderAmount(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createMaxUsesCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(DiscountCoupon.MAX_USES_PROPERTY, operator, values);
+    public SearchCriteria createMinOrderAmountCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY, operator, values);
     }
 
-    public DiscountCouponRequest<T> withMaxUsesGreaterThan(Integer maxUses){
-       return withMaxUses(Operator.GREATER_THAN, maxUses);
+    public DiscountCouponRequest<T> withMinOrderAmountGreaterThan(BigDecimal minOrderAmount){
+       return withMinOrderAmount(Operator.GREATER_THAN, minOrderAmount);
     }
 
-    public DiscountCouponRequest<T> withMaxUsesGreaterThanOrEqualTo(Integer maxUses){
-       return withMaxUses(Operator.GREATER_THAN_OR_EQUAL, maxUses);
+    public DiscountCouponRequest<T> withMinOrderAmountGreaterThanOrEqualTo(BigDecimal minOrderAmount){
+       return withMinOrderAmount(Operator.GREATER_THAN_OR_EQUAL, minOrderAmount);
     }
 
-    public DiscountCouponRequest<T> withMaxUsesLessThan(Integer maxUses){
-       return withMaxUses(Operator.LESS_THAN, maxUses);
+    public DiscountCouponRequest<T> withMinOrderAmountLessThan(BigDecimal minOrderAmount){
+       return withMinOrderAmount(Operator.LESS_THAN, minOrderAmount);
     }
 
-    public DiscountCouponRequest<T> withMaxUsesLessThanOrEqualTo(Integer maxUses){
-       return withMaxUses(Operator.LESS_THAN_OR_EQUAL, maxUses);
+    public DiscountCouponRequest<T> withMinOrderAmountLessThanOrEqualTo(BigDecimal minOrderAmount){
+       return withMinOrderAmount(Operator.LESS_THAN_OR_EQUAL, minOrderAmount);
     }
 
-    public DiscountCouponRequest<T> withMaxUsesBetween(Integer startOfMaxUses, Integer endOfMaxUses){
-       return withMaxUses(Operator.BETWEEN, startOfMaxUses, endOfMaxUses);
+    public DiscountCouponRequest<T> withMinOrderAmountBetween(BigDecimal startOfMinOrderAmount, BigDecimal endOfMinOrderAmount){
+       return withMinOrderAmount(Operator.BETWEEN, startOfMinOrderAmount, endOfMinOrderAmount);
     }
 
 
 
-    public DiscountCouponRequest<T> filterByCurrentUses(Integer... currentUses){
-      if (currentUses == null || currentUses.length == 0) {
-        throw new IllegalArgumentException("filterByCurrentUses parameter currentUses cannot be empty");
+    public DiscountCouponRequest<T> filterByMaxDiscountAmount(BigDecimal... maxDiscountAmount){
+      if (maxDiscountAmount == null || maxDiscountAmount.length == 0) {
+        throw new IllegalArgumentException("filterByMaxDiscountAmount parameter maxDiscountAmount cannot be empty");
       }
-      return appendSearchCriteria(createCurrentUsesCriteria(Operator.EQUAL, (Object[])currentUses));
+      return appendSearchCriteria(createMaxDiscountAmountCriteria(Operator.EQUAL, (Object[])maxDiscountAmount));
     }
 
-    public DiscountCouponRequest<T> withCurrentUses(Operator operator, Object... values){
-       return appendSearchCriteria(createCurrentUsesCriteria(operator, values));
+    public DiscountCouponRequest<T> withMaxDiscountAmount(Operator operator, Object... values){
+       return appendSearchCriteria(createMaxDiscountAmountCriteria(operator, values));
     }
 
-    public DiscountCouponRequest<T> withCurrentUsesIsUnknown(){
-       return withCurrentUses(Operator.IS_NULL);
+    public DiscountCouponRequest<T> withMaxDiscountAmountIsUnknown(){
+       return withMaxDiscountAmount(Operator.IS_NULL);
     }
 
-    public DiscountCouponRequest<T> withCurrentUsesIsKnown(){
-       return withCurrentUses(Operator.IS_NOT_NULL);
+    public DiscountCouponRequest<T> withMaxDiscountAmountIsKnown(){
+       return withMaxDiscountAmount(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCurrentUsesCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(DiscountCoupon.CURRENT_USES_PROPERTY, operator, values);
+    public SearchCriteria createMaxDiscountAmountCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY, operator, values);
     }
 
-    public DiscountCouponRequest<T> withCurrentUsesGreaterThan(Integer currentUses){
-       return withCurrentUses(Operator.GREATER_THAN, currentUses);
+    public DiscountCouponRequest<T> withMaxDiscountAmountGreaterThan(BigDecimal maxDiscountAmount){
+       return withMaxDiscountAmount(Operator.GREATER_THAN, maxDiscountAmount);
     }
 
-    public DiscountCouponRequest<T> withCurrentUsesGreaterThanOrEqualTo(Integer currentUses){
-       return withCurrentUses(Operator.GREATER_THAN_OR_EQUAL, currentUses);
+    public DiscountCouponRequest<T> withMaxDiscountAmountGreaterThanOrEqualTo(BigDecimal maxDiscountAmount){
+       return withMaxDiscountAmount(Operator.GREATER_THAN_OR_EQUAL, maxDiscountAmount);
     }
 
-    public DiscountCouponRequest<T> withCurrentUsesLessThan(Integer currentUses){
-       return withCurrentUses(Operator.LESS_THAN, currentUses);
+    public DiscountCouponRequest<T> withMaxDiscountAmountLessThan(BigDecimal maxDiscountAmount){
+       return withMaxDiscountAmount(Operator.LESS_THAN, maxDiscountAmount);
     }
 
-    public DiscountCouponRequest<T> withCurrentUsesLessThanOrEqualTo(Integer currentUses){
-       return withCurrentUses(Operator.LESS_THAN_OR_EQUAL, currentUses);
+    public DiscountCouponRequest<T> withMaxDiscountAmountLessThanOrEqualTo(BigDecimal maxDiscountAmount){
+       return withMaxDiscountAmount(Operator.LESS_THAN_OR_EQUAL, maxDiscountAmount);
     }
 
-    public DiscountCouponRequest<T> withCurrentUsesBetween(Integer startOfCurrentUses, Integer endOfCurrentUses){
-       return withCurrentUses(Operator.BETWEEN, startOfCurrentUses, endOfCurrentUses);
+    public DiscountCouponRequest<T> withMaxDiscountAmountBetween(BigDecimal startOfMaxDiscountAmount, BigDecimal endOfMaxDiscountAmount){
+       return withMaxDiscountAmount(Operator.BETWEEN, startOfMaxDiscountAmount, endOfMaxDiscountAmount);
     }
 
 
 
-    public DiscountCouponRequest<T> filterByExpiryDate(LocalDate... expiryDate){
-      if (expiryDate == null || expiryDate.length == 0) {
-        throw new IllegalArgumentException("filterByExpiryDate parameter expiryDate cannot be empty");
+    public DiscountCouponRequest<T> filterByUsageLimit(Integer... usageLimit){
+      if (usageLimit == null || usageLimit.length == 0) {
+        throw new IllegalArgumentException("filterByUsageLimit parameter usageLimit cannot be empty");
       }
-      return appendSearchCriteria(createExpiryDateCriteria(Operator.EQUAL, (Object[])expiryDate));
+      return appendSearchCriteria(createUsageLimitCriteria(Operator.EQUAL, (Object[])usageLimit));
     }
 
-    public DiscountCouponRequest<T> withExpiryDate(Operator operator, Object... values){
-       return appendSearchCriteria(createExpiryDateCriteria(operator, values));
+    public DiscountCouponRequest<T> withUsageLimit(Operator operator, Object... values){
+       return appendSearchCriteria(createUsageLimitCriteria(operator, values));
     }
 
-    public DiscountCouponRequest<T> withExpiryDateIsUnknown(){
-       return withExpiryDate(Operator.IS_NULL);
+    public DiscountCouponRequest<T> withUsageLimitIsUnknown(){
+       return withUsageLimit(Operator.IS_NULL);
     }
 
-    public DiscountCouponRequest<T> withExpiryDateIsKnown(){
-       return withExpiryDate(Operator.IS_NOT_NULL);
+    public DiscountCouponRequest<T> withUsageLimitIsKnown(){
+       return withUsageLimit(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createExpiryDateCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(DiscountCoupon.EXPIRY_DATE_PROPERTY, operator, values);
+    public SearchCriteria createUsageLimitCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DiscountCoupon.USAGE_LIMIT_PROPERTY, operator, values);
     }
 
-    public DiscountCouponRequest<T> withExpiryDateGreaterThan(LocalDate expiryDate){
-       return withExpiryDate(Operator.GREATER_THAN, expiryDate);
+    public DiscountCouponRequest<T> withUsageLimitGreaterThan(Integer usageLimit){
+       return withUsageLimit(Operator.GREATER_THAN, usageLimit);
     }
 
-    public DiscountCouponRequest<T> withExpiryDateGreaterThanOrEqualTo(LocalDate expiryDate){
-       return withExpiryDate(Operator.GREATER_THAN_OR_EQUAL, expiryDate);
+    public DiscountCouponRequest<T> withUsageLimitGreaterThanOrEqualTo(Integer usageLimit){
+       return withUsageLimit(Operator.GREATER_THAN_OR_EQUAL, usageLimit);
     }
 
-    public DiscountCouponRequest<T> withExpiryDateLessThan(LocalDate expiryDate){
-       return withExpiryDate(Operator.LESS_THAN, expiryDate);
+    public DiscountCouponRequest<T> withUsageLimitLessThan(Integer usageLimit){
+       return withUsageLimit(Operator.LESS_THAN, usageLimit);
     }
 
-    public DiscountCouponRequest<T> withExpiryDateLessThanOrEqualTo(LocalDate expiryDate){
-       return withExpiryDate(Operator.LESS_THAN_OR_EQUAL, expiryDate);
+    public DiscountCouponRequest<T> withUsageLimitLessThanOrEqualTo(Integer usageLimit){
+       return withUsageLimit(Operator.LESS_THAN_OR_EQUAL, usageLimit);
     }
 
-    public DiscountCouponRequest<T> withExpiryDateBetween(LocalDate startOfExpiryDate, LocalDate endOfExpiryDate){
-       return withExpiryDate(Operator.BETWEEN, startOfExpiryDate, endOfExpiryDate);
-    }
-    public DiscountCouponRequest<T> withExpiryDateBefore(LocalDate expiryDate){
-       return withExpiryDate(Operator.LESS_THAN, expiryDate);
+    public DiscountCouponRequest<T> withUsageLimitBetween(Integer startOfUsageLimit, Integer endOfUsageLimit){
+       return withUsageLimit(Operator.BETWEEN, startOfUsageLimit, endOfUsageLimit);
     }
 
-    public DiscountCouponRequest<T> withExpiryDateBefore(Date expiryDate){
-       return withExpiryDate(Operator.LESS_THAN, expiryDate);
+
+
+    public DiscountCouponRequest<T> filterByUsedCount(Integer... usedCount){
+      if (usedCount == null || usedCount.length == 0) {
+        throw new IllegalArgumentException("filterByUsedCount parameter usedCount cannot be empty");
+      }
+      return appendSearchCriteria(createUsedCountCriteria(Operator.EQUAL, (Object[])usedCount));
     }
 
-    public DiscountCouponRequest<T> withExpiryDateAfter(LocalDate expiryDate){
-       return withExpiryDate(Operator.GREATER_THAN, expiryDate);
+    public DiscountCouponRequest<T> withUsedCount(Operator operator, Object... values){
+       return appendSearchCriteria(createUsedCountCriteria(operator, values));
     }
 
-    public DiscountCouponRequest<T> withExpiryDateAfter(Date expiryDate){
-       return withExpiryDate(Operator.GREATER_THAN, expiryDate);
+    public DiscountCouponRequest<T> withUsedCountIsUnknown(){
+       return withUsedCount(Operator.IS_NULL);
     }
 
-    public DiscountCouponRequest<T> withExpiryDateBetween(Date startOfExpiryDate, Date endOfExpiryDate){
-       return withExpiryDate(Operator.BETWEEN, startOfExpiryDate, endOfExpiryDate);
+    public DiscountCouponRequest<T> withUsedCountIsKnown(){
+       return withUsedCount(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createUsedCountCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DiscountCoupon.USED_COUNT_PROPERTY, operator, values);
+    }
+
+    public DiscountCouponRequest<T> withUsedCountGreaterThan(Integer usedCount){
+       return withUsedCount(Operator.GREATER_THAN, usedCount);
+    }
+
+    public DiscountCouponRequest<T> withUsedCountGreaterThanOrEqualTo(Integer usedCount){
+       return withUsedCount(Operator.GREATER_THAN_OR_EQUAL, usedCount);
+    }
+
+    public DiscountCouponRequest<T> withUsedCountLessThan(Integer usedCount){
+       return withUsedCount(Operator.LESS_THAN, usedCount);
+    }
+
+    public DiscountCouponRequest<T> withUsedCountLessThanOrEqualTo(Integer usedCount){
+       return withUsedCount(Operator.LESS_THAN_OR_EQUAL, usedCount);
+    }
+
+    public DiscountCouponRequest<T> withUsedCountBetween(Integer startOfUsedCount, Integer endOfUsedCount){
+       return withUsedCount(Operator.BETWEEN, startOfUsedCount, endOfUsedCount);
+    }
+
+
+
+    public DiscountCouponRequest<T> filterByStartDate(LocalDate... startDate){
+      if (startDate == null || startDate.length == 0) {
+        throw new IllegalArgumentException("filterByStartDate parameter startDate cannot be empty");
+      }
+      return appendSearchCriteria(createStartDateCriteria(Operator.EQUAL, (Object[])startDate));
+    }
+
+    public DiscountCouponRequest<T> withStartDate(Operator operator, Object... values){
+       return appendSearchCriteria(createStartDateCriteria(operator, values));
+    }
+
+    public DiscountCouponRequest<T> withStartDateIsUnknown(){
+       return withStartDate(Operator.IS_NULL);
+    }
+
+    public DiscountCouponRequest<T> withStartDateIsKnown(){
+       return withStartDate(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createStartDateCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DiscountCoupon.START_DATE_PROPERTY, operator, values);
+    }
+
+    public DiscountCouponRequest<T> withStartDateGreaterThan(LocalDate startDate){
+       return withStartDate(Operator.GREATER_THAN, startDate);
+    }
+
+    public DiscountCouponRequest<T> withStartDateGreaterThanOrEqualTo(LocalDate startDate){
+       return withStartDate(Operator.GREATER_THAN_OR_EQUAL, startDate);
+    }
+
+    public DiscountCouponRequest<T> withStartDateLessThan(LocalDate startDate){
+       return withStartDate(Operator.LESS_THAN, startDate);
+    }
+
+    public DiscountCouponRequest<T> withStartDateLessThanOrEqualTo(LocalDate startDate){
+       return withStartDate(Operator.LESS_THAN_OR_EQUAL, startDate);
+    }
+
+    public DiscountCouponRequest<T> withStartDateBetween(LocalDate startOfStartDate, LocalDate endOfStartDate){
+       return withStartDate(Operator.BETWEEN, startOfStartDate, endOfStartDate);
+    }
+    public DiscountCouponRequest<T> withStartDateBefore(LocalDate startDate){
+       return withStartDate(Operator.LESS_THAN, startDate);
+    }
+
+    public DiscountCouponRequest<T> withStartDateBefore(Date startDate){
+       return withStartDate(Operator.LESS_THAN, startDate);
+    }
+
+    public DiscountCouponRequest<T> withStartDateAfter(LocalDate startDate){
+       return withStartDate(Operator.GREATER_THAN, startDate);
+    }
+
+    public DiscountCouponRequest<T> withStartDateAfter(Date startDate){
+       return withStartDate(Operator.GREATER_THAN, startDate);
+    }
+
+    public DiscountCouponRequest<T> withStartDateBetween(Date startOfStartDate, Date endOfStartDate){
+       return withStartDate(Operator.BETWEEN, startOfStartDate, endOfStartDate);
+    }
+
+
+
+
+    public DiscountCouponRequest<T> filterByEndDate(LocalDate... endDate){
+      if (endDate == null || endDate.length == 0) {
+        throw new IllegalArgumentException("filterByEndDate parameter endDate cannot be empty");
+      }
+      return appendSearchCriteria(createEndDateCriteria(Operator.EQUAL, (Object[])endDate));
+    }
+
+    public DiscountCouponRequest<T> withEndDate(Operator operator, Object... values){
+       return appendSearchCriteria(createEndDateCriteria(operator, values));
+    }
+
+    public DiscountCouponRequest<T> withEndDateIsUnknown(){
+       return withEndDate(Operator.IS_NULL);
+    }
+
+    public DiscountCouponRequest<T> withEndDateIsKnown(){
+       return withEndDate(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createEndDateCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DiscountCoupon.END_DATE_PROPERTY, operator, values);
+    }
+
+    public DiscountCouponRequest<T> withEndDateGreaterThan(LocalDate endDate){
+       return withEndDate(Operator.GREATER_THAN, endDate);
+    }
+
+    public DiscountCouponRequest<T> withEndDateGreaterThanOrEqualTo(LocalDate endDate){
+       return withEndDate(Operator.GREATER_THAN_OR_EQUAL, endDate);
+    }
+
+    public DiscountCouponRequest<T> withEndDateLessThan(LocalDate endDate){
+       return withEndDate(Operator.LESS_THAN, endDate);
+    }
+
+    public DiscountCouponRequest<T> withEndDateLessThanOrEqualTo(LocalDate endDate){
+       return withEndDate(Operator.LESS_THAN_OR_EQUAL, endDate);
+    }
+
+    public DiscountCouponRequest<T> withEndDateBetween(LocalDate startOfEndDate, LocalDate endOfEndDate){
+       return withEndDate(Operator.BETWEEN, startOfEndDate, endOfEndDate);
+    }
+    public DiscountCouponRequest<T> withEndDateBefore(LocalDate endDate){
+       return withEndDate(Operator.LESS_THAN, endDate);
+    }
+
+    public DiscountCouponRequest<T> withEndDateBefore(Date endDate){
+       return withEndDate(Operator.LESS_THAN, endDate);
+    }
+
+    public DiscountCouponRequest<T> withEndDateAfter(LocalDate endDate){
+       return withEndDate(Operator.GREATER_THAN, endDate);
+    }
+
+    public DiscountCouponRequest<T> withEndDateAfter(Date endDate){
+       return withEndDate(Operator.GREATER_THAN, endDate);
+    }
+
+    public DiscountCouponRequest<T> withEndDateBetween(Date startOfEndDate, Date endOfEndDate){
+       return withEndDate(Operator.BETWEEN, startOfEndDate, endOfEndDate);
     }
 
 
@@ -703,66 +1005,66 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
 
 
 
-    public DiscountCouponRequest<T> filterByUpdateTime(LocalDateTime... updateTime){
-      if (updateTime == null || updateTime.length == 0) {
-        throw new IllegalArgumentException("filterByUpdateTime parameter updateTime cannot be empty");
+    public DiscountCouponRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
+      if (updatedTime == null || updatedTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
       }
-      return appendSearchCriteria(createUpdateTimeCriteria(Operator.EQUAL, (Object[])updateTime));
+      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
     }
 
-    public DiscountCouponRequest<T> withUpdateTime(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdateTimeCriteria(operator, values));
+    public DiscountCouponRequest<T> withUpdatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
     }
 
-    public DiscountCouponRequest<T> withUpdateTimeIsUnknown(){
-       return withUpdateTime(Operator.IS_NULL);
+    public DiscountCouponRequest<T> withUpdatedTimeIsUnknown(){
+       return withUpdatedTime(Operator.IS_NULL);
     }
 
-    public DiscountCouponRequest<T> withUpdateTimeIsKnown(){
-       return withUpdateTime(Operator.IS_NOT_NULL);
+    public DiscountCouponRequest<T> withUpdatedTimeIsKnown(){
+       return withUpdatedTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createUpdateTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(DiscountCoupon.UPDATE_TIME_PROPERTY, operator, values);
+    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DiscountCoupon.UPDATED_TIME_PROPERTY, operator, values);
     }
 
-    public DiscountCouponRequest<T> withUpdateTimeGreaterThan(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public DiscountCouponRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public DiscountCouponRequest<T> withUpdateTimeGreaterThanOrEqualTo(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN_OR_EQUAL, updateTime);
+    public DiscountCouponRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
     }
 
-    public DiscountCouponRequest<T> withUpdateTimeLessThan(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    public DiscountCouponRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public DiscountCouponRequest<T> withUpdateTimeLessThanOrEqualTo(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN_OR_EQUAL, updateTime);
+    public DiscountCouponRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
     }
 
-    public DiscountCouponRequest<T> withUpdateTimeBetween(LocalDateTime startOfUpdateTime, LocalDateTime endOfUpdateTime){
-       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    public DiscountCouponRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
-    public DiscountCouponRequest<T> withUpdateTimeBefore(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
-    }
-
-    public DiscountCouponRequest<T> withUpdateTimeBefore(Date updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    public DiscountCouponRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public DiscountCouponRequest<T> withUpdateTimeAfter(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public DiscountCouponRequest<T> withUpdatedTimeBefore(Date updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public DiscountCouponRequest<T> withUpdateTimeAfter(Date updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public DiscountCouponRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public DiscountCouponRequest<T> withUpdateTimeBetween(Date startOfUpdateTime, Date endOfUpdateTime){
-       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    public DiscountCouponRequest<T> withUpdatedTimeAfter(Date updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public DiscountCouponRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
 
 
@@ -884,132 +1186,260 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
         super.samplePopulationVariance(retName, DiscountCoupon.DISCOUNT_PERCENTAGE_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest minMaxUses(){
-        return minMaxUsesAs(prefix("minOf",DiscountCoupon.MAX_USES_PROPERTY));
+    public DiscountCouponRequest minMinOrderAmount(){
+        return minMinOrderAmountAs(prefix("minOf",DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest minMaxUsesAs(String retName){
-        super.min(retName, DiscountCoupon.MAX_USES_PROPERTY);
+    public DiscountCouponRequest minMinOrderAmountAs(String retName){
+        super.min(retName, DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest maxMaxUses(){
-        return maxMaxUsesAs(prefix("maxOf",DiscountCoupon.MAX_USES_PROPERTY));
+    public DiscountCouponRequest maxMinOrderAmount(){
+        return maxMinOrderAmountAs(prefix("maxOf",DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest maxMaxUsesAs(String retName){
-        super.max(retName, DiscountCoupon.MAX_USES_PROPERTY);
+    public DiscountCouponRequest maxMinOrderAmountAs(String retName){
+        super.max(retName, DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest sumMaxUses(){
-        return sumMaxUsesAs(prefix("sumOf",DiscountCoupon.MAX_USES_PROPERTY));
+    public DiscountCouponRequest sumMinOrderAmount(){
+        return sumMinOrderAmountAs(prefix("sumOf",DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest sumMaxUsesAs(String retName){
-        super.sum(retName, DiscountCoupon.MAX_USES_PROPERTY);
+    public DiscountCouponRequest sumMinOrderAmountAs(String retName){
+        super.sum(retName, DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest avgMaxUses(){
-        return avgMaxUsesAs(prefix("avgOf",DiscountCoupon.MAX_USES_PROPERTY));
+    public DiscountCouponRequest avgMinOrderAmount(){
+        return avgMinOrderAmountAs(prefix("avgOf",DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest avgMaxUsesAs(String retName){
-        super.avg(retName, DiscountCoupon.MAX_USES_PROPERTY);
+    public DiscountCouponRequest avgMinOrderAmountAs(String retName){
+        super.avg(retName, DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest standardDeviationMaxUses(){
-        return standardDeviationMaxUsesAs(prefix("standardDeviationOf",DiscountCoupon.MAX_USES_PROPERTY));
+    public DiscountCouponRequest standardDeviationMinOrderAmount(){
+        return standardDeviationMinOrderAmountAs(prefix("standardDeviationOf",DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest standardDeviationMaxUsesAs(String retName){
-        super.standardDeviation(retName, DiscountCoupon.MAX_USES_PROPERTY);
+    public DiscountCouponRequest standardDeviationMinOrderAmountAs(String retName){
+        super.standardDeviation(retName, DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest squareRootOfPopulationStandardDeviationMaxUses(){
-        return squareRootOfPopulationStandardDeviationMaxUsesAs(prefix("squareRootOfPopulationStandardDeviationOf",DiscountCoupon.MAX_USES_PROPERTY));
+    public DiscountCouponRequest squareRootOfPopulationStandardDeviationMinOrderAmount(){
+        return squareRootOfPopulationStandardDeviationMinOrderAmountAs(prefix("squareRootOfPopulationStandardDeviationOf",DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest squareRootOfPopulationStandardDeviationMaxUsesAs(String retName){
-        super.squareRootOfPopulationStandardDeviation(retName, DiscountCoupon.MAX_USES_PROPERTY);
+    public DiscountCouponRequest squareRootOfPopulationStandardDeviationMinOrderAmountAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest sampleVarianceMaxUses(){
-        return sampleVarianceMaxUsesAs(prefix("sampleVarianceOf",DiscountCoupon.MAX_USES_PROPERTY));
+    public DiscountCouponRequest sampleVarianceMinOrderAmount(){
+        return sampleVarianceMinOrderAmountAs(prefix("sampleVarianceOf",DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest sampleVarianceMaxUsesAs(String retName){
-        super.sampleVariance(retName, DiscountCoupon.MAX_USES_PROPERTY);
+    public DiscountCouponRequest sampleVarianceMinOrderAmountAs(String retName){
+        super.sampleVariance(retName, DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest samplePopulationVarianceMaxUses(){
-        return samplePopulationVarianceMaxUsesAs(prefix("samplePopulationVarianceOf",DiscountCoupon.MAX_USES_PROPERTY));
+    public DiscountCouponRequest samplePopulationVarianceMinOrderAmount(){
+        return samplePopulationVarianceMinOrderAmountAs(prefix("samplePopulationVarianceOf",DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest samplePopulationVarianceMaxUsesAs(String retName){
-        super.samplePopulationVariance(retName, DiscountCoupon.MAX_USES_PROPERTY);
+    public DiscountCouponRequest samplePopulationVarianceMinOrderAmountAs(String retName){
+        super.samplePopulationVariance(retName, DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest minCurrentUses(){
-        return minCurrentUsesAs(prefix("minOf",DiscountCoupon.CURRENT_USES_PROPERTY));
+    public DiscountCouponRequest minMaxDiscountAmount(){
+        return minMaxDiscountAmountAs(prefix("minOf",DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest minCurrentUsesAs(String retName){
-        super.min(retName, DiscountCoupon.CURRENT_USES_PROPERTY);
+    public DiscountCouponRequest minMaxDiscountAmountAs(String retName){
+        super.min(retName, DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest maxCurrentUses(){
-        return maxCurrentUsesAs(prefix("maxOf",DiscountCoupon.CURRENT_USES_PROPERTY));
+    public DiscountCouponRequest maxMaxDiscountAmount(){
+        return maxMaxDiscountAmountAs(prefix("maxOf",DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest maxCurrentUsesAs(String retName){
-        super.max(retName, DiscountCoupon.CURRENT_USES_PROPERTY);
+    public DiscountCouponRequest maxMaxDiscountAmountAs(String retName){
+        super.max(retName, DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest sumCurrentUses(){
-        return sumCurrentUsesAs(prefix("sumOf",DiscountCoupon.CURRENT_USES_PROPERTY));
+    public DiscountCouponRequest sumMaxDiscountAmount(){
+        return sumMaxDiscountAmountAs(prefix("sumOf",DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest sumCurrentUsesAs(String retName){
-        super.sum(retName, DiscountCoupon.CURRENT_USES_PROPERTY);
+    public DiscountCouponRequest sumMaxDiscountAmountAs(String retName){
+        super.sum(retName, DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest avgCurrentUses(){
-        return avgCurrentUsesAs(prefix("avgOf",DiscountCoupon.CURRENT_USES_PROPERTY));
+    public DiscountCouponRequest avgMaxDiscountAmount(){
+        return avgMaxDiscountAmountAs(prefix("avgOf",DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest avgCurrentUsesAs(String retName){
-        super.avg(retName, DiscountCoupon.CURRENT_USES_PROPERTY);
+    public DiscountCouponRequest avgMaxDiscountAmountAs(String retName){
+        super.avg(retName, DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest standardDeviationCurrentUses(){
-        return standardDeviationCurrentUsesAs(prefix("standardDeviationOf",DiscountCoupon.CURRENT_USES_PROPERTY));
+    public DiscountCouponRequest standardDeviationMaxDiscountAmount(){
+        return standardDeviationMaxDiscountAmountAs(prefix("standardDeviationOf",DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest standardDeviationCurrentUsesAs(String retName){
-        super.standardDeviation(retName, DiscountCoupon.CURRENT_USES_PROPERTY);
+    public DiscountCouponRequest standardDeviationMaxDiscountAmountAs(String retName){
+        super.standardDeviation(retName, DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest squareRootOfPopulationStandardDeviationCurrentUses(){
-        return squareRootOfPopulationStandardDeviationCurrentUsesAs(prefix("squareRootOfPopulationStandardDeviationOf",DiscountCoupon.CURRENT_USES_PROPERTY));
+    public DiscountCouponRequest squareRootOfPopulationStandardDeviationMaxDiscountAmount(){
+        return squareRootOfPopulationStandardDeviationMaxDiscountAmountAs(prefix("squareRootOfPopulationStandardDeviationOf",DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest squareRootOfPopulationStandardDeviationCurrentUsesAs(String retName){
-        super.squareRootOfPopulationStandardDeviation(retName, DiscountCoupon.CURRENT_USES_PROPERTY);
+    public DiscountCouponRequest squareRootOfPopulationStandardDeviationMaxDiscountAmountAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest sampleVarianceCurrentUses(){
-        return sampleVarianceCurrentUsesAs(prefix("sampleVarianceOf",DiscountCoupon.CURRENT_USES_PROPERTY));
+    public DiscountCouponRequest sampleVarianceMaxDiscountAmount(){
+        return sampleVarianceMaxDiscountAmountAs(prefix("sampleVarianceOf",DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest sampleVarianceCurrentUsesAs(String retName){
-        super.sampleVariance(retName, DiscountCoupon.CURRENT_USES_PROPERTY);
+    public DiscountCouponRequest sampleVarianceMaxDiscountAmountAs(String retName){
+        super.sampleVariance(retName, DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY);
         return this;
     }
-    public DiscountCouponRequest samplePopulationVarianceCurrentUses(){
-        return samplePopulationVarianceCurrentUsesAs(prefix("samplePopulationVarianceOf",DiscountCoupon.CURRENT_USES_PROPERTY));
+    public DiscountCouponRequest samplePopulationVarianceMaxDiscountAmount(){
+        return samplePopulationVarianceMaxDiscountAmountAs(prefix("samplePopulationVarianceOf",DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY));
     }
 
-    public DiscountCouponRequest samplePopulationVarianceCurrentUsesAs(String retName){
-        super.samplePopulationVariance(retName, DiscountCoupon.CURRENT_USES_PROPERTY);
+    public DiscountCouponRequest samplePopulationVarianceMaxDiscountAmountAs(String retName){
+        super.samplePopulationVariance(retName, DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest minUsageLimit(){
+        return minUsageLimitAs(prefix("minOf",DiscountCoupon.USAGE_LIMIT_PROPERTY));
+    }
+
+    public DiscountCouponRequest minUsageLimitAs(String retName){
+        super.min(retName, DiscountCoupon.USAGE_LIMIT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest maxUsageLimit(){
+        return maxUsageLimitAs(prefix("maxOf",DiscountCoupon.USAGE_LIMIT_PROPERTY));
+    }
+
+    public DiscountCouponRequest maxUsageLimitAs(String retName){
+        super.max(retName, DiscountCoupon.USAGE_LIMIT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest sumUsageLimit(){
+        return sumUsageLimitAs(prefix("sumOf",DiscountCoupon.USAGE_LIMIT_PROPERTY));
+    }
+
+    public DiscountCouponRequest sumUsageLimitAs(String retName){
+        super.sum(retName, DiscountCoupon.USAGE_LIMIT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest avgUsageLimit(){
+        return avgUsageLimitAs(prefix("avgOf",DiscountCoupon.USAGE_LIMIT_PROPERTY));
+    }
+
+    public DiscountCouponRequest avgUsageLimitAs(String retName){
+        super.avg(retName, DiscountCoupon.USAGE_LIMIT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest standardDeviationUsageLimit(){
+        return standardDeviationUsageLimitAs(prefix("standardDeviationOf",DiscountCoupon.USAGE_LIMIT_PROPERTY));
+    }
+
+    public DiscountCouponRequest standardDeviationUsageLimitAs(String retName){
+        super.standardDeviation(retName, DiscountCoupon.USAGE_LIMIT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest squareRootOfPopulationStandardDeviationUsageLimit(){
+        return squareRootOfPopulationStandardDeviationUsageLimitAs(prefix("squareRootOfPopulationStandardDeviationOf",DiscountCoupon.USAGE_LIMIT_PROPERTY));
+    }
+
+    public DiscountCouponRequest squareRootOfPopulationStandardDeviationUsageLimitAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, DiscountCoupon.USAGE_LIMIT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest sampleVarianceUsageLimit(){
+        return sampleVarianceUsageLimitAs(prefix("sampleVarianceOf",DiscountCoupon.USAGE_LIMIT_PROPERTY));
+    }
+
+    public DiscountCouponRequest sampleVarianceUsageLimitAs(String retName){
+        super.sampleVariance(retName, DiscountCoupon.USAGE_LIMIT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest samplePopulationVarianceUsageLimit(){
+        return samplePopulationVarianceUsageLimitAs(prefix("samplePopulationVarianceOf",DiscountCoupon.USAGE_LIMIT_PROPERTY));
+    }
+
+    public DiscountCouponRequest samplePopulationVarianceUsageLimitAs(String retName){
+        super.samplePopulationVariance(retName, DiscountCoupon.USAGE_LIMIT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest minUsedCount(){
+        return minUsedCountAs(prefix("minOf",DiscountCoupon.USED_COUNT_PROPERTY));
+    }
+
+    public DiscountCouponRequest minUsedCountAs(String retName){
+        super.min(retName, DiscountCoupon.USED_COUNT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest maxUsedCount(){
+        return maxUsedCountAs(prefix("maxOf",DiscountCoupon.USED_COUNT_PROPERTY));
+    }
+
+    public DiscountCouponRequest maxUsedCountAs(String retName){
+        super.max(retName, DiscountCoupon.USED_COUNT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest sumUsedCount(){
+        return sumUsedCountAs(prefix("sumOf",DiscountCoupon.USED_COUNT_PROPERTY));
+    }
+
+    public DiscountCouponRequest sumUsedCountAs(String retName){
+        super.sum(retName, DiscountCoupon.USED_COUNT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest avgUsedCount(){
+        return avgUsedCountAs(prefix("avgOf",DiscountCoupon.USED_COUNT_PROPERTY));
+    }
+
+    public DiscountCouponRequest avgUsedCountAs(String retName){
+        super.avg(retName, DiscountCoupon.USED_COUNT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest standardDeviationUsedCount(){
+        return standardDeviationUsedCountAs(prefix("standardDeviationOf",DiscountCoupon.USED_COUNT_PROPERTY));
+    }
+
+    public DiscountCouponRequest standardDeviationUsedCountAs(String retName){
+        super.standardDeviation(retName, DiscountCoupon.USED_COUNT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest squareRootOfPopulationStandardDeviationUsedCount(){
+        return squareRootOfPopulationStandardDeviationUsedCountAs(prefix("squareRootOfPopulationStandardDeviationOf",DiscountCoupon.USED_COUNT_PROPERTY));
+    }
+
+    public DiscountCouponRequest squareRootOfPopulationStandardDeviationUsedCountAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, DiscountCoupon.USED_COUNT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest sampleVarianceUsedCount(){
+        return sampleVarianceUsedCountAs(prefix("sampleVarianceOf",DiscountCoupon.USED_COUNT_PROPERTY));
+    }
+
+    public DiscountCouponRequest sampleVarianceUsedCountAs(String retName){
+        super.sampleVariance(retName, DiscountCoupon.USED_COUNT_PROPERTY);
+        return this;
+    }
+    public DiscountCouponRequest samplePopulationVarianceUsedCount(){
+        return samplePopulationVarianceUsedCountAs(prefix("samplePopulationVarianceOf",DiscountCoupon.USED_COUNT_PROPERTY));
+    }
+
+    public DiscountCouponRequest samplePopulationVarianceUsedCountAs(String retName){
+        super.samplePopulationVariance(retName, DiscountCoupon.USED_COUNT_PROPERTY);
         return this;
     }
 
@@ -1043,6 +1473,21 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
        return this;
     }
 
+    public DiscountCouponRequest<T> groupByDescription(){
+       groupBy(DiscountCoupon.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> groupByDescriptionAs(String retName){
+       groupBy(retName, DiscountCoupon.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> groupByDescriptionWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DiscountCoupon.DESCRIPTION_PROPERTY, function);
+       return this;
+    }
+
     public DiscountCouponRequest<T> groupByDiscountPercentage(){
        groupBy(DiscountCoupon.DISCOUNT_PERCENTAGE_PROPERTY);
        return this;
@@ -1058,48 +1503,93 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
        return this;
     }
 
-    public DiscountCouponRequest<T> groupByMaxUses(){
-       groupBy(DiscountCoupon.MAX_USES_PROPERTY);
+    public DiscountCouponRequest<T> groupByMinOrderAmount(){
+       groupBy(DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY);
        return this;
     }
 
-    public DiscountCouponRequest<T> groupByMaxUsesAs(String retName){
-       groupBy(retName, DiscountCoupon.MAX_USES_PROPERTY);
+    public DiscountCouponRequest<T> groupByMinOrderAmountAs(String retName){
+       groupBy(retName, DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY);
        return this;
     }
 
-    public DiscountCouponRequest<T> groupByMaxUsesWithFunction(String retName, AggrFunction function){
-       groupBy(retName, DiscountCoupon.MAX_USES_PROPERTY, function);
+    public DiscountCouponRequest<T> groupByMinOrderAmountWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY, function);
        return this;
     }
 
-    public DiscountCouponRequest<T> groupByCurrentUses(){
-       groupBy(DiscountCoupon.CURRENT_USES_PROPERTY);
+    public DiscountCouponRequest<T> groupByMaxDiscountAmount(){
+       groupBy(DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY);
        return this;
     }
 
-    public DiscountCouponRequest<T> groupByCurrentUsesAs(String retName){
-       groupBy(retName, DiscountCoupon.CURRENT_USES_PROPERTY);
+    public DiscountCouponRequest<T> groupByMaxDiscountAmountAs(String retName){
+       groupBy(retName, DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY);
        return this;
     }
 
-    public DiscountCouponRequest<T> groupByCurrentUsesWithFunction(String retName, AggrFunction function){
-       groupBy(retName, DiscountCoupon.CURRENT_USES_PROPERTY, function);
+    public DiscountCouponRequest<T> groupByMaxDiscountAmountWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY, function);
        return this;
     }
 
-    public DiscountCouponRequest<T> groupByExpiryDate(){
-       groupBy(DiscountCoupon.EXPIRY_DATE_PROPERTY);
+    public DiscountCouponRequest<T> groupByUsageLimit(){
+       groupBy(DiscountCoupon.USAGE_LIMIT_PROPERTY);
        return this;
     }
 
-    public DiscountCouponRequest<T> groupByExpiryDateAs(String retName){
-       groupBy(retName, DiscountCoupon.EXPIRY_DATE_PROPERTY);
+    public DiscountCouponRequest<T> groupByUsageLimitAs(String retName){
+       groupBy(retName, DiscountCoupon.USAGE_LIMIT_PROPERTY);
        return this;
     }
 
-    public DiscountCouponRequest<T> groupByExpiryDateWithFunction(String retName, AggrFunction function){
-       groupBy(retName, DiscountCoupon.EXPIRY_DATE_PROPERTY, function);
+    public DiscountCouponRequest<T> groupByUsageLimitWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DiscountCoupon.USAGE_LIMIT_PROPERTY, function);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> groupByUsedCount(){
+       groupBy(DiscountCoupon.USED_COUNT_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> groupByUsedCountAs(String retName){
+       groupBy(retName, DiscountCoupon.USED_COUNT_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> groupByUsedCountWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DiscountCoupon.USED_COUNT_PROPERTY, function);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> groupByStartDate(){
+       groupBy(DiscountCoupon.START_DATE_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> groupByStartDateAs(String retName){
+       groupBy(retName, DiscountCoupon.START_DATE_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> groupByStartDateWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DiscountCoupon.START_DATE_PROPERTY, function);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> groupByEndDate(){
+       groupBy(DiscountCoupon.END_DATE_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> groupByEndDateAs(String retName){
+       groupBy(retName, DiscountCoupon.END_DATE_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> groupByEndDateWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DiscountCoupon.END_DATE_PROPERTY, function);
        return this;
     }
 
@@ -1133,18 +1623,18 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
        return this;
     }
 
-    public DiscountCouponRequest<T> groupByUpdateTime(){
-       groupBy(DiscountCoupon.UPDATE_TIME_PROPERTY);
+    public DiscountCouponRequest<T> groupByUpdatedTime(){
+       groupBy(DiscountCoupon.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public DiscountCouponRequest<T> groupByUpdateTimeAs(String retName){
-       groupBy(retName, DiscountCoupon.UPDATE_TIME_PROPERTY);
+    public DiscountCouponRequest<T> groupByUpdatedTimeAs(String retName){
+       groupBy(retName, DiscountCoupon.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public DiscountCouponRequest<T> groupByUpdateTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, DiscountCoupon.UPDATE_TIME_PROPERTY, function);
+    public DiscountCouponRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DiscountCoupon.UPDATED_TIME_PROPERTY, function);
        return this;
     }
 
@@ -1193,6 +1683,24 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
        addOrderByDescendingUsingGBK(DiscountCoupon.CODE_PROPERTY);
        return this;
     }
+    public DiscountCouponRequest<T> orderByDescriptionAscending(){
+       addOrderByAscending(DiscountCoupon.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> orderByDescriptionDescending(){
+       addOrderByDescending(DiscountCoupon.DESCRIPTION_PROPERTY);
+       return this;
+    }
+    public DiscountCouponRequest<T> orderByDescriptionAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(DiscountCoupon.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> orderByDescriptionDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(DiscountCoupon.DESCRIPTION_PROPERTY);
+       return this;
+    }
     public DiscountCouponRequest<T> orderByDiscountPercentageAscending(){
        addOrderByAscending(DiscountCoupon.DISCOUNT_PERCENTAGE_PROPERTY);
        return this;
@@ -1203,33 +1711,63 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
        return this;
     }
 
-    public DiscountCouponRequest<T> orderByMaxUsesAscending(){
-       addOrderByAscending(DiscountCoupon.MAX_USES_PROPERTY);
+    public DiscountCouponRequest<T> orderByMinOrderAmountAscending(){
+       addOrderByAscending(DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY);
        return this;
     }
 
-    public DiscountCouponRequest<T> orderByMaxUsesDescending(){
-       addOrderByDescending(DiscountCoupon.MAX_USES_PROPERTY);
+    public DiscountCouponRequest<T> orderByMinOrderAmountDescending(){
+       addOrderByDescending(DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY);
        return this;
     }
 
-    public DiscountCouponRequest<T> orderByCurrentUsesAscending(){
-       addOrderByAscending(DiscountCoupon.CURRENT_USES_PROPERTY);
+    public DiscountCouponRequest<T> orderByMaxDiscountAmountAscending(){
+       addOrderByAscending(DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY);
        return this;
     }
 
-    public DiscountCouponRequest<T> orderByCurrentUsesDescending(){
-       addOrderByDescending(DiscountCoupon.CURRENT_USES_PROPERTY);
+    public DiscountCouponRequest<T> orderByMaxDiscountAmountDescending(){
+       addOrderByDescending(DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY);
        return this;
     }
 
-    public DiscountCouponRequest<T> orderByExpiryDateAscending(){
-       addOrderByAscending(DiscountCoupon.EXPIRY_DATE_PROPERTY);
+    public DiscountCouponRequest<T> orderByUsageLimitAscending(){
+       addOrderByAscending(DiscountCoupon.USAGE_LIMIT_PROPERTY);
        return this;
     }
 
-    public DiscountCouponRequest<T> orderByExpiryDateDescending(){
-       addOrderByDescending(DiscountCoupon.EXPIRY_DATE_PROPERTY);
+    public DiscountCouponRequest<T> orderByUsageLimitDescending(){
+       addOrderByDescending(DiscountCoupon.USAGE_LIMIT_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> orderByUsedCountAscending(){
+       addOrderByAscending(DiscountCoupon.USED_COUNT_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> orderByUsedCountDescending(){
+       addOrderByDescending(DiscountCoupon.USED_COUNT_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> orderByStartDateAscending(){
+       addOrderByAscending(DiscountCoupon.START_DATE_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> orderByStartDateDescending(){
+       addOrderByDescending(DiscountCoupon.START_DATE_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> orderByEndDateAscending(){
+       addOrderByAscending(DiscountCoupon.END_DATE_PROPERTY);
+       return this;
+    }
+
+    public DiscountCouponRequest<T> orderByEndDateDescending(){
+       addOrderByDescending(DiscountCoupon.END_DATE_PROPERTY);
        return this;
     }
 
@@ -1261,13 +1799,13 @@ public class DiscountCouponRequest<T extends DiscountCoupon> extends BaseRequest
        return this;
     }
 
-    public DiscountCouponRequest<T> orderByUpdateTimeAscending(){
-       addOrderByAscending(DiscountCoupon.UPDATE_TIME_PROPERTY);
+    public DiscountCouponRequest<T> orderByUpdatedTimeAscending(){
+       addOrderByAscending(DiscountCoupon.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public DiscountCouponRequest<T> orderByUpdateTimeDescending(){
-       addOrderByDescending(DiscountCoupon.UPDATE_TIME_PROPERTY);
+    public DiscountCouponRequest<T> orderByUpdatedTimeDescending(){
+       addOrderByDescending(DiscountCoupon.UPDATED_TIME_PROPERTY);
        return this;
     }
 

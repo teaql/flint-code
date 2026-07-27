@@ -1,8 +1,10 @@
 package com.doublechaintech.enterpriselogisticsservice.storagefee;
 
 import com.doublechaintech.enterpriselogisticsservice.Q;
-import com.doublechaintech.enterpriselogisticsservice.invoice.Invoice;
-import com.doublechaintech.enterpriselogisticsservice.invoice.InvoiceRequest;
+import com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainer;
+import com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainerRequest;
+import com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse;
+import com.doublechaintech.enterpriselogisticsservice.warehouse.WarehouseRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
@@ -85,7 +87,7 @@ public class StorageFeeRequest<T extends StorageFee> extends BaseRequest<T> {
 
     public StorageFeeRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectInvoiceIdOnly().selectFeeAmount().selectCurrency().selectPeriodStart().selectPeriodEnd().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
+        return selectId().selectWarehouseIdOnly().selectContainerIdOnly().selectAmount().selectCurrency().selectPeriod().selectCreateTime().selectUpdateTime().selectVersion();
     }
 
     public StorageFeeRequest<T> selectSelfFields(){
@@ -94,12 +96,12 @@ public class StorageFeeRequest<T extends StorageFee> extends BaseRequest<T> {
 
     public StorageFeeRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectInvoice().selectFeeAmount().selectCurrency().selectPeriodStart().selectPeriodEnd().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
+        return selectId().selectWarehouse().selectContainer().selectAmount().selectCurrency().selectPeriod().selectCreateTime().selectUpdateTime().selectVersion();
     }
 
     public StorageFeeRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectInvoice().selectFeeAmount().selectCurrency().selectPeriodStart().selectPeriodEnd().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
+        return selectId().selectWarehouse().selectContainer().selectAmount().selectCurrency().selectPeriod().selectCreateTime().selectUpdateTime().selectVersion();
     }
 
 
@@ -120,48 +122,67 @@ public class StorageFeeRequest<T extends StorageFee> extends BaseRequest<T> {
        unselectProperty(StorageFee.ID_PROPERTY);
        return this;
     }
-    public StorageFeeRequest<T> selectInvoiceIdOnly(){
-       selectProperty(StorageFee.INVOICE_PROPERTY);
+    public StorageFeeRequest<T> selectWarehouseIdOnly(){
+       selectProperty(StorageFee.WAREHOUSE_PROPERTY);
        return this;
     }
 
-    public StorageFeeRequest<T> selectInvoice(){
-        return selectInvoiceWith(Q.invoices().unlimited().selectSelf());
+    public StorageFeeRequest<T> selectWarehouse(){
+        return selectWarehouseWith(Q.warehouses().unlimited().selectSelf());
     }
 
-    public StorageFeeRequest<T> selectInvoiceWith(InvoiceRequest invoice){
-       selectProperty(StorageFee.INVOICE_PROPERTY);
-       enhanceRelation(StorageFee.INVOICE_PROPERTY, invoice);
+    public StorageFeeRequest<T> selectWarehouseWith(WarehouseRequest warehouse){
+       selectProperty(StorageFee.WAREHOUSE_PROPERTY);
+       enhanceRelation(StorageFee.WAREHOUSE_PROPERTY, warehouse);
        return this;
     }
 
-    public StorageFeeRequest<T> unselectInvoice(){
-       unselectProperty(StorageFee.INVOICE_PROPERTY);
+    public StorageFeeRequest<T> unselectWarehouse(){
+       unselectProperty(StorageFee.WAREHOUSE_PROPERTY);
        return this;
     }
-    public StorageFeeRequest<T> selectFeeAmount(){
-       selectProperty(StorageFee.FEE_AMOUNT_PROPERTY);
+    public StorageFeeRequest<T> selectContainerIdOnly(){
+       selectProperty(StorageFee.CONTAINER_PROPERTY);
+       return this;
+    }
+
+    public StorageFeeRequest<T> selectContainer(){
+        return selectContainerWith(Q.storageContainers().unlimited().selectSelf());
+    }
+
+    public StorageFeeRequest<T> selectContainerWith(StorageContainerRequest container){
+       selectProperty(StorageFee.CONTAINER_PROPERTY);
+       enhanceRelation(StorageFee.CONTAINER_PROPERTY, container);
+       return this;
+    }
+
+    public StorageFeeRequest<T> unselectContainer(){
+       unselectProperty(StorageFee.CONTAINER_PROPERTY);
+       return this;
+    }
+    public StorageFeeRequest<T> selectAmount(){
+       selectProperty(StorageFee.AMOUNT_PROPERTY);
        return this;
     }
 
     /**
-     * fill the feeAmount with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  feeAmount) to fetch feeAmount property.
+     * fill the amount with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  amount) to fetch amount property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
     /**
-     * fill the feeAmount with customized aggrFunction, TEAQL uses ({aggrFunction}(feeAmount) AS feeAmount to fetch feeAmount property.
+     * fill the amount with customized aggrFunction, TEAQL uses ({aggrFunction}(amount) AS amount to fetch amount property.
      * @param aggrFunction  aggrFunction
      */
-    public StorageFeeRequest<T> selectFeeAmount(AggrFunction aggrFunction){
-       selectProperty(StorageFee.FEE_AMOUNT_PROPERTY, aggrFunction);
+    public StorageFeeRequest<T> selectAmount(AggrFunction aggrFunction){
+       selectProperty(StorageFee.AMOUNT_PROPERTY, aggrFunction);
        return this;
     }
 
 
-    public StorageFeeRequest<T> unselectFeeAmount(){
-       unselectProperty(StorageFee.FEE_AMOUNT_PROPERTY);
+    public StorageFeeRequest<T> unselectAmount(){
+       unselectProperty(StorageFee.AMOUNT_PROPERTY);
        return this;
     }
     public StorageFeeRequest<T> selectCurrency(){
@@ -181,55 +202,21 @@ public class StorageFeeRequest<T extends StorageFee> extends BaseRequest<T> {
        unselectProperty(StorageFee.CURRENCY_PROPERTY);
        return this;
     }
-    public StorageFeeRequest<T> selectPeriodStart(){
-       selectProperty(StorageFee.PERIOD_START_PROPERTY);
+    public StorageFeeRequest<T> selectPeriod(){
+       selectProperty(StorageFee.PERIOD_PROPERTY);
        return this;
     }
 
     /**
-     * fill the periodStart with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  periodStart) to fetch periodStart property.
+     * fill the period with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  period) to fetch period property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public StorageFeeRequest<T> unselectPeriodStart(){
-       unselectProperty(StorageFee.PERIOD_START_PROPERTY);
-       return this;
-    }
-    public StorageFeeRequest<T> selectPeriodEnd(){
-       selectProperty(StorageFee.PERIOD_END_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the periodEnd with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  periodEnd) to fetch periodEnd property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public StorageFeeRequest<T> unselectPeriodEnd(){
-       unselectProperty(StorageFee.PERIOD_END_PROPERTY);
-       return this;
-    }
-    public StorageFeeRequest<T> selectStatus(){
-       selectProperty(StorageFee.STATUS_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the status with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  status) to fetch status property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public StorageFeeRequest<T> unselectStatus(){
-       unselectProperty(StorageFee.STATUS_PROPERTY);
+    public StorageFeeRequest<T> unselectPeriod(){
+       unselectProperty(StorageFee.PERIOD_PROPERTY);
        return this;
     }
     public StorageFeeRequest<T> selectCreateTime(){
@@ -301,80 +288,113 @@ public class StorageFeeRequest<T extends StorageFee> extends BaseRequest<T> {
 
 
 
-    public StorageFeeRequest<T> filterByInvoice(Invoice... invoice){
-      if (invoice == null || invoice.length == 0) {
-        throw new IllegalArgumentException("filterByInvoice parameter invoice cannot be empty");
+    public StorageFeeRequest<T> filterByWarehouse(Warehouse... warehouse){
+      if (warehouse == null || warehouse.length == 0) {
+        throw new IllegalArgumentException("filterByWarehouse parameter warehouse cannot be empty");
       }
-      return appendSearchCriteria(createInvoiceCriteria(Operator.EQUAL, (Object[])invoice));
+      return appendSearchCriteria(createWarehouseCriteria(Operator.EQUAL, (Object[])warehouse));
     }
 
-    public StorageFeeRequest<T> withInvoice(Operator operator, Object... values){
-       return appendSearchCriteria(createInvoiceCriteria(operator, values));
+    public StorageFeeRequest<T> withWarehouse(Operator operator, Object... values){
+       return appendSearchCriteria(createWarehouseCriteria(operator, values));
     }
 
-    public StorageFeeRequest<T> withInvoiceIsUnknown(){
-       return withInvoice(Operator.IS_NULL);
+    public StorageFeeRequest<T> withWarehouseIsUnknown(){
+       return withWarehouse(Operator.IS_NULL);
     }
 
-    public StorageFeeRequest<T> withInvoiceIsKnown(){
-       return withInvoice(Operator.IS_NOT_NULL);
+    public StorageFeeRequest<T> withWarehouseIsKnown(){
+       return withWarehouse(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createInvoiceCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(StorageFee.INVOICE_PROPERTY, operator, values);
+    public SearchCriteria createWarehouseCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(StorageFee.WAREHOUSE_PROPERTY, operator, values);
     }
 
-    public StorageFeeRequest<T> filterByInvoice(Long invoice){
-      if(invoice == null){
+    public StorageFeeRequest<T> filterByWarehouse(Long warehouse){
+      if(warehouse == null){
          return this;
       }
-      return withInvoice(Operator.EQUAL, invoice);
+      return withWarehouse(Operator.EQUAL, warehouse);
     }
-    public StorageFeeRequest<T> withInvoiceMatching(InvoiceRequest invoice){
-       return appendSearchCriteria(new SubQuerySearchCriteria(StorageFee.INVOICE_PROPERTY, invoice, Invoice.ID_PROPERTY));
+    public StorageFeeRequest<T> withWarehouseMatching(WarehouseRequest warehouse){
+       return appendSearchCriteria(new SubQuerySearchCriteria(StorageFee.WAREHOUSE_PROPERTY, warehouse, Warehouse.ID_PROPERTY));
     }
 
-    public StorageFeeRequest<T> filterByFeeAmount(BigDecimal... feeAmount){
-      if (feeAmount == null || feeAmount.length == 0) {
-        throw new IllegalArgumentException("filterByFeeAmount parameter feeAmount cannot be empty");
+    public StorageFeeRequest<T> filterByContainer(StorageContainer... container){
+      if (container == null || container.length == 0) {
+        throw new IllegalArgumentException("filterByContainer parameter container cannot be empty");
       }
-      return appendSearchCriteria(createFeeAmountCriteria(Operator.EQUAL, (Object[])feeAmount));
+      return appendSearchCriteria(createContainerCriteria(Operator.EQUAL, (Object[])container));
     }
 
-    public StorageFeeRequest<T> withFeeAmount(Operator operator, Object... values){
-       return appendSearchCriteria(createFeeAmountCriteria(operator, values));
+    public StorageFeeRequest<T> withContainer(Operator operator, Object... values){
+       return appendSearchCriteria(createContainerCriteria(operator, values));
     }
 
-    public StorageFeeRequest<T> withFeeAmountIsUnknown(){
-       return withFeeAmount(Operator.IS_NULL);
+    public StorageFeeRequest<T> withContainerIsUnknown(){
+       return withContainer(Operator.IS_NULL);
     }
 
-    public StorageFeeRequest<T> withFeeAmountIsKnown(){
-       return withFeeAmount(Operator.IS_NOT_NULL);
+    public StorageFeeRequest<T> withContainerIsKnown(){
+       return withContainer(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createFeeAmountCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(StorageFee.FEE_AMOUNT_PROPERTY, operator, values);
+    public SearchCriteria createContainerCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(StorageFee.CONTAINER_PROPERTY, operator, values);
     }
 
-    public StorageFeeRequest<T> withFeeAmountGreaterThan(BigDecimal feeAmount){
-       return withFeeAmount(Operator.GREATER_THAN, feeAmount);
+    public StorageFeeRequest<T> filterByContainer(Long container){
+      if(container == null){
+         return this;
+      }
+      return withContainer(Operator.EQUAL, container);
+    }
+    public StorageFeeRequest<T> withContainerMatching(StorageContainerRequest container){
+       return appendSearchCriteria(new SubQuerySearchCriteria(StorageFee.CONTAINER_PROPERTY, container, StorageContainer.ID_PROPERTY));
     }
 
-    public StorageFeeRequest<T> withFeeAmountGreaterThanOrEqualTo(BigDecimal feeAmount){
-       return withFeeAmount(Operator.GREATER_THAN_OR_EQUAL, feeAmount);
+    public StorageFeeRequest<T> filterByAmount(BigDecimal... amount){
+      if (amount == null || amount.length == 0) {
+        throw new IllegalArgumentException("filterByAmount parameter amount cannot be empty");
+      }
+      return appendSearchCriteria(createAmountCriteria(Operator.EQUAL, (Object[])amount));
     }
 
-    public StorageFeeRequest<T> withFeeAmountLessThan(BigDecimal feeAmount){
-       return withFeeAmount(Operator.LESS_THAN, feeAmount);
+    public StorageFeeRequest<T> withAmount(Operator operator, Object... values){
+       return appendSearchCriteria(createAmountCriteria(operator, values));
     }
 
-    public StorageFeeRequest<T> withFeeAmountLessThanOrEqualTo(BigDecimal feeAmount){
-       return withFeeAmount(Operator.LESS_THAN_OR_EQUAL, feeAmount);
+    public StorageFeeRequest<T> withAmountIsUnknown(){
+       return withAmount(Operator.IS_NULL);
     }
 
-    public StorageFeeRequest<T> withFeeAmountBetween(BigDecimal startOfFeeAmount, BigDecimal endOfFeeAmount){
-       return withFeeAmount(Operator.BETWEEN, startOfFeeAmount, endOfFeeAmount);
+    public StorageFeeRequest<T> withAmountIsKnown(){
+       return withAmount(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createAmountCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(StorageFee.AMOUNT_PROPERTY, operator, values);
+    }
+
+    public StorageFeeRequest<T> withAmountGreaterThan(BigDecimal amount){
+       return withAmount(Operator.GREATER_THAN, amount);
+    }
+
+    public StorageFeeRequest<T> withAmountGreaterThanOrEqualTo(BigDecimal amount){
+       return withAmount(Operator.GREATER_THAN_OR_EQUAL, amount);
+    }
+
+    public StorageFeeRequest<T> withAmountLessThan(BigDecimal amount){
+       return withAmount(Operator.LESS_THAN, amount);
+    }
+
+    public StorageFeeRequest<T> withAmountLessThanOrEqualTo(BigDecimal amount){
+       return withAmount(Operator.LESS_THAN_OR_EQUAL, amount);
+    }
+
+    public StorageFeeRequest<T> withAmountBetween(BigDecimal startOfAmount, BigDecimal endOfAmount){
+       return withAmount(Operator.BETWEEN, startOfAmount, endOfAmount);
     }
 
 
@@ -442,191 +462,65 @@ public class StorageFeeRequest<T extends StorageFee> extends BaseRequest<T> {
 
 
 
-    public StorageFeeRequest<T> filterByPeriodStart(String... periodStart){
-      if (periodStart == null || periodStart.length == 0) {
-        throw new IllegalArgumentException("filterByPeriodStart parameter periodStart cannot be empty");
+    public StorageFeeRequest<T> filterByPeriod(String... period){
+      if (period == null || period.length == 0) {
+        throw new IllegalArgumentException("filterByPeriod parameter period cannot be empty");
       }
-      return appendSearchCriteria(createPeriodStartCriteria(Operator.EQUAL, (Object[])periodStart));
+      return appendSearchCriteria(createPeriodCriteria(Operator.EQUAL, (Object[])period));
     }
 
-    public StorageFeeRequest<T> withPeriodStart(Operator operator, Object... values){
-       return appendSearchCriteria(createPeriodStartCriteria(operator, values));
+    public StorageFeeRequest<T> withPeriod(Operator operator, Object... values){
+       return appendSearchCriteria(createPeriodCriteria(operator, values));
     }
 
-    public StorageFeeRequest<T> withPeriodStartIsUnknown(){
-       return withPeriodStart(Operator.IS_NULL);
+    public StorageFeeRequest<T> withPeriodIsUnknown(){
+       return withPeriod(Operator.IS_NULL);
     }
 
-    public StorageFeeRequest<T> withPeriodStartIsKnown(){
-       return withPeriodStart(Operator.IS_NOT_NULL);
+    public StorageFeeRequest<T> withPeriodIsKnown(){
+       return withPeriod(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createPeriodStartCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(StorageFee.PERIOD_START_PROPERTY, operator, values);
+    public SearchCriteria createPeriodCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(StorageFee.PERIOD_PROPERTY, operator, values);
     }
 
-    public StorageFeeRequest<T> withPeriodStartGreaterThan(String periodStart){
-       return withPeriodStart(Operator.GREATER_THAN, periodStart);
+    public StorageFeeRequest<T> withPeriodGreaterThan(String period){
+       return withPeriod(Operator.GREATER_THAN, period);
     }
 
-    public StorageFeeRequest<T> withPeriodStartGreaterThanOrEqualTo(String periodStart){
-       return withPeriodStart(Operator.GREATER_THAN_OR_EQUAL, periodStart);
+    public StorageFeeRequest<T> withPeriodGreaterThanOrEqualTo(String period){
+       return withPeriod(Operator.GREATER_THAN_OR_EQUAL, period);
     }
 
-    public StorageFeeRequest<T> withPeriodStartLessThan(String periodStart){
-       return withPeriodStart(Operator.LESS_THAN, periodStart);
+    public StorageFeeRequest<T> withPeriodLessThan(String period){
+       return withPeriod(Operator.LESS_THAN, period);
     }
 
-    public StorageFeeRequest<T> withPeriodStartLessThanOrEqualTo(String periodStart){
-       return withPeriodStart(Operator.LESS_THAN_OR_EQUAL, periodStart);
+    public StorageFeeRequest<T> withPeriodLessThanOrEqualTo(String period){
+       return withPeriod(Operator.LESS_THAN_OR_EQUAL, period);
     }
 
-    public StorageFeeRequest<T> withPeriodStartBetween(String startOfPeriodStart, String endOfPeriodStart){
-       return withPeriodStart(Operator.BETWEEN, startOfPeriodStart, endOfPeriodStart);
+    public StorageFeeRequest<T> withPeriodBetween(String startOfPeriod, String endOfPeriod){
+       return withPeriod(Operator.BETWEEN, startOfPeriod, endOfPeriod);
     }
-    public StorageFeeRequest<T> withPeriodStartStartingWith(String periodStart){
-       return withPeriodStart(Operator.BEGIN_WITH, periodStart);
+    public StorageFeeRequest<T> withPeriodStartingWith(String period){
+       return withPeriod(Operator.BEGIN_WITH, period);
     }
-    public StorageFeeRequest<T> withPeriodStartContaining(String periodStart){
-       return withPeriodStart(Operator.CONTAIN, periodStart);
-    }
-
-    public StorageFeeRequest<T> withPeriodStartEndingWith(String periodStart){
-       return withPeriodStart(Operator.END_WITH, periodStart);
+    public StorageFeeRequest<T> withPeriodContaining(String period){
+       return withPeriod(Operator.CONTAIN, period);
     }
 
-    public StorageFeeRequest<T> withPeriodStartIs(String periodStart){
-       return withPeriodStart(Operator.EQUAL, periodStart);
+    public StorageFeeRequest<T> withPeriodEndingWith(String period){
+       return withPeriod(Operator.END_WITH, period);
     }
 
-    public StorageFeeRequest<T> withPeriodStartSoundingLike(String periodStart){
-       return withPeriodStart(Operator.SOUNDS_LIKE, periodStart);
+    public StorageFeeRequest<T> withPeriodIs(String period){
+       return withPeriod(Operator.EQUAL, period);
     }
 
-
-
-    public StorageFeeRequest<T> filterByPeriodEnd(String... periodEnd){
-      if (periodEnd == null || periodEnd.length == 0) {
-        throw new IllegalArgumentException("filterByPeriodEnd parameter periodEnd cannot be empty");
-      }
-      return appendSearchCriteria(createPeriodEndCriteria(Operator.EQUAL, (Object[])periodEnd));
-    }
-
-    public StorageFeeRequest<T> withPeriodEnd(Operator operator, Object... values){
-       return appendSearchCriteria(createPeriodEndCriteria(operator, values));
-    }
-
-    public StorageFeeRequest<T> withPeriodEndIsUnknown(){
-       return withPeriodEnd(Operator.IS_NULL);
-    }
-
-    public StorageFeeRequest<T> withPeriodEndIsKnown(){
-       return withPeriodEnd(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createPeriodEndCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(StorageFee.PERIOD_END_PROPERTY, operator, values);
-    }
-
-    public StorageFeeRequest<T> withPeriodEndGreaterThan(String periodEnd){
-       return withPeriodEnd(Operator.GREATER_THAN, periodEnd);
-    }
-
-    public StorageFeeRequest<T> withPeriodEndGreaterThanOrEqualTo(String periodEnd){
-       return withPeriodEnd(Operator.GREATER_THAN_OR_EQUAL, periodEnd);
-    }
-
-    public StorageFeeRequest<T> withPeriodEndLessThan(String periodEnd){
-       return withPeriodEnd(Operator.LESS_THAN, periodEnd);
-    }
-
-    public StorageFeeRequest<T> withPeriodEndLessThanOrEqualTo(String periodEnd){
-       return withPeriodEnd(Operator.LESS_THAN_OR_EQUAL, periodEnd);
-    }
-
-    public StorageFeeRequest<T> withPeriodEndBetween(String startOfPeriodEnd, String endOfPeriodEnd){
-       return withPeriodEnd(Operator.BETWEEN, startOfPeriodEnd, endOfPeriodEnd);
-    }
-    public StorageFeeRequest<T> withPeriodEndStartingWith(String periodEnd){
-       return withPeriodEnd(Operator.BEGIN_WITH, periodEnd);
-    }
-    public StorageFeeRequest<T> withPeriodEndContaining(String periodEnd){
-       return withPeriodEnd(Operator.CONTAIN, periodEnd);
-    }
-
-    public StorageFeeRequest<T> withPeriodEndEndingWith(String periodEnd){
-       return withPeriodEnd(Operator.END_WITH, periodEnd);
-    }
-
-    public StorageFeeRequest<T> withPeriodEndIs(String periodEnd){
-       return withPeriodEnd(Operator.EQUAL, periodEnd);
-    }
-
-    public StorageFeeRequest<T> withPeriodEndSoundingLike(String periodEnd){
-       return withPeriodEnd(Operator.SOUNDS_LIKE, periodEnd);
-    }
-
-
-
-    public StorageFeeRequest<T> filterByStatus(String... status){
-      if (status == null || status.length == 0) {
-        throw new IllegalArgumentException("filterByStatus parameter status cannot be empty");
-      }
-      return appendSearchCriteria(createStatusCriteria(Operator.EQUAL, (Object[])status));
-    }
-
-    public StorageFeeRequest<T> withStatus(Operator operator, Object... values){
-       return appendSearchCriteria(createStatusCriteria(operator, values));
-    }
-
-    public StorageFeeRequest<T> withStatusIsUnknown(){
-       return withStatus(Operator.IS_NULL);
-    }
-
-    public StorageFeeRequest<T> withStatusIsKnown(){
-       return withStatus(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createStatusCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(StorageFee.STATUS_PROPERTY, operator, values);
-    }
-
-    public StorageFeeRequest<T> withStatusGreaterThan(String status){
-       return withStatus(Operator.GREATER_THAN, status);
-    }
-
-    public StorageFeeRequest<T> withStatusGreaterThanOrEqualTo(String status){
-       return withStatus(Operator.GREATER_THAN_OR_EQUAL, status);
-    }
-
-    public StorageFeeRequest<T> withStatusLessThan(String status){
-       return withStatus(Operator.LESS_THAN, status);
-    }
-
-    public StorageFeeRequest<T> withStatusLessThanOrEqualTo(String status){
-       return withStatus(Operator.LESS_THAN_OR_EQUAL, status);
-    }
-
-    public StorageFeeRequest<T> withStatusBetween(String startOfStatus, String endOfStatus){
-       return withStatus(Operator.BETWEEN, startOfStatus, endOfStatus);
-    }
-    public StorageFeeRequest<T> withStatusStartingWith(String status){
-       return withStatus(Operator.BEGIN_WITH, status);
-    }
-    public StorageFeeRequest<T> withStatusContaining(String status){
-       return withStatus(Operator.CONTAIN, status);
-    }
-
-    public StorageFeeRequest<T> withStatusEndingWith(String status){
-       return withStatus(Operator.END_WITH, status);
-    }
-
-    public StorageFeeRequest<T> withStatusIs(String status){
-       return withStatus(Operator.EQUAL, status);
-    }
-
-    public StorageFeeRequest<T> withStatusSoundingLike(String status){
-       return withStatus(Operator.SOUNDS_LIKE, status);
+    public StorageFeeRequest<T> withPeriodSoundingLike(String period){
+       return withPeriod(Operator.SOUNDS_LIKE, period);
     }
 
 
@@ -813,80 +707,87 @@ public class StorageFeeRequest<T extends StorageFee> extends BaseRequest<T> {
         super.count(retName);
         return this;
     }
-    public StorageFeeRequest minFeeAmount(){
-        return minFeeAmountAs(prefix("minOf",StorageFee.FEE_AMOUNT_PROPERTY));
+    public StorageFeeRequest minAmount(){
+        return minAmountAs(prefix("minOf",StorageFee.AMOUNT_PROPERTY));
     }
 
-    public StorageFeeRequest minFeeAmountAs(String retName){
-        super.min(retName, StorageFee.FEE_AMOUNT_PROPERTY);
+    public StorageFeeRequest minAmountAs(String retName){
+        super.min(retName, StorageFee.AMOUNT_PROPERTY);
         return this;
     }
-    public StorageFeeRequest maxFeeAmount(){
-        return maxFeeAmountAs(prefix("maxOf",StorageFee.FEE_AMOUNT_PROPERTY));
+    public StorageFeeRequest maxAmount(){
+        return maxAmountAs(prefix("maxOf",StorageFee.AMOUNT_PROPERTY));
     }
 
-    public StorageFeeRequest maxFeeAmountAs(String retName){
-        super.max(retName, StorageFee.FEE_AMOUNT_PROPERTY);
+    public StorageFeeRequest maxAmountAs(String retName){
+        super.max(retName, StorageFee.AMOUNT_PROPERTY);
         return this;
     }
-    public StorageFeeRequest sumFeeAmount(){
-        return sumFeeAmountAs(prefix("sumOf",StorageFee.FEE_AMOUNT_PROPERTY));
+    public StorageFeeRequest sumAmount(){
+        return sumAmountAs(prefix("sumOf",StorageFee.AMOUNT_PROPERTY));
     }
 
-    public StorageFeeRequest sumFeeAmountAs(String retName){
-        super.sum(retName, StorageFee.FEE_AMOUNT_PROPERTY);
+    public StorageFeeRequest sumAmountAs(String retName){
+        super.sum(retName, StorageFee.AMOUNT_PROPERTY);
         return this;
     }
-    public StorageFeeRequest avgFeeAmount(){
-        return avgFeeAmountAs(prefix("avgOf",StorageFee.FEE_AMOUNT_PROPERTY));
+    public StorageFeeRequest avgAmount(){
+        return avgAmountAs(prefix("avgOf",StorageFee.AMOUNT_PROPERTY));
     }
 
-    public StorageFeeRequest avgFeeAmountAs(String retName){
-        super.avg(retName, StorageFee.FEE_AMOUNT_PROPERTY);
+    public StorageFeeRequest avgAmountAs(String retName){
+        super.avg(retName, StorageFee.AMOUNT_PROPERTY);
         return this;
     }
-    public StorageFeeRequest standardDeviationFeeAmount(){
-        return standardDeviationFeeAmountAs(prefix("standardDeviationOf",StorageFee.FEE_AMOUNT_PROPERTY));
+    public StorageFeeRequest standardDeviationAmount(){
+        return standardDeviationAmountAs(prefix("standardDeviationOf",StorageFee.AMOUNT_PROPERTY));
     }
 
-    public StorageFeeRequest standardDeviationFeeAmountAs(String retName){
-        super.standardDeviation(retName, StorageFee.FEE_AMOUNT_PROPERTY);
+    public StorageFeeRequest standardDeviationAmountAs(String retName){
+        super.standardDeviation(retName, StorageFee.AMOUNT_PROPERTY);
         return this;
     }
-    public StorageFeeRequest squareRootOfPopulationStandardDeviationFeeAmount(){
-        return squareRootOfPopulationStandardDeviationFeeAmountAs(prefix("squareRootOfPopulationStandardDeviationOf",StorageFee.FEE_AMOUNT_PROPERTY));
+    public StorageFeeRequest squareRootOfPopulationStandardDeviationAmount(){
+        return squareRootOfPopulationStandardDeviationAmountAs(prefix("squareRootOfPopulationStandardDeviationOf",StorageFee.AMOUNT_PROPERTY));
     }
 
-    public StorageFeeRequest squareRootOfPopulationStandardDeviationFeeAmountAs(String retName){
-        super.squareRootOfPopulationStandardDeviation(retName, StorageFee.FEE_AMOUNT_PROPERTY);
+    public StorageFeeRequest squareRootOfPopulationStandardDeviationAmountAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, StorageFee.AMOUNT_PROPERTY);
         return this;
     }
-    public StorageFeeRequest sampleVarianceFeeAmount(){
-        return sampleVarianceFeeAmountAs(prefix("sampleVarianceOf",StorageFee.FEE_AMOUNT_PROPERTY));
+    public StorageFeeRequest sampleVarianceAmount(){
+        return sampleVarianceAmountAs(prefix("sampleVarianceOf",StorageFee.AMOUNT_PROPERTY));
     }
 
-    public StorageFeeRequest sampleVarianceFeeAmountAs(String retName){
-        super.sampleVariance(retName, StorageFee.FEE_AMOUNT_PROPERTY);
+    public StorageFeeRequest sampleVarianceAmountAs(String retName){
+        super.sampleVariance(retName, StorageFee.AMOUNT_PROPERTY);
         return this;
     }
-    public StorageFeeRequest samplePopulationVarianceFeeAmount(){
-        return samplePopulationVarianceFeeAmountAs(prefix("samplePopulationVarianceOf",StorageFee.FEE_AMOUNT_PROPERTY));
+    public StorageFeeRequest samplePopulationVarianceAmount(){
+        return samplePopulationVarianceAmountAs(prefix("samplePopulationVarianceOf",StorageFee.AMOUNT_PROPERTY));
     }
 
-    public StorageFeeRequest samplePopulationVarianceFeeAmountAs(String retName){
-        super.samplePopulationVariance(retName, StorageFee.FEE_AMOUNT_PROPERTY);
+    public StorageFeeRequest samplePopulationVarianceAmountAs(String retName){
+        super.samplePopulationVariance(retName, StorageFee.AMOUNT_PROPERTY);
         return this;
     }
-    public StorageFeeRequest<T> groupByInvoiceWithDetails(){
-       return groupByInvoiceWithDetails(Q.invoices().unlimited());
+    public StorageFeeRequest<T> groupByWarehouseWithDetails(){
+       return groupByWarehouseWithDetails(Q.warehouses().unlimited());
     }
 
-    public StorageFeeRequest<T> groupByInvoiceWithDetails(InvoiceRequest subRequest){
-       aggregate(StorageFee.INVOICE_PROPERTY, subRequest);
+    public StorageFeeRequest<T> groupByWarehouseWithDetails(WarehouseRequest subRequest){
+       aggregate(StorageFee.WAREHOUSE_PROPERTY, subRequest);
        return this;
     }
 
+    public StorageFeeRequest<T> groupByContainerWithDetails(){
+       return groupByContainerWithDetails(Q.storageContainers().unlimited());
+    }
 
+    public StorageFeeRequest<T> groupByContainerWithDetails(StorageContainerRequest subRequest){
+       aggregate(StorageFee.CONTAINER_PROPERTY, subRequest);
+       return this;
+    }
 
 
 
@@ -909,37 +810,55 @@ public class StorageFeeRequest<T extends StorageFee> extends BaseRequest<T> {
        groupBy(retName, StorageFee.ID_PROPERTY, function);
        return this;
     }
-    public StorageFeeRequest<T> groupByInvoiceWith(InvoiceRequest subRequest){
-       groupBy(StorageFee.INVOICE_PROPERTY, subRequest);
+    public StorageFeeRequest<T> groupByWarehouseWith(WarehouseRequest subRequest){
+       groupBy(StorageFee.WAREHOUSE_PROPERTY, subRequest);
        return this;
     }
-    public StorageFeeRequest<T> groupByInvoice(){
-       groupBy(StorageFee.INVOICE_PROPERTY);
-       return this;
-    }
-
-    public StorageFeeRequest<T> groupByInvoiceAs(String retName){
-       groupBy(retName, StorageFee.INVOICE_PROPERTY);
+    public StorageFeeRequest<T> groupByWarehouse(){
+       groupBy(StorageFee.WAREHOUSE_PROPERTY);
        return this;
     }
 
-    public StorageFeeRequest<T> groupByInvoiceWithFunction(String retName, AggrFunction function){
-       groupBy(retName, StorageFee.INVOICE_PROPERTY, function);
+    public StorageFeeRequest<T> groupByWarehouseAs(String retName){
+       groupBy(retName, StorageFee.WAREHOUSE_PROPERTY);
        return this;
     }
 
-    public StorageFeeRequest<T> groupByFeeAmount(){
-       groupBy(StorageFee.FEE_AMOUNT_PROPERTY);
+    public StorageFeeRequest<T> groupByWarehouseWithFunction(String retName, AggrFunction function){
+       groupBy(retName, StorageFee.WAREHOUSE_PROPERTY, function);
+       return this;
+    }
+    public StorageFeeRequest<T> groupByContainerWith(StorageContainerRequest subRequest){
+       groupBy(StorageFee.CONTAINER_PROPERTY, subRequest);
+       return this;
+    }
+    public StorageFeeRequest<T> groupByContainer(){
+       groupBy(StorageFee.CONTAINER_PROPERTY);
        return this;
     }
 
-    public StorageFeeRequest<T> groupByFeeAmountAs(String retName){
-       groupBy(retName, StorageFee.FEE_AMOUNT_PROPERTY);
+    public StorageFeeRequest<T> groupByContainerAs(String retName){
+       groupBy(retName, StorageFee.CONTAINER_PROPERTY);
        return this;
     }
 
-    public StorageFeeRequest<T> groupByFeeAmountWithFunction(String retName, AggrFunction function){
-       groupBy(retName, StorageFee.FEE_AMOUNT_PROPERTY, function);
+    public StorageFeeRequest<T> groupByContainerWithFunction(String retName, AggrFunction function){
+       groupBy(retName, StorageFee.CONTAINER_PROPERTY, function);
+       return this;
+    }
+
+    public StorageFeeRequest<T> groupByAmount(){
+       groupBy(StorageFee.AMOUNT_PROPERTY);
+       return this;
+    }
+
+    public StorageFeeRequest<T> groupByAmountAs(String retName){
+       groupBy(retName, StorageFee.AMOUNT_PROPERTY);
+       return this;
+    }
+
+    public StorageFeeRequest<T> groupByAmountWithFunction(String retName, AggrFunction function){
+       groupBy(retName, StorageFee.AMOUNT_PROPERTY, function);
        return this;
     }
 
@@ -958,48 +877,18 @@ public class StorageFeeRequest<T extends StorageFee> extends BaseRequest<T> {
        return this;
     }
 
-    public StorageFeeRequest<T> groupByPeriodStart(){
-       groupBy(StorageFee.PERIOD_START_PROPERTY);
+    public StorageFeeRequest<T> groupByPeriod(){
+       groupBy(StorageFee.PERIOD_PROPERTY);
        return this;
     }
 
-    public StorageFeeRequest<T> groupByPeriodStartAs(String retName){
-       groupBy(retName, StorageFee.PERIOD_START_PROPERTY);
+    public StorageFeeRequest<T> groupByPeriodAs(String retName){
+       groupBy(retName, StorageFee.PERIOD_PROPERTY);
        return this;
     }
 
-    public StorageFeeRequest<T> groupByPeriodStartWithFunction(String retName, AggrFunction function){
-       groupBy(retName, StorageFee.PERIOD_START_PROPERTY, function);
-       return this;
-    }
-
-    public StorageFeeRequest<T> groupByPeriodEnd(){
-       groupBy(StorageFee.PERIOD_END_PROPERTY);
-       return this;
-    }
-
-    public StorageFeeRequest<T> groupByPeriodEndAs(String retName){
-       groupBy(retName, StorageFee.PERIOD_END_PROPERTY);
-       return this;
-    }
-
-    public StorageFeeRequest<T> groupByPeriodEndWithFunction(String retName, AggrFunction function){
-       groupBy(retName, StorageFee.PERIOD_END_PROPERTY, function);
-       return this;
-    }
-
-    public StorageFeeRequest<T> groupByStatus(){
-       groupBy(StorageFee.STATUS_PROPERTY);
-       return this;
-    }
-
-    public StorageFeeRequest<T> groupByStatusAs(String retName){
-       groupBy(retName, StorageFee.STATUS_PROPERTY);
-       return this;
-    }
-
-    public StorageFeeRequest<T> groupByStatusWithFunction(String retName, AggrFunction function){
-       groupBy(retName, StorageFee.STATUS_PROPERTY, function);
+    public StorageFeeRequest<T> groupByPeriodWithFunction(String retName, AggrFunction function){
+       groupBy(retName, StorageFee.PERIOD_PROPERTY, function);
        return this;
     }
 
@@ -1060,23 +949,33 @@ public class StorageFeeRequest<T extends StorageFee> extends BaseRequest<T> {
        return this;
     }
 
-    public StorageFeeRequest<T> orderByInvoiceAscending(){
-       addOrderByAscending(StorageFee.INVOICE_PROPERTY);
+    public StorageFeeRequest<T> orderByWarehouseAscending(){
+       addOrderByAscending(StorageFee.WAREHOUSE_PROPERTY);
        return this;
     }
 
-    public StorageFeeRequest<T> orderByInvoiceDescending(){
-       addOrderByDescending(StorageFee.INVOICE_PROPERTY);
+    public StorageFeeRequest<T> orderByWarehouseDescending(){
+       addOrderByDescending(StorageFee.WAREHOUSE_PROPERTY);
        return this;
     }
 
-    public StorageFeeRequest<T> orderByFeeAmountAscending(){
-       addOrderByAscending(StorageFee.FEE_AMOUNT_PROPERTY);
+    public StorageFeeRequest<T> orderByContainerAscending(){
+       addOrderByAscending(StorageFee.CONTAINER_PROPERTY);
        return this;
     }
 
-    public StorageFeeRequest<T> orderByFeeAmountDescending(){
-       addOrderByDescending(StorageFee.FEE_AMOUNT_PROPERTY);
+    public StorageFeeRequest<T> orderByContainerDescending(){
+       addOrderByDescending(StorageFee.CONTAINER_PROPERTY);
+       return this;
+    }
+
+    public StorageFeeRequest<T> orderByAmountAscending(){
+       addOrderByAscending(StorageFee.AMOUNT_PROPERTY);
+       return this;
+    }
+
+    public StorageFeeRequest<T> orderByAmountDescending(){
+       addOrderByDescending(StorageFee.AMOUNT_PROPERTY);
        return this;
     }
 
@@ -1098,58 +997,22 @@ public class StorageFeeRequest<T extends StorageFee> extends BaseRequest<T> {
        addOrderByDescendingUsingGBK(StorageFee.CURRENCY_PROPERTY);
        return this;
     }
-    public StorageFeeRequest<T> orderByPeriodStartAscending(){
-       addOrderByAscending(StorageFee.PERIOD_START_PROPERTY);
+    public StorageFeeRequest<T> orderByPeriodAscending(){
+       addOrderByAscending(StorageFee.PERIOD_PROPERTY);
        return this;
     }
 
-    public StorageFeeRequest<T> orderByPeriodStartDescending(){
-       addOrderByDescending(StorageFee.PERIOD_START_PROPERTY);
+    public StorageFeeRequest<T> orderByPeriodDescending(){
+       addOrderByDescending(StorageFee.PERIOD_PROPERTY);
        return this;
     }
-    public StorageFeeRequest<T> orderByPeriodStartAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(StorageFee.PERIOD_START_PROPERTY);
-       return this;
-    }
-
-    public StorageFeeRequest<T> orderByPeriodStartDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(StorageFee.PERIOD_START_PROPERTY);
-       return this;
-    }
-    public StorageFeeRequest<T> orderByPeriodEndAscending(){
-       addOrderByAscending(StorageFee.PERIOD_END_PROPERTY);
+    public StorageFeeRequest<T> orderByPeriodAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(StorageFee.PERIOD_PROPERTY);
        return this;
     }
 
-    public StorageFeeRequest<T> orderByPeriodEndDescending(){
-       addOrderByDescending(StorageFee.PERIOD_END_PROPERTY);
-       return this;
-    }
-    public StorageFeeRequest<T> orderByPeriodEndAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(StorageFee.PERIOD_END_PROPERTY);
-       return this;
-    }
-
-    public StorageFeeRequest<T> orderByPeriodEndDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(StorageFee.PERIOD_END_PROPERTY);
-       return this;
-    }
-    public StorageFeeRequest<T> orderByStatusAscending(){
-       addOrderByAscending(StorageFee.STATUS_PROPERTY);
-       return this;
-    }
-
-    public StorageFeeRequest<T> orderByStatusDescending(){
-       addOrderByDescending(StorageFee.STATUS_PROPERTY);
-       return this;
-    }
-    public StorageFeeRequest<T> orderByStatusAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(StorageFee.STATUS_PROPERTY);
-       return this;
-    }
-
-    public StorageFeeRequest<T> orderByStatusDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(StorageFee.STATUS_PROPERTY);
+    public StorageFeeRequest<T> orderByPeriodDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(StorageFee.PERIOD_PROPERTY);
        return this;
     }
     public StorageFeeRequest<T> orderByCreateTimeAscending(){
@@ -1183,11 +1046,18 @@ public class StorageFeeRequest<T extends StorageFee> extends BaseRequest<T> {
     }
 
 
-    public InvoiceRequest rollUpToInvoice(){
-       InvoiceRequest invoice = Q.invoices().unlimited();
-       this.withInvoiceMatching(invoice)
-           .groupByInvoiceWith(invoice);
-       return invoice;
+    public WarehouseRequest rollUpToWarehouse(){
+       WarehouseRequest warehouse = Q.warehouses().unlimited();
+       this.withWarehouseMatching(warehouse)
+           .groupByWarehouseWith(warehouse);
+       return warehouse;
+    }
+
+    public StorageContainerRequest rollUpToContainer(){
+       StorageContainerRequest container = Q.storageContainers().unlimited();
+       this.withContainerMatching(container)
+           .groupByContainerWith(container);
+       return container;
     }
 
 
@@ -1197,14 +1067,20 @@ public class StorageFeeRequest<T extends StorageFee> extends BaseRequest<T> {
 
 
 
-
-
-   public StorageFeeRequest<T> facetByInvoiceAs(String facetName, InvoiceRequest invoice){
-       return facetByInvoiceAs(facetName, invoice, true);
+   public StorageFeeRequest<T> facetByWarehouseAs(String facetName, WarehouseRequest warehouse){
+       return facetByWarehouseAs(facetName, warehouse, true);
    }
 
-   public StorageFeeRequest<T> facetByInvoiceAs(String facetName, InvoiceRequest invoice, boolean includeAllFacets){
-       addFacet(facetName, StorageFee.INVOICE_PROPERTY, invoice, includeAllFacets);
+   public StorageFeeRequest<T> facetByWarehouseAs(String facetName, WarehouseRequest warehouse, boolean includeAllFacets){
+       addFacet(facetName, StorageFee.WAREHOUSE_PROPERTY, warehouse, includeAllFacets);
+       return this;
+   }
+   public StorageFeeRequest<T> facetByContainerAs(String facetName, StorageContainerRequest container){
+       return facetByContainerAs(facetName, container, true);
+   }
+
+   public StorageFeeRequest<T> facetByContainerAs(String facetName, StorageContainerRequest container, boolean includeAllFacets){
+       addFacet(facetName, StorageFee.CONTAINER_PROPERTY, container, includeAllFacets);
        return this;
    }
 

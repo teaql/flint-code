@@ -7,6 +7,7 @@ import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -20,30 +21,39 @@ import java.util.Objects;
 public class CustomerContact extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "CustomerContact";
 
-    public static final String NAME_PROPERTY = "name";
-    public static final String PHONE_PROPERTY = "phone";
+    public static final String FIRST_NAME_PROPERTY = "firstName";
+    public static final String LAST_NAME_PROPERTY = "lastName";
     public static final String EMAIL_PROPERTY = "email";
-    public static final String RELATIONSHIP_PROPERTY = "relationship";
+    public static final String PHONE_PROPERTY = "phone";
+    public static final String IS_PRIMARY_PROPERTY = "isPrimary";
     public static final String PRIVATE_CUSTOMER_PROPERTY = "privateCustomer";
     public static final String CORPORATE_CUSTOMER_PROPERTY = "corporateCustomer";
-    private String name;
-    private String phone;
+    public static final String CREATED_AT_PROPERTY = "createdAt";
+    public static final String UPDATED_AT_PROPERTY = "updatedAt";
+    private String firstName;
+    private String lastName;
     private String email;
-    private String relationship;
+    private String phone;
+    private Boolean isPrimary;
     private PrivateCustomer privateCustomer;
     private CorporateCustomer corporateCustomer;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    public String getName(){
-        return this.name;
+    public String getFirstName(){
+        return this.firstName;
     }
-    public String getPhone(){
-        return this.phone;
+    public String getLastName(){
+        return this.lastName;
     }
     public String getEmail(){
         return this.email;
     }
-    public String getRelationship(){
-        return this.relationship;
+    public String getPhone(){
+        return this.phone;
+    }
+    public Boolean isIsPrimary(){
+        return this.isPrimary;
     }
     public PrivateCustomer getPrivateCustomer(){
         return this.privateCustomer;
@@ -51,22 +61,28 @@ public class CustomerContact extends BaseEntity implements RemoteInput {
     public CorporateCustomer getCorporateCustomer(){
         return this.corporateCustomer;
     }
-    public CustomerContact updateName(String name){
-        name = (name == null ? null : name.trim());
-        if(Objects.equals(this.name, name)){
+    public LocalDateTime getCreatedAt(){
+        return this.createdAt;
+    }
+    public LocalDateTime getUpdatedAt(){
+        return this.updatedAt;
+    }
+    public CustomerContact updateFirstName(String firstName){
+        firstName = (firstName == null ? null : firstName.trim());
+        if(Objects.equals(this.firstName, firstName)){
             return this;
         }
-        handleUpdate(NAME_PROPERTY, getName(), name);
-        this.name = name;
+        handleUpdate(FIRST_NAME_PROPERTY, getFirstName(), firstName);
+        this.firstName = firstName;
         return this;
     }
-    public CustomerContact updatePhone(String phone){
-        phone = (phone == null ? null : phone.trim());
-        if(Objects.equals(this.phone, phone)){
+    public CustomerContact updateLastName(String lastName){
+        lastName = (lastName == null ? null : lastName.trim());
+        if(Objects.equals(this.lastName, lastName)){
             return this;
         }
-        handleUpdate(PHONE_PROPERTY, getPhone(), phone);
-        this.phone = phone;
+        handleUpdate(LAST_NAME_PROPERTY, getLastName(), lastName);
+        this.lastName = lastName;
         return this;
     }
     public CustomerContact updateEmail(String email){
@@ -78,13 +94,21 @@ public class CustomerContact extends BaseEntity implements RemoteInput {
         this.email = email;
         return this;
     }
-    public CustomerContact updateRelationship(String relationship){
-        relationship = (relationship == null ? null : relationship.trim());
-        if(Objects.equals(this.relationship, relationship)){
+    public CustomerContact updatePhone(String phone){
+        phone = (phone == null ? null : phone.trim());
+        if(Objects.equals(this.phone, phone)){
             return this;
         }
-        handleUpdate(RELATIONSHIP_PROPERTY, getRelationship(), relationship);
-        this.relationship = relationship;
+        handleUpdate(PHONE_PROPERTY, getPhone(), phone);
+        this.phone = phone;
+        return this;
+    }
+    public CustomerContact updateIsPrimary(Boolean isPrimary){
+        if(Objects.equals(this.isPrimary, isPrimary)){
+            return this;
+        }
+        handleUpdate(IS_PRIMARY_PROPERTY, isIsPrimary(), isPrimary);
+        this.isPrimary = isPrimary;
         return this;
     }
     public CustomerContact updatePrivateCustomer(PrivateCustomer privateCustomer){
@@ -101,6 +125,22 @@ public class CustomerContact extends BaseEntity implements RemoteInput {
         }
         handleUpdate(CORPORATE_CUSTOMER_PROPERTY, getCorporateCustomer(), corporateCustomer);
         this.corporateCustomer = corporateCustomer;
+        return this;
+    }
+    public CustomerContact updateCreatedAt(LocalDateTime createdAt){
+        if(Objects.equals(this.createdAt, createdAt)){
+            return this;
+        }
+        handleUpdate(CREATED_AT_PROPERTY, getCreatedAt(), createdAt);
+        this.createdAt = createdAt;
+        return this;
+    }
+    public CustomerContact updateUpdatedAt(LocalDateTime updatedAt){
+        if(Objects.equals(this.updatedAt, updatedAt)){
+            return this;
+        }
+        handleUpdate(UPDATED_AT_PROPERTY, getUpdatedAt(), updatedAt);
+        this.updatedAt = updatedAt;
         return this;
     }
 
@@ -131,17 +171,23 @@ public class CustomerContact extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public void __internalSet(String property, Object value) {
         switch (property) {
-            case "name": this.name = (value == null ? null : ((String)value).trim()); break;
+            case "firstName": this.firstName = (value == null ? null : ((String)value).trim()); break;
 
-            case "phone": this.phone = (value == null ? null : ((String)value).trim()); break;
+            case "lastName": this.lastName = (value == null ? null : ((String)value).trim()); break;
 
             case "email": this.email = (value == null ? null : ((String)value).trim()); break;
 
-            case "relationship": this.relationship = (value == null ? null : ((String)value).trim()); break;
+            case "phone": this.phone = (value == null ? null : ((String)value).trim()); break;
+
+            case "isPrimary": this.isPrimary = (Boolean) value; break;
 
             case "privateCustomer": this.privateCustomer = (PrivateCustomer) value; break;
 
             case "corporateCustomer": this.corporateCustomer = (CorporateCustomer) value; break;
+
+            case "createdAt": this.createdAt = (LocalDateTime) value; break;
+
+            case "updatedAt": this.updatedAt = (LocalDateTime) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -151,12 +197,15 @@ public class CustomerContact extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public Object __internalGet(String property) {
         switch (property) {
-            case "name": return this.name;
-            case "phone": return this.phone;
+            case "firstName": return this.firstName;
+            case "lastName": return this.lastName;
             case "email": return this.email;
-            case "relationship": return this.relationship;
+            case "phone": return this.phone;
+            case "isPrimary": return this.isPrimary;
             case "privateCustomer": return this.privateCustomer;
             case "corporateCustomer": return this.corporateCustomer;
+            case "createdAt": return this.createdAt;
+            case "updatedAt": return this.updatedAt;
             default: return super.__internalGet(property);
         }
     }

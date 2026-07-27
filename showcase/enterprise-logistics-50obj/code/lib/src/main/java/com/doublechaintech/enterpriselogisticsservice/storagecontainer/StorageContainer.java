@@ -1,6 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.storagecontainer;
 
 import com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit;
+import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee;
 import com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
@@ -28,12 +29,14 @@ public class StorageContainer extends BaseEntity implements RemoteInput {
     public static final String CREATE_TIME_PROPERTY = "createTime";
     public static final String UPDATE_TIME_PROPERTY = "updateTime";
     public static final String CONTAINER_UNIT_LIST_PROPERTY = "containerUnitList";
+    public static final String STORAGE_FEE_LIST_PROPERTY = "storageFeeList";
     private String containerId;
     private Warehouse warehouse;
     private String status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private SmartList<ContainerUnit> containerUnitList;
+    private SmartList<StorageFee> storageFeeList;
 
     public String getContainerId(){
         return this.containerId;
@@ -52,6 +55,9 @@ public class StorageContainer extends BaseEntity implements RemoteInput {
     }
     public SmartList<ContainerUnit> getContainerUnitList(){
         return this.containerUnitList;
+    }
+    public SmartList<StorageFee> getStorageFeeList(){
+        return this.storageFeeList;
     }
     public StorageContainer updateContainerId(String containerId){
         containerId = (containerId == null ? null : containerId.trim());
@@ -108,6 +114,19 @@ public class StorageContainer extends BaseEntity implements RemoteInput {
         containerUnit.cacheRelation(ContainerUnit.STORAGE_CONTAINER_PROPERTY, this);
         return this;
     }
+    public StorageContainer addStorageFee(StorageFee storageFee){
+        if (storageFee == null){
+            return this;
+        }
+
+        if(null == this.storageFeeList){
+            this.storageFeeList = new SmartList<>();
+        }
+
+        this.storageFeeList.add(storageFee);
+        storageFee.cacheRelation(StorageFee.CONTAINER_PROPERTY, this);
+        return this;
+    }
 
     public static StorageContainer refer(Long id){
         StorageContainer refer = new StorageContainer();
@@ -147,6 +166,7 @@ public class StorageContainer extends BaseEntity implements RemoteInput {
             case "updateTime": this.updateTime = (LocalDateTime) value; break;
 
             case "containerUnitList": this.containerUnitList = (SmartList<ContainerUnit>) value; break;
+            case "storageFeeList": this.storageFeeList = (SmartList<StorageFee>) value; break;
             default: super.__internalSet(property, value);
         }
     }
@@ -161,6 +181,7 @@ public class StorageContainer extends BaseEntity implements RemoteInput {
             case "createTime": return this.createTime;
             case "updateTime": return this.updateTime;
             case "containerUnitList": return this.containerUnitList;
+            case "storageFeeList": return this.storageFeeList;
             default: return super.__internalGet(property);
         }
     }

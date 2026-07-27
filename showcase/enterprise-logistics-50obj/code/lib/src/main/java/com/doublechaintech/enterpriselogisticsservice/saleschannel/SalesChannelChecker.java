@@ -1,5 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.saleschannel;
 
+import com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi;
+import com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoiChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
@@ -25,18 +27,22 @@ public class SalesChannelChecker implements Checker<SalesChannel>{
       if(salesChannel.newItem()){
         if(salesChannel.getCreatedTime() == null){
            salesChannel.updateCreatedTime(java.time.LocalDateTime.now());
-        }if(salesChannel.getUpdateTime() == null){
-           salesChannel.updateUpdateTime(java.time.LocalDateTime.now());
+        }if(salesChannel.getUpdatedTime() == null){
+           salesChannel.updateUpdatedTime(java.time.LocalDateTime.now());
         }
       }else if(salesChannel.updateItem()){
-        salesChannel.updateUpdateTime(java.time.LocalDateTime.now());
+        salesChannel.updateUpdatedTime(java.time.LocalDateTime.now());
       }
       checkName(_ctx, salesChannel.getProperty(SalesChannel.NAME_PROPERTY), newLocation(_parentLocation, SalesChannel.NAME_PROPERTY));
+      checkDescription(_ctx, salesChannel.getProperty(SalesChannel.DESCRIPTION_PROPERTY), newLocation(_parentLocation, SalesChannel.DESCRIPTION_PROPERTY));
       checkChannelType(_ctx, salesChannel.getProperty(SalesChannel.CHANNEL_TYPE_PROPERTY), newLocation(_parentLocation, SalesChannel.CHANNEL_TYPE_PROPERTY));
-      checkUrl(_ctx, salesChannel.getProperty(SalesChannel.URL_PROPERTY), newLocation(_parentLocation, SalesChannel.URL_PROPERTY));
-      checkStatus(_ctx, salesChannel.getProperty(SalesChannel.STATUS_PROPERTY), newLocation(_parentLocation, SalesChannel.STATUS_PROPERTY));
+      checkIsActive(_ctx, salesChannel.getProperty(SalesChannel.IS_ACTIVE_PROPERTY), newLocation(_parentLocation, SalesChannel.IS_ACTIVE_PROPERTY));
       checkCreatedTime(_ctx, salesChannel.getProperty(SalesChannel.CREATED_TIME_PROPERTY), newLocation(_parentLocation, SalesChannel.CREATED_TIME_PROPERTY));
-      checkUpdateTime(_ctx, salesChannel.getProperty(SalesChannel.UPDATE_TIME_PROPERTY), newLocation(_parentLocation, SalesChannel.UPDATE_TIME_PROPERTY));
+      checkUpdatedTime(_ctx, salesChannel.getProperty(SalesChannel.UPDATED_TIME_PROPERTY), newLocation(_parentLocation, SalesChannel.UPDATED_TIME_PROPERTY));
+      for(int i = 0; salesChannel.getMarketingRoiList() != null && i < salesChannel.getMarketingRoiList().size(); i++){
+         MarketingRoi marketingRoi = salesChannel.getMarketingRoiList().get(i);
+         new MarketingRoiChecker().checkAndFix(_ctx, marketingRoi, newLocation(_parentLocation, SalesChannel.MARKETING_ROI_LIST_PROPERTY, i));
+      }
     }
 
     public void checkName(UserContext _ctx, String name, ObjectLocation _parentLocation){
@@ -47,6 +53,14 @@ public class SalesChannelChecker implements Checker<SalesChannel>{
     maxStringCheck(_ctx, _parentLocation, 100, name);
 
     }
+    public void checkDescription(UserContext _ctx, String description, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, description);
+    if((description == null)){
+        return;
+    }
+    maxStringCheck(_ctx, _parentLocation, 100, description);
+
+    }
     public void checkChannelType(UserContext _ctx, String channelType, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, channelType);
     if((channelType == null)){
@@ -55,21 +69,11 @@ public class SalesChannelChecker implements Checker<SalesChannel>{
     maxStringCheck(_ctx, _parentLocation, 100, channelType);
 
     }
-    public void checkUrl(UserContext _ctx, String url, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, url);
-    if((url == null)){
+    public void checkIsActive(UserContext _ctx, Boolean isActive, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, isActive);
+    if((isActive == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, url);
-
-    }
-    public void checkStatus(UserContext _ctx, String status, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, status);
-    if((status == null)){
-        return;
-    }
-    maxStringCheck(_ctx, _parentLocation, 100, status);
-
     }
     public void checkCreatedTime(UserContext _ctx, LocalDateTime createdTime, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, createdTime);
@@ -77,9 +81,9 @@ public class SalesChannelChecker implements Checker<SalesChannel>{
         return;
     }
     }
-    public void checkUpdateTime(UserContext _ctx, LocalDateTime updateTime, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, updateTime);
-    if((updateTime == null)){
+    public void checkUpdatedTime(UserContext _ctx, LocalDateTime updatedTime, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, updatedTime);
+    if((updatedTime == null)){
         return;
     }
     }

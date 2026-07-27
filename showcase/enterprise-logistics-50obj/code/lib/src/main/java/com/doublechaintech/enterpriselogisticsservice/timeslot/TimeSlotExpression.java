@@ -1,7 +1,5 @@
 package com.doublechaintech.enterpriselogisticsservice.timeslot;
 
-import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
-import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
@@ -35,47 +33,53 @@ public class TimeSlotExpression<T, E, U extends TimeSlot> extends ExpressionAdap
      }
 
 
-    public Expression<T, String> getSlotId(){
-       return apply(TimeSlot::getSlotId);
+    public Expression<T, String> getSlotCode(){
+       return apply(TimeSlot::getSlotCode);
     }
-    public TimeSlotExpression<T, U, U> updateSlotId(String slotId){
-       return new TimeSlotExpression(this, $it ->  ((TimeSlot)$it).updateSlotId(slotId));
-    }
-
-    public MovingOrderExpression<T, U, MovingOrder> getMovingOrder(){
-       return new MovingOrderExpression(this, $it ->  ((TimeSlot)$it).getMovingOrder());
+    public TimeSlotExpression<T, U, U> updateSlotCode(String slotCode){
+       return new TimeSlotExpression(this, $it ->  ((TimeSlot)$it).updateSlotCode(slotCode));
     }
 
-    public TimeSlotExpression<T, U, U> updateMovingOrder(MovingOrder movingOrder){
-       return new TimeSlotExpression(this, $it ->  ((TimeSlot)$it).updateMovingOrder(movingOrder));
-    }
-
-    public Expression<T, String> getStartTime(){
+    public Expression<T, LocalDateTime> getStartTime(){
        return apply(TimeSlot::getStartTime);
     }
-    public TimeSlotExpression<T, U, U> updateStartTime(String startTime){
+    public TimeSlotExpression<T, U, U> updateStartTime(LocalDateTime startTime){
        return new TimeSlotExpression(this, $it ->  ((TimeSlot)$it).updateStartTime(startTime));
     }
 
-    public Expression<T, String> getEndTime(){
+    public Expression<T, LocalDateTime> getEndTime(){
        return apply(TimeSlot::getEndTime);
     }
-    public TimeSlotExpression<T, U, U> updateEndTime(String endTime){
+    public TimeSlotExpression<T, U, U> updateEndTime(LocalDateTime endTime){
        return new TimeSlotExpression(this, $it ->  ((TimeSlot)$it).updateEndTime(endTime));
     }
 
-    public Expression<T, String> getStatus(){
-       return apply(TimeSlot::getStatus);
+    public Expression<T, Integer> getCapacity(){
+       return apply(TimeSlot::getCapacity);
     }
-    public TimeSlotExpression<T, U, U> updateStatus(String status){
-       return new TimeSlotExpression(this, $it ->  ((TimeSlot)$it).updateStatus(status));
+    public TimeSlotExpression<T, U, U> updateCapacity(Integer capacity){
+       return new TimeSlotExpression(this, $it ->  ((TimeSlot)$it).updateCapacity(capacity));
     }
 
-    public Expression<T, LocalDateTime> getCreateTime(){
-       return apply(TimeSlot::getCreateTime);
+    public Expression<T, Integer> getAvailableSpots(){
+       return apply(TimeSlot::getAvailableSpots);
     }
-    public TimeSlotExpression<T, U, U> updateCreateTime(LocalDateTime createTime){
-       return new TimeSlotExpression(this, $it ->  ((TimeSlot)$it).updateCreateTime(createTime));
+    public TimeSlotExpression<T, U, U> updateAvailableSpots(Integer availableSpots){
+       return new TimeSlotExpression(this, $it ->  ((TimeSlot)$it).updateAvailableSpots(availableSpots));
+    }
+
+    public Expression<T, LocalDateTime> getCreatedTime(){
+       return apply(TimeSlot::getCreatedTime);
+    }
+    public TimeSlotExpression<T, U, U> updateCreatedTime(LocalDateTime createdTime){
+       return new TimeSlotExpression(this, $it ->  ((TimeSlot)$it).updateCreatedTime(createdTime));
+    }
+
+    public Expression<T, LocalDateTime> getUpdatedTime(){
+       return apply(TimeSlot::getUpdatedTime);
+    }
+    public TimeSlotExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
+       return new TimeSlotExpression(this, $it ->  ((TimeSlot)$it).updateUpdatedTime(updatedTime));
     }
 
 }

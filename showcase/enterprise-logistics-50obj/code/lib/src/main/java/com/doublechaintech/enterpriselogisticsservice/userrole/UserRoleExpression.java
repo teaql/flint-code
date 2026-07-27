@@ -1,11 +1,10 @@
 package com.doublechaintech.enterpriselogisticsservice.userrole;
 
-import com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission;
-import com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermissionListExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
+import java.time.LocalDateTime;
 import java.util.function.Function;
 
 public class UserRoleExpression<T, E, U extends UserRole> extends ExpressionAdaptor<T, E, U> implements BaseEntityExpression<T, U> {
@@ -34,18 +33,11 @@ public class UserRoleExpression<T, E, U extends UserRole> extends ExpressionAdap
      }
 
 
-    public Expression<T, String> getName(){
-       return apply(UserRole::getName);
+    public Expression<T, String> getRoleName(){
+       return apply(UserRole::getRoleName);
     }
-    public UserRoleExpression<T, U, U> updateName(String name){
-       return new UserRoleExpression(this, $it ->  ((UserRole)$it).updateName(name));
-    }
-
-    public Expression<T, String> getCode(){
-       return apply(UserRole::getCode);
-    }
-    public UserRoleExpression<T, U, U> updateCode(String code){
-       return new UserRoleExpression(this, $it ->  ((UserRole)$it).updateCode(code));
+    public UserRoleExpression<T, U, U> updateRoleName(String roleName){
+       return new UserRoleExpression(this, $it ->  ((UserRole)$it).updateRoleName(roleName));
     }
 
     public Expression<T, String> getDescription(){
@@ -55,10 +47,18 @@ public class UserRoleExpression<T, E, U extends UserRole> extends ExpressionAdap
        return new UserRoleExpression(this, $it ->  ((UserRole)$it).updateDescription(description));
     }
 
-    public AccessPermissionListExpression<T, U, AccessPermission> getAccessPermissionList(){
-        return new AccessPermissionListExpression(this, $it ->  ((UserRole)$it).getAccessPermissionList());
+    public Expression<T, String> getIsSystem(){
+       return apply(UserRole::getIsSystem);
     }
-    public UserRoleExpression<T, U, U> addAccessPermission(AccessPermission accessPermission){
-       return new UserRoleExpression(this, $it ->  ((UserRole)$it).addAccessPermission(accessPermission));
+    public UserRoleExpression<T, U, U> updateIsSystem(String isSystem){
+       return new UserRoleExpression(this, $it ->  ((UserRole)$it).updateIsSystem(isSystem));
     }
+
+    public Expression<T, LocalDateTime> getCreatedAt(){
+       return apply(UserRole::getCreatedAt);
+    }
+    public UserRoleExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
+       return new UserRoleExpression(this, $it ->  ((UserRole)$it).updateCreatedAt(createdAt));
+    }
+
 }

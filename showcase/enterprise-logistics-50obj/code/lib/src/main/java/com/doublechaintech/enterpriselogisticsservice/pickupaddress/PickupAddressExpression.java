@@ -1,11 +1,12 @@
 package com.doublechaintech.enterpriselogisticsservice.pickupaddress;
 
 import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
-import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderExpression;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderListExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.function.Function;
 
@@ -35,21 +36,6 @@ public class PickupAddressExpression<T, E, U extends PickupAddress> extends Expr
      }
 
 
-    public Expression<T, String> getAddressId(){
-       return apply(PickupAddress::getAddressId);
-    }
-    public PickupAddressExpression<T, U, U> updateAddressId(String addressId){
-       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updateAddressId(addressId));
-    }
-
-    public MovingOrderExpression<T, U, MovingOrder> getMovingOrder(){
-       return new MovingOrderExpression(this, $it ->  ((PickupAddress)$it).getMovingOrder());
-    }
-
-    public PickupAddressExpression<T, U, U> updateMovingOrder(MovingOrder movingOrder){
-       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updateMovingOrder(movingOrder));
-    }
-
     public Expression<T, String> getAddressLine1(){
        return apply(PickupAddress::getAddressLine1);
     }
@@ -71,18 +57,18 @@ public class PickupAddressExpression<T, E, U extends PickupAddress> extends Expr
        return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updateCity(city));
     }
 
-    public Expression<T, String> getState(){
-       return apply(PickupAddress::getState);
+    public Expression<T, String> getStateProvince(){
+       return apply(PickupAddress::getStateProvince);
     }
-    public PickupAddressExpression<T, U, U> updateState(String state){
-       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updateState(state));
+    public PickupAddressExpression<T, U, U> updateStateProvince(String stateProvince){
+       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updateStateProvince(stateProvince));
     }
 
-    public Expression<T, String> getZipCode(){
-       return apply(PickupAddress::getZipCode);
+    public Expression<T, String> getPostalCode(){
+       return apply(PickupAddress::getPostalCode);
     }
-    public PickupAddressExpression<T, U, U> updateZipCode(String zipCode){
-       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updateZipCode(zipCode));
+    public PickupAddressExpression<T, U, U> updatePostalCode(String postalCode){
+       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updatePostalCode(postalCode));
     }
 
     public Expression<T, String> getCountry(){
@@ -92,25 +78,44 @@ public class PickupAddressExpression<T, E, U extends PickupAddress> extends Expr
        return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updateCountry(country));
     }
 
-    public Expression<T, String> getContactName(){
-       return apply(PickupAddress::getContactName);
+    public Expression<T, BigDecimal> getLatitude(){
+       return apply(PickupAddress::getLatitude);
     }
-    public PickupAddressExpression<T, U, U> updateContactName(String contactName){
-       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updateContactName(contactName));
-    }
-
-    public Expression<T, String> getContactPhone(){
-       return apply(PickupAddress::getContactPhone);
-    }
-    public PickupAddressExpression<T, U, U> updateContactPhone(String contactPhone){
-       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updateContactPhone(contactPhone));
+    public PickupAddressExpression<T, U, U> updateLatitude(BigDecimal latitude){
+       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updateLatitude(latitude));
     }
 
-    public Expression<T, LocalDateTime> getCreateTime(){
-       return apply(PickupAddress::getCreateTime);
+    public Expression<T, String> getLongitude(){
+       return apply(PickupAddress::getLongitude);
     }
-    public PickupAddressExpression<T, U, U> updateCreateTime(LocalDateTime createTime){
-       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updateCreateTime(createTime));
+    public PickupAddressExpression<T, U, U> updateLongitude(String longitude){
+       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updateLongitude(longitude));
     }
 
+    public Expression<T, LocalDateTime> getCreatedTime(){
+       return apply(PickupAddress::getCreatedTime);
+    }
+    public PickupAddressExpression<T, U, U> updateCreatedTime(LocalDateTime createdTime){
+       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updateCreatedTime(createdTime));
+    }
+
+    public Expression<T, LocalDateTime> getUpdatedTime(){
+       return apply(PickupAddress::getUpdatedTime);
+    }
+    public PickupAddressExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
+       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).updateUpdatedTime(updatedTime));
+    }
+
+    public MovingOrderListExpression<T, U, MovingOrder> getMovingOrderListAsPickupAddress(){
+        return new MovingOrderListExpression(this, $it ->  ((PickupAddress)$it).getMovingOrderListAsPickupAddress());
+    }
+    public MovingOrderListExpression<T, U, MovingOrder> getMovingOrderListAsDeliveryAddress(){
+        return new MovingOrderListExpression(this, $it ->  ((PickupAddress)$it).getMovingOrderListAsDeliveryAddress());
+    }
+    public PickupAddressExpression<T, U, U> addMovingOrderAsPickupAddress(MovingOrder movingOrder){
+       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).addMovingOrderAsPickupAddress(movingOrder));
+    }
+    public PickupAddressExpression<T, U, U> addMovingOrderAsDeliveryAddress(MovingOrder movingOrder){
+       return new PickupAddressExpression(this, $it ->  ((PickupAddress)$it).addMovingOrderAsDeliveryAddress(movingOrder));
+    }
 }

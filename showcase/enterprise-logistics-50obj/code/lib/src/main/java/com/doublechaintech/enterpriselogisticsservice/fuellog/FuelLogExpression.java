@@ -6,8 +6,8 @@ import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.function.Function;
 
 public class FuelLogExpression<T, E, U extends FuelLog> extends ExpressionAdaptor<T, E, U> implements BaseEntityExpression<T, U> {
@@ -36,26 +36,32 @@ public class FuelLogExpression<T, E, U extends FuelLog> extends ExpressionAdapto
      }
 
 
-    public VehicleExpression<T, U, Vehicle> getVehicle(){
-       return new VehicleExpression(this, $it ->  ((FuelLog)$it).getVehicle());
+    public Expression<T, BigDecimal> getLiters(){
+       return apply(FuelLog::getLiters);
+    }
+    public FuelLogExpression<T, U, U> updateLiters(BigDecimal liters){
+       return new FuelLogExpression(this, $it ->  ((FuelLog)$it).updateLiters(liters));
     }
 
-    public FuelLogExpression<T, U, U> updateVehicle(Vehicle vehicle){
-       return new FuelLogExpression(this, $it ->  ((FuelLog)$it).updateVehicle(vehicle));
-    }
-
-    public Expression<T, String> getFuelAmountLiters(){
-       return apply(FuelLog::getFuelAmountLiters);
-    }
-    public FuelLogExpression<T, U, U> updateFuelAmountLiters(String fuelAmountLiters){
-       return new FuelLogExpression(this, $it ->  ((FuelLog)$it).updateFuelAmountLiters(fuelAmountLiters));
-    }
-
-    public Expression<T, String> getCost(){
+    public Expression<T, BigDecimal> getCost(){
        return apply(FuelLog::getCost);
     }
-    public FuelLogExpression<T, U, U> updateCost(String cost){
+    public FuelLogExpression<T, U, U> updateCost(BigDecimal cost){
        return new FuelLogExpression(this, $it ->  ((FuelLog)$it).updateCost(cost));
+    }
+
+    public Expression<T, Integer> getOdometerKm(){
+       return apply(FuelLog::getOdometerKm);
+    }
+    public FuelLogExpression<T, U, U> updateOdometerKm(Integer odometerKm){
+       return new FuelLogExpression(this, $it ->  ((FuelLog)$it).updateOdometerKm(odometerKm));
+    }
+
+    public Expression<T, String> getStationName(){
+       return apply(FuelLog::getStationName);
+    }
+    public FuelLogExpression<T, U, U> updateStationName(String stationName){
+       return new FuelLogExpression(this, $it ->  ((FuelLog)$it).updateStationName(stationName));
     }
 
     public Expression<T, LocalDate> getDate(){
@@ -65,11 +71,12 @@ public class FuelLogExpression<T, E, U extends FuelLog> extends ExpressionAdapto
        return new FuelLogExpression(this, $it ->  ((FuelLog)$it).updateDate(date));
     }
 
-    public Expression<T, LocalDateTime> getCreatedAt(){
-       return apply(FuelLog::getCreatedAt);
+    public VehicleExpression<T, U, Vehicle> getVehicle(){
+       return new VehicleExpression(this, $it ->  ((FuelLog)$it).getVehicle());
     }
-    public FuelLogExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
-       return new FuelLogExpression(this, $it ->  ((FuelLog)$it).updateCreatedAt(createdAt));
+
+    public FuelLogExpression<T, U, U> updateVehicle(Vehicle vehicle){
+       return new FuelLogExpression(this, $it ->  ((FuelLog)$it).updateVehicle(vehicle));
     }
 
 }

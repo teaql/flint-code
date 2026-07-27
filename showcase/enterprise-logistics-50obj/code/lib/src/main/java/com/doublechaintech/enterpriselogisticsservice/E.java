@@ -30,8 +30,6 @@ import com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackRev
 import com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReviewExpression;
 import com.doublechaintech.enterpriselogisticsservice.field.Field;
 import com.doublechaintech.enterpriselogisticsservice.field.FieldExpression;
-import com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport;
-import com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReportExpression;
 import com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog;
 import com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLogExpression;
 import com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog;
@@ -76,6 +74,10 @@ import com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageCo
 import com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainerExpression;
 import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee;
 import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFeeExpression;
+import com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration;
+import com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfigurationExpression;
+import com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification;
+import com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotificationExpression;
 import com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord;
 import com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecordExpression;
 import com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice;
@@ -125,8 +127,8 @@ public class E  {
   public static VehicleExpression<Vehicle, Vehicle, Vehicle> vehicle(Vehicle vehicle){
       return new VehicleExpression(new ValueExpression(vehicle));
   }
-  public static DriverAssignmentExpression<DriverAssignment, DriverAssignment, DriverAssignment> driverAssignment(DriverAssignment driverAssignment){
-      return new DriverAssignmentExpression(new ValueExpression(driverAssignment));
+  public static TelematicsDeviceExpression<TelematicsDevice, TelematicsDevice, TelematicsDevice> telematicsDevice(TelematicsDevice telematicsDevice){
+      return new TelematicsDeviceExpression(new ValueExpression(telematicsDevice));
   }
   public static GpsLogExpression<GpsLog, GpsLog, GpsLog> gpsLog(GpsLog gpsLog){
       return new GpsLogExpression(new ValueExpression(gpsLog));
@@ -137,8 +139,8 @@ public class E  {
   public static VehicleMaintenanceExpression<VehicleMaintenance, VehicleMaintenance, VehicleMaintenance> vehicleMaintenance(VehicleMaintenance vehicleMaintenance){
       return new VehicleMaintenanceExpression(new ValueExpression(vehicleMaintenance));
   }
-  public static TelematicsDeviceExpression<TelematicsDevice, TelematicsDevice, TelematicsDevice> telematicsDevice(TelematicsDevice telematicsDevice){
-      return new TelematicsDeviceExpression(new ValueExpression(telematicsDevice));
+  public static DriverAssignmentExpression<DriverAssignment, DriverAssignment, DriverAssignment> driverAssignment(DriverAssignment driverAssignment){
+      return new DriverAssignmentExpression(new ValueExpression(driverAssignment));
   }
   public static WarehouseExpression<Warehouse, Warehouse, Warehouse> warehouse(Warehouse warehouse){
       return new WarehouseExpression(new ValueExpression(warehouse));
@@ -221,9 +223,6 @@ public class E  {
   public static TaxRecordExpression<TaxRecord, TaxRecord, TaxRecord> taxRecord(TaxRecord taxRecord){
       return new TaxRecordExpression(new ValueExpression(taxRecord));
   }
-  public static FinancialReportExpression<FinancialReport, FinancialReport, FinancialReport> financialReport(FinancialReport financialReport){
-      return new FinancialReportExpression(new ValueExpression(financialReport));
-  }
   public static ServiceContractExpression<ServiceContract, ServiceContract, ServiceContract> serviceContract(ServiceContract serviceContract){
       return new ServiceContractExpression(new ValueExpression(serviceContract));
   }
@@ -247,5 +246,11 @@ public class E  {
   }
   public static AccessPermissionExpression<AccessPermission, AccessPermission, AccessPermission> accessPermission(AccessPermission accessPermission){
       return new AccessPermissionExpression(new ValueExpression(accessPermission));
+  }
+  public static SystemNotificationExpression<SystemNotification, SystemNotification, SystemNotification> systemNotification(SystemNotification systemNotification){
+      return new SystemNotificationExpression(new ValueExpression(systemNotification));
+  }
+  public static SystemConfigurationExpression<SystemConfiguration, SystemConfiguration, SystemConfiguration> systemConfiguration(SystemConfiguration systemConfiguration){
+      return new SystemConfigurationExpression(new ValueExpression(systemConfiguration));
   }
 }

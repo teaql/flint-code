@@ -5,6 +5,7 @@ import com.doublechaintech.enterpriselogisticsservice.warehouse.WarehouseChecker
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class InventoryCheckChecker implements Checker<InventoryCheck>{
@@ -35,8 +36,7 @@ public class InventoryCheckChecker implements Checker<InventoryCheck>{
       }
       checkWarehouse(_ctx, inventoryCheck.getProperty(InventoryCheck.WAREHOUSE_PROPERTY), newLocation(_parentLocation, InventoryCheck.WAREHOUSE_PROPERTY));
       checkCheckDate(_ctx, inventoryCheck.getProperty(InventoryCheck.CHECK_DATE_PROPERTY), newLocation(_parentLocation, InventoryCheck.CHECK_DATE_PROPERTY));
-      checkTotalItems(_ctx, inventoryCheck.getProperty(InventoryCheck.TOTAL_ITEMS_PROPERTY), newLocation(_parentLocation, InventoryCheck.TOTAL_ITEMS_PROPERTY));
-      checkDiscrepancies(_ctx, inventoryCheck.getProperty(InventoryCheck.DISCREPANCIES_PROPERTY), newLocation(_parentLocation, InventoryCheck.DISCREPANCIES_PROPERTY));
+      checkChecker(_ctx, inventoryCheck.getProperty(InventoryCheck.CHECKER_PROPERTY), newLocation(_parentLocation, InventoryCheck.CHECKER_PROPERTY));
       checkStatus(_ctx, inventoryCheck.getProperty(InventoryCheck.STATUS_PROPERTY), newLocation(_parentLocation, InventoryCheck.STATUS_PROPERTY));
       checkCreateTime(_ctx, inventoryCheck.getProperty(InventoryCheck.CREATE_TIME_PROPERTY), newLocation(_parentLocation, InventoryCheck.CREATE_TIME_PROPERTY));
       checkUpdateTime(_ctx, inventoryCheck.getProperty(InventoryCheck.UPDATE_TIME_PROPERTY), newLocation(_parentLocation, InventoryCheck.UPDATE_TIME_PROPERTY));
@@ -49,25 +49,19 @@ public class InventoryCheckChecker implements Checker<InventoryCheck>{
     }
     new WarehouseChecker().checkAndFix(_ctx, warehouse, _parentLocation);
     }
-    public void checkCheckDate(UserContext _ctx, String checkDate, ObjectLocation _parentLocation){
+    public void checkCheckDate(UserContext _ctx, LocalDate checkDate, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, checkDate);
     if((checkDate == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, checkDate);
+    }
+    public void checkChecker(UserContext _ctx, String checker, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, checker);
+    if((checker == null)){
+        return;
+    }
+    maxStringCheck(_ctx, _parentLocation, 100, checker);
 
-    }
-    public void checkTotalItems(UserContext _ctx, Integer totalItems, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, totalItems);
-    if((totalItems == null)){
-        return;
-    }
-    }
-    public void checkDiscrepancies(UserContext _ctx, Integer discrepancies, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, discrepancies);
-    if((discrepancies == null)){
-        return;
-    }
     }
     public void checkStatus(UserContext _ctx, String status, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, status);

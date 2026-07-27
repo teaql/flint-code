@@ -1,6 +1,5 @@
 package com.doublechaintech.enterpriselogisticsservice.safetytraining;
 
-import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
@@ -21,32 +20,32 @@ import java.util.Objects;
 public class SafetyTraining extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "SafetyTraining";
 
-    public static final String STAFF_PROPERTY = "staff";
-    public static final String COURSE_NAME_PROPERTY = "courseName";
+    public static final String TITLE_PROPERTY = "title";
+    public static final String DESCRIPTION_PROPERTY = "description";
+    public static final String DURATION_HOURS_PROPERTY = "durationHours";
     public static final String COMPLETION_DATE_PROPERTY = "completionDate";
-    public static final String CERTIFICATE_NUMBER_PROPERTY = "certificateNumber";
     public static final String STATUS_PROPERTY = "status";
     public static final String CREATED_AT_PROPERTY = "createdAt";
     public static final String UPDATED_AT_PROPERTY = "updatedAt";
-    private StaffMember staff;
-    private String courseName;
+    private String title;
+    private String description;
+    private String durationHours;
     private LocalDate completionDate;
-    private String certificateNumber;
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public StaffMember getStaff(){
-        return this.staff;
+    public String getTitle(){
+        return this.title;
     }
-    public String getCourseName(){
-        return this.courseName;
+    public String getDescription(){
+        return this.description;
+    }
+    public String getDurationHours(){
+        return this.durationHours;
     }
     public LocalDate getCompletionDate(){
         return this.completionDate;
-    }
-    public String getCertificateNumber(){
-        return this.certificateNumber;
     }
     public String getStatus(){
         return this.status;
@@ -57,21 +56,31 @@ public class SafetyTraining extends BaseEntity implements RemoteInput {
     public LocalDateTime getUpdatedAt(){
         return this.updatedAt;
     }
-    public SafetyTraining updateStaff(StaffMember staff){
-        if(Objects.equals(this.staff, staff)){
+    public SafetyTraining updateTitle(String title){
+        title = (title == null ? null : title.trim());
+        if(Objects.equals(this.title, title)){
             return this;
         }
-        handleUpdate(STAFF_PROPERTY, getStaff(), staff);
-        this.staff = staff;
+        handleUpdate(TITLE_PROPERTY, getTitle(), title);
+        this.title = title;
         return this;
     }
-    public SafetyTraining updateCourseName(String courseName){
-        courseName = (courseName == null ? null : courseName.trim());
-        if(Objects.equals(this.courseName, courseName)){
+    public SafetyTraining updateDescription(String description){
+        description = (description == null ? null : description.trim());
+        if(Objects.equals(this.description, description)){
             return this;
         }
-        handleUpdate(COURSE_NAME_PROPERTY, getCourseName(), courseName);
-        this.courseName = courseName;
+        handleUpdate(DESCRIPTION_PROPERTY, getDescription(), description);
+        this.description = description;
+        return this;
+    }
+    public SafetyTraining updateDurationHours(String durationHours){
+        durationHours = (durationHours == null ? null : durationHours.trim());
+        if(Objects.equals(this.durationHours, durationHours)){
+            return this;
+        }
+        handleUpdate(DURATION_HOURS_PROPERTY, getDurationHours(), durationHours);
+        this.durationHours = durationHours;
         return this;
     }
     public SafetyTraining updateCompletionDate(LocalDate completionDate){
@@ -80,15 +89,6 @@ public class SafetyTraining extends BaseEntity implements RemoteInput {
         }
         handleUpdate(COMPLETION_DATE_PROPERTY, getCompletionDate(), completionDate);
         this.completionDate = completionDate;
-        return this;
-    }
-    public SafetyTraining updateCertificateNumber(String certificateNumber){
-        certificateNumber = (certificateNumber == null ? null : certificateNumber.trim());
-        if(Objects.equals(this.certificateNumber, certificateNumber)){
-            return this;
-        }
-        handleUpdate(CERTIFICATE_NUMBER_PROPERTY, getCertificateNumber(), certificateNumber);
-        this.certificateNumber = certificateNumber;
         return this;
     }
     public SafetyTraining updateStatus(String status){
@@ -144,13 +144,13 @@ public class SafetyTraining extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public void __internalSet(String property, Object value) {
         switch (property) {
-            case "staff": this.staff = (StaffMember) value; break;
+            case "title": this.title = (value == null ? null : ((String)value).trim()); break;
 
-            case "courseName": this.courseName = (value == null ? null : ((String)value).trim()); break;
+            case "description": this.description = (value == null ? null : ((String)value).trim()); break;
+
+            case "durationHours": this.durationHours = (value == null ? null : ((String)value).trim()); break;
 
             case "completionDate": this.completionDate = (LocalDate) value; break;
-
-            case "certificateNumber": this.certificateNumber = (value == null ? null : ((String)value).trim()); break;
 
             case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
@@ -166,10 +166,10 @@ public class SafetyTraining extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public Object __internalGet(String property) {
         switch (property) {
-            case "staff": return this.staff;
-            case "courseName": return this.courseName;
+            case "title": return this.title;
+            case "description": return this.description;
+            case "durationHours": return this.durationHours;
             case "completionDate": return this.completionDate;
-            case "certificateNumber": return this.certificateNumber;
             case "status": return this.status;
             case "createdAt": return this.createdAt;
             case "updatedAt": return this.updatedAt;

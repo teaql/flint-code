@@ -10,8 +10,8 @@ import io.teaql.core.SearchCriteria;
 import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
@@ -85,7 +85,7 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
 
     public FuelLogRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectVehicleIdOnly().selectFuelAmountLiters().selectCost().selectDate().selectCreatedAt().selectVersion();
+        return selectId().selectLiters().selectCost().selectOdometerKm().selectStationName().selectDate().selectVehicleIdOnly().selectVersion();
     }
 
     public FuelLogRequest<T> selectSelfFields(){
@@ -94,12 +94,12 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
 
     public FuelLogRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectVehicle().selectFuelAmountLiters().selectCost().selectDate().selectCreatedAt().selectVersion();
+        return selectId().selectLiters().selectCost().selectOdometerKm().selectStationName().selectDate().selectVehicle().selectVersion();
     }
 
     public FuelLogRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectVehicle().selectFuelAmountLiters().selectCost().selectDate().selectCreatedAt().selectVersion();
+        return selectId().selectLiters().selectCost().selectOdometerKm().selectStationName().selectDate().selectVehicle().selectVersion();
     }
 
 
@@ -120,40 +120,29 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
        unselectProperty(FuelLog.ID_PROPERTY);
        return this;
     }
-    public FuelLogRequest<T> selectVehicleIdOnly(){
-       selectProperty(FuelLog.VEHICLE_PROPERTY);
-       return this;
-    }
-
-    public FuelLogRequest<T> selectVehicle(){
-        return selectVehicleWith(Q.vehicles().unlimited().selectSelf());
-    }
-
-    public FuelLogRequest<T> selectVehicleWith(VehicleRequest vehicle){
-       selectProperty(FuelLog.VEHICLE_PROPERTY);
-       enhanceRelation(FuelLog.VEHICLE_PROPERTY, vehicle);
-       return this;
-    }
-
-    public FuelLogRequest<T> unselectVehicle(){
-       unselectProperty(FuelLog.VEHICLE_PROPERTY);
-       return this;
-    }
-    public FuelLogRequest<T> selectFuelAmountLiters(){
-       selectProperty(FuelLog.FUEL_AMOUNT_LITERS_PROPERTY);
+    public FuelLogRequest<T> selectLiters(){
+       selectProperty(FuelLog.LITERS_PROPERTY);
        return this;
     }
 
     /**
-     * fill the fuelAmountLiters with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  fuelAmountLiters) to fetch fuelAmountLiters property.
+     * fill the liters with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  liters) to fetch liters property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
+    /**
+     * fill the liters with customized aggrFunction, TEAQL uses ({aggrFunction}(liters) AS liters to fetch liters property.
+     * @param aggrFunction  aggrFunction
+     */
+    public FuelLogRequest<T> selectLiters(AggrFunction aggrFunction){
+       selectProperty(FuelLog.LITERS_PROPERTY, aggrFunction);
+       return this;
+    }
 
 
-    public FuelLogRequest<T> unselectFuelAmountLiters(){
-       unselectProperty(FuelLog.FUEL_AMOUNT_LITERS_PROPERTY);
+    public FuelLogRequest<T> unselectLiters(){
+       unselectProperty(FuelLog.LITERS_PROPERTY);
        return this;
     }
     public FuelLogRequest<T> selectCost(){
@@ -167,10 +156,60 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
      */
 
 
+    /**
+     * fill the cost with customized aggrFunction, TEAQL uses ({aggrFunction}(cost) AS cost to fetch cost property.
+     * @param aggrFunction  aggrFunction
+     */
+    public FuelLogRequest<T> selectCost(AggrFunction aggrFunction){
+       selectProperty(FuelLog.COST_PROPERTY, aggrFunction);
+       return this;
+    }
 
 
     public FuelLogRequest<T> unselectCost(){
        unselectProperty(FuelLog.COST_PROPERTY);
+       return this;
+    }
+    public FuelLogRequest<T> selectOdometerKm(){
+       selectProperty(FuelLog.ODOMETER_KM_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the odometerKm with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  odometerKm) to fetch odometerKm property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+    /**
+     * fill the odometerKm with customized aggrFunction, TEAQL uses ({aggrFunction}(odometerKm) AS odometerKm to fetch odometerKm property.
+     * @param aggrFunction  aggrFunction
+     */
+    public FuelLogRequest<T> selectOdometerKm(AggrFunction aggrFunction){
+       selectProperty(FuelLog.ODOMETER_KM_PROPERTY, aggrFunction);
+       return this;
+    }
+
+
+    public FuelLogRequest<T> unselectOdometerKm(){
+       unselectProperty(FuelLog.ODOMETER_KM_PROPERTY);
+       return this;
+    }
+    public FuelLogRequest<T> selectStationName(){
+       selectProperty(FuelLog.STATION_NAME_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the stationName with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  stationName) to fetch stationName property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public FuelLogRequest<T> unselectStationName(){
+       unselectProperty(FuelLog.STATION_NAME_PROPERTY);
        return this;
     }
     public FuelLogRequest<T> selectDate(){
@@ -190,21 +229,23 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
        unselectProperty(FuelLog.DATE_PROPERTY);
        return this;
     }
-    public FuelLogRequest<T> selectCreatedAt(){
-       selectProperty(FuelLog.CREATED_AT_PROPERTY);
+    public FuelLogRequest<T> selectVehicleIdOnly(){
+       selectProperty(FuelLog.VEHICLE_PROPERTY);
        return this;
     }
 
-    /**
-     * fill the createdAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdAt) to fetch createdAt property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
+    public FuelLogRequest<T> selectVehicle(){
+        return selectVehicleWith(Q.vehicles().unlimited().selectSelf());
+    }
 
+    public FuelLogRequest<T> selectVehicleWith(VehicleRequest vehicle){
+       selectProperty(FuelLog.VEHICLE_PROPERTY);
+       enhanceRelation(FuelLog.VEHICLE_PROPERTY, vehicle);
+       return this;
+    }
 
-
-
-    public FuelLogRequest<T> unselectCreatedAt(){
-       unselectProperty(FuelLog.CREATED_AT_PROPERTY);
+    public FuelLogRequest<T> unselectVehicle(){
+       unselectProperty(FuelLog.VEHICLE_PROPERTY);
        return this;
     }
     public FuelLogRequest<T> selectVersion(){
@@ -242,103 +283,52 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
 
 
 
-    public FuelLogRequest<T> filterByVehicle(Vehicle... vehicle){
-      if (vehicle == null || vehicle.length == 0) {
-        throw new IllegalArgumentException("filterByVehicle parameter vehicle cannot be empty");
+    public FuelLogRequest<T> filterByLiters(BigDecimal... liters){
+      if (liters == null || liters.length == 0) {
+        throw new IllegalArgumentException("filterByLiters parameter liters cannot be empty");
       }
-      return appendSearchCriteria(createVehicleCriteria(Operator.EQUAL, (Object[])vehicle));
+      return appendSearchCriteria(createLitersCriteria(Operator.EQUAL, (Object[])liters));
     }
 
-    public FuelLogRequest<T> withVehicle(Operator operator, Object... values){
-       return appendSearchCriteria(createVehicleCriteria(operator, values));
+    public FuelLogRequest<T> withLiters(Operator operator, Object... values){
+       return appendSearchCriteria(createLitersCriteria(operator, values));
     }
 
-    public FuelLogRequest<T> withVehicleIsUnknown(){
-       return withVehicle(Operator.IS_NULL);
+    public FuelLogRequest<T> withLitersIsUnknown(){
+       return withLiters(Operator.IS_NULL);
     }
 
-    public FuelLogRequest<T> withVehicleIsKnown(){
-       return withVehicle(Operator.IS_NOT_NULL);
+    public FuelLogRequest<T> withLitersIsKnown(){
+       return withLiters(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createVehicleCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(FuelLog.VEHICLE_PROPERTY, operator, values);
+    public SearchCriteria createLitersCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(FuelLog.LITERS_PROPERTY, operator, values);
     }
 
-    public FuelLogRequest<T> filterByVehicle(Long vehicle){
-      if(vehicle == null){
-         return this;
-      }
-      return withVehicle(Operator.EQUAL, vehicle);
-    }
-    public FuelLogRequest<T> withVehicleMatching(VehicleRequest vehicle){
-       return appendSearchCriteria(new SubQuerySearchCriteria(FuelLog.VEHICLE_PROPERTY, vehicle, Vehicle.ID_PROPERTY));
+    public FuelLogRequest<T> withLitersGreaterThan(BigDecimal liters){
+       return withLiters(Operator.GREATER_THAN, liters);
     }
 
-    public FuelLogRequest<T> filterByFuelAmountLiters(String... fuelAmountLiters){
-      if (fuelAmountLiters == null || fuelAmountLiters.length == 0) {
-        throw new IllegalArgumentException("filterByFuelAmountLiters parameter fuelAmountLiters cannot be empty");
-      }
-      return appendSearchCriteria(createFuelAmountLitersCriteria(Operator.EQUAL, (Object[])fuelAmountLiters));
+    public FuelLogRequest<T> withLitersGreaterThanOrEqualTo(BigDecimal liters){
+       return withLiters(Operator.GREATER_THAN_OR_EQUAL, liters);
     }
 
-    public FuelLogRequest<T> withFuelAmountLiters(Operator operator, Object... values){
-       return appendSearchCriteria(createFuelAmountLitersCriteria(operator, values));
+    public FuelLogRequest<T> withLitersLessThan(BigDecimal liters){
+       return withLiters(Operator.LESS_THAN, liters);
     }
 
-    public FuelLogRequest<T> withFuelAmountLitersIsUnknown(){
-       return withFuelAmountLiters(Operator.IS_NULL);
+    public FuelLogRequest<T> withLitersLessThanOrEqualTo(BigDecimal liters){
+       return withLiters(Operator.LESS_THAN_OR_EQUAL, liters);
     }
 
-    public FuelLogRequest<T> withFuelAmountLitersIsKnown(){
-       return withFuelAmountLiters(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createFuelAmountLitersCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(FuelLog.FUEL_AMOUNT_LITERS_PROPERTY, operator, values);
-    }
-
-    public FuelLogRequest<T> withFuelAmountLitersGreaterThan(String fuelAmountLiters){
-       return withFuelAmountLiters(Operator.GREATER_THAN, fuelAmountLiters);
-    }
-
-    public FuelLogRequest<T> withFuelAmountLitersGreaterThanOrEqualTo(String fuelAmountLiters){
-       return withFuelAmountLiters(Operator.GREATER_THAN_OR_EQUAL, fuelAmountLiters);
-    }
-
-    public FuelLogRequest<T> withFuelAmountLitersLessThan(String fuelAmountLiters){
-       return withFuelAmountLiters(Operator.LESS_THAN, fuelAmountLiters);
-    }
-
-    public FuelLogRequest<T> withFuelAmountLitersLessThanOrEqualTo(String fuelAmountLiters){
-       return withFuelAmountLiters(Operator.LESS_THAN_OR_EQUAL, fuelAmountLiters);
-    }
-
-    public FuelLogRequest<T> withFuelAmountLitersBetween(String startOfFuelAmountLiters, String endOfFuelAmountLiters){
-       return withFuelAmountLiters(Operator.BETWEEN, startOfFuelAmountLiters, endOfFuelAmountLiters);
-    }
-    public FuelLogRequest<T> withFuelAmountLitersStartingWith(String fuelAmountLiters){
-       return withFuelAmountLiters(Operator.BEGIN_WITH, fuelAmountLiters);
-    }
-    public FuelLogRequest<T> withFuelAmountLitersContaining(String fuelAmountLiters){
-       return withFuelAmountLiters(Operator.CONTAIN, fuelAmountLiters);
-    }
-
-    public FuelLogRequest<T> withFuelAmountLitersEndingWith(String fuelAmountLiters){
-       return withFuelAmountLiters(Operator.END_WITH, fuelAmountLiters);
-    }
-
-    public FuelLogRequest<T> withFuelAmountLitersIs(String fuelAmountLiters){
-       return withFuelAmountLiters(Operator.EQUAL, fuelAmountLiters);
-    }
-
-    public FuelLogRequest<T> withFuelAmountLitersSoundingLike(String fuelAmountLiters){
-       return withFuelAmountLiters(Operator.SOUNDS_LIKE, fuelAmountLiters);
+    public FuelLogRequest<T> withLitersBetween(BigDecimal startOfLiters, BigDecimal endOfLiters){
+       return withLiters(Operator.BETWEEN, startOfLiters, endOfLiters);
     }
 
 
 
-    public FuelLogRequest<T> filterByCost(String... cost){
+    public FuelLogRequest<T> filterByCost(BigDecimal... cost){
       if (cost == null || cost.length == 0) {
         throw new IllegalArgumentException("filterByCost parameter cost cannot be empty");
       }
@@ -361,42 +351,132 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
         return createBasicSearchCriteria(FuelLog.COST_PROPERTY, operator, values);
     }
 
-    public FuelLogRequest<T> withCostGreaterThan(String cost){
+    public FuelLogRequest<T> withCostGreaterThan(BigDecimal cost){
        return withCost(Operator.GREATER_THAN, cost);
     }
 
-    public FuelLogRequest<T> withCostGreaterThanOrEqualTo(String cost){
+    public FuelLogRequest<T> withCostGreaterThanOrEqualTo(BigDecimal cost){
        return withCost(Operator.GREATER_THAN_OR_EQUAL, cost);
     }
 
-    public FuelLogRequest<T> withCostLessThan(String cost){
+    public FuelLogRequest<T> withCostLessThan(BigDecimal cost){
        return withCost(Operator.LESS_THAN, cost);
     }
 
-    public FuelLogRequest<T> withCostLessThanOrEqualTo(String cost){
+    public FuelLogRequest<T> withCostLessThanOrEqualTo(BigDecimal cost){
        return withCost(Operator.LESS_THAN_OR_EQUAL, cost);
     }
 
-    public FuelLogRequest<T> withCostBetween(String startOfCost, String endOfCost){
+    public FuelLogRequest<T> withCostBetween(BigDecimal startOfCost, BigDecimal endOfCost){
        return withCost(Operator.BETWEEN, startOfCost, endOfCost);
     }
-    public FuelLogRequest<T> withCostStartingWith(String cost){
-       return withCost(Operator.BEGIN_WITH, cost);
-    }
-    public FuelLogRequest<T> withCostContaining(String cost){
-       return withCost(Operator.CONTAIN, cost);
+
+
+
+    public FuelLogRequest<T> filterByOdometerKm(Integer... odometerKm){
+      if (odometerKm == null || odometerKm.length == 0) {
+        throw new IllegalArgumentException("filterByOdometerKm parameter odometerKm cannot be empty");
+      }
+      return appendSearchCriteria(createOdometerKmCriteria(Operator.EQUAL, (Object[])odometerKm));
     }
 
-    public FuelLogRequest<T> withCostEndingWith(String cost){
-       return withCost(Operator.END_WITH, cost);
+    public FuelLogRequest<T> withOdometerKm(Operator operator, Object... values){
+       return appendSearchCriteria(createOdometerKmCriteria(operator, values));
     }
 
-    public FuelLogRequest<T> withCostIs(String cost){
-       return withCost(Operator.EQUAL, cost);
+    public FuelLogRequest<T> withOdometerKmIsUnknown(){
+       return withOdometerKm(Operator.IS_NULL);
     }
 
-    public FuelLogRequest<T> withCostSoundingLike(String cost){
-       return withCost(Operator.SOUNDS_LIKE, cost);
+    public FuelLogRequest<T> withOdometerKmIsKnown(){
+       return withOdometerKm(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createOdometerKmCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(FuelLog.ODOMETER_KM_PROPERTY, operator, values);
+    }
+
+    public FuelLogRequest<T> withOdometerKmGreaterThan(Integer odometerKm){
+       return withOdometerKm(Operator.GREATER_THAN, odometerKm);
+    }
+
+    public FuelLogRequest<T> withOdometerKmGreaterThanOrEqualTo(Integer odometerKm){
+       return withOdometerKm(Operator.GREATER_THAN_OR_EQUAL, odometerKm);
+    }
+
+    public FuelLogRequest<T> withOdometerKmLessThan(Integer odometerKm){
+       return withOdometerKm(Operator.LESS_THAN, odometerKm);
+    }
+
+    public FuelLogRequest<T> withOdometerKmLessThanOrEqualTo(Integer odometerKm){
+       return withOdometerKm(Operator.LESS_THAN_OR_EQUAL, odometerKm);
+    }
+
+    public FuelLogRequest<T> withOdometerKmBetween(Integer startOfOdometerKm, Integer endOfOdometerKm){
+       return withOdometerKm(Operator.BETWEEN, startOfOdometerKm, endOfOdometerKm);
+    }
+
+
+
+    public FuelLogRequest<T> filterByStationName(String... stationName){
+      if (stationName == null || stationName.length == 0) {
+        throw new IllegalArgumentException("filterByStationName parameter stationName cannot be empty");
+      }
+      return appendSearchCriteria(createStationNameCriteria(Operator.EQUAL, (Object[])stationName));
+    }
+
+    public FuelLogRequest<T> withStationName(Operator operator, Object... values){
+       return appendSearchCriteria(createStationNameCriteria(operator, values));
+    }
+
+    public FuelLogRequest<T> withStationNameIsUnknown(){
+       return withStationName(Operator.IS_NULL);
+    }
+
+    public FuelLogRequest<T> withStationNameIsKnown(){
+       return withStationName(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createStationNameCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(FuelLog.STATION_NAME_PROPERTY, operator, values);
+    }
+
+    public FuelLogRequest<T> withStationNameGreaterThan(String stationName){
+       return withStationName(Operator.GREATER_THAN, stationName);
+    }
+
+    public FuelLogRequest<T> withStationNameGreaterThanOrEqualTo(String stationName){
+       return withStationName(Operator.GREATER_THAN_OR_EQUAL, stationName);
+    }
+
+    public FuelLogRequest<T> withStationNameLessThan(String stationName){
+       return withStationName(Operator.LESS_THAN, stationName);
+    }
+
+    public FuelLogRequest<T> withStationNameLessThanOrEqualTo(String stationName){
+       return withStationName(Operator.LESS_THAN_OR_EQUAL, stationName);
+    }
+
+    public FuelLogRequest<T> withStationNameBetween(String startOfStationName, String endOfStationName){
+       return withStationName(Operator.BETWEEN, startOfStationName, endOfStationName);
+    }
+    public FuelLogRequest<T> withStationNameStartingWith(String stationName){
+       return withStationName(Operator.BEGIN_WITH, stationName);
+    }
+    public FuelLogRequest<T> withStationNameContaining(String stationName){
+       return withStationName(Operator.CONTAIN, stationName);
+    }
+
+    public FuelLogRequest<T> withStationNameEndingWith(String stationName){
+       return withStationName(Operator.END_WITH, stationName);
+    }
+
+    public FuelLogRequest<T> withStationNameIs(String stationName){
+       return withStationName(Operator.EQUAL, stationName);
+    }
+
+    public FuelLogRequest<T> withStationNameSoundingLike(String stationName){
+       return withStationName(Operator.SOUNDS_LIKE, stationName);
     }
 
 
@@ -466,70 +546,38 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
 
 
 
-    public FuelLogRequest<T> filterByCreatedAt(LocalDateTime... createdAt){
-      if (createdAt == null || createdAt.length == 0) {
-        throw new IllegalArgumentException("filterByCreatedAt parameter createdAt cannot be empty");
+    public FuelLogRequest<T> filterByVehicle(Vehicle... vehicle){
+      if (vehicle == null || vehicle.length == 0) {
+        throw new IllegalArgumentException("filterByVehicle parameter vehicle cannot be empty");
       }
-      return appendSearchCriteria(createCreatedAtCriteria(Operator.EQUAL, (Object[])createdAt));
+      return appendSearchCriteria(createVehicleCriteria(Operator.EQUAL, (Object[])vehicle));
     }
 
-    public FuelLogRequest<T> withCreatedAt(Operator operator, Object... values){
-       return appendSearchCriteria(createCreatedAtCriteria(operator, values));
+    public FuelLogRequest<T> withVehicle(Operator operator, Object... values){
+       return appendSearchCriteria(createVehicleCriteria(operator, values));
     }
 
-    public FuelLogRequest<T> withCreatedAtIsUnknown(){
-       return withCreatedAt(Operator.IS_NULL);
+    public FuelLogRequest<T> withVehicleIsUnknown(){
+       return withVehicle(Operator.IS_NULL);
     }
 
-    public FuelLogRequest<T> withCreatedAtIsKnown(){
-       return withCreatedAt(Operator.IS_NOT_NULL);
+    public FuelLogRequest<T> withVehicleIsKnown(){
+       return withVehicle(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCreatedAtCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(FuelLog.CREATED_AT_PROPERTY, operator, values);
+    public SearchCriteria createVehicleCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(FuelLog.VEHICLE_PROPERTY, operator, values);
     }
 
-    public FuelLogRequest<T> withCreatedAtGreaterThan(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    public FuelLogRequest<T> filterByVehicle(Long vehicle){
+      if(vehicle == null){
+         return this;
+      }
+      return withVehicle(Operator.EQUAL, vehicle);
     }
-
-    public FuelLogRequest<T> withCreatedAtGreaterThanOrEqualTo(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN_OR_EQUAL, createdAt);
+    public FuelLogRequest<T> withVehicleMatching(VehicleRequest vehicle){
+       return appendSearchCriteria(new SubQuerySearchCriteria(FuelLog.VEHICLE_PROPERTY, vehicle, Vehicle.ID_PROPERTY));
     }
-
-    public FuelLogRequest<T> withCreatedAtLessThan(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
-    }
-
-    public FuelLogRequest<T> withCreatedAtLessThanOrEqualTo(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN_OR_EQUAL, createdAt);
-    }
-
-    public FuelLogRequest<T> withCreatedAtBetween(LocalDateTime startOfCreatedAt, LocalDateTime endOfCreatedAt){
-       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
-    }
-    public FuelLogRequest<T> withCreatedAtBefore(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
-    }
-
-    public FuelLogRequest<T> withCreatedAtBefore(Date createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
-    }
-
-    public FuelLogRequest<T> withCreatedAtAfter(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
-    }
-
-    public FuelLogRequest<T> withCreatedAtAfter(Date createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
-    }
-
-    public FuelLogRequest<T> withCreatedAtBetween(Date startOfCreatedAt, Date endOfCreatedAt){
-       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
-    }
-
-
-
 
     public FuelLogRequest<T> filterByVersion(Long... version){
       if (version == null || version.length == 0) {
@@ -583,6 +631,198 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
         super.count(retName);
         return this;
     }
+    public FuelLogRequest minLiters(){
+        return minLitersAs(prefix("minOf",FuelLog.LITERS_PROPERTY));
+    }
+
+    public FuelLogRequest minLitersAs(String retName){
+        super.min(retName, FuelLog.LITERS_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest maxLiters(){
+        return maxLitersAs(prefix("maxOf",FuelLog.LITERS_PROPERTY));
+    }
+
+    public FuelLogRequest maxLitersAs(String retName){
+        super.max(retName, FuelLog.LITERS_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest sumLiters(){
+        return sumLitersAs(prefix("sumOf",FuelLog.LITERS_PROPERTY));
+    }
+
+    public FuelLogRequest sumLitersAs(String retName){
+        super.sum(retName, FuelLog.LITERS_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest avgLiters(){
+        return avgLitersAs(prefix("avgOf",FuelLog.LITERS_PROPERTY));
+    }
+
+    public FuelLogRequest avgLitersAs(String retName){
+        super.avg(retName, FuelLog.LITERS_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest standardDeviationLiters(){
+        return standardDeviationLitersAs(prefix("standardDeviationOf",FuelLog.LITERS_PROPERTY));
+    }
+
+    public FuelLogRequest standardDeviationLitersAs(String retName){
+        super.standardDeviation(retName, FuelLog.LITERS_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest squareRootOfPopulationStandardDeviationLiters(){
+        return squareRootOfPopulationStandardDeviationLitersAs(prefix("squareRootOfPopulationStandardDeviationOf",FuelLog.LITERS_PROPERTY));
+    }
+
+    public FuelLogRequest squareRootOfPopulationStandardDeviationLitersAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, FuelLog.LITERS_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest sampleVarianceLiters(){
+        return sampleVarianceLitersAs(prefix("sampleVarianceOf",FuelLog.LITERS_PROPERTY));
+    }
+
+    public FuelLogRequest sampleVarianceLitersAs(String retName){
+        super.sampleVariance(retName, FuelLog.LITERS_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest samplePopulationVarianceLiters(){
+        return samplePopulationVarianceLitersAs(prefix("samplePopulationVarianceOf",FuelLog.LITERS_PROPERTY));
+    }
+
+    public FuelLogRequest samplePopulationVarianceLitersAs(String retName){
+        super.samplePopulationVariance(retName, FuelLog.LITERS_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest minCost(){
+        return minCostAs(prefix("minOf",FuelLog.COST_PROPERTY));
+    }
+
+    public FuelLogRequest minCostAs(String retName){
+        super.min(retName, FuelLog.COST_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest maxCost(){
+        return maxCostAs(prefix("maxOf",FuelLog.COST_PROPERTY));
+    }
+
+    public FuelLogRequest maxCostAs(String retName){
+        super.max(retName, FuelLog.COST_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest sumCost(){
+        return sumCostAs(prefix("sumOf",FuelLog.COST_PROPERTY));
+    }
+
+    public FuelLogRequest sumCostAs(String retName){
+        super.sum(retName, FuelLog.COST_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest avgCost(){
+        return avgCostAs(prefix("avgOf",FuelLog.COST_PROPERTY));
+    }
+
+    public FuelLogRequest avgCostAs(String retName){
+        super.avg(retName, FuelLog.COST_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest standardDeviationCost(){
+        return standardDeviationCostAs(prefix("standardDeviationOf",FuelLog.COST_PROPERTY));
+    }
+
+    public FuelLogRequest standardDeviationCostAs(String retName){
+        super.standardDeviation(retName, FuelLog.COST_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest squareRootOfPopulationStandardDeviationCost(){
+        return squareRootOfPopulationStandardDeviationCostAs(prefix("squareRootOfPopulationStandardDeviationOf",FuelLog.COST_PROPERTY));
+    }
+
+    public FuelLogRequest squareRootOfPopulationStandardDeviationCostAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, FuelLog.COST_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest sampleVarianceCost(){
+        return sampleVarianceCostAs(prefix("sampleVarianceOf",FuelLog.COST_PROPERTY));
+    }
+
+    public FuelLogRequest sampleVarianceCostAs(String retName){
+        super.sampleVariance(retName, FuelLog.COST_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest samplePopulationVarianceCost(){
+        return samplePopulationVarianceCostAs(prefix("samplePopulationVarianceOf",FuelLog.COST_PROPERTY));
+    }
+
+    public FuelLogRequest samplePopulationVarianceCostAs(String retName){
+        super.samplePopulationVariance(retName, FuelLog.COST_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest minOdometerKm(){
+        return minOdometerKmAs(prefix("minOf",FuelLog.ODOMETER_KM_PROPERTY));
+    }
+
+    public FuelLogRequest minOdometerKmAs(String retName){
+        super.min(retName, FuelLog.ODOMETER_KM_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest maxOdometerKm(){
+        return maxOdometerKmAs(prefix("maxOf",FuelLog.ODOMETER_KM_PROPERTY));
+    }
+
+    public FuelLogRequest maxOdometerKmAs(String retName){
+        super.max(retName, FuelLog.ODOMETER_KM_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest sumOdometerKm(){
+        return sumOdometerKmAs(prefix("sumOf",FuelLog.ODOMETER_KM_PROPERTY));
+    }
+
+    public FuelLogRequest sumOdometerKmAs(String retName){
+        super.sum(retName, FuelLog.ODOMETER_KM_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest avgOdometerKm(){
+        return avgOdometerKmAs(prefix("avgOf",FuelLog.ODOMETER_KM_PROPERTY));
+    }
+
+    public FuelLogRequest avgOdometerKmAs(String retName){
+        super.avg(retName, FuelLog.ODOMETER_KM_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest standardDeviationOdometerKm(){
+        return standardDeviationOdometerKmAs(prefix("standardDeviationOf",FuelLog.ODOMETER_KM_PROPERTY));
+    }
+
+    public FuelLogRequest standardDeviationOdometerKmAs(String retName){
+        super.standardDeviation(retName, FuelLog.ODOMETER_KM_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest squareRootOfPopulationStandardDeviationOdometerKm(){
+        return squareRootOfPopulationStandardDeviationOdometerKmAs(prefix("squareRootOfPopulationStandardDeviationOf",FuelLog.ODOMETER_KM_PROPERTY));
+    }
+
+    public FuelLogRequest squareRootOfPopulationStandardDeviationOdometerKmAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, FuelLog.ODOMETER_KM_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest sampleVarianceOdometerKm(){
+        return sampleVarianceOdometerKmAs(prefix("sampleVarianceOf",FuelLog.ODOMETER_KM_PROPERTY));
+    }
+
+    public FuelLogRequest sampleVarianceOdometerKmAs(String retName){
+        super.sampleVariance(retName, FuelLog.ODOMETER_KM_PROPERTY);
+        return this;
+    }
+    public FuelLogRequest samplePopulationVarianceOdometerKm(){
+        return samplePopulationVarianceOdometerKmAs(prefix("samplePopulationVarianceOf",FuelLog.ODOMETER_KM_PROPERTY));
+    }
+
+    public FuelLogRequest samplePopulationVarianceOdometerKmAs(String retName){
+        super.samplePopulationVariance(retName, FuelLog.ODOMETER_KM_PROPERTY);
+        return this;
+    }
     public FuelLogRequest<T> groupByVehicleWithDetails(){
        return groupByVehicleWithDetails(Q.vehicles().unlimited());
     }
@@ -591,10 +831,6 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
        aggregate(FuelLog.VEHICLE_PROPERTY, subRequest);
        return this;
     }
-
-
-
-
 
 
 
@@ -612,37 +848,19 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
        groupBy(retName, FuelLog.ID_PROPERTY, function);
        return this;
     }
-    public FuelLogRequest<T> groupByVehicleWith(VehicleRequest subRequest){
-       groupBy(FuelLog.VEHICLE_PROPERTY, subRequest);
-       return this;
-    }
-    public FuelLogRequest<T> groupByVehicle(){
-       groupBy(FuelLog.VEHICLE_PROPERTY);
+
+    public FuelLogRequest<T> groupByLiters(){
+       groupBy(FuelLog.LITERS_PROPERTY);
        return this;
     }
 
-    public FuelLogRequest<T> groupByVehicleAs(String retName){
-       groupBy(retName, FuelLog.VEHICLE_PROPERTY);
+    public FuelLogRequest<T> groupByLitersAs(String retName){
+       groupBy(retName, FuelLog.LITERS_PROPERTY);
        return this;
     }
 
-    public FuelLogRequest<T> groupByVehicleWithFunction(String retName, AggrFunction function){
-       groupBy(retName, FuelLog.VEHICLE_PROPERTY, function);
-       return this;
-    }
-
-    public FuelLogRequest<T> groupByFuelAmountLiters(){
-       groupBy(FuelLog.FUEL_AMOUNT_LITERS_PROPERTY);
-       return this;
-    }
-
-    public FuelLogRequest<T> groupByFuelAmountLitersAs(String retName){
-       groupBy(retName, FuelLog.FUEL_AMOUNT_LITERS_PROPERTY);
-       return this;
-    }
-
-    public FuelLogRequest<T> groupByFuelAmountLitersWithFunction(String retName, AggrFunction function){
-       groupBy(retName, FuelLog.FUEL_AMOUNT_LITERS_PROPERTY, function);
+    public FuelLogRequest<T> groupByLitersWithFunction(String retName, AggrFunction function){
+       groupBy(retName, FuelLog.LITERS_PROPERTY, function);
        return this;
     }
 
@@ -661,6 +879,36 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
        return this;
     }
 
+    public FuelLogRequest<T> groupByOdometerKm(){
+       groupBy(FuelLog.ODOMETER_KM_PROPERTY);
+       return this;
+    }
+
+    public FuelLogRequest<T> groupByOdometerKmAs(String retName){
+       groupBy(retName, FuelLog.ODOMETER_KM_PROPERTY);
+       return this;
+    }
+
+    public FuelLogRequest<T> groupByOdometerKmWithFunction(String retName, AggrFunction function){
+       groupBy(retName, FuelLog.ODOMETER_KM_PROPERTY, function);
+       return this;
+    }
+
+    public FuelLogRequest<T> groupByStationName(){
+       groupBy(FuelLog.STATION_NAME_PROPERTY);
+       return this;
+    }
+
+    public FuelLogRequest<T> groupByStationNameAs(String retName){
+       groupBy(retName, FuelLog.STATION_NAME_PROPERTY);
+       return this;
+    }
+
+    public FuelLogRequest<T> groupByStationNameWithFunction(String retName, AggrFunction function){
+       groupBy(retName, FuelLog.STATION_NAME_PROPERTY, function);
+       return this;
+    }
+
     public FuelLogRequest<T> groupByDate(){
        groupBy(FuelLog.DATE_PROPERTY);
        return this;
@@ -675,19 +923,22 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
        groupBy(retName, FuelLog.DATE_PROPERTY, function);
        return this;
     }
-
-    public FuelLogRequest<T> groupByCreatedAt(){
-       groupBy(FuelLog.CREATED_AT_PROPERTY);
+    public FuelLogRequest<T> groupByVehicleWith(VehicleRequest subRequest){
+       groupBy(FuelLog.VEHICLE_PROPERTY, subRequest);
+       return this;
+    }
+    public FuelLogRequest<T> groupByVehicle(){
+       groupBy(FuelLog.VEHICLE_PROPERTY);
        return this;
     }
 
-    public FuelLogRequest<T> groupByCreatedAtAs(String retName){
-       groupBy(retName, FuelLog.CREATED_AT_PROPERTY);
+    public FuelLogRequest<T> groupByVehicleAs(String retName){
+       groupBy(retName, FuelLog.VEHICLE_PROPERTY);
        return this;
     }
 
-    public FuelLogRequest<T> groupByCreatedAtWithFunction(String retName, AggrFunction function){
-       groupBy(retName, FuelLog.CREATED_AT_PROPERTY, function);
+    public FuelLogRequest<T> groupByVehicleWithFunction(String retName, AggrFunction function){
+       groupBy(retName, FuelLog.VEHICLE_PROPERTY, function);
        return this;
     }
 
@@ -718,34 +969,16 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
        return this;
     }
 
-    public FuelLogRequest<T> orderByVehicleAscending(){
-       addOrderByAscending(FuelLog.VEHICLE_PROPERTY);
+    public FuelLogRequest<T> orderByLitersAscending(){
+       addOrderByAscending(FuelLog.LITERS_PROPERTY);
        return this;
     }
 
-    public FuelLogRequest<T> orderByVehicleDescending(){
-       addOrderByDescending(FuelLog.VEHICLE_PROPERTY);
+    public FuelLogRequest<T> orderByLitersDescending(){
+       addOrderByDescending(FuelLog.LITERS_PROPERTY);
        return this;
     }
 
-    public FuelLogRequest<T> orderByFuelAmountLitersAscending(){
-       addOrderByAscending(FuelLog.FUEL_AMOUNT_LITERS_PROPERTY);
-       return this;
-    }
-
-    public FuelLogRequest<T> orderByFuelAmountLitersDescending(){
-       addOrderByDescending(FuelLog.FUEL_AMOUNT_LITERS_PROPERTY);
-       return this;
-    }
-    public FuelLogRequest<T> orderByFuelAmountLitersAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(FuelLog.FUEL_AMOUNT_LITERS_PROPERTY);
-       return this;
-    }
-
-    public FuelLogRequest<T> orderByFuelAmountLitersDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(FuelLog.FUEL_AMOUNT_LITERS_PROPERTY);
-       return this;
-    }
     public FuelLogRequest<T> orderByCostAscending(){
        addOrderByAscending(FuelLog.COST_PROPERTY);
        return this;
@@ -755,13 +988,33 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
        addOrderByDescending(FuelLog.COST_PROPERTY);
        return this;
     }
-    public FuelLogRequest<T> orderByCostAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(FuelLog.COST_PROPERTY);
+
+    public FuelLogRequest<T> orderByOdometerKmAscending(){
+       addOrderByAscending(FuelLog.ODOMETER_KM_PROPERTY);
        return this;
     }
 
-    public FuelLogRequest<T> orderByCostDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(FuelLog.COST_PROPERTY);
+    public FuelLogRequest<T> orderByOdometerKmDescending(){
+       addOrderByDescending(FuelLog.ODOMETER_KM_PROPERTY);
+       return this;
+    }
+
+    public FuelLogRequest<T> orderByStationNameAscending(){
+       addOrderByAscending(FuelLog.STATION_NAME_PROPERTY);
+       return this;
+    }
+
+    public FuelLogRequest<T> orderByStationNameDescending(){
+       addOrderByDescending(FuelLog.STATION_NAME_PROPERTY);
+       return this;
+    }
+    public FuelLogRequest<T> orderByStationNameAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(FuelLog.STATION_NAME_PROPERTY);
+       return this;
+    }
+
+    public FuelLogRequest<T> orderByStationNameDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(FuelLog.STATION_NAME_PROPERTY);
        return this;
     }
     public FuelLogRequest<T> orderByDateAscending(){
@@ -774,13 +1027,13 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
        return this;
     }
 
-    public FuelLogRequest<T> orderByCreatedAtAscending(){
-       addOrderByAscending(FuelLog.CREATED_AT_PROPERTY);
+    public FuelLogRequest<T> orderByVehicleAscending(){
+       addOrderByAscending(FuelLog.VEHICLE_PROPERTY);
        return this;
     }
 
-    public FuelLogRequest<T> orderByCreatedAtDescending(){
-       addOrderByDescending(FuelLog.CREATED_AT_PROPERTY);
+    public FuelLogRequest<T> orderByVehicleDescending(){
+       addOrderByDescending(FuelLog.VEHICLE_PROPERTY);
        return this;
     }
 
@@ -801,10 +1054,6 @@ public class FuelLogRequest<T extends FuelLog> extends BaseRequest<T> {
            .groupByVehicleWith(vehicle);
        return vehicle;
     }
-
-
-
-
 
 
 

@@ -42,6 +42,13 @@ public class DiscountCouponExpression<T, E, U extends DiscountCoupon> extends Ex
        return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateCode(code));
     }
 
+    public Expression<T, String> getDescription(){
+       return apply(DiscountCoupon::getDescription);
+    }
+    public DiscountCouponExpression<T, U, U> updateDescription(String description){
+       return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateDescription(description));
+    }
+
     public Expression<T, BigDecimal> getDiscountPercentage(){
        return apply(DiscountCoupon::getDiscountPercentage);
     }
@@ -49,25 +56,46 @@ public class DiscountCouponExpression<T, E, U extends DiscountCoupon> extends Ex
        return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateDiscountPercentage(discountPercentage));
     }
 
-    public Expression<T, Integer> getMaxUses(){
-       return apply(DiscountCoupon::getMaxUses);
+    public Expression<T, BigDecimal> getMinOrderAmount(){
+       return apply(DiscountCoupon::getMinOrderAmount);
     }
-    public DiscountCouponExpression<T, U, U> updateMaxUses(Integer maxUses){
-       return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateMaxUses(maxUses));
-    }
-
-    public Expression<T, Integer> getCurrentUses(){
-       return apply(DiscountCoupon::getCurrentUses);
-    }
-    public DiscountCouponExpression<T, U, U> updateCurrentUses(Integer currentUses){
-       return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateCurrentUses(currentUses));
+    public DiscountCouponExpression<T, U, U> updateMinOrderAmount(BigDecimal minOrderAmount){
+       return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateMinOrderAmount(minOrderAmount));
     }
 
-    public Expression<T, LocalDate> getExpiryDate(){
-       return apply(DiscountCoupon::getExpiryDate);
+    public Expression<T, BigDecimal> getMaxDiscountAmount(){
+       return apply(DiscountCoupon::getMaxDiscountAmount);
     }
-    public DiscountCouponExpression<T, U, U> updateExpiryDate(LocalDate expiryDate){
-       return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateExpiryDate(expiryDate));
+    public DiscountCouponExpression<T, U, U> updateMaxDiscountAmount(BigDecimal maxDiscountAmount){
+       return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateMaxDiscountAmount(maxDiscountAmount));
+    }
+
+    public Expression<T, Integer> getUsageLimit(){
+       return apply(DiscountCoupon::getUsageLimit);
+    }
+    public DiscountCouponExpression<T, U, U> updateUsageLimit(Integer usageLimit){
+       return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateUsageLimit(usageLimit));
+    }
+
+    public Expression<T, Integer> getUsedCount(){
+       return apply(DiscountCoupon::getUsedCount);
+    }
+    public DiscountCouponExpression<T, U, U> updateUsedCount(Integer usedCount){
+       return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateUsedCount(usedCount));
+    }
+
+    public Expression<T, LocalDate> getStartDate(){
+       return apply(DiscountCoupon::getStartDate);
+    }
+    public DiscountCouponExpression<T, U, U> updateStartDate(LocalDate startDate){
+       return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateStartDate(startDate));
+    }
+
+    public Expression<T, LocalDate> getEndDate(){
+       return apply(DiscountCoupon::getEndDate);
+    }
+    public DiscountCouponExpression<T, U, U> updateEndDate(LocalDate endDate){
+       return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateEndDate(endDate));
     }
 
     public Expression<T, String> getStatus(){
@@ -84,11 +112,11 @@ public class DiscountCouponExpression<T, E, U extends DiscountCoupon> extends Ex
        return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateCreatedTime(createdTime));
     }
 
-    public Expression<T, LocalDateTime> getUpdateTime(){
-       return apply(DiscountCoupon::getUpdateTime);
+    public Expression<T, LocalDateTime> getUpdatedTime(){
+       return apply(DiscountCoupon::getUpdatedTime);
     }
-    public DiscountCouponExpression<T, U, U> updateUpdateTime(LocalDateTime updateTime){
-       return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateUpdateTime(updateTime));
+    public DiscountCouponExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
+       return new DiscountCouponExpression(this, $it ->  ((DiscountCoupon)$it).updateUpdatedTime(updatedTime));
     }
 
 }

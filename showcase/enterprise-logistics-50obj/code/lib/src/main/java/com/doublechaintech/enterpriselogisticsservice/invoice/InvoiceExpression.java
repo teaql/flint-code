@@ -4,10 +4,6 @@ import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
 import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderExpression;
 import com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord;
 import com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecordListExpression;
-import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomerExpression;
-import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee;
-import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFeeListExpression;
 import com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord;
 import com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecordListExpression;
 import io.teaql.core.UserContext;
@@ -15,7 +11,7 @@ import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.function.Function;
 
 public class InvoiceExpression<T, E, U extends Invoice> extends ExpressionAdaptor<T, E, U> implements BaseEntityExpression<T, U> {
@@ -79,18 +75,18 @@ public class InvoiceExpression<T, E, U extends Invoice> extends ExpressionAdapto
        return new InvoiceExpression(this, $it ->  ((Invoice)$it).updateStatus(status));
     }
 
-    public Expression<T, LocalDateTime> getCreatedAt(){
-       return apply(Invoice::getCreatedAt);
+    public Expression<T, LocalDate> getIssueDate(){
+       return apply(Invoice::getIssueDate);
     }
-    public InvoiceExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
-       return new InvoiceExpression(this, $it ->  ((Invoice)$it).updateCreatedAt(createdAt));
+    public InvoiceExpression<T, U, U> updateIssueDate(LocalDate issueDate){
+       return new InvoiceExpression(this, $it ->  ((Invoice)$it).updateIssueDate(issueDate));
     }
 
-    public Expression<T, LocalDateTime> getUpdatedAt(){
-       return apply(Invoice::getUpdatedAt);
+    public Expression<T, LocalDate> getDueDate(){
+       return apply(Invoice::getDueDate);
     }
-    public InvoiceExpression<T, U, U> updateUpdatedAt(LocalDateTime updatedAt){
-       return new InvoiceExpression(this, $it ->  ((Invoice)$it).updateUpdatedAt(updatedAt));
+    public InvoiceExpression<T, U, U> updateDueDate(LocalDate dueDate){
+       return new InvoiceExpression(this, $it ->  ((Invoice)$it).updateDueDate(dueDate));
     }
 
     public MovingOrderExpression<T, U, MovingOrder> getMovingOrder(){
@@ -101,25 +97,18 @@ public class InvoiceExpression<T, E, U extends Invoice> extends ExpressionAdapto
        return new InvoiceExpression(this, $it ->  ((Invoice)$it).updateMovingOrder(movingOrder));
     }
 
-    public PrivateCustomerExpression<T, U, PrivateCustomer> getCustomer(){
-       return new PrivateCustomerExpression(this, $it ->  ((Invoice)$it).getCustomer());
+    public Expression<T, String> getCustomer(){
+       return apply(Invoice::getCustomer);
     }
-
-    public InvoiceExpression<T, U, U> updateCustomer(PrivateCustomer customer){
+    public InvoiceExpression<T, U, U> updateCustomer(String customer){
        return new InvoiceExpression(this, $it ->  ((Invoice)$it).updateCustomer(customer));
     }
 
-    public StorageFeeListExpression<T, U, StorageFee> getStorageFeeList(){
-        return new StorageFeeListExpression(this, $it ->  ((Invoice)$it).getStorageFeeList());
-    }
     public PaymentRecordListExpression<T, U, PaymentRecord> getPaymentRecordList(){
         return new PaymentRecordListExpression(this, $it ->  ((Invoice)$it).getPaymentRecordList());
     }
     public TaxRecordListExpression<T, U, TaxRecord> getTaxRecordList(){
         return new TaxRecordListExpression(this, $it ->  ((Invoice)$it).getTaxRecordList());
-    }
-    public InvoiceExpression<T, U, U> addStorageFee(StorageFee storageFee){
-       return new InvoiceExpression(this, $it ->  ((Invoice)$it).addStorageFee(storageFee));
     }
     public InvoiceExpression<T, U, U> addPaymentRecord(PaymentRecord paymentRecord){
        return new InvoiceExpression(this, $it ->  ((Invoice)$it).addPaymentRecord(paymentRecord));

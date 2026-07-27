@@ -1,5 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.servicecontract;
 
+import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer;
+import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomerExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
@@ -77,6 +79,21 @@ public class ServiceContractExpression<T, E, U extends ServiceContract> extends 
        return new ServiceContractExpression(this, $it ->  ((ServiceContract)$it).updateTotalValue(totalValue));
     }
 
+    public Expression<T, String> getCurrency(){
+       return apply(ServiceContract::getCurrency);
+    }
+    public ServiceContractExpression<T, U, U> updateCurrency(String currency){
+       return new ServiceContractExpression(this, $it ->  ((ServiceContract)$it).updateCurrency(currency));
+    }
+
+    public CorporateCustomerExpression<T, U, CorporateCustomer> getCorporateCustomer(){
+       return new CorporateCustomerExpression(this, $it ->  ((ServiceContract)$it).getCorporateCustomer());
+    }
+
+    public ServiceContractExpression<T, U, U> updateCorporateCustomer(CorporateCustomer corporateCustomer){
+       return new ServiceContractExpression(this, $it ->  ((ServiceContract)$it).updateCorporateCustomer(corporateCustomer));
+    }
+
     public Expression<T, LocalDateTime> getCreatedTime(){
        return apply(ServiceContract::getCreatedTime);
     }
@@ -84,11 +101,11 @@ public class ServiceContractExpression<T, E, U extends ServiceContract> extends 
        return new ServiceContractExpression(this, $it ->  ((ServiceContract)$it).updateCreatedTime(createdTime));
     }
 
-    public Expression<T, LocalDateTime> getUpdatedTime(){
-       return apply(ServiceContract::getUpdatedTime);
+    public Expression<T, LocalDateTime> getUpdateTime(){
+       return apply(ServiceContract::getUpdateTime);
     }
-    public ServiceContractExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
-       return new ServiceContractExpression(this, $it ->  ((ServiceContract)$it).updateUpdatedTime(updatedTime));
+    public ServiceContractExpression<T, U, U> updateUpdateTime(LocalDateTime updateTime){
+       return new ServiceContractExpression(this, $it ->  ((ServiceContract)$it).updateUpdateTime(updateTime));
     }
 
 }

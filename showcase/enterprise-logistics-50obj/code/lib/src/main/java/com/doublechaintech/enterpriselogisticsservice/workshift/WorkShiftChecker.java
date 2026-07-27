@@ -5,6 +5,7 @@ import com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHoursChe
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -37,7 +38,7 @@ public class WorkShiftChecker implements Checker<WorkShift>{
       checkName(_ctx, workShift.getProperty(WorkShift.NAME_PROPERTY), newLocation(_parentLocation, WorkShift.NAME_PROPERTY));
       checkStartTime(_ctx, workShift.getProperty(WorkShift.START_TIME_PROPERTY), newLocation(_parentLocation, WorkShift.START_TIME_PROPERTY));
       checkEndTime(_ctx, workShift.getProperty(WorkShift.END_TIME_PROPERTY), newLocation(_parentLocation, WorkShift.END_TIME_PROPERTY));
-      checkShiftType(_ctx, workShift.getProperty(WorkShift.SHIFT_TYPE_PROPERTY), newLocation(_parentLocation, WorkShift.SHIFT_TYPE_PROPERTY));
+      checkShiftDate(_ctx, workShift.getProperty(WorkShift.SHIFT_DATE_PROPERTY), newLocation(_parentLocation, WorkShift.SHIFT_DATE_PROPERTY));
       checkCreatedAt(_ctx, workShift.getProperty(WorkShift.CREATED_AT_PROPERTY), newLocation(_parentLocation, WorkShift.CREATED_AT_PROPERTY));
       checkUpdatedAt(_ctx, workShift.getProperty(WorkShift.UPDATED_AT_PROPERTY), newLocation(_parentLocation, WorkShift.UPDATED_AT_PROPERTY));
       for(int i = 0; workShift.getWorkedHoursList() != null && i < workShift.getWorkedHoursList().size(); i++){
@@ -66,13 +67,11 @@ public class WorkShiftChecker implements Checker<WorkShift>{
         return;
     }
     }
-    public void checkShiftType(UserContext _ctx, String shiftType, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, shiftType);
-    if((shiftType == null)){
+    public void checkShiftDate(UserContext _ctx, LocalDate shiftDate, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, shiftDate);
+    if((shiftDate == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, shiftType);
-
     }
     public void checkCreatedAt(UserContext _ctx, LocalDateTime createdAt, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, createdAt);

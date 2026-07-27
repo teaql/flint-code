@@ -1,5 +1,6 @@
 package com.doublechaintech.enterpriselogisticsservice.auditlog;
 
+import com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
@@ -22,17 +23,17 @@ public class AuditLog extends BaseEntity implements RemoteInput {
     public static final String ACTION_PROPERTY = "action";
     public static final String ENTITY_TYPE_PROPERTY = "entityType";
     public static final String ENTITY_ID_PROPERTY = "entityId";
-    public static final String USER_ID_PROPERTY = "userId";
+    public static final String USER_ACCOUNT_PROPERTY = "userAccount";
     public static final String IP_ADDRESS_PROPERTY = "ipAddress";
-    public static final String DETAILS_PROPERTY = "details";
     public static final String CREATED_TIME_PROPERTY = "createdTime";
+    public static final String UPDATE_TIME_PROPERTY = "updateTime";
     private String action;
     private String entityType;
     private String entityId;
-    private String userId;
+    private UserAccount userAccount;
     private String ipAddress;
-    private String details;
     private LocalDateTime createdTime;
+    private LocalDateTime updateTime;
 
     public String getAction(){
         return this.action;
@@ -43,17 +44,17 @@ public class AuditLog extends BaseEntity implements RemoteInput {
     public String getEntityId(){
         return this.entityId;
     }
-    public String getUserId(){
-        return this.userId;
+    public UserAccount getUserAccount(){
+        return this.userAccount;
     }
     public String getIpAddress(){
         return this.ipAddress;
     }
-    public String getDetails(){
-        return this.details;
-    }
     public LocalDateTime getCreatedTime(){
         return this.createdTime;
+    }
+    public LocalDateTime getUpdateTime(){
+        return this.updateTime;
     }
     public AuditLog updateAction(String action){
         action = (action == null ? null : action.trim());
@@ -82,13 +83,12 @@ public class AuditLog extends BaseEntity implements RemoteInput {
         this.entityId = entityId;
         return this;
     }
-    public AuditLog updateUserId(String userId){
-        userId = (userId == null ? null : userId.trim());
-        if(Objects.equals(this.userId, userId)){
+    public AuditLog updateUserAccount(UserAccount userAccount){
+        if(Objects.equals(this.userAccount, userAccount)){
             return this;
         }
-        handleUpdate(USER_ID_PROPERTY, getUserId(), userId);
-        this.userId = userId;
+        handleUpdate(USER_ACCOUNT_PROPERTY, getUserAccount(), userAccount);
+        this.userAccount = userAccount;
         return this;
     }
     public AuditLog updateIpAddress(String ipAddress){
@@ -100,21 +100,20 @@ public class AuditLog extends BaseEntity implements RemoteInput {
         this.ipAddress = ipAddress;
         return this;
     }
-    public AuditLog updateDetails(String details){
-        details = (details == null ? null : details.trim());
-        if(Objects.equals(this.details, details)){
-            return this;
-        }
-        handleUpdate(DETAILS_PROPERTY, getDetails(), details);
-        this.details = details;
-        return this;
-    }
     public AuditLog updateCreatedTime(LocalDateTime createdTime){
         if(Objects.equals(this.createdTime, createdTime)){
             return this;
         }
         handleUpdate(CREATED_TIME_PROPERTY, getCreatedTime(), createdTime);
         this.createdTime = createdTime;
+        return this;
+    }
+    public AuditLog updateUpdateTime(LocalDateTime updateTime){
+        if(Objects.equals(this.updateTime, updateTime)){
+            return this;
+        }
+        handleUpdate(UPDATE_TIME_PROPERTY, getUpdateTime(), updateTime);
+        this.updateTime = updateTime;
         return this;
     }
 
@@ -151,13 +150,13 @@ public class AuditLog extends BaseEntity implements RemoteInput {
 
             case "entityId": this.entityId = (value == null ? null : ((String)value).trim()); break;
 
-            case "userId": this.userId = (value == null ? null : ((String)value).trim()); break;
+            case "userAccount": this.userAccount = (UserAccount) value; break;
 
             case "ipAddress": this.ipAddress = (value == null ? null : ((String)value).trim()); break;
 
-            case "details": this.details = (value == null ? null : ((String)value).trim()); break;
-
             case "createdTime": this.createdTime = (LocalDateTime) value; break;
+
+            case "updateTime": this.updateTime = (LocalDateTime) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -170,10 +169,10 @@ public class AuditLog extends BaseEntity implements RemoteInput {
             case "action": return this.action;
             case "entityType": return this.entityType;
             case "entityId": return this.entityId;
-            case "userId": return this.userId;
+            case "userAccount": return this.userAccount;
             case "ipAddress": return this.ipAddress;
-            case "details": return this.details;
             case "createdTime": return this.createdTime;
+            case "updateTime": return this.updateTime;
             default: return super.__internalGet(property);
         }
     }

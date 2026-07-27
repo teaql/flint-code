@@ -1,7 +1,5 @@
 package com.doublechaintech.enterpriselogisticsservice.accesspermission;
 
-import com.doublechaintech.enterpriselogisticsservice.Constants;
-import com.doublechaintech.enterpriselogisticsservice.userrole.UserRole;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
@@ -20,17 +18,17 @@ import java.util.Objects;
 public class AccessPermission extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "AccessPermission";
 
-    public static final String NAME_PROPERTY = "name";
+    public static final String PERMISSION_CODE_PROPERTY = "permissionCode";
     public static final String RESOURCE_PROPERTY = "resource";
     public static final String ACTION_PROPERTY = "action";
-    public static final String ROLE_PROPERTY = "role";
-    private String name;
+    public static final String DESCRIPTION_PROPERTY = "description";
+    private String permissionCode;
     private String resource;
     private String action;
-    private UserRole role;
+    private String description;
 
-    public String getName(){
-        return this.name;
+    public String getPermissionCode(){
+        return this.permissionCode;
     }
     public String getResource(){
         return this.resource;
@@ -38,16 +36,16 @@ public class AccessPermission extends BaseEntity implements RemoteInput {
     public String getAction(){
         return this.action;
     }
-    public UserRole getRole(){
-        return this.role;
+    public String getDescription(){
+        return this.description;
     }
-    public AccessPermission updateName(String name){
-        name = (name == null ? null : name.trim());
-        if(Objects.equals(this.name, name)){
+    public AccessPermission updatePermissionCode(String permissionCode){
+        permissionCode = (permissionCode == null ? null : permissionCode.trim());
+        if(Objects.equals(this.permissionCode, permissionCode)){
             return this;
         }
-        handleUpdate(NAME_PROPERTY, getName(), name);
-        this.name = name;
+        handleUpdate(PERMISSION_CODE_PROPERTY, getPermissionCode(), permissionCode);
+        this.permissionCode = permissionCode;
         return this;
     }
     public AccessPermission updateResource(String resource){
@@ -68,41 +66,14 @@ public class AccessPermission extends BaseEntity implements RemoteInput {
         this.action = action;
         return this;
     }
-    protected AccessPermission updateRole(UserRole role){
-        if(Objects.equals(this.role, role)){
+    public AccessPermission updateDescription(String description){
+        description = (description == null ? null : description.trim());
+        if(Objects.equals(this.description, description)){
             return this;
         }
-        handleUpdate(ROLE_PROPERTY, getRole(), role);
-        this.role = role;
+        handleUpdate(DESCRIPTION_PROPERTY, getDescription(), description);
+        this.description = description;
         return this;
-    }
-    public boolean isRoleAdmin(){
-        return Objects.equals(getRole(), Constants.USER_ROLE_ADMIN);
-    }
-
-    public AccessPermission updateRoleToAdmin(){
-        return updateRole(Constants.USER_ROLE_ADMIN);
-    }
-    public boolean isRoleDispatcher(){
-        return Objects.equals(getRole(), Constants.USER_ROLE_DISPATCHER);
-    }
-
-    public AccessPermission updateRoleToDispatcher(){
-        return updateRole(Constants.USER_ROLE_DISPATCHER);
-    }
-    public boolean isRoleDriver(){
-        return Objects.equals(getRole(), Constants.USER_ROLE_DRIVER);
-    }
-
-    public AccessPermission updateRoleToDriver(){
-        return updateRole(Constants.USER_ROLE_DRIVER);
-    }
-    public boolean isRoleCs(){
-        return Objects.equals(getRole(), Constants.USER_ROLE_CS);
-    }
-
-    public AccessPermission updateRoleToCs(){
-        return updateRole(Constants.USER_ROLE_CS);
     }
 
     public static AccessPermission refer(Long id){
@@ -132,13 +103,13 @@ public class AccessPermission extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public void __internalSet(String property, Object value) {
         switch (property) {
-            case "name": this.name = (value == null ? null : ((String)value).trim()); break;
+            case "permissionCode": this.permissionCode = (value == null ? null : ((String)value).trim()); break;
 
             case "resource": this.resource = (value == null ? null : ((String)value).trim()); break;
 
             case "action": this.action = (value == null ? null : ((String)value).trim()); break;
 
-            case "role": this.role = (UserRole) value; break;
+            case "description": this.description = (value == null ? null : ((String)value).trim()); break;
 
             default: super.__internalSet(property, value);
         }
@@ -148,10 +119,10 @@ public class AccessPermission extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public Object __internalGet(String property) {
         switch (property) {
-            case "name": return this.name;
+            case "permissionCode": return this.permissionCode;
             case "resource": return this.resource;
             case "action": return this.action;
-            case "role": return this.role;
+            case "description": return this.description;
             default: return super.__internalGet(property);
         }
     }

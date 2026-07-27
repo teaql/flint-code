@@ -34,8 +34,8 @@ public class ContainerUnitChecker implements Checker<ContainerUnit>{
         containerUnit.updateUpdateTime(java.time.LocalDateTime.now());
       }
       checkStorageContainer(_ctx, containerUnit.getProperty(ContainerUnit.STORAGE_CONTAINER_PROPERTY), newLocation(_parentLocation, ContainerUnit.STORAGE_CONTAINER_PROPERTY));
-      checkUnitType(_ctx, containerUnit.getProperty(ContainerUnit.UNIT_TYPE_PROPERTY), newLocation(_parentLocation, ContainerUnit.UNIT_TYPE_PROPERTY));
-      checkQuantity(_ctx, containerUnit.getProperty(ContainerUnit.QUANTITY_PROPERTY), newLocation(_parentLocation, ContainerUnit.QUANTITY_PROPERTY));
+      checkUnitNumber(_ctx, containerUnit.getProperty(ContainerUnit.UNIT_NUMBER_PROPERTY), newLocation(_parentLocation, ContainerUnit.UNIT_NUMBER_PROPERTY));
+      checkItemCount(_ctx, containerUnit.getProperty(ContainerUnit.ITEM_COUNT_PROPERTY), newLocation(_parentLocation, ContainerUnit.ITEM_COUNT_PROPERTY));
       checkCreateTime(_ctx, containerUnit.getProperty(ContainerUnit.CREATE_TIME_PROPERTY), newLocation(_parentLocation, ContainerUnit.CREATE_TIME_PROPERTY));
       checkUpdateTime(_ctx, containerUnit.getProperty(ContainerUnit.UPDATE_TIME_PROPERTY), newLocation(_parentLocation, ContainerUnit.UPDATE_TIME_PROPERTY));
     }
@@ -47,17 +47,17 @@ public class ContainerUnitChecker implements Checker<ContainerUnit>{
     }
     new StorageContainerChecker().checkAndFix(_ctx, storageContainer, _parentLocation);
     }
-    public void checkUnitType(UserContext _ctx, String unitType, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, unitType);
-    if((unitType == null)){
+    public void checkUnitNumber(UserContext _ctx, String unitNumber, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, unitNumber);
+    if((unitNumber == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, unitType);
+    maxStringCheck(_ctx, _parentLocation, 100, unitNumber);
 
     }
-    public void checkQuantity(UserContext _ctx, Integer quantity, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, quantity);
-    if((quantity == null)){
+    public void checkItemCount(UserContext _ctx, Integer itemCount, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, itemCount);
+    if((itemCount == null)){
         return;
     }
     }

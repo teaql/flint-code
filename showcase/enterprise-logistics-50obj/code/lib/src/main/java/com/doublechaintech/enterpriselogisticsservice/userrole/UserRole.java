@@ -1,12 +1,11 @@
 package com.doublechaintech.enterpriselogisticsservice.userrole;
 
-import com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
-import io.teaql.core.SmartList;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -20,43 +19,34 @@ import java.util.Objects;
 public class UserRole extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "UserRole";
 
-    public static final String NAME_PROPERTY = "name";
-    public static final String CODE_PROPERTY = "code";
+    public static final String ROLE_NAME_PROPERTY = "roleName";
     public static final String DESCRIPTION_PROPERTY = "description";
-    public static final String ACCESS_PERMISSION_LIST_PROPERTY = "accessPermissionList";
-    private String name;
-    private String code;
+    public static final String IS_SYSTEM_PROPERTY = "isSystem";
+    public static final String CREATED_AT_PROPERTY = "createdAt";
+    private String roleName;
     private String description;
-    private SmartList<AccessPermission> accessPermissionList;
+    private String isSystem;
+    private LocalDateTime createdAt;
 
-    public String getName(){
-        return this.name;
-    }
-    public String getCode(){
-        return this.code;
+    public String getRoleName(){
+        return this.roleName;
     }
     public String getDescription(){
         return this.description;
     }
-    public SmartList<AccessPermission> getAccessPermissionList(){
-        return this.accessPermissionList;
+    public String getIsSystem(){
+        return this.isSystem;
     }
-    public UserRole updateName(String name){
-        name = (name == null ? null : name.trim());
-        if(Objects.equals(this.name, name)){
+    public LocalDateTime getCreatedAt(){
+        return this.createdAt;
+    }
+    public UserRole updateRoleName(String roleName){
+        roleName = (roleName == null ? null : roleName.trim());
+        if(Objects.equals(this.roleName, roleName)){
             return this;
         }
-        handleUpdate(NAME_PROPERTY, getName(), name);
-        this.name = name;
-        return this;
-    }
-    public UserRole updateCode(String code){
-        code = (code == null ? null : code.trim());
-        if(Objects.equals(this.code, code)){
-            return this;
-        }
-        handleUpdate(CODE_PROPERTY, getCode(), code);
-        this.code = code;
+        handleUpdate(ROLE_NAME_PROPERTY, getRoleName(), roleName);
+        this.roleName = roleName;
         return this;
     }
     public UserRole updateDescription(String description){
@@ -68,17 +58,21 @@ public class UserRole extends BaseEntity implements RemoteInput {
         this.description = description;
         return this;
     }
-    public UserRole addAccessPermission(AccessPermission accessPermission){
-        if (accessPermission == null){
+    public UserRole updateIsSystem(String isSystem){
+        isSystem = (isSystem == null ? null : isSystem.trim());
+        if(Objects.equals(this.isSystem, isSystem)){
             return this;
         }
-
-        if(null == this.accessPermissionList){
-            this.accessPermissionList = new SmartList<>();
+        handleUpdate(IS_SYSTEM_PROPERTY, getIsSystem(), isSystem);
+        this.isSystem = isSystem;
+        return this;
+    }
+    public UserRole updateCreatedAt(LocalDateTime createdAt){
+        if(Objects.equals(this.createdAt, createdAt)){
+            return this;
         }
-
-        this.accessPermissionList.add(accessPermission);
-        accessPermission.cacheRelation(AccessPermission.ROLE_PROPERTY, this);
+        handleUpdate(CREATED_AT_PROPERTY, getCreatedAt(), createdAt);
+        this.createdAt = createdAt;
         return this;
     }
 
@@ -109,13 +103,14 @@ public class UserRole extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public void __internalSet(String property, Object value) {
         switch (property) {
-            case "name": this.name = (value == null ? null : ((String)value).trim()); break;
-
-            case "code": this.code = (value == null ? null : ((String)value).trim()); break;
+            case "roleName": this.roleName = (value == null ? null : ((String)value).trim()); break;
 
             case "description": this.description = (value == null ? null : ((String)value).trim()); break;
 
-            case "accessPermissionList": this.accessPermissionList = (SmartList<AccessPermission>) value; break;
+            case "isSystem": this.isSystem = (value == null ? null : ((String)value).trim()); break;
+
+            case "createdAt": this.createdAt = (LocalDateTime) value; break;
+
             default: super.__internalSet(property, value);
         }
     }
@@ -124,10 +119,10 @@ public class UserRole extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public Object __internalGet(String property) {
         switch (property) {
-            case "name": return this.name;
-            case "code": return this.code;
+            case "roleName": return this.roleName;
             case "description": return this.description;
-            case "accessPermissionList": return this.accessPermissionList;
+            case "isSystem": return this.isSystem;
+            case "createdAt": return this.createdAt;
             default: return super.__internalGet(property);
         }
     }

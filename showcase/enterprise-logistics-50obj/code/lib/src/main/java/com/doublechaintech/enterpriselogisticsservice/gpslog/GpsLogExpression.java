@@ -1,11 +1,12 @@
 package com.doublechaintech.enterpriselogisticsservice.gpslog;
 
-import com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle;
-import com.doublechaintech.enterpriselogisticsservice.vehicle.VehicleExpression;
+import com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice;
+import com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDeviceExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.function.Function;
 
@@ -35,26 +36,32 @@ public class GpsLogExpression<T, E, U extends GpsLog> extends ExpressionAdaptor<
      }
 
 
-    public VehicleExpression<T, U, Vehicle> getVehicle(){
-       return new VehicleExpression(this, $it ->  ((GpsLog)$it).getVehicle());
-    }
-
-    public GpsLogExpression<T, U, U> updateVehicle(Vehicle vehicle){
-       return new GpsLogExpression(this, $it ->  ((GpsLog)$it).updateVehicle(vehicle));
-    }
-
-    public Expression<T, String> getLatitude(){
+    public Expression<T, BigDecimal> getLatitude(){
        return apply(GpsLog::getLatitude);
     }
-    public GpsLogExpression<T, U, U> updateLatitude(String latitude){
+    public GpsLogExpression<T, U, U> updateLatitude(BigDecimal latitude){
        return new GpsLogExpression(this, $it ->  ((GpsLog)$it).updateLatitude(latitude));
     }
 
-    public Expression<T, String> getLongitude(){
+    public Expression<T, BigDecimal> getLongitude(){
        return apply(GpsLog::getLongitude);
     }
-    public GpsLogExpression<T, U, U> updateLongitude(String longitude){
+    public GpsLogExpression<T, U, U> updateLongitude(BigDecimal longitude){
        return new GpsLogExpression(this, $it ->  ((GpsLog)$it).updateLongitude(longitude));
+    }
+
+    public Expression<T, Integer> getSpeedKmh(){
+       return apply(GpsLog::getSpeedKmh);
+    }
+    public GpsLogExpression<T, U, U> updateSpeedKmh(Integer speedKmh){
+       return new GpsLogExpression(this, $it ->  ((GpsLog)$it).updateSpeedKmh(speedKmh));
+    }
+
+    public Expression<T, Integer> getHeading(){
+       return apply(GpsLog::getHeading);
+    }
+    public GpsLogExpression<T, U, U> updateHeading(Integer heading){
+       return new GpsLogExpression(this, $it ->  ((GpsLog)$it).updateHeading(heading));
     }
 
     public Expression<T, LocalDateTime> getTimestamp(){
@@ -64,18 +71,12 @@ public class GpsLogExpression<T, E, U extends GpsLog> extends ExpressionAdaptor<
        return new GpsLogExpression(this, $it ->  ((GpsLog)$it).updateTimestamp(timestamp));
     }
 
-    public Expression<T, String> getSpeedKmh(){
-       return apply(GpsLog::getSpeedKmh);
-    }
-    public GpsLogExpression<T, U, U> updateSpeedKmh(String speedKmh){
-       return new GpsLogExpression(this, $it ->  ((GpsLog)$it).updateSpeedKmh(speedKmh));
+    public TelematicsDeviceExpression<T, U, TelematicsDevice> getDevice(){
+       return new TelematicsDeviceExpression(this, $it ->  ((GpsLog)$it).getDevice());
     }
 
-    public Expression<T, LocalDateTime> getCreatedAt(){
-       return apply(GpsLog::getCreatedAt);
-    }
-    public GpsLogExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
-       return new GpsLogExpression(this, $it ->  ((GpsLog)$it).updateCreatedAt(createdAt));
+    public GpsLogExpression<T, U, U> updateDevice(TelematicsDevice device){
+       return new GpsLogExpression(this, $it ->  ((GpsLog)$it).updateDevice(device));
     }
 
 }

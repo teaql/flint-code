@@ -1,13 +1,16 @@
 package com.doublechaintech.enterpriselogisticsservice.customsdeclaration;
 
+import com.doublechaintech.enterpriselogisticsservice.Q;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
 import io.teaql.core.SearchCriteria;
+import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -82,7 +85,7 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
 
     public CustomsDeclarationRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectDeclarationNumber().selectPortOfEntry().selectCountryOfOrigin().selectDeclaredValue().selectStatus().selectClearanceDate().selectCreatedTime().selectUpdatedTime().selectVersion();
+        return selectId().selectDeclarationNumber().selectOriginCountry().selectDestinationCountry().selectTotalValue().selectStatus().selectMovingOrderIdOnly().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
     public CustomsDeclarationRequest<T> selectSelfFields(){
@@ -91,12 +94,12 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
 
     public CustomsDeclarationRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectDeclarationNumber().selectPortOfEntry().selectCountryOfOrigin().selectDeclaredValue().selectStatus().selectClearanceDate().selectCreatedTime().selectUpdatedTime().selectVersion();
+        return selectId().selectDeclarationNumber().selectOriginCountry().selectDestinationCountry().selectTotalValue().selectStatus().selectMovingOrder().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
     public CustomsDeclarationRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectDeclarationNumber().selectPortOfEntry().selectCountryOfOrigin().selectDeclaredValue().selectStatus().selectClearanceDate().selectCreatedTime().selectUpdatedTime().selectVersion();
+        return selectId().selectDeclarationNumber().selectOriginCountry().selectDestinationCountry().selectTotalValue().selectStatus().selectMovingOrder().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
 
@@ -134,63 +137,63 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
        unselectProperty(CustomsDeclaration.DECLARATION_NUMBER_PROPERTY);
        return this;
     }
-    public CustomsDeclarationRequest<T> selectPortOfEntry(){
-       selectProperty(CustomsDeclaration.PORT_OF_ENTRY_PROPERTY);
+    public CustomsDeclarationRequest<T> selectOriginCountry(){
+       selectProperty(CustomsDeclaration.ORIGIN_COUNTRY_PROPERTY);
        return this;
     }
 
     /**
-     * fill the portOfEntry with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  portOfEntry) to fetch portOfEntry property.
+     * fill the originCountry with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  originCountry) to fetch originCountry property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public CustomsDeclarationRequest<T> unselectPortOfEntry(){
-       unselectProperty(CustomsDeclaration.PORT_OF_ENTRY_PROPERTY);
+    public CustomsDeclarationRequest<T> unselectOriginCountry(){
+       unselectProperty(CustomsDeclaration.ORIGIN_COUNTRY_PROPERTY);
        return this;
     }
-    public CustomsDeclarationRequest<T> selectCountryOfOrigin(){
-       selectProperty(CustomsDeclaration.COUNTRY_OF_ORIGIN_PROPERTY);
+    public CustomsDeclarationRequest<T> selectDestinationCountry(){
+       selectProperty(CustomsDeclaration.DESTINATION_COUNTRY_PROPERTY);
        return this;
     }
 
     /**
-     * fill the countryOfOrigin with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  countryOfOrigin) to fetch countryOfOrigin property.
+     * fill the destinationCountry with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  destinationCountry) to fetch destinationCountry property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public CustomsDeclarationRequest<T> unselectCountryOfOrigin(){
-       unselectProperty(CustomsDeclaration.COUNTRY_OF_ORIGIN_PROPERTY);
+    public CustomsDeclarationRequest<T> unselectDestinationCountry(){
+       unselectProperty(CustomsDeclaration.DESTINATION_COUNTRY_PROPERTY);
        return this;
     }
-    public CustomsDeclarationRequest<T> selectDeclaredValue(){
-       selectProperty(CustomsDeclaration.DECLARED_VALUE_PROPERTY);
+    public CustomsDeclarationRequest<T> selectTotalValue(){
+       selectProperty(CustomsDeclaration.TOTAL_VALUE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the declaredValue with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  declaredValue) to fetch declaredValue property.
+     * fill the totalValue with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  totalValue) to fetch totalValue property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
     /**
-     * fill the declaredValue with customized aggrFunction, TEAQL uses ({aggrFunction}(declaredValue) AS declaredValue to fetch declaredValue property.
+     * fill the totalValue with customized aggrFunction, TEAQL uses ({aggrFunction}(totalValue) AS totalValue to fetch totalValue property.
      * @param aggrFunction  aggrFunction
      */
-    public CustomsDeclarationRequest<T> selectDeclaredValue(AggrFunction aggrFunction){
-       selectProperty(CustomsDeclaration.DECLARED_VALUE_PROPERTY, aggrFunction);
+    public CustomsDeclarationRequest<T> selectTotalValue(AggrFunction aggrFunction){
+       selectProperty(CustomsDeclaration.TOTAL_VALUE_PROPERTY, aggrFunction);
        return this;
     }
 
 
-    public CustomsDeclarationRequest<T> unselectDeclaredValue(){
-       unselectProperty(CustomsDeclaration.DECLARED_VALUE_PROPERTY);
+    public CustomsDeclarationRequest<T> unselectTotalValue(){
+       unselectProperty(CustomsDeclaration.TOTAL_VALUE_PROPERTY);
        return this;
     }
     public CustomsDeclarationRequest<T> selectStatus(){
@@ -210,21 +213,23 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
        unselectProperty(CustomsDeclaration.STATUS_PROPERTY);
        return this;
     }
-    public CustomsDeclarationRequest<T> selectClearanceDate(){
-       selectProperty(CustomsDeclaration.CLEARANCE_DATE_PROPERTY);
+    public CustomsDeclarationRequest<T> selectMovingOrderIdOnly(){
+       selectProperty(CustomsDeclaration.MOVING_ORDER_PROPERTY);
        return this;
     }
 
-    /**
-     * fill the clearanceDate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  clearanceDate) to fetch clearanceDate property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
+    public CustomsDeclarationRequest<T> selectMovingOrder(){
+        return selectMovingOrderWith(Q.movingOrders().unlimited().selectSelf());
+    }
 
+    public CustomsDeclarationRequest<T> selectMovingOrderWith(MovingOrderRequest movingOrder){
+       selectProperty(CustomsDeclaration.MOVING_ORDER_PROPERTY);
+       enhanceRelation(CustomsDeclaration.MOVING_ORDER_PROPERTY, movingOrder);
+       return this;
+    }
 
-
-
-    public CustomsDeclarationRequest<T> unselectClearanceDate(){
-       unselectProperty(CustomsDeclaration.CLEARANCE_DATE_PROPERTY);
+    public CustomsDeclarationRequest<T> unselectMovingOrder(){
+       unselectProperty(CustomsDeclaration.MOVING_ORDER_PROPERTY);
        return this;
     }
     public CustomsDeclarationRequest<T> selectCreatedTime(){
@@ -244,21 +249,21 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
        unselectProperty(CustomsDeclaration.CREATED_TIME_PROPERTY);
        return this;
     }
-    public CustomsDeclarationRequest<T> selectUpdatedTime(){
-       selectProperty(CustomsDeclaration.UPDATED_TIME_PROPERTY);
+    public CustomsDeclarationRequest<T> selectUpdateTime(){
+       selectProperty(CustomsDeclaration.UPDATE_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
+     * fill the updateTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updateTime) to fetch updateTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public CustomsDeclarationRequest<T> unselectUpdatedTime(){
-       unselectProperty(CustomsDeclaration.UPDATED_TIME_PROPERTY);
+    public CustomsDeclarationRequest<T> unselectUpdateTime(){
+       unselectProperty(CustomsDeclaration.UPDATE_TIME_PROPERTY);
        return this;
     }
     public CustomsDeclarationRequest<T> selectVersion(){
@@ -359,173 +364,173 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
 
 
 
-    public CustomsDeclarationRequest<T> filterByPortOfEntry(String... portOfEntry){
-      if (portOfEntry == null || portOfEntry.length == 0) {
-        throw new IllegalArgumentException("filterByPortOfEntry parameter portOfEntry cannot be empty");
+    public CustomsDeclarationRequest<T> filterByOriginCountry(String... originCountry){
+      if (originCountry == null || originCountry.length == 0) {
+        throw new IllegalArgumentException("filterByOriginCountry parameter originCountry cannot be empty");
       }
-      return appendSearchCriteria(createPortOfEntryCriteria(Operator.EQUAL, (Object[])portOfEntry));
+      return appendSearchCriteria(createOriginCountryCriteria(Operator.EQUAL, (Object[])originCountry));
     }
 
-    public CustomsDeclarationRequest<T> withPortOfEntry(Operator operator, Object... values){
-       return appendSearchCriteria(createPortOfEntryCriteria(operator, values));
+    public CustomsDeclarationRequest<T> withOriginCountry(Operator operator, Object... values){
+       return appendSearchCriteria(createOriginCountryCriteria(operator, values));
     }
 
-    public CustomsDeclarationRequest<T> withPortOfEntryIsUnknown(){
-       return withPortOfEntry(Operator.IS_NULL);
+    public CustomsDeclarationRequest<T> withOriginCountryIsUnknown(){
+       return withOriginCountry(Operator.IS_NULL);
     }
 
-    public CustomsDeclarationRequest<T> withPortOfEntryIsKnown(){
-       return withPortOfEntry(Operator.IS_NOT_NULL);
+    public CustomsDeclarationRequest<T> withOriginCountryIsKnown(){
+       return withOriginCountry(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createPortOfEntryCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CustomsDeclaration.PORT_OF_ENTRY_PROPERTY, operator, values);
+    public SearchCriteria createOriginCountryCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CustomsDeclaration.ORIGIN_COUNTRY_PROPERTY, operator, values);
     }
 
-    public CustomsDeclarationRequest<T> withPortOfEntryGreaterThan(String portOfEntry){
-       return withPortOfEntry(Operator.GREATER_THAN, portOfEntry);
+    public CustomsDeclarationRequest<T> withOriginCountryGreaterThan(String originCountry){
+       return withOriginCountry(Operator.GREATER_THAN, originCountry);
     }
 
-    public CustomsDeclarationRequest<T> withPortOfEntryGreaterThanOrEqualTo(String portOfEntry){
-       return withPortOfEntry(Operator.GREATER_THAN_OR_EQUAL, portOfEntry);
+    public CustomsDeclarationRequest<T> withOriginCountryGreaterThanOrEqualTo(String originCountry){
+       return withOriginCountry(Operator.GREATER_THAN_OR_EQUAL, originCountry);
     }
 
-    public CustomsDeclarationRequest<T> withPortOfEntryLessThan(String portOfEntry){
-       return withPortOfEntry(Operator.LESS_THAN, portOfEntry);
+    public CustomsDeclarationRequest<T> withOriginCountryLessThan(String originCountry){
+       return withOriginCountry(Operator.LESS_THAN, originCountry);
     }
 
-    public CustomsDeclarationRequest<T> withPortOfEntryLessThanOrEqualTo(String portOfEntry){
-       return withPortOfEntry(Operator.LESS_THAN_OR_EQUAL, portOfEntry);
+    public CustomsDeclarationRequest<T> withOriginCountryLessThanOrEqualTo(String originCountry){
+       return withOriginCountry(Operator.LESS_THAN_OR_EQUAL, originCountry);
     }
 
-    public CustomsDeclarationRequest<T> withPortOfEntryBetween(String startOfPortOfEntry, String endOfPortOfEntry){
-       return withPortOfEntry(Operator.BETWEEN, startOfPortOfEntry, endOfPortOfEntry);
+    public CustomsDeclarationRequest<T> withOriginCountryBetween(String startOfOriginCountry, String endOfOriginCountry){
+       return withOriginCountry(Operator.BETWEEN, startOfOriginCountry, endOfOriginCountry);
     }
-    public CustomsDeclarationRequest<T> withPortOfEntryStartingWith(String portOfEntry){
-       return withPortOfEntry(Operator.BEGIN_WITH, portOfEntry);
+    public CustomsDeclarationRequest<T> withOriginCountryStartingWith(String originCountry){
+       return withOriginCountry(Operator.BEGIN_WITH, originCountry);
     }
-    public CustomsDeclarationRequest<T> withPortOfEntryContaining(String portOfEntry){
-       return withPortOfEntry(Operator.CONTAIN, portOfEntry);
-    }
-
-    public CustomsDeclarationRequest<T> withPortOfEntryEndingWith(String portOfEntry){
-       return withPortOfEntry(Operator.END_WITH, portOfEntry);
+    public CustomsDeclarationRequest<T> withOriginCountryContaining(String originCountry){
+       return withOriginCountry(Operator.CONTAIN, originCountry);
     }
 
-    public CustomsDeclarationRequest<T> withPortOfEntryIs(String portOfEntry){
-       return withPortOfEntry(Operator.EQUAL, portOfEntry);
+    public CustomsDeclarationRequest<T> withOriginCountryEndingWith(String originCountry){
+       return withOriginCountry(Operator.END_WITH, originCountry);
     }
 
-    public CustomsDeclarationRequest<T> withPortOfEntrySoundingLike(String portOfEntry){
-       return withPortOfEntry(Operator.SOUNDS_LIKE, portOfEntry);
+    public CustomsDeclarationRequest<T> withOriginCountryIs(String originCountry){
+       return withOriginCountry(Operator.EQUAL, originCountry);
+    }
+
+    public CustomsDeclarationRequest<T> withOriginCountrySoundingLike(String originCountry){
+       return withOriginCountry(Operator.SOUNDS_LIKE, originCountry);
     }
 
 
 
-    public CustomsDeclarationRequest<T> filterByCountryOfOrigin(String... countryOfOrigin){
-      if (countryOfOrigin == null || countryOfOrigin.length == 0) {
-        throw new IllegalArgumentException("filterByCountryOfOrigin parameter countryOfOrigin cannot be empty");
+    public CustomsDeclarationRequest<T> filterByDestinationCountry(String... destinationCountry){
+      if (destinationCountry == null || destinationCountry.length == 0) {
+        throw new IllegalArgumentException("filterByDestinationCountry parameter destinationCountry cannot be empty");
       }
-      return appendSearchCriteria(createCountryOfOriginCriteria(Operator.EQUAL, (Object[])countryOfOrigin));
+      return appendSearchCriteria(createDestinationCountryCriteria(Operator.EQUAL, (Object[])destinationCountry));
     }
 
-    public CustomsDeclarationRequest<T> withCountryOfOrigin(Operator operator, Object... values){
-       return appendSearchCriteria(createCountryOfOriginCriteria(operator, values));
+    public CustomsDeclarationRequest<T> withDestinationCountry(Operator operator, Object... values){
+       return appendSearchCriteria(createDestinationCountryCriteria(operator, values));
     }
 
-    public CustomsDeclarationRequest<T> withCountryOfOriginIsUnknown(){
-       return withCountryOfOrigin(Operator.IS_NULL);
+    public CustomsDeclarationRequest<T> withDestinationCountryIsUnknown(){
+       return withDestinationCountry(Operator.IS_NULL);
     }
 
-    public CustomsDeclarationRequest<T> withCountryOfOriginIsKnown(){
-       return withCountryOfOrigin(Operator.IS_NOT_NULL);
+    public CustomsDeclarationRequest<T> withDestinationCountryIsKnown(){
+       return withDestinationCountry(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCountryOfOriginCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CustomsDeclaration.COUNTRY_OF_ORIGIN_PROPERTY, operator, values);
+    public SearchCriteria createDestinationCountryCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CustomsDeclaration.DESTINATION_COUNTRY_PROPERTY, operator, values);
     }
 
-    public CustomsDeclarationRequest<T> withCountryOfOriginGreaterThan(String countryOfOrigin){
-       return withCountryOfOrigin(Operator.GREATER_THAN, countryOfOrigin);
+    public CustomsDeclarationRequest<T> withDestinationCountryGreaterThan(String destinationCountry){
+       return withDestinationCountry(Operator.GREATER_THAN, destinationCountry);
     }
 
-    public CustomsDeclarationRequest<T> withCountryOfOriginGreaterThanOrEqualTo(String countryOfOrigin){
-       return withCountryOfOrigin(Operator.GREATER_THAN_OR_EQUAL, countryOfOrigin);
+    public CustomsDeclarationRequest<T> withDestinationCountryGreaterThanOrEqualTo(String destinationCountry){
+       return withDestinationCountry(Operator.GREATER_THAN_OR_EQUAL, destinationCountry);
     }
 
-    public CustomsDeclarationRequest<T> withCountryOfOriginLessThan(String countryOfOrigin){
-       return withCountryOfOrigin(Operator.LESS_THAN, countryOfOrigin);
+    public CustomsDeclarationRequest<T> withDestinationCountryLessThan(String destinationCountry){
+       return withDestinationCountry(Operator.LESS_THAN, destinationCountry);
     }
 
-    public CustomsDeclarationRequest<T> withCountryOfOriginLessThanOrEqualTo(String countryOfOrigin){
-       return withCountryOfOrigin(Operator.LESS_THAN_OR_EQUAL, countryOfOrigin);
+    public CustomsDeclarationRequest<T> withDestinationCountryLessThanOrEqualTo(String destinationCountry){
+       return withDestinationCountry(Operator.LESS_THAN_OR_EQUAL, destinationCountry);
     }
 
-    public CustomsDeclarationRequest<T> withCountryOfOriginBetween(String startOfCountryOfOrigin, String endOfCountryOfOrigin){
-       return withCountryOfOrigin(Operator.BETWEEN, startOfCountryOfOrigin, endOfCountryOfOrigin);
+    public CustomsDeclarationRequest<T> withDestinationCountryBetween(String startOfDestinationCountry, String endOfDestinationCountry){
+       return withDestinationCountry(Operator.BETWEEN, startOfDestinationCountry, endOfDestinationCountry);
     }
-    public CustomsDeclarationRequest<T> withCountryOfOriginStartingWith(String countryOfOrigin){
-       return withCountryOfOrigin(Operator.BEGIN_WITH, countryOfOrigin);
+    public CustomsDeclarationRequest<T> withDestinationCountryStartingWith(String destinationCountry){
+       return withDestinationCountry(Operator.BEGIN_WITH, destinationCountry);
     }
-    public CustomsDeclarationRequest<T> withCountryOfOriginContaining(String countryOfOrigin){
-       return withCountryOfOrigin(Operator.CONTAIN, countryOfOrigin);
-    }
-
-    public CustomsDeclarationRequest<T> withCountryOfOriginEndingWith(String countryOfOrigin){
-       return withCountryOfOrigin(Operator.END_WITH, countryOfOrigin);
+    public CustomsDeclarationRequest<T> withDestinationCountryContaining(String destinationCountry){
+       return withDestinationCountry(Operator.CONTAIN, destinationCountry);
     }
 
-    public CustomsDeclarationRequest<T> withCountryOfOriginIs(String countryOfOrigin){
-       return withCountryOfOrigin(Operator.EQUAL, countryOfOrigin);
+    public CustomsDeclarationRequest<T> withDestinationCountryEndingWith(String destinationCountry){
+       return withDestinationCountry(Operator.END_WITH, destinationCountry);
     }
 
-    public CustomsDeclarationRequest<T> withCountryOfOriginSoundingLike(String countryOfOrigin){
-       return withCountryOfOrigin(Operator.SOUNDS_LIKE, countryOfOrigin);
+    public CustomsDeclarationRequest<T> withDestinationCountryIs(String destinationCountry){
+       return withDestinationCountry(Operator.EQUAL, destinationCountry);
+    }
+
+    public CustomsDeclarationRequest<T> withDestinationCountrySoundingLike(String destinationCountry){
+       return withDestinationCountry(Operator.SOUNDS_LIKE, destinationCountry);
     }
 
 
 
-    public CustomsDeclarationRequest<T> filterByDeclaredValue(BigDecimal... declaredValue){
-      if (declaredValue == null || declaredValue.length == 0) {
-        throw new IllegalArgumentException("filterByDeclaredValue parameter declaredValue cannot be empty");
+    public CustomsDeclarationRequest<T> filterByTotalValue(BigDecimal... totalValue){
+      if (totalValue == null || totalValue.length == 0) {
+        throw new IllegalArgumentException("filterByTotalValue parameter totalValue cannot be empty");
       }
-      return appendSearchCriteria(createDeclaredValueCriteria(Operator.EQUAL, (Object[])declaredValue));
+      return appendSearchCriteria(createTotalValueCriteria(Operator.EQUAL, (Object[])totalValue));
     }
 
-    public CustomsDeclarationRequest<T> withDeclaredValue(Operator operator, Object... values){
-       return appendSearchCriteria(createDeclaredValueCriteria(operator, values));
+    public CustomsDeclarationRequest<T> withTotalValue(Operator operator, Object... values){
+       return appendSearchCriteria(createTotalValueCriteria(operator, values));
     }
 
-    public CustomsDeclarationRequest<T> withDeclaredValueIsUnknown(){
-       return withDeclaredValue(Operator.IS_NULL);
+    public CustomsDeclarationRequest<T> withTotalValueIsUnknown(){
+       return withTotalValue(Operator.IS_NULL);
     }
 
-    public CustomsDeclarationRequest<T> withDeclaredValueIsKnown(){
-       return withDeclaredValue(Operator.IS_NOT_NULL);
+    public CustomsDeclarationRequest<T> withTotalValueIsKnown(){
+       return withTotalValue(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createDeclaredValueCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CustomsDeclaration.DECLARED_VALUE_PROPERTY, operator, values);
+    public SearchCriteria createTotalValueCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CustomsDeclaration.TOTAL_VALUE_PROPERTY, operator, values);
     }
 
-    public CustomsDeclarationRequest<T> withDeclaredValueGreaterThan(BigDecimal declaredValue){
-       return withDeclaredValue(Operator.GREATER_THAN, declaredValue);
+    public CustomsDeclarationRequest<T> withTotalValueGreaterThan(BigDecimal totalValue){
+       return withTotalValue(Operator.GREATER_THAN, totalValue);
     }
 
-    public CustomsDeclarationRequest<T> withDeclaredValueGreaterThanOrEqualTo(BigDecimal declaredValue){
-       return withDeclaredValue(Operator.GREATER_THAN_OR_EQUAL, declaredValue);
+    public CustomsDeclarationRequest<T> withTotalValueGreaterThanOrEqualTo(BigDecimal totalValue){
+       return withTotalValue(Operator.GREATER_THAN_OR_EQUAL, totalValue);
     }
 
-    public CustomsDeclarationRequest<T> withDeclaredValueLessThan(BigDecimal declaredValue){
-       return withDeclaredValue(Operator.LESS_THAN, declaredValue);
+    public CustomsDeclarationRequest<T> withTotalValueLessThan(BigDecimal totalValue){
+       return withTotalValue(Operator.LESS_THAN, totalValue);
     }
 
-    public CustomsDeclarationRequest<T> withDeclaredValueLessThanOrEqualTo(BigDecimal declaredValue){
-       return withDeclaredValue(Operator.LESS_THAN_OR_EQUAL, declaredValue);
+    public CustomsDeclarationRequest<T> withTotalValueLessThanOrEqualTo(BigDecimal totalValue){
+       return withTotalValue(Operator.LESS_THAN_OR_EQUAL, totalValue);
     }
 
-    public CustomsDeclarationRequest<T> withDeclaredValueBetween(BigDecimal startOfDeclaredValue, BigDecimal endOfDeclaredValue){
-       return withDeclaredValue(Operator.BETWEEN, startOfDeclaredValue, endOfDeclaredValue);
+    public CustomsDeclarationRequest<T> withTotalValueBetween(BigDecimal startOfTotalValue, BigDecimal endOfTotalValue){
+       return withTotalValue(Operator.BETWEEN, startOfTotalValue, endOfTotalValue);
     }
 
 
@@ -593,70 +598,38 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
 
 
 
-    public CustomsDeclarationRequest<T> filterByClearanceDate(LocalDate... clearanceDate){
-      if (clearanceDate == null || clearanceDate.length == 0) {
-        throw new IllegalArgumentException("filterByClearanceDate parameter clearanceDate cannot be empty");
+    public CustomsDeclarationRequest<T> filterByMovingOrder(MovingOrder... movingOrder){
+      if (movingOrder == null || movingOrder.length == 0) {
+        throw new IllegalArgumentException("filterByMovingOrder parameter movingOrder cannot be empty");
       }
-      return appendSearchCriteria(createClearanceDateCriteria(Operator.EQUAL, (Object[])clearanceDate));
+      return appendSearchCriteria(createMovingOrderCriteria(Operator.EQUAL, (Object[])movingOrder));
     }
 
-    public CustomsDeclarationRequest<T> withClearanceDate(Operator operator, Object... values){
-       return appendSearchCriteria(createClearanceDateCriteria(operator, values));
+    public CustomsDeclarationRequest<T> withMovingOrder(Operator operator, Object... values){
+       return appendSearchCriteria(createMovingOrderCriteria(operator, values));
     }
 
-    public CustomsDeclarationRequest<T> withClearanceDateIsUnknown(){
-       return withClearanceDate(Operator.IS_NULL);
+    public CustomsDeclarationRequest<T> withMovingOrderIsUnknown(){
+       return withMovingOrder(Operator.IS_NULL);
     }
 
-    public CustomsDeclarationRequest<T> withClearanceDateIsKnown(){
-       return withClearanceDate(Operator.IS_NOT_NULL);
+    public CustomsDeclarationRequest<T> withMovingOrderIsKnown(){
+       return withMovingOrder(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createClearanceDateCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CustomsDeclaration.CLEARANCE_DATE_PROPERTY, operator, values);
+    public SearchCriteria createMovingOrderCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CustomsDeclaration.MOVING_ORDER_PROPERTY, operator, values);
     }
 
-    public CustomsDeclarationRequest<T> withClearanceDateGreaterThan(LocalDate clearanceDate){
-       return withClearanceDate(Operator.GREATER_THAN, clearanceDate);
+    public CustomsDeclarationRequest<T> filterByMovingOrder(Long movingOrder){
+      if(movingOrder == null){
+         return this;
+      }
+      return withMovingOrder(Operator.EQUAL, movingOrder);
     }
-
-    public CustomsDeclarationRequest<T> withClearanceDateGreaterThanOrEqualTo(LocalDate clearanceDate){
-       return withClearanceDate(Operator.GREATER_THAN_OR_EQUAL, clearanceDate);
+    public CustomsDeclarationRequest<T> withMovingOrderMatching(MovingOrderRequest movingOrder){
+       return appendSearchCriteria(new SubQuerySearchCriteria(CustomsDeclaration.MOVING_ORDER_PROPERTY, movingOrder, MovingOrder.ID_PROPERTY));
     }
-
-    public CustomsDeclarationRequest<T> withClearanceDateLessThan(LocalDate clearanceDate){
-       return withClearanceDate(Operator.LESS_THAN, clearanceDate);
-    }
-
-    public CustomsDeclarationRequest<T> withClearanceDateLessThanOrEqualTo(LocalDate clearanceDate){
-       return withClearanceDate(Operator.LESS_THAN_OR_EQUAL, clearanceDate);
-    }
-
-    public CustomsDeclarationRequest<T> withClearanceDateBetween(LocalDate startOfClearanceDate, LocalDate endOfClearanceDate){
-       return withClearanceDate(Operator.BETWEEN, startOfClearanceDate, endOfClearanceDate);
-    }
-    public CustomsDeclarationRequest<T> withClearanceDateBefore(LocalDate clearanceDate){
-       return withClearanceDate(Operator.LESS_THAN, clearanceDate);
-    }
-
-    public CustomsDeclarationRequest<T> withClearanceDateBefore(Date clearanceDate){
-       return withClearanceDate(Operator.LESS_THAN, clearanceDate);
-    }
-
-    public CustomsDeclarationRequest<T> withClearanceDateAfter(LocalDate clearanceDate){
-       return withClearanceDate(Operator.GREATER_THAN, clearanceDate);
-    }
-
-    public CustomsDeclarationRequest<T> withClearanceDateAfter(Date clearanceDate){
-       return withClearanceDate(Operator.GREATER_THAN, clearanceDate);
-    }
-
-    public CustomsDeclarationRequest<T> withClearanceDateBetween(Date startOfClearanceDate, Date endOfClearanceDate){
-       return withClearanceDate(Operator.BETWEEN, startOfClearanceDate, endOfClearanceDate);
-    }
-
-
-
 
     public CustomsDeclarationRequest<T> filterByCreatedTime(LocalDateTime... createdTime){
       if (createdTime == null || createdTime.length == 0) {
@@ -723,66 +696,66 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
 
 
 
-    public CustomsDeclarationRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
-      if (updatedTime == null || updatedTime.length == 0) {
-        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
+    public CustomsDeclarationRequest<T> filterByUpdateTime(LocalDateTime... updateTime){
+      if (updateTime == null || updateTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdateTime parameter updateTime cannot be empty");
       }
-      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
+      return appendSearchCriteria(createUpdateTimeCriteria(Operator.EQUAL, (Object[])updateTime));
     }
 
-    public CustomsDeclarationRequest<T> withUpdatedTime(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
+    public CustomsDeclarationRequest<T> withUpdateTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdateTimeCriteria(operator, values));
     }
 
-    public CustomsDeclarationRequest<T> withUpdatedTimeIsUnknown(){
-       return withUpdatedTime(Operator.IS_NULL);
+    public CustomsDeclarationRequest<T> withUpdateTimeIsUnknown(){
+       return withUpdateTime(Operator.IS_NULL);
     }
 
-    public CustomsDeclarationRequest<T> withUpdatedTimeIsKnown(){
-       return withUpdatedTime(Operator.IS_NOT_NULL);
+    public CustomsDeclarationRequest<T> withUpdateTimeIsKnown(){
+       return withUpdateTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CustomsDeclaration.UPDATED_TIME_PROPERTY, operator, values);
+    public SearchCriteria createUpdateTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CustomsDeclaration.UPDATE_TIME_PROPERTY, operator, values);
     }
 
-    public CustomsDeclarationRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    public CustomsDeclarationRequest<T> withUpdateTimeGreaterThan(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
     }
 
-    public CustomsDeclarationRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
+    public CustomsDeclarationRequest<T> withUpdateTimeGreaterThanOrEqualTo(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN_OR_EQUAL, updateTime);
     }
 
-    public CustomsDeclarationRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    public CustomsDeclarationRequest<T> withUpdateTimeLessThan(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
     }
 
-    public CustomsDeclarationRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
+    public CustomsDeclarationRequest<T> withUpdateTimeLessThanOrEqualTo(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN_OR_EQUAL, updateTime);
     }
 
-    public CustomsDeclarationRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
-       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
+    public CustomsDeclarationRequest<T> withUpdateTimeBetween(LocalDateTime startOfUpdateTime, LocalDateTime endOfUpdateTime){
+       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
     }
-    public CustomsDeclarationRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
-    }
-
-    public CustomsDeclarationRequest<T> withUpdatedTimeBefore(Date updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    public CustomsDeclarationRequest<T> withUpdateTimeBefore(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
     }
 
-    public CustomsDeclarationRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    public CustomsDeclarationRequest<T> withUpdateTimeBefore(Date updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
     }
 
-    public CustomsDeclarationRequest<T> withUpdatedTimeAfter(Date updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    public CustomsDeclarationRequest<T> withUpdateTimeAfter(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
     }
 
-    public CustomsDeclarationRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
-       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
+    public CustomsDeclarationRequest<T> withUpdateTimeAfter(Date updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    }
+
+    public CustomsDeclarationRequest<T> withUpdateTimeBetween(Date startOfUpdateTime, Date endOfUpdateTime){
+       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
     }
 
 
@@ -840,70 +813,82 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
         super.count(retName);
         return this;
     }
-    public CustomsDeclarationRequest minDeclaredValue(){
-        return minDeclaredValueAs(prefix("minOf",CustomsDeclaration.DECLARED_VALUE_PROPERTY));
+    public CustomsDeclarationRequest minTotalValue(){
+        return minTotalValueAs(prefix("minOf",CustomsDeclaration.TOTAL_VALUE_PROPERTY));
     }
 
-    public CustomsDeclarationRequest minDeclaredValueAs(String retName){
-        super.min(retName, CustomsDeclaration.DECLARED_VALUE_PROPERTY);
+    public CustomsDeclarationRequest minTotalValueAs(String retName){
+        super.min(retName, CustomsDeclaration.TOTAL_VALUE_PROPERTY);
         return this;
     }
-    public CustomsDeclarationRequest maxDeclaredValue(){
-        return maxDeclaredValueAs(prefix("maxOf",CustomsDeclaration.DECLARED_VALUE_PROPERTY));
+    public CustomsDeclarationRequest maxTotalValue(){
+        return maxTotalValueAs(prefix("maxOf",CustomsDeclaration.TOTAL_VALUE_PROPERTY));
     }
 
-    public CustomsDeclarationRequest maxDeclaredValueAs(String retName){
-        super.max(retName, CustomsDeclaration.DECLARED_VALUE_PROPERTY);
+    public CustomsDeclarationRequest maxTotalValueAs(String retName){
+        super.max(retName, CustomsDeclaration.TOTAL_VALUE_PROPERTY);
         return this;
     }
-    public CustomsDeclarationRequest sumDeclaredValue(){
-        return sumDeclaredValueAs(prefix("sumOf",CustomsDeclaration.DECLARED_VALUE_PROPERTY));
+    public CustomsDeclarationRequest sumTotalValue(){
+        return sumTotalValueAs(prefix("sumOf",CustomsDeclaration.TOTAL_VALUE_PROPERTY));
     }
 
-    public CustomsDeclarationRequest sumDeclaredValueAs(String retName){
-        super.sum(retName, CustomsDeclaration.DECLARED_VALUE_PROPERTY);
+    public CustomsDeclarationRequest sumTotalValueAs(String retName){
+        super.sum(retName, CustomsDeclaration.TOTAL_VALUE_PROPERTY);
         return this;
     }
-    public CustomsDeclarationRequest avgDeclaredValue(){
-        return avgDeclaredValueAs(prefix("avgOf",CustomsDeclaration.DECLARED_VALUE_PROPERTY));
+    public CustomsDeclarationRequest avgTotalValue(){
+        return avgTotalValueAs(prefix("avgOf",CustomsDeclaration.TOTAL_VALUE_PROPERTY));
     }
 
-    public CustomsDeclarationRequest avgDeclaredValueAs(String retName){
-        super.avg(retName, CustomsDeclaration.DECLARED_VALUE_PROPERTY);
+    public CustomsDeclarationRequest avgTotalValueAs(String retName){
+        super.avg(retName, CustomsDeclaration.TOTAL_VALUE_PROPERTY);
         return this;
     }
-    public CustomsDeclarationRequest standardDeviationDeclaredValue(){
-        return standardDeviationDeclaredValueAs(prefix("standardDeviationOf",CustomsDeclaration.DECLARED_VALUE_PROPERTY));
+    public CustomsDeclarationRequest standardDeviationTotalValue(){
+        return standardDeviationTotalValueAs(prefix("standardDeviationOf",CustomsDeclaration.TOTAL_VALUE_PROPERTY));
     }
 
-    public CustomsDeclarationRequest standardDeviationDeclaredValueAs(String retName){
-        super.standardDeviation(retName, CustomsDeclaration.DECLARED_VALUE_PROPERTY);
+    public CustomsDeclarationRequest standardDeviationTotalValueAs(String retName){
+        super.standardDeviation(retName, CustomsDeclaration.TOTAL_VALUE_PROPERTY);
         return this;
     }
-    public CustomsDeclarationRequest squareRootOfPopulationStandardDeviationDeclaredValue(){
-        return squareRootOfPopulationStandardDeviationDeclaredValueAs(prefix("squareRootOfPopulationStandardDeviationOf",CustomsDeclaration.DECLARED_VALUE_PROPERTY));
+    public CustomsDeclarationRequest squareRootOfPopulationStandardDeviationTotalValue(){
+        return squareRootOfPopulationStandardDeviationTotalValueAs(prefix("squareRootOfPopulationStandardDeviationOf",CustomsDeclaration.TOTAL_VALUE_PROPERTY));
     }
 
-    public CustomsDeclarationRequest squareRootOfPopulationStandardDeviationDeclaredValueAs(String retName){
-        super.squareRootOfPopulationStandardDeviation(retName, CustomsDeclaration.DECLARED_VALUE_PROPERTY);
+    public CustomsDeclarationRequest squareRootOfPopulationStandardDeviationTotalValueAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, CustomsDeclaration.TOTAL_VALUE_PROPERTY);
         return this;
     }
-    public CustomsDeclarationRequest sampleVarianceDeclaredValue(){
-        return sampleVarianceDeclaredValueAs(prefix("sampleVarianceOf",CustomsDeclaration.DECLARED_VALUE_PROPERTY));
+    public CustomsDeclarationRequest sampleVarianceTotalValue(){
+        return sampleVarianceTotalValueAs(prefix("sampleVarianceOf",CustomsDeclaration.TOTAL_VALUE_PROPERTY));
     }
 
-    public CustomsDeclarationRequest sampleVarianceDeclaredValueAs(String retName){
-        super.sampleVariance(retName, CustomsDeclaration.DECLARED_VALUE_PROPERTY);
+    public CustomsDeclarationRequest sampleVarianceTotalValueAs(String retName){
+        super.sampleVariance(retName, CustomsDeclaration.TOTAL_VALUE_PROPERTY);
         return this;
     }
-    public CustomsDeclarationRequest samplePopulationVarianceDeclaredValue(){
-        return samplePopulationVarianceDeclaredValueAs(prefix("samplePopulationVarianceOf",CustomsDeclaration.DECLARED_VALUE_PROPERTY));
+    public CustomsDeclarationRequest samplePopulationVarianceTotalValue(){
+        return samplePopulationVarianceTotalValueAs(prefix("samplePopulationVarianceOf",CustomsDeclaration.TOTAL_VALUE_PROPERTY));
     }
 
-    public CustomsDeclarationRequest samplePopulationVarianceDeclaredValueAs(String retName){
-        super.samplePopulationVariance(retName, CustomsDeclaration.DECLARED_VALUE_PROPERTY);
+    public CustomsDeclarationRequest samplePopulationVarianceTotalValueAs(String retName){
+        super.samplePopulationVariance(retName, CustomsDeclaration.TOTAL_VALUE_PROPERTY);
         return this;
     }
+    public CustomsDeclarationRequest<T> groupByMovingOrderWithDetails(){
+       return groupByMovingOrderWithDetails(Q.movingOrders().unlimited());
+    }
+
+    public CustomsDeclarationRequest<T> groupByMovingOrderWithDetails(MovingOrderRequest subRequest){
+       aggregate(CustomsDeclaration.MOVING_ORDER_PROPERTY, subRequest);
+       return this;
+    }
+
+
+
+
 
     public CustomsDeclarationRequest<T> groupById(){
        groupBy(CustomsDeclaration.ID_PROPERTY);
@@ -935,48 +920,48 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
        return this;
     }
 
-    public CustomsDeclarationRequest<T> groupByPortOfEntry(){
-       groupBy(CustomsDeclaration.PORT_OF_ENTRY_PROPERTY);
+    public CustomsDeclarationRequest<T> groupByOriginCountry(){
+       groupBy(CustomsDeclaration.ORIGIN_COUNTRY_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> groupByPortOfEntryAs(String retName){
-       groupBy(retName, CustomsDeclaration.PORT_OF_ENTRY_PROPERTY);
+    public CustomsDeclarationRequest<T> groupByOriginCountryAs(String retName){
+       groupBy(retName, CustomsDeclaration.ORIGIN_COUNTRY_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> groupByPortOfEntryWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CustomsDeclaration.PORT_OF_ENTRY_PROPERTY, function);
+    public CustomsDeclarationRequest<T> groupByOriginCountryWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CustomsDeclaration.ORIGIN_COUNTRY_PROPERTY, function);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> groupByCountryOfOrigin(){
-       groupBy(CustomsDeclaration.COUNTRY_OF_ORIGIN_PROPERTY);
+    public CustomsDeclarationRequest<T> groupByDestinationCountry(){
+       groupBy(CustomsDeclaration.DESTINATION_COUNTRY_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> groupByCountryOfOriginAs(String retName){
-       groupBy(retName, CustomsDeclaration.COUNTRY_OF_ORIGIN_PROPERTY);
+    public CustomsDeclarationRequest<T> groupByDestinationCountryAs(String retName){
+       groupBy(retName, CustomsDeclaration.DESTINATION_COUNTRY_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> groupByCountryOfOriginWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CustomsDeclaration.COUNTRY_OF_ORIGIN_PROPERTY, function);
+    public CustomsDeclarationRequest<T> groupByDestinationCountryWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CustomsDeclaration.DESTINATION_COUNTRY_PROPERTY, function);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> groupByDeclaredValue(){
-       groupBy(CustomsDeclaration.DECLARED_VALUE_PROPERTY);
+    public CustomsDeclarationRequest<T> groupByTotalValue(){
+       groupBy(CustomsDeclaration.TOTAL_VALUE_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> groupByDeclaredValueAs(String retName){
-       groupBy(retName, CustomsDeclaration.DECLARED_VALUE_PROPERTY);
+    public CustomsDeclarationRequest<T> groupByTotalValueAs(String retName){
+       groupBy(retName, CustomsDeclaration.TOTAL_VALUE_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> groupByDeclaredValueWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CustomsDeclaration.DECLARED_VALUE_PROPERTY, function);
+    public CustomsDeclarationRequest<T> groupByTotalValueWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CustomsDeclaration.TOTAL_VALUE_PROPERTY, function);
        return this;
     }
 
@@ -994,19 +979,22 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
        groupBy(retName, CustomsDeclaration.STATUS_PROPERTY, function);
        return this;
     }
-
-    public CustomsDeclarationRequest<T> groupByClearanceDate(){
-       groupBy(CustomsDeclaration.CLEARANCE_DATE_PROPERTY);
+    public CustomsDeclarationRequest<T> groupByMovingOrderWith(MovingOrderRequest subRequest){
+       groupBy(CustomsDeclaration.MOVING_ORDER_PROPERTY, subRequest);
+       return this;
+    }
+    public CustomsDeclarationRequest<T> groupByMovingOrder(){
+       groupBy(CustomsDeclaration.MOVING_ORDER_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> groupByClearanceDateAs(String retName){
-       groupBy(retName, CustomsDeclaration.CLEARANCE_DATE_PROPERTY);
+    public CustomsDeclarationRequest<T> groupByMovingOrderAs(String retName){
+       groupBy(retName, CustomsDeclaration.MOVING_ORDER_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> groupByClearanceDateWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CustomsDeclaration.CLEARANCE_DATE_PROPERTY, function);
+    public CustomsDeclarationRequest<T> groupByMovingOrderWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CustomsDeclaration.MOVING_ORDER_PROPERTY, function);
        return this;
     }
 
@@ -1025,18 +1013,18 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
        return this;
     }
 
-    public CustomsDeclarationRequest<T> groupByUpdatedTime(){
-       groupBy(CustomsDeclaration.UPDATED_TIME_PROPERTY);
+    public CustomsDeclarationRequest<T> groupByUpdateTime(){
+       groupBy(CustomsDeclaration.UPDATE_TIME_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> groupByUpdatedTimeAs(String retName){
-       groupBy(retName, CustomsDeclaration.UPDATED_TIME_PROPERTY);
+    public CustomsDeclarationRequest<T> groupByUpdateTimeAs(String retName){
+       groupBy(retName, CustomsDeclaration.UPDATE_TIME_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CustomsDeclaration.UPDATED_TIME_PROPERTY, function);
+    public CustomsDeclarationRequest<T> groupByUpdateTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CustomsDeclaration.UPDATE_TIME_PROPERTY, function);
        return this;
     }
 
@@ -1085,49 +1073,49 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
        addOrderByDescendingUsingGBK(CustomsDeclaration.DECLARATION_NUMBER_PROPERTY);
        return this;
     }
-    public CustomsDeclarationRequest<T> orderByPortOfEntryAscending(){
-       addOrderByAscending(CustomsDeclaration.PORT_OF_ENTRY_PROPERTY);
+    public CustomsDeclarationRequest<T> orderByOriginCountryAscending(){
+       addOrderByAscending(CustomsDeclaration.ORIGIN_COUNTRY_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> orderByPortOfEntryDescending(){
-       addOrderByDescending(CustomsDeclaration.PORT_OF_ENTRY_PROPERTY);
+    public CustomsDeclarationRequest<T> orderByOriginCountryDescending(){
+       addOrderByDescending(CustomsDeclaration.ORIGIN_COUNTRY_PROPERTY);
        return this;
     }
-    public CustomsDeclarationRequest<T> orderByPortOfEntryAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(CustomsDeclaration.PORT_OF_ENTRY_PROPERTY);
-       return this;
-    }
-
-    public CustomsDeclarationRequest<T> orderByPortOfEntryDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(CustomsDeclaration.PORT_OF_ENTRY_PROPERTY);
-       return this;
-    }
-    public CustomsDeclarationRequest<T> orderByCountryOfOriginAscending(){
-       addOrderByAscending(CustomsDeclaration.COUNTRY_OF_ORIGIN_PROPERTY);
+    public CustomsDeclarationRequest<T> orderByOriginCountryAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(CustomsDeclaration.ORIGIN_COUNTRY_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> orderByCountryOfOriginDescending(){
-       addOrderByDescending(CustomsDeclaration.COUNTRY_OF_ORIGIN_PROPERTY);
+    public CustomsDeclarationRequest<T> orderByOriginCountryDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(CustomsDeclaration.ORIGIN_COUNTRY_PROPERTY);
        return this;
     }
-    public CustomsDeclarationRequest<T> orderByCountryOfOriginAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(CustomsDeclaration.COUNTRY_OF_ORIGIN_PROPERTY);
-       return this;
-    }
-
-    public CustomsDeclarationRequest<T> orderByCountryOfOriginDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(CustomsDeclaration.COUNTRY_OF_ORIGIN_PROPERTY);
-       return this;
-    }
-    public CustomsDeclarationRequest<T> orderByDeclaredValueAscending(){
-       addOrderByAscending(CustomsDeclaration.DECLARED_VALUE_PROPERTY);
+    public CustomsDeclarationRequest<T> orderByDestinationCountryAscending(){
+       addOrderByAscending(CustomsDeclaration.DESTINATION_COUNTRY_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> orderByDeclaredValueDescending(){
-       addOrderByDescending(CustomsDeclaration.DECLARED_VALUE_PROPERTY);
+    public CustomsDeclarationRequest<T> orderByDestinationCountryDescending(){
+       addOrderByDescending(CustomsDeclaration.DESTINATION_COUNTRY_PROPERTY);
+       return this;
+    }
+    public CustomsDeclarationRequest<T> orderByDestinationCountryAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(CustomsDeclaration.DESTINATION_COUNTRY_PROPERTY);
+       return this;
+    }
+
+    public CustomsDeclarationRequest<T> orderByDestinationCountryDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(CustomsDeclaration.DESTINATION_COUNTRY_PROPERTY);
+       return this;
+    }
+    public CustomsDeclarationRequest<T> orderByTotalValueAscending(){
+       addOrderByAscending(CustomsDeclaration.TOTAL_VALUE_PROPERTY);
+       return this;
+    }
+
+    public CustomsDeclarationRequest<T> orderByTotalValueDescending(){
+       addOrderByDescending(CustomsDeclaration.TOTAL_VALUE_PROPERTY);
        return this;
     }
 
@@ -1149,13 +1137,13 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
        addOrderByDescendingUsingGBK(CustomsDeclaration.STATUS_PROPERTY);
        return this;
     }
-    public CustomsDeclarationRequest<T> orderByClearanceDateAscending(){
-       addOrderByAscending(CustomsDeclaration.CLEARANCE_DATE_PROPERTY);
+    public CustomsDeclarationRequest<T> orderByMovingOrderAscending(){
+       addOrderByAscending(CustomsDeclaration.MOVING_ORDER_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> orderByClearanceDateDescending(){
-       addOrderByDescending(CustomsDeclaration.CLEARANCE_DATE_PROPERTY);
+    public CustomsDeclarationRequest<T> orderByMovingOrderDescending(){
+       addOrderByDescending(CustomsDeclaration.MOVING_ORDER_PROPERTY);
        return this;
     }
 
@@ -1169,13 +1157,13 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
        return this;
     }
 
-    public CustomsDeclarationRequest<T> orderByUpdatedTimeAscending(){
-       addOrderByAscending(CustomsDeclaration.UPDATED_TIME_PROPERTY);
+    public CustomsDeclarationRequest<T> orderByUpdateTimeAscending(){
+       addOrderByAscending(CustomsDeclaration.UPDATE_TIME_PROPERTY);
        return this;
     }
 
-    public CustomsDeclarationRequest<T> orderByUpdatedTimeDescending(){
-       addOrderByDescending(CustomsDeclaration.UPDATED_TIME_PROPERTY);
+    public CustomsDeclarationRequest<T> orderByUpdateTimeDescending(){
+       addOrderByDescending(CustomsDeclaration.UPDATE_TIME_PROPERTY);
        return this;
     }
 
@@ -1190,7 +1178,25 @@ public class CustomsDeclarationRequest<T extends CustomsDeclaration> extends Bas
     }
 
 
+    public MovingOrderRequest rollUpToMovingOrder(){
+       MovingOrderRequest movingOrder = Q.movingOrders().unlimited();
+       this.withMovingOrderMatching(movingOrder)
+           .groupByMovingOrderWith(movingOrder);
+       return movingOrder;
+    }
 
+
+
+
+
+   public CustomsDeclarationRequest<T> facetByMovingOrderAs(String facetName, MovingOrderRequest movingOrder){
+       return facetByMovingOrderAs(facetName, movingOrder, true);
+   }
+
+   public CustomsDeclarationRequest<T> facetByMovingOrderAs(String facetName, MovingOrderRequest movingOrder, boolean includeAllFacets){
+       addFacet(facetName, CustomsDeclaration.MOVING_ORDER_PROPERTY, movingOrder, includeAllFacets);
+       return this;
+   }
 
 
     /**

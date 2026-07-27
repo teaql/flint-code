@@ -1,7 +1,5 @@
 package com.doublechaintech.enterpriselogisticsservice.accesspermission;
 
-import com.doublechaintech.enterpriselogisticsservice.userrole.UserRole;
-import com.doublechaintech.enterpriselogisticsservice.userrole.UserRoleExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
@@ -34,11 +32,11 @@ public class AccessPermissionExpression<T, E, U extends AccessPermission> extend
      }
 
 
-    public Expression<T, String> getName(){
-       return apply(AccessPermission::getName);
+    public Expression<T, String> getPermissionCode(){
+       return apply(AccessPermission::getPermissionCode);
     }
-    public AccessPermissionExpression<T, U, U> updateName(String name){
-       return new AccessPermissionExpression(this, $it ->  ((AccessPermission)$it).updateName(name));
+    public AccessPermissionExpression<T, U, U> updatePermissionCode(String permissionCode){
+       return new AccessPermissionExpression(this, $it ->  ((AccessPermission)$it).updatePermissionCode(permissionCode));
     }
 
     public Expression<T, String> getResource(){
@@ -55,21 +53,11 @@ public class AccessPermissionExpression<T, E, U extends AccessPermission> extend
        return new AccessPermissionExpression(this, $it ->  ((AccessPermission)$it).updateAction(action));
     }
 
-    public UserRoleExpression<T, U, UserRole> getRole(){
-       return new UserRoleExpression(this, $it ->  ((AccessPermission)$it).getRole());
+    public Expression<T, String> getDescription(){
+       return apply(AccessPermission::getDescription);
     }
-
-    public AccessPermissionExpression<T, U, U> updateRoleToAdmin(){
-       return new AccessPermissionExpression(this, $it ->  ((AccessPermission)$it).updateRoleToAdmin());
-    }
-    public AccessPermissionExpression<T, U, U> updateRoleToDispatcher(){
-       return new AccessPermissionExpression(this, $it ->  ((AccessPermission)$it).updateRoleToDispatcher());
-    }
-    public AccessPermissionExpression<T, U, U> updateRoleToDriver(){
-       return new AccessPermissionExpression(this, $it ->  ((AccessPermission)$it).updateRoleToDriver());
-    }
-    public AccessPermissionExpression<T, U, U> updateRoleToCs(){
-       return new AccessPermissionExpression(this, $it ->  ((AccessPermission)$it).updateRoleToCs());
+    public AccessPermissionExpression<T, U, U> updateDescription(String description){
+       return new AccessPermissionExpression(this, $it ->  ((AccessPermission)$it).updateDescription(description));
     }
 
 }

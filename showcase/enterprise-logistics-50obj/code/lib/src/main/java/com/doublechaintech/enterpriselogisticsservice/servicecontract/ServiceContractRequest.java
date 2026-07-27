@@ -1,9 +1,13 @@
 package com.doublechaintech.enterpriselogisticsservice.servicecontract;
 
+import com.doublechaintech.enterpriselogisticsservice.Q;
+import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer;
+import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomerRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
 import io.teaql.core.SearchCriteria;
+import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.math.BigDecimal;
@@ -82,7 +86,7 @@ public class ServiceContractRequest<T extends ServiceContract> extends BaseReque
 
     public ServiceContractRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectContractNumber().selectTitle().selectStartDate().selectEndDate().selectStatus().selectTotalValue().selectCreatedTime().selectUpdatedTime().selectVersion();
+        return selectId().selectContractNumber().selectTitle().selectStartDate().selectEndDate().selectStatus().selectTotalValue().selectCurrency().selectCorporateCustomerIdOnly().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
     public ServiceContractRequest<T> selectSelfFields(){
@@ -91,12 +95,12 @@ public class ServiceContractRequest<T extends ServiceContract> extends BaseReque
 
     public ServiceContractRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectContractNumber().selectTitle().selectStartDate().selectEndDate().selectStatus().selectTotalValue().selectCreatedTime().selectUpdatedTime().selectVersion();
+        return selectId().selectContractNumber().selectTitle().selectStartDate().selectEndDate().selectStatus().selectTotalValue().selectCurrency().selectCorporateCustomer().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
     public ServiceContractRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectContractNumber().selectTitle().selectStartDate().selectEndDate().selectStatus().selectTotalValue().selectCreatedTime().selectUpdatedTime().selectVersion();
+        return selectId().selectContractNumber().selectTitle().selectStartDate().selectEndDate().selectStatus().selectTotalValue().selectCurrency().selectCorporateCustomer().selectCreatedTime().selectUpdateTime().selectVersion();
     }
 
 
@@ -227,6 +231,42 @@ public class ServiceContractRequest<T extends ServiceContract> extends BaseReque
        unselectProperty(ServiceContract.TOTAL_VALUE_PROPERTY);
        return this;
     }
+    public ServiceContractRequest<T> selectCurrency(){
+       selectProperty(ServiceContract.CURRENCY_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the currency with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  currency) to fetch currency property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public ServiceContractRequest<T> unselectCurrency(){
+       unselectProperty(ServiceContract.CURRENCY_PROPERTY);
+       return this;
+    }
+    public ServiceContractRequest<T> selectCorporateCustomerIdOnly(){
+       selectProperty(ServiceContract.CORPORATE_CUSTOMER_PROPERTY);
+       return this;
+    }
+
+    public ServiceContractRequest<T> selectCorporateCustomer(){
+        return selectCorporateCustomerWith(Q.corporateCustomers().unlimited().selectSelf());
+    }
+
+    public ServiceContractRequest<T> selectCorporateCustomerWith(CorporateCustomerRequest corporateCustomer){
+       selectProperty(ServiceContract.CORPORATE_CUSTOMER_PROPERTY);
+       enhanceRelation(ServiceContract.CORPORATE_CUSTOMER_PROPERTY, corporateCustomer);
+       return this;
+    }
+
+    public ServiceContractRequest<T> unselectCorporateCustomer(){
+       unselectProperty(ServiceContract.CORPORATE_CUSTOMER_PROPERTY);
+       return this;
+    }
     public ServiceContractRequest<T> selectCreatedTime(){
        selectProperty(ServiceContract.CREATED_TIME_PROPERTY);
        return this;
@@ -244,21 +284,21 @@ public class ServiceContractRequest<T extends ServiceContract> extends BaseReque
        unselectProperty(ServiceContract.CREATED_TIME_PROPERTY);
        return this;
     }
-    public ServiceContractRequest<T> selectUpdatedTime(){
-       selectProperty(ServiceContract.UPDATED_TIME_PROPERTY);
+    public ServiceContractRequest<T> selectUpdateTime(){
+       selectProperty(ServiceContract.UPDATE_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
+     * fill the updateTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updateTime) to fetch updateTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public ServiceContractRequest<T> unselectUpdatedTime(){
-       unselectProperty(ServiceContract.UPDATED_TIME_PROPERTY);
+    public ServiceContractRequest<T> unselectUpdateTime(){
+       unselectProperty(ServiceContract.UPDATE_TIME_PROPERTY);
        return this;
     }
     public ServiceContractRequest<T> selectVersion(){
@@ -660,6 +700,102 @@ public class ServiceContractRequest<T extends ServiceContract> extends BaseReque
 
 
 
+    public ServiceContractRequest<T> filterByCurrency(String... currency){
+      if (currency == null || currency.length == 0) {
+        throw new IllegalArgumentException("filterByCurrency parameter currency cannot be empty");
+      }
+      return appendSearchCriteria(createCurrencyCriteria(Operator.EQUAL, (Object[])currency));
+    }
+
+    public ServiceContractRequest<T> withCurrency(Operator operator, Object... values){
+       return appendSearchCriteria(createCurrencyCriteria(operator, values));
+    }
+
+    public ServiceContractRequest<T> withCurrencyIsUnknown(){
+       return withCurrency(Operator.IS_NULL);
+    }
+
+    public ServiceContractRequest<T> withCurrencyIsKnown(){
+       return withCurrency(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createCurrencyCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ServiceContract.CURRENCY_PROPERTY, operator, values);
+    }
+
+    public ServiceContractRequest<T> withCurrencyGreaterThan(String currency){
+       return withCurrency(Operator.GREATER_THAN, currency);
+    }
+
+    public ServiceContractRequest<T> withCurrencyGreaterThanOrEqualTo(String currency){
+       return withCurrency(Operator.GREATER_THAN_OR_EQUAL, currency);
+    }
+
+    public ServiceContractRequest<T> withCurrencyLessThan(String currency){
+       return withCurrency(Operator.LESS_THAN, currency);
+    }
+
+    public ServiceContractRequest<T> withCurrencyLessThanOrEqualTo(String currency){
+       return withCurrency(Operator.LESS_THAN_OR_EQUAL, currency);
+    }
+
+    public ServiceContractRequest<T> withCurrencyBetween(String startOfCurrency, String endOfCurrency){
+       return withCurrency(Operator.BETWEEN, startOfCurrency, endOfCurrency);
+    }
+    public ServiceContractRequest<T> withCurrencyStartingWith(String currency){
+       return withCurrency(Operator.BEGIN_WITH, currency);
+    }
+    public ServiceContractRequest<T> withCurrencyContaining(String currency){
+       return withCurrency(Operator.CONTAIN, currency);
+    }
+
+    public ServiceContractRequest<T> withCurrencyEndingWith(String currency){
+       return withCurrency(Operator.END_WITH, currency);
+    }
+
+    public ServiceContractRequest<T> withCurrencyIs(String currency){
+       return withCurrency(Operator.EQUAL, currency);
+    }
+
+    public ServiceContractRequest<T> withCurrencySoundingLike(String currency){
+       return withCurrency(Operator.SOUNDS_LIKE, currency);
+    }
+
+
+
+    public ServiceContractRequest<T> filterByCorporateCustomer(CorporateCustomer... corporateCustomer){
+      if (corporateCustomer == null || corporateCustomer.length == 0) {
+        throw new IllegalArgumentException("filterByCorporateCustomer parameter corporateCustomer cannot be empty");
+      }
+      return appendSearchCriteria(createCorporateCustomerCriteria(Operator.EQUAL, (Object[])corporateCustomer));
+    }
+
+    public ServiceContractRequest<T> withCorporateCustomer(Operator operator, Object... values){
+       return appendSearchCriteria(createCorporateCustomerCriteria(operator, values));
+    }
+
+    public ServiceContractRequest<T> withCorporateCustomerIsUnknown(){
+       return withCorporateCustomer(Operator.IS_NULL);
+    }
+
+    public ServiceContractRequest<T> withCorporateCustomerIsKnown(){
+       return withCorporateCustomer(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createCorporateCustomerCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ServiceContract.CORPORATE_CUSTOMER_PROPERTY, operator, values);
+    }
+
+    public ServiceContractRequest<T> filterByCorporateCustomer(Long corporateCustomer){
+      if(corporateCustomer == null){
+         return this;
+      }
+      return withCorporateCustomer(Operator.EQUAL, corporateCustomer);
+    }
+    public ServiceContractRequest<T> withCorporateCustomerMatching(CorporateCustomerRequest corporateCustomer){
+       return appendSearchCriteria(new SubQuerySearchCriteria(ServiceContract.CORPORATE_CUSTOMER_PROPERTY, corporateCustomer, CorporateCustomer.ID_PROPERTY));
+    }
+
     public ServiceContractRequest<T> filterByCreatedTime(LocalDateTime... createdTime){
       if (createdTime == null || createdTime.length == 0) {
         throw new IllegalArgumentException("filterByCreatedTime parameter createdTime cannot be empty");
@@ -725,66 +861,66 @@ public class ServiceContractRequest<T extends ServiceContract> extends BaseReque
 
 
 
-    public ServiceContractRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
-      if (updatedTime == null || updatedTime.length == 0) {
-        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
+    public ServiceContractRequest<T> filterByUpdateTime(LocalDateTime... updateTime){
+      if (updateTime == null || updateTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdateTime parameter updateTime cannot be empty");
       }
-      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
+      return appendSearchCriteria(createUpdateTimeCriteria(Operator.EQUAL, (Object[])updateTime));
     }
 
-    public ServiceContractRequest<T> withUpdatedTime(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
+    public ServiceContractRequest<T> withUpdateTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdateTimeCriteria(operator, values));
     }
 
-    public ServiceContractRequest<T> withUpdatedTimeIsUnknown(){
-       return withUpdatedTime(Operator.IS_NULL);
+    public ServiceContractRequest<T> withUpdateTimeIsUnknown(){
+       return withUpdateTime(Operator.IS_NULL);
     }
 
-    public ServiceContractRequest<T> withUpdatedTimeIsKnown(){
-       return withUpdatedTime(Operator.IS_NOT_NULL);
+    public ServiceContractRequest<T> withUpdateTimeIsKnown(){
+       return withUpdateTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(ServiceContract.UPDATED_TIME_PROPERTY, operator, values);
+    public SearchCriteria createUpdateTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ServiceContract.UPDATE_TIME_PROPERTY, operator, values);
     }
 
-    public ServiceContractRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    public ServiceContractRequest<T> withUpdateTimeGreaterThan(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
     }
 
-    public ServiceContractRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
+    public ServiceContractRequest<T> withUpdateTimeGreaterThanOrEqualTo(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN_OR_EQUAL, updateTime);
     }
 
-    public ServiceContractRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    public ServiceContractRequest<T> withUpdateTimeLessThan(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
     }
 
-    public ServiceContractRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
+    public ServiceContractRequest<T> withUpdateTimeLessThanOrEqualTo(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN_OR_EQUAL, updateTime);
     }
 
-    public ServiceContractRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
-       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
+    public ServiceContractRequest<T> withUpdateTimeBetween(LocalDateTime startOfUpdateTime, LocalDateTime endOfUpdateTime){
+       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
     }
-    public ServiceContractRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
-    }
-
-    public ServiceContractRequest<T> withUpdatedTimeBefore(Date updatedTime){
-       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    public ServiceContractRequest<T> withUpdateTimeBefore(LocalDateTime updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
     }
 
-    public ServiceContractRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    public ServiceContractRequest<T> withUpdateTimeBefore(Date updateTime){
+       return withUpdateTime(Operator.LESS_THAN, updateTime);
     }
 
-    public ServiceContractRequest<T> withUpdatedTimeAfter(Date updatedTime){
-       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    public ServiceContractRequest<T> withUpdateTimeAfter(LocalDateTime updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
     }
 
-    public ServiceContractRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
-       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
+    public ServiceContractRequest<T> withUpdateTimeAfter(Date updateTime){
+       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    }
+
+    public ServiceContractRequest<T> withUpdateTimeBetween(Date startOfUpdateTime, Date endOfUpdateTime){
+       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
     }
 
 
@@ -906,6 +1042,18 @@ public class ServiceContractRequest<T extends ServiceContract> extends BaseReque
         super.samplePopulationVariance(retName, ServiceContract.TOTAL_VALUE_PROPERTY);
         return this;
     }
+    public ServiceContractRequest<T> groupByCorporateCustomerWithDetails(){
+       return groupByCorporateCustomerWithDetails(Q.corporateCustomers().unlimited());
+    }
+
+    public ServiceContractRequest<T> groupByCorporateCustomerWithDetails(CorporateCustomerRequest subRequest){
+       aggregate(ServiceContract.CORPORATE_CUSTOMER_PROPERTY, subRequest);
+       return this;
+    }
+
+
+
+
 
     public ServiceContractRequest<T> groupById(){
        groupBy(ServiceContract.ID_PROPERTY);
@@ -1012,6 +1160,39 @@ public class ServiceContractRequest<T extends ServiceContract> extends BaseReque
        return this;
     }
 
+    public ServiceContractRequest<T> groupByCurrency(){
+       groupBy(ServiceContract.CURRENCY_PROPERTY);
+       return this;
+    }
+
+    public ServiceContractRequest<T> groupByCurrencyAs(String retName){
+       groupBy(retName, ServiceContract.CURRENCY_PROPERTY);
+       return this;
+    }
+
+    public ServiceContractRequest<T> groupByCurrencyWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ServiceContract.CURRENCY_PROPERTY, function);
+       return this;
+    }
+    public ServiceContractRequest<T> groupByCorporateCustomerWith(CorporateCustomerRequest subRequest){
+       groupBy(ServiceContract.CORPORATE_CUSTOMER_PROPERTY, subRequest);
+       return this;
+    }
+    public ServiceContractRequest<T> groupByCorporateCustomer(){
+       groupBy(ServiceContract.CORPORATE_CUSTOMER_PROPERTY);
+       return this;
+    }
+
+    public ServiceContractRequest<T> groupByCorporateCustomerAs(String retName){
+       groupBy(retName, ServiceContract.CORPORATE_CUSTOMER_PROPERTY);
+       return this;
+    }
+
+    public ServiceContractRequest<T> groupByCorporateCustomerWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ServiceContract.CORPORATE_CUSTOMER_PROPERTY, function);
+       return this;
+    }
+
     public ServiceContractRequest<T> groupByCreatedTime(){
        groupBy(ServiceContract.CREATED_TIME_PROPERTY);
        return this;
@@ -1027,18 +1208,18 @@ public class ServiceContractRequest<T extends ServiceContract> extends BaseReque
        return this;
     }
 
-    public ServiceContractRequest<T> groupByUpdatedTime(){
-       groupBy(ServiceContract.UPDATED_TIME_PROPERTY);
+    public ServiceContractRequest<T> groupByUpdateTime(){
+       groupBy(ServiceContract.UPDATE_TIME_PROPERTY);
        return this;
     }
 
-    public ServiceContractRequest<T> groupByUpdatedTimeAs(String retName){
-       groupBy(retName, ServiceContract.UPDATED_TIME_PROPERTY);
+    public ServiceContractRequest<T> groupByUpdateTimeAs(String retName){
+       groupBy(retName, ServiceContract.UPDATE_TIME_PROPERTY);
        return this;
     }
 
-    public ServiceContractRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, ServiceContract.UPDATED_TIME_PROPERTY, function);
+    public ServiceContractRequest<T> groupByUpdateTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ServiceContract.UPDATE_TIME_PROPERTY, function);
        return this;
     }
 
@@ -1153,6 +1334,34 @@ public class ServiceContractRequest<T extends ServiceContract> extends BaseReque
        return this;
     }
 
+    public ServiceContractRequest<T> orderByCurrencyAscending(){
+       addOrderByAscending(ServiceContract.CURRENCY_PROPERTY);
+       return this;
+    }
+
+    public ServiceContractRequest<T> orderByCurrencyDescending(){
+       addOrderByDescending(ServiceContract.CURRENCY_PROPERTY);
+       return this;
+    }
+    public ServiceContractRequest<T> orderByCurrencyAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(ServiceContract.CURRENCY_PROPERTY);
+       return this;
+    }
+
+    public ServiceContractRequest<T> orderByCurrencyDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(ServiceContract.CURRENCY_PROPERTY);
+       return this;
+    }
+    public ServiceContractRequest<T> orderByCorporateCustomerAscending(){
+       addOrderByAscending(ServiceContract.CORPORATE_CUSTOMER_PROPERTY);
+       return this;
+    }
+
+    public ServiceContractRequest<T> orderByCorporateCustomerDescending(){
+       addOrderByDescending(ServiceContract.CORPORATE_CUSTOMER_PROPERTY);
+       return this;
+    }
+
     public ServiceContractRequest<T> orderByCreatedTimeAscending(){
        addOrderByAscending(ServiceContract.CREATED_TIME_PROPERTY);
        return this;
@@ -1163,13 +1372,13 @@ public class ServiceContractRequest<T extends ServiceContract> extends BaseReque
        return this;
     }
 
-    public ServiceContractRequest<T> orderByUpdatedTimeAscending(){
-       addOrderByAscending(ServiceContract.UPDATED_TIME_PROPERTY);
+    public ServiceContractRequest<T> orderByUpdateTimeAscending(){
+       addOrderByAscending(ServiceContract.UPDATE_TIME_PROPERTY);
        return this;
     }
 
-    public ServiceContractRequest<T> orderByUpdatedTimeDescending(){
-       addOrderByDescending(ServiceContract.UPDATED_TIME_PROPERTY);
+    public ServiceContractRequest<T> orderByUpdateTimeDescending(){
+       addOrderByDescending(ServiceContract.UPDATE_TIME_PROPERTY);
        return this;
     }
 
@@ -1184,7 +1393,25 @@ public class ServiceContractRequest<T extends ServiceContract> extends BaseReque
     }
 
 
+    public CorporateCustomerRequest rollUpToCorporateCustomer(){
+       CorporateCustomerRequest corporateCustomer = Q.corporateCustomers().unlimited();
+       this.withCorporateCustomerMatching(corporateCustomer)
+           .groupByCorporateCustomerWith(corporateCustomer);
+       return corporateCustomer;
+    }
 
+
+
+
+
+   public ServiceContractRequest<T> facetByCorporateCustomerAs(String facetName, CorporateCustomerRequest corporateCustomer){
+       return facetByCorporateCustomerAs(facetName, corporateCustomer, true);
+   }
+
+   public ServiceContractRequest<T> facetByCorporateCustomerAs(String facetName, CorporateCustomerRequest corporateCustomer, boolean includeAllFacets){
+       addFacet(facetName, ServiceContract.CORPORATE_CUSTOMER_PROPERTY, corporateCustomer, includeAllFacets);
+       return this;
+   }
 
 
     /**

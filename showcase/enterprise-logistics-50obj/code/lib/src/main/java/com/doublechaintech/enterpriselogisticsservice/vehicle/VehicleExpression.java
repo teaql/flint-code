@@ -6,8 +6,6 @@ import com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAss
 import com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignmentListExpression;
 import com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog;
 import com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLogListExpression;
-import com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog;
-import com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLogListExpression;
 import com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice;
 import com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDeviceListExpression;
 import com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance;
@@ -16,7 +14,6 @@ import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.function.Function;
 
@@ -46,18 +43,18 @@ public class VehicleExpression<T, E, U extends Vehicle> extends ExpressionAdapto
      }
 
 
-    public Expression<T, String> getName(){
-       return apply(Vehicle::getName);
+    public Expression<T, String> getPlateNumber(){
+       return apply(Vehicle::getPlateNumber);
     }
-    public VehicleExpression<T, U, U> updateName(String name){
-       return new VehicleExpression(this, $it ->  ((Vehicle)$it).updateName(name));
+    public VehicleExpression<T, U, U> updatePlateNumber(String plateNumber){
+       return new VehicleExpression(this, $it ->  ((Vehicle)$it).updatePlateNumber(plateNumber));
     }
 
-    public Expression<T, String> getLicensePlate(){
-       return apply(Vehicle::getLicensePlate);
+    public Expression<T, String> getVin(){
+       return apply(Vehicle::getVin);
     }
-    public VehicleExpression<T, U, U> updateLicensePlate(String licensePlate){
-       return new VehicleExpression(this, $it ->  ((Vehicle)$it).updateLicensePlate(licensePlate));
+    public VehicleExpression<T, U, U> updateVin(String vin){
+       return new VehicleExpression(this, $it ->  ((Vehicle)$it).updateVin(vin));
     }
 
     public Expression<T, String> getMake(){
@@ -81,10 +78,10 @@ public class VehicleExpression<T, E, U extends Vehicle> extends ExpressionAdapto
        return new VehicleExpression(this, $it ->  ((Vehicle)$it).updateYear(year));
     }
 
-    public Expression<T, BigDecimal> getCapacityKg(){
+    public Expression<T, Integer> getCapacityKg(){
        return apply(Vehicle::getCapacityKg);
     }
-    public VehicleExpression<T, U, U> updateCapacityKg(BigDecimal capacityKg){
+    public VehicleExpression<T, U, U> updateCapacityKg(Integer capacityKg){
        return new VehicleExpression(this, $it ->  ((Vehicle)$it).updateCapacityKg(capacityKg));
     }
 
@@ -112,11 +109,8 @@ public class VehicleExpression<T, E, U extends Vehicle> extends ExpressionAdapto
     public DispatchPlanListExpression<T, U, DispatchPlan> getDispatchPlanList(){
         return new DispatchPlanListExpression(this, $it ->  ((Vehicle)$it).getDispatchPlanList());
     }
-    public DriverAssignmentListExpression<T, U, DriverAssignment> getDriverAssignmentList(){
-        return new DriverAssignmentListExpression(this, $it ->  ((Vehicle)$it).getDriverAssignmentList());
-    }
-    public GpsLogListExpression<T, U, GpsLog> getGpsLogList(){
-        return new GpsLogListExpression(this, $it ->  ((Vehicle)$it).getGpsLogList());
+    public TelematicsDeviceListExpression<T, U, TelematicsDevice> getTelematicsDeviceList(){
+        return new TelematicsDeviceListExpression(this, $it ->  ((Vehicle)$it).getTelematicsDeviceList());
     }
     public FuelLogListExpression<T, U, FuelLog> getFuelLogList(){
         return new FuelLogListExpression(this, $it ->  ((Vehicle)$it).getFuelLogList());
@@ -124,17 +118,14 @@ public class VehicleExpression<T, E, U extends Vehicle> extends ExpressionAdapto
     public VehicleMaintenanceListExpression<T, U, VehicleMaintenance> getVehicleMaintenanceList(){
         return new VehicleMaintenanceListExpression(this, $it ->  ((Vehicle)$it).getVehicleMaintenanceList());
     }
-    public TelematicsDeviceListExpression<T, U, TelematicsDevice> getTelematicsDeviceList(){
-        return new TelematicsDeviceListExpression(this, $it ->  ((Vehicle)$it).getTelematicsDeviceList());
+    public DriverAssignmentListExpression<T, U, DriverAssignment> getDriverAssignmentList(){
+        return new DriverAssignmentListExpression(this, $it ->  ((Vehicle)$it).getDriverAssignmentList());
     }
     public VehicleExpression<T, U, U> addDispatchPlan(DispatchPlan dispatchPlan){
        return new VehicleExpression(this, $it ->  ((Vehicle)$it).addDispatchPlan(dispatchPlan));
     }
-    public VehicleExpression<T, U, U> addDriverAssignment(DriverAssignment driverAssignment){
-       return new VehicleExpression(this, $it ->  ((Vehicle)$it).addDriverAssignment(driverAssignment));
-    }
-    public VehicleExpression<T, U, U> addGpsLog(GpsLog gpsLog){
-       return new VehicleExpression(this, $it ->  ((Vehicle)$it).addGpsLog(gpsLog));
+    public VehicleExpression<T, U, U> addTelematicsDevice(TelematicsDevice telematicsDevice){
+       return new VehicleExpression(this, $it ->  ((Vehicle)$it).addTelematicsDevice(telematicsDevice));
     }
     public VehicleExpression<T, U, U> addFuelLog(FuelLog fuelLog){
        return new VehicleExpression(this, $it ->  ((Vehicle)$it).addFuelLog(fuelLog));
@@ -142,7 +133,7 @@ public class VehicleExpression<T, E, U extends Vehicle> extends ExpressionAdapto
     public VehicleExpression<T, U, U> addVehicleMaintenance(VehicleMaintenance vehicleMaintenance){
        return new VehicleExpression(this, $it ->  ((Vehicle)$it).addVehicleMaintenance(vehicleMaintenance));
     }
-    public VehicleExpression<T, U, U> addTelematicsDevice(TelematicsDevice telematicsDevice){
-       return new VehicleExpression(this, $it ->  ((Vehicle)$it).addTelematicsDevice(telematicsDevice));
+    public VehicleExpression<T, U, U> addDriverAssignment(DriverAssignment driverAssignment){
+       return new VehicleExpression(this, $it ->  ((Vehicle)$it).addDriverAssignment(driverAssignment));
     }
 }

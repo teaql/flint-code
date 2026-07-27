@@ -1,5 +1,6 @@
 package com.doublechaintech.enterpriselogisticsservice.servicecontract;
 
+import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
@@ -27,16 +28,20 @@ public class ServiceContract extends BaseEntity implements RemoteInput {
     public static final String END_DATE_PROPERTY = "endDate";
     public static final String STATUS_PROPERTY = "status";
     public static final String TOTAL_VALUE_PROPERTY = "totalValue";
+    public static final String CURRENCY_PROPERTY = "currency";
+    public static final String CORPORATE_CUSTOMER_PROPERTY = "corporateCustomer";
     public static final String CREATED_TIME_PROPERTY = "createdTime";
-    public static final String UPDATED_TIME_PROPERTY = "updatedTime";
+    public static final String UPDATE_TIME_PROPERTY = "updateTime";
     private String contractNumber;
     private String title;
     private LocalDate startDate;
     private LocalDate endDate;
     private String status;
     private BigDecimal totalValue;
+    private String currency;
+    private CorporateCustomer corporateCustomer;
     private LocalDateTime createdTime;
-    private LocalDateTime updatedTime;
+    private LocalDateTime updateTime;
 
     public String getContractNumber(){
         return this.contractNumber;
@@ -56,11 +61,17 @@ public class ServiceContract extends BaseEntity implements RemoteInput {
     public BigDecimal getTotalValue(){
         return this.totalValue;
     }
+    public String getCurrency(){
+        return this.currency;
+    }
+    public CorporateCustomer getCorporateCustomer(){
+        return this.corporateCustomer;
+    }
     public LocalDateTime getCreatedTime(){
         return this.createdTime;
     }
-    public LocalDateTime getUpdatedTime(){
-        return this.updatedTime;
+    public LocalDateTime getUpdateTime(){
+        return this.updateTime;
     }
     public ServiceContract updateContractNumber(String contractNumber){
         contractNumber = (contractNumber == null ? null : contractNumber.trim());
@@ -113,6 +124,23 @@ public class ServiceContract extends BaseEntity implements RemoteInput {
         this.totalValue = totalValue;
         return this;
     }
+    public ServiceContract updateCurrency(String currency){
+        currency = (currency == null ? null : currency.trim());
+        if(Objects.equals(this.currency, currency)){
+            return this;
+        }
+        handleUpdate(CURRENCY_PROPERTY, getCurrency(), currency);
+        this.currency = currency;
+        return this;
+    }
+    public ServiceContract updateCorporateCustomer(CorporateCustomer corporateCustomer){
+        if(Objects.equals(this.corporateCustomer, corporateCustomer)){
+            return this;
+        }
+        handleUpdate(CORPORATE_CUSTOMER_PROPERTY, getCorporateCustomer(), corporateCustomer);
+        this.corporateCustomer = corporateCustomer;
+        return this;
+    }
     public ServiceContract updateCreatedTime(LocalDateTime createdTime){
         if(Objects.equals(this.createdTime, createdTime)){
             return this;
@@ -121,12 +149,12 @@ public class ServiceContract extends BaseEntity implements RemoteInput {
         this.createdTime = createdTime;
         return this;
     }
-    public ServiceContract updateUpdatedTime(LocalDateTime updatedTime){
-        if(Objects.equals(this.updatedTime, updatedTime)){
+    public ServiceContract updateUpdateTime(LocalDateTime updateTime){
+        if(Objects.equals(this.updateTime, updateTime)){
             return this;
         }
-        handleUpdate(UPDATED_TIME_PROPERTY, getUpdatedTime(), updatedTime);
-        this.updatedTime = updatedTime;
+        handleUpdate(UPDATE_TIME_PROPERTY, getUpdateTime(), updateTime);
+        this.updateTime = updateTime;
         return this;
     }
 
@@ -169,9 +197,13 @@ public class ServiceContract extends BaseEntity implements RemoteInput {
 
             case "totalValue": this.totalValue = (BigDecimal) value; break;
 
+            case "currency": this.currency = (value == null ? null : ((String)value).trim()); break;
+
+            case "corporateCustomer": this.corporateCustomer = (CorporateCustomer) value; break;
+
             case "createdTime": this.createdTime = (LocalDateTime) value; break;
 
-            case "updatedTime": this.updatedTime = (LocalDateTime) value; break;
+            case "updateTime": this.updateTime = (LocalDateTime) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -187,8 +219,10 @@ public class ServiceContract extends BaseEntity implements RemoteInput {
             case "endDate": return this.endDate;
             case "status": return this.status;
             case "totalValue": return this.totalValue;
+            case "currency": return this.currency;
+            case "corporateCustomer": return this.corporateCustomer;
             case "createdTime": return this.createdTime;
-            case "updatedTime": return this.updatedTime;
+            case "updateTime": return this.updateTime;
             default: return super.__internalGet(property);
         }
     }

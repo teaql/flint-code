@@ -1,5 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.insurancepolicy;
 
+import com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord;
+import com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecordListExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
@@ -91,11 +93,17 @@ public class InsurancePolicyExpression<T, E, U extends InsurancePolicy> extends 
        return new InsurancePolicyExpression(this, $it ->  ((InsurancePolicy)$it).updateCreatedTime(createdTime));
     }
 
-    public Expression<T, LocalDateTime> getUpdatedTime(){
-       return apply(InsurancePolicy::getUpdatedTime);
+    public Expression<T, LocalDateTime> getUpdateTime(){
+       return apply(InsurancePolicy::getUpdateTime);
     }
-    public InsurancePolicyExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
-       return new InsurancePolicyExpression(this, $it ->  ((InsurancePolicy)$it).updateUpdatedTime(updatedTime));
+    public InsurancePolicyExpression<T, U, U> updateUpdateTime(LocalDateTime updateTime){
+       return new InsurancePolicyExpression(this, $it ->  ((InsurancePolicy)$it).updateUpdateTime(updateTime));
     }
 
+    public ClaimsRecordListExpression<T, U, ClaimsRecord> getClaimsRecordList(){
+        return new ClaimsRecordListExpression(this, $it ->  ((InsurancePolicy)$it).getClaimsRecordList());
+    }
+    public InsurancePolicyExpression<T, U, U> addClaimsRecord(ClaimsRecord claimsRecord){
+       return new InsurancePolicyExpression(this, $it ->  ((InsurancePolicy)$it).addClaimsRecord(claimsRecord));
+    }
 }

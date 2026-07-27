@@ -11,7 +11,7 @@ import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Date;
 
 public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T> {
@@ -85,7 +85,7 @@ public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T
 
     public PaymentRecordRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectStatus().selectCreatedAt().selectUpdatedAt().selectInvoiceIdOnly().selectVersion();
+        return selectId().selectName().selectReferenceCode().selectAmount().selectCurrency().selectPaymentMethod().selectPaymentDate().selectStatus().selectInvoiceIdOnly().selectVersion();
     }
 
     public PaymentRecordRequest<T> selectSelfFields(){
@@ -94,12 +94,12 @@ public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T
 
     public PaymentRecordRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectStatus().selectCreatedAt().selectUpdatedAt().selectInvoice().selectVersion();
+        return selectId().selectName().selectReferenceCode().selectAmount().selectCurrency().selectPaymentMethod().selectPaymentDate().selectStatus().selectInvoice().selectVersion();
     }
 
     public PaymentRecordRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectStatus().selectCreatedAt().selectUpdatedAt().selectInvoice().selectVersion();
+        return selectId().selectName().selectReferenceCode().selectAmount().selectCurrency().selectPaymentMethod().selectPaymentDate().selectStatus().selectInvoice().selectVersion();
     }
 
 
@@ -137,21 +137,21 @@ public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T
        unselectProperty(PaymentRecord.NAME_PROPERTY);
        return this;
     }
-    public PaymentRecordRequest<T> selectCode(){
-       selectProperty(PaymentRecord.CODE_PROPERTY);
+    public PaymentRecordRequest<T> selectReferenceCode(){
+       selectProperty(PaymentRecord.REFERENCE_CODE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the code with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  code) to fetch code property.
+     * fill the referenceCode with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  referenceCode) to fetch referenceCode property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public PaymentRecordRequest<T> unselectCode(){
-       unselectProperty(PaymentRecord.CODE_PROPERTY);
+    public PaymentRecordRequest<T> unselectReferenceCode(){
+       unselectProperty(PaymentRecord.REFERENCE_CODE_PROPERTY);
        return this;
     }
     public PaymentRecordRequest<T> selectAmount(){
@@ -196,6 +196,40 @@ public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T
        unselectProperty(PaymentRecord.CURRENCY_PROPERTY);
        return this;
     }
+    public PaymentRecordRequest<T> selectPaymentMethod(){
+       selectProperty(PaymentRecord.PAYMENT_METHOD_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the paymentMethod with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  paymentMethod) to fetch paymentMethod property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public PaymentRecordRequest<T> unselectPaymentMethod(){
+       unselectProperty(PaymentRecord.PAYMENT_METHOD_PROPERTY);
+       return this;
+    }
+    public PaymentRecordRequest<T> selectPaymentDate(){
+       selectProperty(PaymentRecord.PAYMENT_DATE_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the paymentDate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  paymentDate) to fetch paymentDate property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public PaymentRecordRequest<T> unselectPaymentDate(){
+       unselectProperty(PaymentRecord.PAYMENT_DATE_PROPERTY);
+       return this;
+    }
     public PaymentRecordRequest<T> selectStatus(){
        selectProperty(PaymentRecord.STATUS_PROPERTY);
        return this;
@@ -211,40 +245,6 @@ public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T
 
     public PaymentRecordRequest<T> unselectStatus(){
        unselectProperty(PaymentRecord.STATUS_PROPERTY);
-       return this;
-    }
-    public PaymentRecordRequest<T> selectCreatedAt(){
-       selectProperty(PaymentRecord.CREATED_AT_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the createdAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdAt) to fetch createdAt property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public PaymentRecordRequest<T> unselectCreatedAt(){
-       unselectProperty(PaymentRecord.CREATED_AT_PROPERTY);
-       return this;
-    }
-    public PaymentRecordRequest<T> selectUpdatedAt(){
-       selectProperty(PaymentRecord.UPDATED_AT_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the updatedAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedAt) to fetch updatedAt property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public PaymentRecordRequest<T> unselectUpdatedAt(){
-       unselectProperty(PaymentRecord.UPDATED_AT_PROPERTY);
        return this;
     }
     public PaymentRecordRequest<T> selectInvoiceIdOnly(){
@@ -364,65 +364,65 @@ public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T
 
 
 
-    public PaymentRecordRequest<T> filterByCode(String... code){
-      if (code == null || code.length == 0) {
-        throw new IllegalArgumentException("filterByCode parameter code cannot be empty");
+    public PaymentRecordRequest<T> filterByReferenceCode(String... referenceCode){
+      if (referenceCode == null || referenceCode.length == 0) {
+        throw new IllegalArgumentException("filterByReferenceCode parameter referenceCode cannot be empty");
       }
-      return appendSearchCriteria(createCodeCriteria(Operator.EQUAL, (Object[])code));
+      return appendSearchCriteria(createReferenceCodeCriteria(Operator.EQUAL, (Object[])referenceCode));
     }
 
-    public PaymentRecordRequest<T> withCode(Operator operator, Object... values){
-       return appendSearchCriteria(createCodeCriteria(operator, values));
+    public PaymentRecordRequest<T> withReferenceCode(Operator operator, Object... values){
+       return appendSearchCriteria(createReferenceCodeCriteria(operator, values));
     }
 
-    public PaymentRecordRequest<T> withCodeIsUnknown(){
-       return withCode(Operator.IS_NULL);
+    public PaymentRecordRequest<T> withReferenceCodeIsUnknown(){
+       return withReferenceCode(Operator.IS_NULL);
     }
 
-    public PaymentRecordRequest<T> withCodeIsKnown(){
-       return withCode(Operator.IS_NOT_NULL);
+    public PaymentRecordRequest<T> withReferenceCodeIsKnown(){
+       return withReferenceCode(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCodeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(PaymentRecord.CODE_PROPERTY, operator, values);
+    public SearchCriteria createReferenceCodeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PaymentRecord.REFERENCE_CODE_PROPERTY, operator, values);
     }
 
-    public PaymentRecordRequest<T> withCodeGreaterThan(String code){
-       return withCode(Operator.GREATER_THAN, code);
+    public PaymentRecordRequest<T> withReferenceCodeGreaterThan(String referenceCode){
+       return withReferenceCode(Operator.GREATER_THAN, referenceCode);
     }
 
-    public PaymentRecordRequest<T> withCodeGreaterThanOrEqualTo(String code){
-       return withCode(Operator.GREATER_THAN_OR_EQUAL, code);
+    public PaymentRecordRequest<T> withReferenceCodeGreaterThanOrEqualTo(String referenceCode){
+       return withReferenceCode(Operator.GREATER_THAN_OR_EQUAL, referenceCode);
     }
 
-    public PaymentRecordRequest<T> withCodeLessThan(String code){
-       return withCode(Operator.LESS_THAN, code);
+    public PaymentRecordRequest<T> withReferenceCodeLessThan(String referenceCode){
+       return withReferenceCode(Operator.LESS_THAN, referenceCode);
     }
 
-    public PaymentRecordRequest<T> withCodeLessThanOrEqualTo(String code){
-       return withCode(Operator.LESS_THAN_OR_EQUAL, code);
+    public PaymentRecordRequest<T> withReferenceCodeLessThanOrEqualTo(String referenceCode){
+       return withReferenceCode(Operator.LESS_THAN_OR_EQUAL, referenceCode);
     }
 
-    public PaymentRecordRequest<T> withCodeBetween(String startOfCode, String endOfCode){
-       return withCode(Operator.BETWEEN, startOfCode, endOfCode);
+    public PaymentRecordRequest<T> withReferenceCodeBetween(String startOfReferenceCode, String endOfReferenceCode){
+       return withReferenceCode(Operator.BETWEEN, startOfReferenceCode, endOfReferenceCode);
     }
-    public PaymentRecordRequest<T> withCodeStartingWith(String code){
-       return withCode(Operator.BEGIN_WITH, code);
+    public PaymentRecordRequest<T> withReferenceCodeStartingWith(String referenceCode){
+       return withReferenceCode(Operator.BEGIN_WITH, referenceCode);
     }
-    public PaymentRecordRequest<T> withCodeContaining(String code){
-       return withCode(Operator.CONTAIN, code);
-    }
-
-    public PaymentRecordRequest<T> withCodeEndingWith(String code){
-       return withCode(Operator.END_WITH, code);
+    public PaymentRecordRequest<T> withReferenceCodeContaining(String referenceCode){
+       return withReferenceCode(Operator.CONTAIN, referenceCode);
     }
 
-    public PaymentRecordRequest<T> withCodeIs(String code){
-       return withCode(Operator.EQUAL, code);
+    public PaymentRecordRequest<T> withReferenceCodeEndingWith(String referenceCode){
+       return withReferenceCode(Operator.END_WITH, referenceCode);
     }
 
-    public PaymentRecordRequest<T> withCodeSoundingLike(String code){
-       return withCode(Operator.SOUNDS_LIKE, code);
+    public PaymentRecordRequest<T> withReferenceCodeIs(String referenceCode){
+       return withReferenceCode(Operator.EQUAL, referenceCode);
+    }
+
+    public PaymentRecordRequest<T> withReferenceCodeSoundingLike(String referenceCode){
+       return withReferenceCode(Operator.SOUNDS_LIKE, referenceCode);
     }
 
 
@@ -535,6 +535,134 @@ public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T
 
 
 
+    public PaymentRecordRequest<T> filterByPaymentMethod(String... paymentMethod){
+      if (paymentMethod == null || paymentMethod.length == 0) {
+        throw new IllegalArgumentException("filterByPaymentMethod parameter paymentMethod cannot be empty");
+      }
+      return appendSearchCriteria(createPaymentMethodCriteria(Operator.EQUAL, (Object[])paymentMethod));
+    }
+
+    public PaymentRecordRequest<T> withPaymentMethod(Operator operator, Object... values){
+       return appendSearchCriteria(createPaymentMethodCriteria(operator, values));
+    }
+
+    public PaymentRecordRequest<T> withPaymentMethodIsUnknown(){
+       return withPaymentMethod(Operator.IS_NULL);
+    }
+
+    public PaymentRecordRequest<T> withPaymentMethodIsKnown(){
+       return withPaymentMethod(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createPaymentMethodCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PaymentRecord.PAYMENT_METHOD_PROPERTY, operator, values);
+    }
+
+    public PaymentRecordRequest<T> withPaymentMethodGreaterThan(String paymentMethod){
+       return withPaymentMethod(Operator.GREATER_THAN, paymentMethod);
+    }
+
+    public PaymentRecordRequest<T> withPaymentMethodGreaterThanOrEqualTo(String paymentMethod){
+       return withPaymentMethod(Operator.GREATER_THAN_OR_EQUAL, paymentMethod);
+    }
+
+    public PaymentRecordRequest<T> withPaymentMethodLessThan(String paymentMethod){
+       return withPaymentMethod(Operator.LESS_THAN, paymentMethod);
+    }
+
+    public PaymentRecordRequest<T> withPaymentMethodLessThanOrEqualTo(String paymentMethod){
+       return withPaymentMethod(Operator.LESS_THAN_OR_EQUAL, paymentMethod);
+    }
+
+    public PaymentRecordRequest<T> withPaymentMethodBetween(String startOfPaymentMethod, String endOfPaymentMethod){
+       return withPaymentMethod(Operator.BETWEEN, startOfPaymentMethod, endOfPaymentMethod);
+    }
+    public PaymentRecordRequest<T> withPaymentMethodStartingWith(String paymentMethod){
+       return withPaymentMethod(Operator.BEGIN_WITH, paymentMethod);
+    }
+    public PaymentRecordRequest<T> withPaymentMethodContaining(String paymentMethod){
+       return withPaymentMethod(Operator.CONTAIN, paymentMethod);
+    }
+
+    public PaymentRecordRequest<T> withPaymentMethodEndingWith(String paymentMethod){
+       return withPaymentMethod(Operator.END_WITH, paymentMethod);
+    }
+
+    public PaymentRecordRequest<T> withPaymentMethodIs(String paymentMethod){
+       return withPaymentMethod(Operator.EQUAL, paymentMethod);
+    }
+
+    public PaymentRecordRequest<T> withPaymentMethodSoundingLike(String paymentMethod){
+       return withPaymentMethod(Operator.SOUNDS_LIKE, paymentMethod);
+    }
+
+
+
+    public PaymentRecordRequest<T> filterByPaymentDate(LocalDate... paymentDate){
+      if (paymentDate == null || paymentDate.length == 0) {
+        throw new IllegalArgumentException("filterByPaymentDate parameter paymentDate cannot be empty");
+      }
+      return appendSearchCriteria(createPaymentDateCriteria(Operator.EQUAL, (Object[])paymentDate));
+    }
+
+    public PaymentRecordRequest<T> withPaymentDate(Operator operator, Object... values){
+       return appendSearchCriteria(createPaymentDateCriteria(operator, values));
+    }
+
+    public PaymentRecordRequest<T> withPaymentDateIsUnknown(){
+       return withPaymentDate(Operator.IS_NULL);
+    }
+
+    public PaymentRecordRequest<T> withPaymentDateIsKnown(){
+       return withPaymentDate(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createPaymentDateCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PaymentRecord.PAYMENT_DATE_PROPERTY, operator, values);
+    }
+
+    public PaymentRecordRequest<T> withPaymentDateGreaterThan(LocalDate paymentDate){
+       return withPaymentDate(Operator.GREATER_THAN, paymentDate);
+    }
+
+    public PaymentRecordRequest<T> withPaymentDateGreaterThanOrEqualTo(LocalDate paymentDate){
+       return withPaymentDate(Operator.GREATER_THAN_OR_EQUAL, paymentDate);
+    }
+
+    public PaymentRecordRequest<T> withPaymentDateLessThan(LocalDate paymentDate){
+       return withPaymentDate(Operator.LESS_THAN, paymentDate);
+    }
+
+    public PaymentRecordRequest<T> withPaymentDateLessThanOrEqualTo(LocalDate paymentDate){
+       return withPaymentDate(Operator.LESS_THAN_OR_EQUAL, paymentDate);
+    }
+
+    public PaymentRecordRequest<T> withPaymentDateBetween(LocalDate startOfPaymentDate, LocalDate endOfPaymentDate){
+       return withPaymentDate(Operator.BETWEEN, startOfPaymentDate, endOfPaymentDate);
+    }
+    public PaymentRecordRequest<T> withPaymentDateBefore(LocalDate paymentDate){
+       return withPaymentDate(Operator.LESS_THAN, paymentDate);
+    }
+
+    public PaymentRecordRequest<T> withPaymentDateBefore(Date paymentDate){
+       return withPaymentDate(Operator.LESS_THAN, paymentDate);
+    }
+
+    public PaymentRecordRequest<T> withPaymentDateAfter(LocalDate paymentDate){
+       return withPaymentDate(Operator.GREATER_THAN, paymentDate);
+    }
+
+    public PaymentRecordRequest<T> withPaymentDateAfter(Date paymentDate){
+       return withPaymentDate(Operator.GREATER_THAN, paymentDate);
+    }
+
+    public PaymentRecordRequest<T> withPaymentDateBetween(Date startOfPaymentDate, Date endOfPaymentDate){
+       return withPaymentDate(Operator.BETWEEN, startOfPaymentDate, endOfPaymentDate);
+    }
+
+
+
+
     public PaymentRecordRequest<T> filterByStatus(String... status){
       if (status == null || status.length == 0) {
         throw new IllegalArgumentException("filterByStatus parameter status cannot be empty");
@@ -595,136 +723,6 @@ public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T
     public PaymentRecordRequest<T> withStatusSoundingLike(String status){
        return withStatus(Operator.SOUNDS_LIKE, status);
     }
-
-
-
-    public PaymentRecordRequest<T> filterByCreatedAt(LocalDateTime... createdAt){
-      if (createdAt == null || createdAt.length == 0) {
-        throw new IllegalArgumentException("filterByCreatedAt parameter createdAt cannot be empty");
-      }
-      return appendSearchCriteria(createCreatedAtCriteria(Operator.EQUAL, (Object[])createdAt));
-    }
-
-    public PaymentRecordRequest<T> withCreatedAt(Operator operator, Object... values){
-       return appendSearchCriteria(createCreatedAtCriteria(operator, values));
-    }
-
-    public PaymentRecordRequest<T> withCreatedAtIsUnknown(){
-       return withCreatedAt(Operator.IS_NULL);
-    }
-
-    public PaymentRecordRequest<T> withCreatedAtIsKnown(){
-       return withCreatedAt(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createCreatedAtCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(PaymentRecord.CREATED_AT_PROPERTY, operator, values);
-    }
-
-    public PaymentRecordRequest<T> withCreatedAtGreaterThan(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
-    }
-
-    public PaymentRecordRequest<T> withCreatedAtGreaterThanOrEqualTo(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN_OR_EQUAL, createdAt);
-    }
-
-    public PaymentRecordRequest<T> withCreatedAtLessThan(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
-    }
-
-    public PaymentRecordRequest<T> withCreatedAtLessThanOrEqualTo(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN_OR_EQUAL, createdAt);
-    }
-
-    public PaymentRecordRequest<T> withCreatedAtBetween(LocalDateTime startOfCreatedAt, LocalDateTime endOfCreatedAt){
-       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
-    }
-    public PaymentRecordRequest<T> withCreatedAtBefore(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
-    }
-
-    public PaymentRecordRequest<T> withCreatedAtBefore(Date createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
-    }
-
-    public PaymentRecordRequest<T> withCreatedAtAfter(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
-    }
-
-    public PaymentRecordRequest<T> withCreatedAtAfter(Date createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
-    }
-
-    public PaymentRecordRequest<T> withCreatedAtBetween(Date startOfCreatedAt, Date endOfCreatedAt){
-       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
-    }
-
-
-
-
-    public PaymentRecordRequest<T> filterByUpdatedAt(LocalDateTime... updatedAt){
-      if (updatedAt == null || updatedAt.length == 0) {
-        throw new IllegalArgumentException("filterByUpdatedAt parameter updatedAt cannot be empty");
-      }
-      return appendSearchCriteria(createUpdatedAtCriteria(Operator.EQUAL, (Object[])updatedAt));
-    }
-
-    public PaymentRecordRequest<T> withUpdatedAt(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdatedAtCriteria(operator, values));
-    }
-
-    public PaymentRecordRequest<T> withUpdatedAtIsUnknown(){
-       return withUpdatedAt(Operator.IS_NULL);
-    }
-
-    public PaymentRecordRequest<T> withUpdatedAtIsKnown(){
-       return withUpdatedAt(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createUpdatedAtCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(PaymentRecord.UPDATED_AT_PROPERTY, operator, values);
-    }
-
-    public PaymentRecordRequest<T> withUpdatedAtGreaterThan(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
-    }
-
-    public PaymentRecordRequest<T> withUpdatedAtGreaterThanOrEqualTo(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN_OR_EQUAL, updatedAt);
-    }
-
-    public PaymentRecordRequest<T> withUpdatedAtLessThan(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
-    }
-
-    public PaymentRecordRequest<T> withUpdatedAtLessThanOrEqualTo(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN_OR_EQUAL, updatedAt);
-    }
-
-    public PaymentRecordRequest<T> withUpdatedAtBetween(LocalDateTime startOfUpdatedAt, LocalDateTime endOfUpdatedAt){
-       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
-    }
-    public PaymentRecordRequest<T> withUpdatedAtBefore(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
-    }
-
-    public PaymentRecordRequest<T> withUpdatedAtBefore(Date updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
-    }
-
-    public PaymentRecordRequest<T> withUpdatedAtAfter(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
-    }
-
-    public PaymentRecordRequest<T> withUpdatedAtAfter(Date updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
-    }
-
-    public PaymentRecordRequest<T> withUpdatedAtBetween(Date startOfUpdatedAt, Date endOfUpdatedAt){
-       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
-    }
-
 
 
 
@@ -918,18 +916,18 @@ public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T
        return this;
     }
 
-    public PaymentRecordRequest<T> groupByCode(){
-       groupBy(PaymentRecord.CODE_PROPERTY);
+    public PaymentRecordRequest<T> groupByReferenceCode(){
+       groupBy(PaymentRecord.REFERENCE_CODE_PROPERTY);
        return this;
     }
 
-    public PaymentRecordRequest<T> groupByCodeAs(String retName){
-       groupBy(retName, PaymentRecord.CODE_PROPERTY);
+    public PaymentRecordRequest<T> groupByReferenceCodeAs(String retName){
+       groupBy(retName, PaymentRecord.REFERENCE_CODE_PROPERTY);
        return this;
     }
 
-    public PaymentRecordRequest<T> groupByCodeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, PaymentRecord.CODE_PROPERTY, function);
+    public PaymentRecordRequest<T> groupByReferenceCodeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PaymentRecord.REFERENCE_CODE_PROPERTY, function);
        return this;
     }
 
@@ -963,6 +961,36 @@ public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T
        return this;
     }
 
+    public PaymentRecordRequest<T> groupByPaymentMethod(){
+       groupBy(PaymentRecord.PAYMENT_METHOD_PROPERTY);
+       return this;
+    }
+
+    public PaymentRecordRequest<T> groupByPaymentMethodAs(String retName){
+       groupBy(retName, PaymentRecord.PAYMENT_METHOD_PROPERTY);
+       return this;
+    }
+
+    public PaymentRecordRequest<T> groupByPaymentMethodWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PaymentRecord.PAYMENT_METHOD_PROPERTY, function);
+       return this;
+    }
+
+    public PaymentRecordRequest<T> groupByPaymentDate(){
+       groupBy(PaymentRecord.PAYMENT_DATE_PROPERTY);
+       return this;
+    }
+
+    public PaymentRecordRequest<T> groupByPaymentDateAs(String retName){
+       groupBy(retName, PaymentRecord.PAYMENT_DATE_PROPERTY);
+       return this;
+    }
+
+    public PaymentRecordRequest<T> groupByPaymentDateWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PaymentRecord.PAYMENT_DATE_PROPERTY, function);
+       return this;
+    }
+
     public PaymentRecordRequest<T> groupByStatus(){
        groupBy(PaymentRecord.STATUS_PROPERTY);
        return this;
@@ -975,36 +1003,6 @@ public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T
 
     public PaymentRecordRequest<T> groupByStatusWithFunction(String retName, AggrFunction function){
        groupBy(retName, PaymentRecord.STATUS_PROPERTY, function);
-       return this;
-    }
-
-    public PaymentRecordRequest<T> groupByCreatedAt(){
-       groupBy(PaymentRecord.CREATED_AT_PROPERTY);
-       return this;
-    }
-
-    public PaymentRecordRequest<T> groupByCreatedAtAs(String retName){
-       groupBy(retName, PaymentRecord.CREATED_AT_PROPERTY);
-       return this;
-    }
-
-    public PaymentRecordRequest<T> groupByCreatedAtWithFunction(String retName, AggrFunction function){
-       groupBy(retName, PaymentRecord.CREATED_AT_PROPERTY, function);
-       return this;
-    }
-
-    public PaymentRecordRequest<T> groupByUpdatedAt(){
-       groupBy(PaymentRecord.UPDATED_AT_PROPERTY);
-       return this;
-    }
-
-    public PaymentRecordRequest<T> groupByUpdatedAtAs(String retName){
-       groupBy(retName, PaymentRecord.UPDATED_AT_PROPERTY);
-       return this;
-    }
-
-    public PaymentRecordRequest<T> groupByUpdatedAtWithFunction(String retName, AggrFunction function){
-       groupBy(retName, PaymentRecord.UPDATED_AT_PROPERTY, function);
        return this;
     }
     public PaymentRecordRequest<T> groupByInvoiceWith(InvoiceRequest subRequest){
@@ -1071,22 +1069,22 @@ public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T
        addOrderByDescendingUsingGBK(PaymentRecord.NAME_PROPERTY);
        return this;
     }
-    public PaymentRecordRequest<T> orderByCodeAscending(){
-       addOrderByAscending(PaymentRecord.CODE_PROPERTY);
+    public PaymentRecordRequest<T> orderByReferenceCodeAscending(){
+       addOrderByAscending(PaymentRecord.REFERENCE_CODE_PROPERTY);
        return this;
     }
 
-    public PaymentRecordRequest<T> orderByCodeDescending(){
-       addOrderByDescending(PaymentRecord.CODE_PROPERTY);
+    public PaymentRecordRequest<T> orderByReferenceCodeDescending(){
+       addOrderByDescending(PaymentRecord.REFERENCE_CODE_PROPERTY);
        return this;
     }
-    public PaymentRecordRequest<T> orderByCodeAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(PaymentRecord.CODE_PROPERTY);
+    public PaymentRecordRequest<T> orderByReferenceCodeAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(PaymentRecord.REFERENCE_CODE_PROPERTY);
        return this;
     }
 
-    public PaymentRecordRequest<T> orderByCodeDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(PaymentRecord.CODE_PROPERTY);
+    public PaymentRecordRequest<T> orderByReferenceCodeDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(PaymentRecord.REFERENCE_CODE_PROPERTY);
        return this;
     }
     public PaymentRecordRequest<T> orderByAmountAscending(){
@@ -1117,6 +1115,34 @@ public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T
        addOrderByDescendingUsingGBK(PaymentRecord.CURRENCY_PROPERTY);
        return this;
     }
+    public PaymentRecordRequest<T> orderByPaymentMethodAscending(){
+       addOrderByAscending(PaymentRecord.PAYMENT_METHOD_PROPERTY);
+       return this;
+    }
+
+    public PaymentRecordRequest<T> orderByPaymentMethodDescending(){
+       addOrderByDescending(PaymentRecord.PAYMENT_METHOD_PROPERTY);
+       return this;
+    }
+    public PaymentRecordRequest<T> orderByPaymentMethodAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(PaymentRecord.PAYMENT_METHOD_PROPERTY);
+       return this;
+    }
+
+    public PaymentRecordRequest<T> orderByPaymentMethodDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(PaymentRecord.PAYMENT_METHOD_PROPERTY);
+       return this;
+    }
+    public PaymentRecordRequest<T> orderByPaymentDateAscending(){
+       addOrderByAscending(PaymentRecord.PAYMENT_DATE_PROPERTY);
+       return this;
+    }
+
+    public PaymentRecordRequest<T> orderByPaymentDateDescending(){
+       addOrderByDescending(PaymentRecord.PAYMENT_DATE_PROPERTY);
+       return this;
+    }
+
     public PaymentRecordRequest<T> orderByStatusAscending(){
        addOrderByAscending(PaymentRecord.STATUS_PROPERTY);
        return this;
@@ -1135,26 +1161,6 @@ public class PaymentRecordRequest<T extends PaymentRecord> extends BaseRequest<T
        addOrderByDescendingUsingGBK(PaymentRecord.STATUS_PROPERTY);
        return this;
     }
-    public PaymentRecordRequest<T> orderByCreatedAtAscending(){
-       addOrderByAscending(PaymentRecord.CREATED_AT_PROPERTY);
-       return this;
-    }
-
-    public PaymentRecordRequest<T> orderByCreatedAtDescending(){
-       addOrderByDescending(PaymentRecord.CREATED_AT_PROPERTY);
-       return this;
-    }
-
-    public PaymentRecordRequest<T> orderByUpdatedAtAscending(){
-       addOrderByAscending(PaymentRecord.UPDATED_AT_PROPERTY);
-       return this;
-    }
-
-    public PaymentRecordRequest<T> orderByUpdatedAtDescending(){
-       addOrderByDescending(PaymentRecord.UPDATED_AT_PROPERTY);
-       return this;
-    }
-
     public PaymentRecordRequest<T> orderByInvoiceAscending(){
        addOrderByAscending(PaymentRecord.INVOICE_PROPERTY);
        return this;

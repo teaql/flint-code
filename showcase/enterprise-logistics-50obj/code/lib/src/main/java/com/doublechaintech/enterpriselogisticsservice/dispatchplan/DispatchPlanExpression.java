@@ -39,11 +39,18 @@ public class DispatchPlanExpression<T, E, U extends DispatchPlan> extends Expres
      }
 
 
-    public Expression<T, String> getPlanId(){
-       return apply(DispatchPlan::getPlanId);
+    public Expression<T, String> getPlanNumber(){
+       return apply(DispatchPlan::getPlanNumber);
     }
-    public DispatchPlanExpression<T, U, U> updatePlanId(String planId){
-       return new DispatchPlanExpression(this, $it ->  ((DispatchPlan)$it).updatePlanId(planId));
+    public DispatchPlanExpression<T, U, U> updatePlanNumber(String planNumber){
+       return new DispatchPlanExpression(this, $it ->  ((DispatchPlan)$it).updatePlanNumber(planNumber));
+    }
+
+    public Expression<T, String> getStatus(){
+       return apply(DispatchPlan::getStatus);
+    }
+    public DispatchPlanExpression<T, U, U> updateStatus(String status){
+       return new DispatchPlanExpression(this, $it ->  ((DispatchPlan)$it).updateStatus(status));
     }
 
     public MovingOrderExpression<T, U, MovingOrder> getMovingOrder(){
@@ -70,39 +77,32 @@ public class DispatchPlanExpression<T, E, U extends DispatchPlan> extends Expres
        return new DispatchPlanExpression(this, $it ->  ((DispatchPlan)$it).updateDriver(driver));
     }
 
-    public Expression<T, String> getStatus(){
-       return apply(DispatchPlan::getStatus);
-    }
-    public DispatchPlanExpression<T, U, U> updateStatus(String status){
-       return new DispatchPlanExpression(this, $it ->  ((DispatchPlan)$it).updateStatus(status));
-    }
-
-    public Expression<T, String> getScheduledDeparture(){
+    public Expression<T, LocalDateTime> getScheduledDeparture(){
        return apply(DispatchPlan::getScheduledDeparture);
     }
-    public DispatchPlanExpression<T, U, U> updateScheduledDeparture(String scheduledDeparture){
+    public DispatchPlanExpression<T, U, U> updateScheduledDeparture(LocalDateTime scheduledDeparture){
        return new DispatchPlanExpression(this, $it ->  ((DispatchPlan)$it).updateScheduledDeparture(scheduledDeparture));
     }
 
-    public Expression<T, String> getScheduledArrival(){
+    public Expression<T, LocalDateTime> getScheduledArrival(){
        return apply(DispatchPlan::getScheduledArrival);
     }
-    public DispatchPlanExpression<T, U, U> updateScheduledArrival(String scheduledArrival){
+    public DispatchPlanExpression<T, U, U> updateScheduledArrival(LocalDateTime scheduledArrival){
        return new DispatchPlanExpression(this, $it ->  ((DispatchPlan)$it).updateScheduledArrival(scheduledArrival));
     }
 
-    public Expression<T, LocalDateTime> getCreateTime(){
-       return apply(DispatchPlan::getCreateTime);
+    public Expression<T, LocalDateTime> getCreatedTime(){
+       return apply(DispatchPlan::getCreatedTime);
     }
-    public DispatchPlanExpression<T, U, U> updateCreateTime(LocalDateTime createTime){
-       return new DispatchPlanExpression(this, $it ->  ((DispatchPlan)$it).updateCreateTime(createTime));
+    public DispatchPlanExpression<T, U, U> updateCreatedTime(LocalDateTime createdTime){
+       return new DispatchPlanExpression(this, $it ->  ((DispatchPlan)$it).updateCreatedTime(createdTime));
     }
 
-    public Expression<T, LocalDateTime> getUpdateTime(){
-       return apply(DispatchPlan::getUpdateTime);
+    public Expression<T, LocalDateTime> getUpdatedTime(){
+       return apply(DispatchPlan::getUpdatedTime);
     }
-    public DispatchPlanExpression<T, U, U> updateUpdateTime(LocalDateTime updateTime){
-       return new DispatchPlanExpression(this, $it ->  ((DispatchPlan)$it).updateUpdateTime(updateTime));
+    public DispatchPlanExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
+       return new DispatchPlanExpression(this, $it ->  ((DispatchPlan)$it).updateUpdatedTime(updatedTime));
     }
 
 }

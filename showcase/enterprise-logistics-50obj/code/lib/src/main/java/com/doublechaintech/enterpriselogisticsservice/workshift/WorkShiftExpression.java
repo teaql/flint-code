@@ -6,6 +6,7 @@ import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.function.Function;
@@ -57,11 +58,11 @@ public class WorkShiftExpression<T, E, U extends WorkShift> extends ExpressionAd
        return new WorkShiftExpression(this, $it ->  ((WorkShift)$it).updateEndTime(endTime));
     }
 
-    public Expression<T, String> getShiftType(){
-       return apply(WorkShift::getShiftType);
+    public Expression<T, LocalDate> getShiftDate(){
+       return apply(WorkShift::getShiftDate);
     }
-    public WorkShiftExpression<T, U, U> updateShiftType(String shiftType){
-       return new WorkShiftExpression(this, $it ->  ((WorkShift)$it).updateShiftType(shiftType));
+    public WorkShiftExpression<T, U, U> updateShiftDate(LocalDate shiftDate){
+       return new WorkShiftExpression(this, $it ->  ((WorkShift)$it).updateShiftDate(shiftDate));
     }
 
     public Expression<T, LocalDateTime> getCreatedAt(){

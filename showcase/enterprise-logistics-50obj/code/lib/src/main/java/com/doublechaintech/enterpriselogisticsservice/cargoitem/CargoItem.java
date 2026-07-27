@@ -21,36 +21,28 @@ import java.util.Objects;
 public class CargoItem extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "CargoItem";
 
-    public static final String ITEM_ID_PROPERTY = "itemId";
-    public static final String MOVING_ORDER_PROPERTY = "movingOrder";
+    public static final String ITEM_CODE_PROPERTY = "itemCode";
     public static final String DESCRIPTION_PROPERTY = "description";
-    public static final String CATEGORY_PROPERTY = "category";
     public static final String WEIGHT_KG_PROPERTY = "weightKg";
     public static final String VOLUME_M3_PROPERTY = "volumeM3";
-    public static final String VALUE_PROPERTY = "value";
     public static final String FRAGILE_PROPERTY = "fragile";
-    public static final String CREATE_TIME_PROPERTY = "createTime";
-    private String itemId;
-    private MovingOrder movingOrder;
+    public static final String MOVING_ORDER_PROPERTY = "movingOrder";
+    public static final String CREATED_TIME_PROPERTY = "createdTime";
+    public static final String UPDATED_TIME_PROPERTY = "updatedTime";
+    private String itemCode;
     private String description;
-    private String category;
     private BigDecimal weightKg;
     private BigDecimal volumeM3;
-    private BigDecimal value;
     private Boolean fragile;
-    private LocalDateTime createTime;
+    private MovingOrder movingOrder;
+    private LocalDateTime createdTime;
+    private LocalDateTime updatedTime;
 
-    public String getItemId(){
-        return this.itemId;
-    }
-    public MovingOrder getMovingOrder(){
-        return this.movingOrder;
+    public String getItemCode(){
+        return this.itemCode;
     }
     public String getDescription(){
         return this.description;
-    }
-    public String getCategory(){
-        return this.category;
     }
     public BigDecimal getWeightKg(){
         return this.weightKg;
@@ -58,30 +50,25 @@ public class CargoItem extends BaseEntity implements RemoteInput {
     public BigDecimal getVolumeM3(){
         return this.volumeM3;
     }
-    public BigDecimal getValue(){
-        return this.value;
-    }
     public Boolean isFragile(){
         return this.fragile;
     }
-    public LocalDateTime getCreateTime(){
-        return this.createTime;
+    public MovingOrder getMovingOrder(){
+        return this.movingOrder;
     }
-    public CargoItem updateItemId(String itemId){
-        itemId = (itemId == null ? null : itemId.trim());
-        if(Objects.equals(this.itemId, itemId)){
+    public LocalDateTime getCreatedTime(){
+        return this.createdTime;
+    }
+    public LocalDateTime getUpdatedTime(){
+        return this.updatedTime;
+    }
+    public CargoItem updateItemCode(String itemCode){
+        itemCode = (itemCode == null ? null : itemCode.trim());
+        if(Objects.equals(this.itemCode, itemCode)){
             return this;
         }
-        handleUpdate(ITEM_ID_PROPERTY, getItemId(), itemId);
-        this.itemId = itemId;
-        return this;
-    }
-    public CargoItem updateMovingOrder(MovingOrder movingOrder){
-        if(Objects.equals(this.movingOrder, movingOrder)){
-            return this;
-        }
-        handleUpdate(MOVING_ORDER_PROPERTY, getMovingOrder(), movingOrder);
-        this.movingOrder = movingOrder;
+        handleUpdate(ITEM_CODE_PROPERTY, getItemCode(), itemCode);
+        this.itemCode = itemCode;
         return this;
     }
     public CargoItem updateDescription(String description){
@@ -91,15 +78,6 @@ public class CargoItem extends BaseEntity implements RemoteInput {
         }
         handleUpdate(DESCRIPTION_PROPERTY, getDescription(), description);
         this.description = description;
-        return this;
-    }
-    public CargoItem updateCategory(String category){
-        category = (category == null ? null : category.trim());
-        if(Objects.equals(this.category, category)){
-            return this;
-        }
-        handleUpdate(CATEGORY_PROPERTY, getCategory(), category);
-        this.category = category;
         return this;
     }
     public CargoItem updateWeightKg(BigDecimal weightKg){
@@ -118,14 +96,6 @@ public class CargoItem extends BaseEntity implements RemoteInput {
         this.volumeM3 = volumeM3;
         return this;
     }
-    public CargoItem updateValue(BigDecimal value){
-        if(Objects.equals(this.value, value)){
-            return this;
-        }
-        handleUpdate(VALUE_PROPERTY, getValue(), value);
-        this.value = value;
-        return this;
-    }
     public CargoItem updateFragile(Boolean fragile){
         if(Objects.equals(this.fragile, fragile)){
             return this;
@@ -134,12 +104,28 @@ public class CargoItem extends BaseEntity implements RemoteInput {
         this.fragile = fragile;
         return this;
     }
-    public CargoItem updateCreateTime(LocalDateTime createTime){
-        if(Objects.equals(this.createTime, createTime)){
+    public CargoItem updateMovingOrder(MovingOrder movingOrder){
+        if(Objects.equals(this.movingOrder, movingOrder)){
             return this;
         }
-        handleUpdate(CREATE_TIME_PROPERTY, getCreateTime(), createTime);
-        this.createTime = createTime;
+        handleUpdate(MOVING_ORDER_PROPERTY, getMovingOrder(), movingOrder);
+        this.movingOrder = movingOrder;
+        return this;
+    }
+    public CargoItem updateCreatedTime(LocalDateTime createdTime){
+        if(Objects.equals(this.createdTime, createdTime)){
+            return this;
+        }
+        handleUpdate(CREATED_TIME_PROPERTY, getCreatedTime(), createdTime);
+        this.createdTime = createdTime;
+        return this;
+    }
+    public CargoItem updateUpdatedTime(LocalDateTime updatedTime){
+        if(Objects.equals(this.updatedTime, updatedTime)){
+            return this;
+        }
+        handleUpdate(UPDATED_TIME_PROPERTY, getUpdatedTime(), updatedTime);
+        this.updatedTime = updatedTime;
         return this;
     }
 
@@ -170,23 +156,21 @@ public class CargoItem extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public void __internalSet(String property, Object value) {
         switch (property) {
-            case "itemId": this.itemId = (value == null ? null : ((String)value).trim()); break;
-
-            case "movingOrder": this.movingOrder = (MovingOrder) value; break;
+            case "itemCode": this.itemCode = (value == null ? null : ((String)value).trim()); break;
 
             case "description": this.description = (value == null ? null : ((String)value).trim()); break;
-
-            case "category": this.category = (value == null ? null : ((String)value).trim()); break;
 
             case "weightKg": this.weightKg = (BigDecimal) value; break;
 
             case "volumeM3": this.volumeM3 = (BigDecimal) value; break;
 
-            case "value": this.value = (BigDecimal) value; break;
-
             case "fragile": this.fragile = (Boolean) value; break;
 
-            case "createTime": this.createTime = (LocalDateTime) value; break;
+            case "movingOrder": this.movingOrder = (MovingOrder) value; break;
+
+            case "createdTime": this.createdTime = (LocalDateTime) value; break;
+
+            case "updatedTime": this.updatedTime = (LocalDateTime) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -196,15 +180,14 @@ public class CargoItem extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public Object __internalGet(String property) {
         switch (property) {
-            case "itemId": return this.itemId;
-            case "movingOrder": return this.movingOrder;
+            case "itemCode": return this.itemCode;
             case "description": return this.description;
-            case "category": return this.category;
             case "weightKg": return this.weightKg;
             case "volumeM3": return this.volumeM3;
-            case "value": return this.value;
             case "fragile": return this.fragile;
-            case "createTime": return this.createTime;
+            case "movingOrder": return this.movingOrder;
+            case "createdTime": return this.createdTime;
+            case "updatedTime": return this.updatedTime;
             default: return super.__internalGet(property);
         }
     }

@@ -1,5 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.insurancepolicy;
 
+import com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord;
+import com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecordChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
@@ -27,11 +29,11 @@ public class InsurancePolicyChecker implements Checker<InsurancePolicy>{
       if(insurancePolicy.newItem()){
         if(insurancePolicy.getCreatedTime() == null){
            insurancePolicy.updateCreatedTime(java.time.LocalDateTime.now());
-        }if(insurancePolicy.getUpdatedTime() == null){
-           insurancePolicy.updateUpdatedTime(java.time.LocalDateTime.now());
+        }if(insurancePolicy.getUpdateTime() == null){
+           insurancePolicy.updateUpdateTime(java.time.LocalDateTime.now());
         }
       }else if(insurancePolicy.updateItem()){
-        insurancePolicy.updateUpdatedTime(java.time.LocalDateTime.now());
+        insurancePolicy.updateUpdateTime(java.time.LocalDateTime.now());
       }
       checkPolicyNumber(_ctx, insurancePolicy.getProperty(InsurancePolicy.POLICY_NUMBER_PROPERTY), newLocation(_parentLocation, InsurancePolicy.POLICY_NUMBER_PROPERTY));
       checkProvider(_ctx, insurancePolicy.getProperty(InsurancePolicy.PROVIDER_PROPERTY), newLocation(_parentLocation, InsurancePolicy.PROVIDER_PROPERTY));
@@ -41,7 +43,11 @@ public class InsurancePolicyChecker implements Checker<InsurancePolicy>{
       checkEndDate(_ctx, insurancePolicy.getProperty(InsurancePolicy.END_DATE_PROPERTY), newLocation(_parentLocation, InsurancePolicy.END_DATE_PROPERTY));
       checkStatus(_ctx, insurancePolicy.getProperty(InsurancePolicy.STATUS_PROPERTY), newLocation(_parentLocation, InsurancePolicy.STATUS_PROPERTY));
       checkCreatedTime(_ctx, insurancePolicy.getProperty(InsurancePolicy.CREATED_TIME_PROPERTY), newLocation(_parentLocation, InsurancePolicy.CREATED_TIME_PROPERTY));
-      checkUpdatedTime(_ctx, insurancePolicy.getProperty(InsurancePolicy.UPDATED_TIME_PROPERTY), newLocation(_parentLocation, InsurancePolicy.UPDATED_TIME_PROPERTY));
+      checkUpdateTime(_ctx, insurancePolicy.getProperty(InsurancePolicy.UPDATE_TIME_PROPERTY), newLocation(_parentLocation, InsurancePolicy.UPDATE_TIME_PROPERTY));
+      for(int i = 0; insurancePolicy.getClaimsRecordList() != null && i < insurancePolicy.getClaimsRecordList().size(); i++){
+         ClaimsRecord claimsRecord = insurancePolicy.getClaimsRecordList().get(i);
+         new ClaimsRecordChecker().checkAndFix(_ctx, claimsRecord, newLocation(_parentLocation, InsurancePolicy.CLAIMS_RECORD_LIST_PROPERTY, i));
+      }
     }
 
     public void checkPolicyNumber(UserContext _ctx, String policyNumber, ObjectLocation _parentLocation){
@@ -98,9 +104,9 @@ public class InsurancePolicyChecker implements Checker<InsurancePolicy>{
         return;
     }
     }
-    public void checkUpdatedTime(UserContext _ctx, LocalDateTime updatedTime, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, updatedTime);
-    if((updatedTime == null)){
+    public void checkUpdateTime(UserContext _ctx, LocalDateTime updateTime, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, updateTime);
+    if((updateTime == null)){
         return;
     }
     }

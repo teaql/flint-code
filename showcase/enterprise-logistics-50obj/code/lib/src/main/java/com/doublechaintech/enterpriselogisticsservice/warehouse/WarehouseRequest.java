@@ -7,8 +7,8 @@ import com.doublechaintech.enterpriselogisticsservice.pallet.Pallet;
 import com.doublechaintech.enterpriselogisticsservice.pallet.PalletRequest;
 import com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainer;
 import com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainerRequest;
-import com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute;
-import com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRouteRequest;
+import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee;
+import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFeeRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
@@ -105,7 +105,7 @@ public class WarehouseRequest<T extends Warehouse> extends BaseRequest<T> {
 
     public WarehouseRequest<T> selectChildren(){
         super.selectAny();
-        selectTransitRouteListAsOriginWarehouse().selectTransitRouteListAsDestinationWarehouse().selectStorageContainerList().selectInventoryCheckList().selectPalletList();
+        selectStorageContainerList().selectInventoryCheckList().selectPalletList().selectStorageFeeList();
         return selectId().selectName().selectCode().selectAddress().selectCity().selectCountry().selectCapacity().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
     }
 
@@ -305,22 +305,6 @@ public class WarehouseRequest<T extends Warehouse> extends BaseRequest<T> {
        unselectProperty(Warehouse.VERSION_PROPERTY);
        return this;
     }
-    public WarehouseRequest<T> selectTransitRouteListAsOriginWarehouse(){
-       return selectTransitRouteListAsOriginWarehouseWith(Q.transitRoutes().selectSelf());
-    }
-
-    public WarehouseRequest<T> selectTransitRouteListAsOriginWarehouseWith(TransitRouteRequest transitRouteListAsOriginWarehouse){
-       enhanceRelation(Warehouse.TRANSIT_ROUTE_LIST_AS_ORIGIN_WAREHOUSE_PROPERTY, transitRouteListAsOriginWarehouse);
-       return this;
-    }
-    public WarehouseRequest<T> selectTransitRouteListAsDestinationWarehouse(){
-       return selectTransitRouteListAsDestinationWarehouseWith(Q.transitRoutes().selectSelf());
-    }
-
-    public WarehouseRequest<T> selectTransitRouteListAsDestinationWarehouseWith(TransitRouteRequest transitRouteListAsDestinationWarehouse){
-       enhanceRelation(Warehouse.TRANSIT_ROUTE_LIST_AS_DESTINATION_WAREHOUSE_PROPERTY, transitRouteListAsDestinationWarehouse);
-       return this;
-    }
     public WarehouseRequest<T> selectStorageContainerList(){
        return selectStorageContainerListWith(Q.storageContainers().selectSelf());
     }
@@ -343,6 +327,14 @@ public class WarehouseRequest<T extends Warehouse> extends BaseRequest<T> {
 
     public WarehouseRequest<T> selectPalletListWith(PalletRequest palletList){
        enhanceRelation(Warehouse.PALLET_LIST_PROPERTY, palletList);
+       return this;
+    }
+    public WarehouseRequest<T> selectStorageFeeList(){
+       return selectStorageFeeListWith(Q.storageFees().selectSelf());
+    }
+
+    public WarehouseRequest<T> selectStorageFeeListWith(StorageFeeRequest storageFeeList){
+       enhanceRelation(Warehouse.STORAGE_FEE_LIST_PROPERTY, storageFeeList);
        return this;
     }
 
@@ -959,36 +951,6 @@ public class WarehouseRequest<T extends Warehouse> extends BaseRequest<T> {
        return withVersion(Operator.BETWEEN, startOfVersion, endOfVersion);
     }
 
-    public WarehouseRequest<T> withTransitRouteListAsOriginWarehouseMatching(TransitRouteRequest transitRouteAsOriginWarehouseRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(Warehouse.ID_PROPERTY, transitRouteAsOriginWarehouseRequest, TransitRoute.ORIGIN_WAREHOUSE_PROPERTY));
-    }
-
-    public WarehouseRequest<T> withoutTransitRouteListAsOriginWarehouseMatching(TransitRouteRequest transitRouteAsOriginWarehouseRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(Warehouse.ID_PROPERTY, transitRouteAsOriginWarehouseRequest, TransitRoute.ORIGIN_WAREHOUSE_PROPERTY)));
-    }
-
-    public WarehouseRequest<T> haveTransitRoutesAsOriginWarehouse(){
-        return withTransitRouteListAsOriginWarehouseMatching(Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> haveNoTransitRoutesAsOriginWarehouse(){
-        return withoutTransitRouteListAsOriginWarehouseMatching(Q.transitRoutes().unlimited());
-    }
-    public WarehouseRequest<T> withTransitRouteListAsDestinationWarehouseMatching(TransitRouteRequest transitRouteAsDestinationWarehouseRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(Warehouse.ID_PROPERTY, transitRouteAsDestinationWarehouseRequest, TransitRoute.DESTINATION_WAREHOUSE_PROPERTY));
-    }
-
-    public WarehouseRequest<T> withoutTransitRouteListAsDestinationWarehouseMatching(TransitRouteRequest transitRouteAsDestinationWarehouseRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(Warehouse.ID_PROPERTY, transitRouteAsDestinationWarehouseRequest, TransitRoute.DESTINATION_WAREHOUSE_PROPERTY)));
-    }
-
-    public WarehouseRequest<T> haveTransitRoutesAsDestinationWarehouse(){
-        return withTransitRouteListAsDestinationWarehouseMatching(Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> haveNoTransitRoutesAsDestinationWarehouse(){
-        return withoutTransitRouteListAsDestinationWarehouseMatching(Q.transitRoutes().unlimited());
-    }
     public WarehouseRequest<T> withStorageContainerListMatching(StorageContainerRequest storageContainerRequest){
         return appendSearchCriteria(new SubQuerySearchCriteria(Warehouse.ID_PROPERTY, storageContainerRequest, StorageContainer.WAREHOUSE_PROPERTY));
     }
@@ -1033,6 +995,21 @@ public class WarehouseRequest<T extends Warehouse> extends BaseRequest<T> {
 
     public WarehouseRequest<T> haveNoPallets(){
         return withoutPalletListMatching(Q.pallets().unlimited());
+    }
+    public WarehouseRequest<T> withStorageFeeListMatching(StorageFeeRequest storageFeeRequest){
+        return appendSearchCriteria(new SubQuerySearchCriteria(Warehouse.ID_PROPERTY, storageFeeRequest, StorageFee.WAREHOUSE_PROPERTY));
+    }
+
+    public WarehouseRequest<T> withoutStorageFeeListMatching(StorageFeeRequest storageFeeRequest){
+        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(Warehouse.ID_PROPERTY, storageFeeRequest, StorageFee.WAREHOUSE_PROPERTY)));
+    }
+
+    public WarehouseRequest<T> haveStorageFees(){
+        return withStorageFeeListMatching(Q.storageFees().unlimited());
+    }
+
+    public WarehouseRequest<T> haveNoStorageFees(){
+        return withoutStorageFeeListMatching(Q.storageFees().unlimited());
     }
 
     public WarehouseRequest<T> count(){
@@ -1107,14 +1084,6 @@ public class WarehouseRequest<T extends Warehouse> extends BaseRequest<T> {
         super.samplePopulationVariance(retName, Warehouse.CAPACITY_PROPERTY);
         return this;
     }
-    public WarehouseRequest<T> groupByTransitRoutesAsOriginWarehouseWithDetails(TransitRouteRequest subRequest){
-       aggregate(Warehouse.TRANSIT_ROUTE_LIST_AS_ORIGIN_WAREHOUSE_PROPERTY, subRequest);
-       return this;
-    }
-    public WarehouseRequest<T> groupByTransitRoutesAsDestinationWarehouseWithDetails(TransitRouteRequest subRequest){
-       aggregate(Warehouse.TRANSIT_ROUTE_LIST_AS_DESTINATION_WAREHOUSE_PROPERTY, subRequest);
-       return this;
-    }
     public WarehouseRequest<T> groupByStorageContainersWithDetails(StorageContainerRequest subRequest){
        aggregate(Warehouse.STORAGE_CONTAINER_LIST_PROPERTY, subRequest);
        return this;
@@ -1125,6 +1094,10 @@ public class WarehouseRequest<T extends Warehouse> extends BaseRequest<T> {
     }
     public WarehouseRequest<T> groupByPalletsWithDetails(PalletRequest subRequest){
        aggregate(Warehouse.PALLET_LIST_PROPERTY, subRequest);
+       return this;
+    }
+    public WarehouseRequest<T> groupByStorageFeesWithDetails(StorageFeeRequest subRequest){
+       aggregate(Warehouse.STORAGE_FEE_LIST_PROPERTY, subRequest);
        return this;
     }
 
@@ -1454,32 +1427,6 @@ public class WarehouseRequest<T extends Warehouse> extends BaseRequest<T> {
     }
 
 
-    public WarehouseRequest<T> statsFromTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-       return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest, false);
-    }
-
-    public WarehouseRequest<T> statsFromTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(TransitRoute.ORIGIN_WAREHOUSE_PROPERTY);
-       addAggregateDynamicProperty(name, subRequest, singleResult);
-       return this;
-    }
-
-    public WarehouseRequest<T> statsFromTransitRoutesAsOriginWarehouse(TransitRouteRequest subRequest){
-       return statsFromTransitRoutesAsOriginWarehouseAs(REFINEMENTS, subRequest);
-    }
-    public WarehouseRequest<T> statsFromTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-       return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest, false);
-    }
-
-    public WarehouseRequest<T> statsFromTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(TransitRoute.DESTINATION_WAREHOUSE_PROPERTY);
-       addAggregateDynamicProperty(name, subRequest, singleResult);
-       return this;
-    }
-
-    public WarehouseRequest<T> statsFromTransitRoutesAsDestinationWarehouse(TransitRouteRequest subRequest){
-       return statsFromTransitRoutesAsDestinationWarehouseAs(REFINEMENTS, subRequest);
-    }
     public WarehouseRequest<T> statsFromStorageContainersAs(String name, StorageContainerRequest subRequest){
        return statsFromStorageContainersAs(name, subRequest, false);
     }
@@ -1519,27 +1466,18 @@ public class WarehouseRequest<T extends Warehouse> extends BaseRequest<T> {
     public WarehouseRequest<T> statsFromPallets(PalletRequest subRequest){
        return statsFromPalletsAs(REFINEMENTS, subRequest);
     }
-    public WarehouseRequest<T> countTransitRoutesAsOriginWarehouse(){
-        return countTransitRoutesAsOriginWarehouseAs("Count");
+    public WarehouseRequest<T> statsFromStorageFeesAs(String name, StorageFeeRequest subRequest){
+       return statsFromStorageFeesAs(name, subRequest, false);
     }
 
-    public WarehouseRequest<T> countTransitRoutesAsOriginWarehouseAs(String name){
-        return countTransitRoutesAsOriginWarehouseWith(name, Q.transitRoutes().unlimited());
+    public WarehouseRequest<T> statsFromStorageFeesAs(String name, StorageFeeRequest subRequest, boolean singleResult){
+       subRequest.setPartitionProperty(StorageFee.WAREHOUSE_PROPERTY);
+       addAggregateDynamicProperty(name, subRequest, singleResult);
+       return this;
     }
 
-    public WarehouseRequest<T> countTransitRoutesAsOriginWarehouseWith(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.count(), true);
-    }
-    public WarehouseRequest<T> countTransitRoutesAsDestinationWarehouse(){
-        return countTransitRoutesAsDestinationWarehouseAs("Count");
-    }
-
-    public WarehouseRequest<T> countTransitRoutesAsDestinationWarehouseAs(String name){
-        return countTransitRoutesAsDestinationWarehouseWith(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> countTransitRoutesAsDestinationWarehouseWith(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.count(), true);
+    public WarehouseRequest<T> statsFromStorageFees(StorageFeeRequest subRequest){
+       return statsFromStorageFeesAs(REFINEMENTS, subRequest);
     }
     public WarehouseRequest<T> countStorageContainers(){
         return countStorageContainersAs("Count");
@@ -1574,621 +1512,104 @@ public class WarehouseRequest<T extends Warehouse> extends BaseRequest<T> {
     public WarehouseRequest<T> countPalletsWith(String name, PalletRequest subRequest){
         return statsFromPalletsAs(name, subRequest.count(), true);
     }
-    public WarehouseRequest<T> minDistanceKmOfTransitRoutesAsOriginWarehouse(){
-        return minDistanceKmOfTransitRoutesAsOriginWarehouseAs("minDistanceKmOfTransitRoutesAsOriginWarehouse");
+    public WarehouseRequest<T> countStorageFees(){
+        return countStorageFeesAs("Count");
     }
 
-    public WarehouseRequest<T> minDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name){
-        return minDistanceKmOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
+    public WarehouseRequest<T> countStorageFeesAs(String name){
+        return countStorageFeesWith(name, Q.storageFees().unlimited());
     }
 
-    public WarehouseRequest<T> minDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.minDistanceKm(), true);
+    public WarehouseRequest<T> countStorageFeesWith(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.count(), true);
     }
-    public WarehouseRequest<T> maxDistanceKmOfTransitRoutesAsOriginWarehouse(){
-        return maxDistanceKmOfTransitRoutesAsOriginWarehouseAs("maxDistanceKmOfTransitRoutesAsOriginWarehouse");
+    public WarehouseRequest<T> minAmountOfStorageFees(){
+        return minAmountOfStorageFeesAs("minAmountOfStorageFees");
     }
 
-    public WarehouseRequest<T> maxDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name){
-        return maxDistanceKmOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
+    public WarehouseRequest<T> minAmountOfStorageFeesAs(String name){
+        return minAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
     }
 
-    public WarehouseRequest<T> maxDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.maxDistanceKm(), true);
+    public WarehouseRequest<T> minAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.minAmount(), true);
     }
-    public WarehouseRequest<T> sumDistanceKmOfTransitRoutesAsOriginWarehouse(){
-        return sumDistanceKmOfTransitRoutesAsOriginWarehouseAs("sumDistanceKmOfTransitRoutesAsOriginWarehouse");
+    public WarehouseRequest<T> maxAmountOfStorageFees(){
+        return maxAmountOfStorageFeesAs("maxAmountOfStorageFees");
     }
 
-    public WarehouseRequest<T> sumDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name){
-        return sumDistanceKmOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
+    public WarehouseRequest<T> maxAmountOfStorageFeesAs(String name){
+        return maxAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
     }
 
-    public WarehouseRequest<T> sumDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.sumDistanceKm(), true);
+    public WarehouseRequest<T> maxAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.maxAmount(), true);
     }
-    public WarehouseRequest<T> avgDistanceKmOfTransitRoutesAsOriginWarehouse(){
-        return avgDistanceKmOfTransitRoutesAsOriginWarehouseAs("avgDistanceKmOfTransitRoutesAsOriginWarehouse");
+    public WarehouseRequest<T> sumAmountOfStorageFees(){
+        return sumAmountOfStorageFeesAs("sumAmountOfStorageFees");
     }
 
-    public WarehouseRequest<T> avgDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name){
-        return avgDistanceKmOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
+    public WarehouseRequest<T> sumAmountOfStorageFeesAs(String name){
+        return sumAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
     }
 
-    public WarehouseRequest<T> avgDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.avgDistanceKm(), true);
+    public WarehouseRequest<T> sumAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.sumAmount(), true);
     }
-    public WarehouseRequest<T> standardDeviationDistanceKmOfTransitRoutesAsOriginWarehouse(){
-        return standardDeviationDistanceKmOfTransitRoutesAsOriginWarehouseAs("stdDevDistanceKmOfTransitRoutesAsOriginWarehouse");
+    public WarehouseRequest<T> avgAmountOfStorageFees(){
+        return avgAmountOfStorageFeesAs("avgAmountOfStorageFees");
     }
 
-    public WarehouseRequest<T> standardDeviationDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name){
-        return standardDeviationDistanceKmOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
+    public WarehouseRequest<T> avgAmountOfStorageFeesAs(String name){
+        return avgAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
     }
 
-    public WarehouseRequest<T> standardDeviationDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.standardDeviationDistanceKm(), true);
+    public WarehouseRequest<T> avgAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.avgAmount(), true);
     }
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationDistanceKmOfTransitRoutesAsOriginWarehouse(){
-        return squareRootOfPopulationStandardDeviationDistanceKmOfTransitRoutesAsOriginWarehouseAs("stdDevPopDistanceKmOfTransitRoutesAsOriginWarehouse");
+    public WarehouseRequest<T> standardDeviationAmountOfStorageFees(){
+        return standardDeviationAmountOfStorageFeesAs("stdDevAmountOfStorageFees");
     }
 
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name){
-        return squareRootOfPopulationStandardDeviationDistanceKmOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
+    public WarehouseRequest<T> standardDeviationAmountOfStorageFeesAs(String name){
+        return standardDeviationAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
     }
 
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.squareRootOfPopulationStandardDeviationDistanceKm(), true);
+    public WarehouseRequest<T> standardDeviationAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.standardDeviationAmount(), true);
     }
-    public WarehouseRequest<T> sampleVarianceDistanceKmOfTransitRoutesAsOriginWarehouse(){
-        return sampleVarianceDistanceKmOfTransitRoutesAsOriginWarehouseAs("varSampDistanceKmOfTransitRoutesAsOriginWarehouse");
+    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationAmountOfStorageFees(){
+        return squareRootOfPopulationStandardDeviationAmountOfStorageFeesAs("stdDevPopAmountOfStorageFees");
     }
 
-    public WarehouseRequest<T> sampleVarianceDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name){
-        return sampleVarianceDistanceKmOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
+    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationAmountOfStorageFeesAs(String name){
+        return squareRootOfPopulationStandardDeviationAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
     }
 
-    public WarehouseRequest<T> sampleVarianceDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.sampleVarianceDistanceKm(), true);
+    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.squareRootOfPopulationStandardDeviationAmount(), true);
     }
-    public WarehouseRequest<T> samplePopulationVarianceDistanceKmOfTransitRoutesAsOriginWarehouse(){
-        return samplePopulationVarianceDistanceKmOfTransitRoutesAsOriginWarehouseAs("varPopDistanceKmOfTransitRoutesAsOriginWarehouse");
+    public WarehouseRequest<T> sampleVarianceAmountOfStorageFees(){
+        return sampleVarianceAmountOfStorageFeesAs("varSampAmountOfStorageFees");
     }
 
-    public WarehouseRequest<T> samplePopulationVarianceDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name){
-        return samplePopulationVarianceDistanceKmOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
+    public WarehouseRequest<T> sampleVarianceAmountOfStorageFeesAs(String name){
+        return sampleVarianceAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
     }
 
-    public WarehouseRequest<T> samplePopulationVarianceDistanceKmOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.samplePopulationVarianceDistanceKm(), true);
+    public WarehouseRequest<T> sampleVarianceAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.sampleVarianceAmount(), true);
     }
-    public WarehouseRequest<T> minEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse(){
-        return minEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs("minEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse");
+    public WarehouseRequest<T> samplePopulationVarianceAmountOfStorageFees(){
+        return samplePopulationVarianceAmountOfStorageFeesAs("varPopAmountOfStorageFees");
     }
 
-    public WarehouseRequest<T> minEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name){
-        return minEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
+    public WarehouseRequest<T> samplePopulationVarianceAmountOfStorageFeesAs(String name){
+        return samplePopulationVarianceAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
     }
 
-    public WarehouseRequest<T> minEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.minEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> maxEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse(){
-        return maxEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs("maxEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse");
-    }
-
-    public WarehouseRequest<T> maxEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name){
-        return maxEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> maxEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.maxEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> sumEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse(){
-        return sumEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs("sumEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse");
-    }
-
-    public WarehouseRequest<T> sumEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name){
-        return sumEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> sumEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.sumEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> avgEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse(){
-        return avgEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs("avgEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse");
-    }
-
-    public WarehouseRequest<T> avgEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name){
-        return avgEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> avgEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.avgEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> standardDeviationEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse(){
-        return standardDeviationEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs("stdDevEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse");
-    }
-
-    public WarehouseRequest<T> standardDeviationEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name){
-        return standardDeviationEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> standardDeviationEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.standardDeviationEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse(){
-        return squareRootOfPopulationStandardDeviationEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs("stdDevPopEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse");
-    }
-
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name){
-        return squareRootOfPopulationStandardDeviationEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.squareRootOfPopulationStandardDeviationEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> sampleVarianceEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse(){
-        return sampleVarianceEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs("varSampEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse");
-    }
-
-    public WarehouseRequest<T> sampleVarianceEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name){
-        return sampleVarianceEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> sampleVarianceEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.sampleVarianceEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> samplePopulationVarianceEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse(){
-        return samplePopulationVarianceEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs("varPopEstimatedDurationHoursOfTransitRoutesAsOriginWarehouse");
-    }
-
-    public WarehouseRequest<T> samplePopulationVarianceEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name){
-        return samplePopulationVarianceEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> samplePopulationVarianceEstimatedDurationHoursOfTransitRoutesAsOriginWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsOriginWarehouseAs(name, subRequest.samplePopulationVarianceEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> minDistanceKmOfTransitRoutesAsDestinationWarehouse(){
-        return minDistanceKmOfTransitRoutesAsDestinationWarehouseAs("minDistanceKmOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> minDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return minDistanceKmOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> minDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.minDistanceKm(), true);
-    }
-    public WarehouseRequest<T> maxDistanceKmOfTransitRoutesAsDestinationWarehouse(){
-        return maxDistanceKmOfTransitRoutesAsDestinationWarehouseAs("maxDistanceKmOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> maxDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return maxDistanceKmOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> maxDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.maxDistanceKm(), true);
-    }
-    public WarehouseRequest<T> sumDistanceKmOfTransitRoutesAsDestinationWarehouse(){
-        return sumDistanceKmOfTransitRoutesAsDestinationWarehouseAs("sumDistanceKmOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> sumDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return sumDistanceKmOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> sumDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.sumDistanceKm(), true);
-    }
-    public WarehouseRequest<T> avgDistanceKmOfTransitRoutesAsDestinationWarehouse(){
-        return avgDistanceKmOfTransitRoutesAsDestinationWarehouseAs("avgDistanceKmOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> avgDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return avgDistanceKmOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> avgDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.avgDistanceKm(), true);
-    }
-    public WarehouseRequest<T> standardDeviationDistanceKmOfTransitRoutesAsDestinationWarehouse(){
-        return standardDeviationDistanceKmOfTransitRoutesAsDestinationWarehouseAs("stdDevDistanceKmOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> standardDeviationDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return standardDeviationDistanceKmOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> standardDeviationDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.standardDeviationDistanceKm(), true);
-    }
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationDistanceKmOfTransitRoutesAsDestinationWarehouse(){
-        return squareRootOfPopulationStandardDeviationDistanceKmOfTransitRoutesAsDestinationWarehouseAs("stdDevPopDistanceKmOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return squareRootOfPopulationStandardDeviationDistanceKmOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.squareRootOfPopulationStandardDeviationDistanceKm(), true);
-    }
-    public WarehouseRequest<T> sampleVarianceDistanceKmOfTransitRoutesAsDestinationWarehouse(){
-        return sampleVarianceDistanceKmOfTransitRoutesAsDestinationWarehouseAs("varSampDistanceKmOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> sampleVarianceDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return sampleVarianceDistanceKmOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> sampleVarianceDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.sampleVarianceDistanceKm(), true);
-    }
-    public WarehouseRequest<T> samplePopulationVarianceDistanceKmOfTransitRoutesAsDestinationWarehouse(){
-        return samplePopulationVarianceDistanceKmOfTransitRoutesAsDestinationWarehouseAs("varPopDistanceKmOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> samplePopulationVarianceDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return samplePopulationVarianceDistanceKmOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> samplePopulationVarianceDistanceKmOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.samplePopulationVarianceDistanceKm(), true);
-    }
-    public WarehouseRequest<T> minEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse(){
-        return minEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs("minEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> minEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return minEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> minEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.minEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> maxEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse(){
-        return maxEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs("maxEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> maxEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return maxEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> maxEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.maxEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> sumEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse(){
-        return sumEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs("sumEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> sumEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return sumEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> sumEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.sumEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> avgEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse(){
-        return avgEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs("avgEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> avgEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return avgEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> avgEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.avgEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> standardDeviationEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse(){
-        return standardDeviationEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs("stdDevEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> standardDeviationEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return standardDeviationEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> standardDeviationEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.standardDeviationEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse(){
-        return squareRootOfPopulationStandardDeviationEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs("stdDevPopEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return squareRootOfPopulationStandardDeviationEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.squareRootOfPopulationStandardDeviationEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> sampleVarianceEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse(){
-        return sampleVarianceEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs("varSampEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> sampleVarianceEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return sampleVarianceEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> sampleVarianceEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.sampleVarianceEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> samplePopulationVarianceEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse(){
-        return samplePopulationVarianceEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs("varPopEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouse");
-    }
-
-    public WarehouseRequest<T> samplePopulationVarianceEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name){
-        return samplePopulationVarianceEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(name, Q.transitRoutes().unlimited());
-    }
-
-    public WarehouseRequest<T> samplePopulationVarianceEstimatedDurationHoursOfTransitRoutesAsDestinationWarehouseAs(String name, TransitRouteRequest subRequest){
-        return statsFromTransitRoutesAsDestinationWarehouseAs(name, subRequest.samplePopulationVarianceEstimatedDurationHours(), true);
-    }
-    public WarehouseRequest<T> minTotalItemsOfInventoryChecks(){
-        return minTotalItemsOfInventoryChecksAs("minTotalItemsOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> minTotalItemsOfInventoryChecksAs(String name){
-        return minTotalItemsOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> minTotalItemsOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.minTotalItems(), true);
-    }
-    public WarehouseRequest<T> maxTotalItemsOfInventoryChecks(){
-        return maxTotalItemsOfInventoryChecksAs("maxTotalItemsOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> maxTotalItemsOfInventoryChecksAs(String name){
-        return maxTotalItemsOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> maxTotalItemsOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.maxTotalItems(), true);
-    }
-    public WarehouseRequest<T> sumTotalItemsOfInventoryChecks(){
-        return sumTotalItemsOfInventoryChecksAs("sumTotalItemsOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> sumTotalItemsOfInventoryChecksAs(String name){
-        return sumTotalItemsOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> sumTotalItemsOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.sumTotalItems(), true);
-    }
-    public WarehouseRequest<T> avgTotalItemsOfInventoryChecks(){
-        return avgTotalItemsOfInventoryChecksAs("avgTotalItemsOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> avgTotalItemsOfInventoryChecksAs(String name){
-        return avgTotalItemsOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> avgTotalItemsOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.avgTotalItems(), true);
-    }
-    public WarehouseRequest<T> standardDeviationTotalItemsOfInventoryChecks(){
-        return standardDeviationTotalItemsOfInventoryChecksAs("stdDevTotalItemsOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> standardDeviationTotalItemsOfInventoryChecksAs(String name){
-        return standardDeviationTotalItemsOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> standardDeviationTotalItemsOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.standardDeviationTotalItems(), true);
-    }
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationTotalItemsOfInventoryChecks(){
-        return squareRootOfPopulationStandardDeviationTotalItemsOfInventoryChecksAs("stdDevPopTotalItemsOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationTotalItemsOfInventoryChecksAs(String name){
-        return squareRootOfPopulationStandardDeviationTotalItemsOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationTotalItemsOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.squareRootOfPopulationStandardDeviationTotalItems(), true);
-    }
-    public WarehouseRequest<T> sampleVarianceTotalItemsOfInventoryChecks(){
-        return sampleVarianceTotalItemsOfInventoryChecksAs("varSampTotalItemsOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> sampleVarianceTotalItemsOfInventoryChecksAs(String name){
-        return sampleVarianceTotalItemsOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> sampleVarianceTotalItemsOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.sampleVarianceTotalItems(), true);
-    }
-    public WarehouseRequest<T> samplePopulationVarianceTotalItemsOfInventoryChecks(){
-        return samplePopulationVarianceTotalItemsOfInventoryChecksAs("varPopTotalItemsOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> samplePopulationVarianceTotalItemsOfInventoryChecksAs(String name){
-        return samplePopulationVarianceTotalItemsOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> samplePopulationVarianceTotalItemsOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.samplePopulationVarianceTotalItems(), true);
-    }
-    public WarehouseRequest<T> minDiscrepanciesOfInventoryChecks(){
-        return minDiscrepanciesOfInventoryChecksAs("minDiscrepanciesOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> minDiscrepanciesOfInventoryChecksAs(String name){
-        return minDiscrepanciesOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> minDiscrepanciesOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.minDiscrepancies(), true);
-    }
-    public WarehouseRequest<T> maxDiscrepanciesOfInventoryChecks(){
-        return maxDiscrepanciesOfInventoryChecksAs("maxDiscrepanciesOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> maxDiscrepanciesOfInventoryChecksAs(String name){
-        return maxDiscrepanciesOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> maxDiscrepanciesOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.maxDiscrepancies(), true);
-    }
-    public WarehouseRequest<T> sumDiscrepanciesOfInventoryChecks(){
-        return sumDiscrepanciesOfInventoryChecksAs("sumDiscrepanciesOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> sumDiscrepanciesOfInventoryChecksAs(String name){
-        return sumDiscrepanciesOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> sumDiscrepanciesOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.sumDiscrepancies(), true);
-    }
-    public WarehouseRequest<T> avgDiscrepanciesOfInventoryChecks(){
-        return avgDiscrepanciesOfInventoryChecksAs("avgDiscrepanciesOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> avgDiscrepanciesOfInventoryChecksAs(String name){
-        return avgDiscrepanciesOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> avgDiscrepanciesOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.avgDiscrepancies(), true);
-    }
-    public WarehouseRequest<T> standardDeviationDiscrepanciesOfInventoryChecks(){
-        return standardDeviationDiscrepanciesOfInventoryChecksAs("stdDevDiscrepanciesOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> standardDeviationDiscrepanciesOfInventoryChecksAs(String name){
-        return standardDeviationDiscrepanciesOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> standardDeviationDiscrepanciesOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.standardDeviationDiscrepancies(), true);
-    }
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationDiscrepanciesOfInventoryChecks(){
-        return squareRootOfPopulationStandardDeviationDiscrepanciesOfInventoryChecksAs("stdDevPopDiscrepanciesOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationDiscrepanciesOfInventoryChecksAs(String name){
-        return squareRootOfPopulationStandardDeviationDiscrepanciesOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationDiscrepanciesOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.squareRootOfPopulationStandardDeviationDiscrepancies(), true);
-    }
-    public WarehouseRequest<T> sampleVarianceDiscrepanciesOfInventoryChecks(){
-        return sampleVarianceDiscrepanciesOfInventoryChecksAs("varSampDiscrepanciesOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> sampleVarianceDiscrepanciesOfInventoryChecksAs(String name){
-        return sampleVarianceDiscrepanciesOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> sampleVarianceDiscrepanciesOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.sampleVarianceDiscrepancies(), true);
-    }
-    public WarehouseRequest<T> samplePopulationVarianceDiscrepanciesOfInventoryChecks(){
-        return samplePopulationVarianceDiscrepanciesOfInventoryChecksAs("varPopDiscrepanciesOfInventoryChecks");
-    }
-
-    public WarehouseRequest<T> samplePopulationVarianceDiscrepanciesOfInventoryChecksAs(String name){
-        return samplePopulationVarianceDiscrepanciesOfInventoryChecksAs(name, Q.inventoryChecks().unlimited());
-    }
-
-    public WarehouseRequest<T> samplePopulationVarianceDiscrepanciesOfInventoryChecksAs(String name, InventoryCheckRequest subRequest){
-        return statsFromInventoryChecksAs(name, subRequest.samplePopulationVarianceDiscrepancies(), true);
-    }
-    public WarehouseRequest<T> minLoadWeightOfPallets(){
-        return minLoadWeightOfPalletsAs("minLoadWeightOfPallets");
-    }
-
-    public WarehouseRequest<T> minLoadWeightOfPalletsAs(String name){
-        return minLoadWeightOfPalletsAs(name, Q.pallets().unlimited());
-    }
-
-    public WarehouseRequest<T> minLoadWeightOfPalletsAs(String name, PalletRequest subRequest){
-        return statsFromPalletsAs(name, subRequest.minLoadWeight(), true);
-    }
-    public WarehouseRequest<T> maxLoadWeightOfPallets(){
-        return maxLoadWeightOfPalletsAs("maxLoadWeightOfPallets");
-    }
-
-    public WarehouseRequest<T> maxLoadWeightOfPalletsAs(String name){
-        return maxLoadWeightOfPalletsAs(name, Q.pallets().unlimited());
-    }
-
-    public WarehouseRequest<T> maxLoadWeightOfPalletsAs(String name, PalletRequest subRequest){
-        return statsFromPalletsAs(name, subRequest.maxLoadWeight(), true);
-    }
-    public WarehouseRequest<T> sumLoadWeightOfPallets(){
-        return sumLoadWeightOfPalletsAs("sumLoadWeightOfPallets");
-    }
-
-    public WarehouseRequest<T> sumLoadWeightOfPalletsAs(String name){
-        return sumLoadWeightOfPalletsAs(name, Q.pallets().unlimited());
-    }
-
-    public WarehouseRequest<T> sumLoadWeightOfPalletsAs(String name, PalletRequest subRequest){
-        return statsFromPalletsAs(name, subRequest.sumLoadWeight(), true);
-    }
-    public WarehouseRequest<T> avgLoadWeightOfPallets(){
-        return avgLoadWeightOfPalletsAs("avgLoadWeightOfPallets");
-    }
-
-    public WarehouseRequest<T> avgLoadWeightOfPalletsAs(String name){
-        return avgLoadWeightOfPalletsAs(name, Q.pallets().unlimited());
-    }
-
-    public WarehouseRequest<T> avgLoadWeightOfPalletsAs(String name, PalletRequest subRequest){
-        return statsFromPalletsAs(name, subRequest.avgLoadWeight(), true);
-    }
-    public WarehouseRequest<T> standardDeviationLoadWeightOfPallets(){
-        return standardDeviationLoadWeightOfPalletsAs("stdDevLoadWeightOfPallets");
-    }
-
-    public WarehouseRequest<T> standardDeviationLoadWeightOfPalletsAs(String name){
-        return standardDeviationLoadWeightOfPalletsAs(name, Q.pallets().unlimited());
-    }
-
-    public WarehouseRequest<T> standardDeviationLoadWeightOfPalletsAs(String name, PalletRequest subRequest){
-        return statsFromPalletsAs(name, subRequest.standardDeviationLoadWeight(), true);
-    }
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationLoadWeightOfPallets(){
-        return squareRootOfPopulationStandardDeviationLoadWeightOfPalletsAs("stdDevPopLoadWeightOfPallets");
-    }
-
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationLoadWeightOfPalletsAs(String name){
-        return squareRootOfPopulationStandardDeviationLoadWeightOfPalletsAs(name, Q.pallets().unlimited());
-    }
-
-    public WarehouseRequest<T> squareRootOfPopulationStandardDeviationLoadWeightOfPalletsAs(String name, PalletRequest subRequest){
-        return statsFromPalletsAs(name, subRequest.squareRootOfPopulationStandardDeviationLoadWeight(), true);
-    }
-    public WarehouseRequest<T> sampleVarianceLoadWeightOfPallets(){
-        return sampleVarianceLoadWeightOfPalletsAs("varSampLoadWeightOfPallets");
-    }
-
-    public WarehouseRequest<T> sampleVarianceLoadWeightOfPalletsAs(String name){
-        return sampleVarianceLoadWeightOfPalletsAs(name, Q.pallets().unlimited());
-    }
-
-    public WarehouseRequest<T> sampleVarianceLoadWeightOfPalletsAs(String name, PalletRequest subRequest){
-        return statsFromPalletsAs(name, subRequest.sampleVarianceLoadWeight(), true);
-    }
-    public WarehouseRequest<T> samplePopulationVarianceLoadWeightOfPallets(){
-        return samplePopulationVarianceLoadWeightOfPalletsAs("varPopLoadWeightOfPallets");
-    }
-
-    public WarehouseRequest<T> samplePopulationVarianceLoadWeightOfPalletsAs(String name){
-        return samplePopulationVarianceLoadWeightOfPalletsAs(name, Q.pallets().unlimited());
-    }
-
-    public WarehouseRequest<T> samplePopulationVarianceLoadWeightOfPalletsAs(String name, PalletRequest subRequest){
-        return statsFromPalletsAs(name, subRequest.samplePopulationVarianceLoadWeight(), true);
+    public WarehouseRequest<T> samplePopulationVarianceAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.samplePopulationVarianceAmount(), true);
     }
 
 

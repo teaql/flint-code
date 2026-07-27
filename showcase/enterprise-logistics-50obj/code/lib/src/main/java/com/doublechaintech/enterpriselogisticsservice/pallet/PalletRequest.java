@@ -10,7 +10,6 @@ import io.teaql.core.SearchCriteria;
 import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -85,7 +84,7 @@ public class PalletRequest<T extends Pallet> extends BaseRequest<T> {
 
     public PalletRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectWarehouseIdOnly().selectPalletId().selectLoadWeight().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
+        return selectId().selectWarehouseIdOnly().selectPalletId().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
     }
 
     public PalletRequest<T> selectSelfFields(){
@@ -94,12 +93,12 @@ public class PalletRequest<T extends Pallet> extends BaseRequest<T> {
 
     public PalletRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectWarehouse().selectPalletId().selectLoadWeight().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
+        return selectId().selectWarehouse().selectPalletId().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
     }
 
     public PalletRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectWarehouse().selectPalletId().selectLoadWeight().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
+        return selectId().selectWarehouse().selectPalletId().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
     }
 
 
@@ -154,31 +153,6 @@ public class PalletRequest<T extends Pallet> extends BaseRequest<T> {
 
     public PalletRequest<T> unselectPalletId(){
        unselectProperty(Pallet.PALLET_ID_PROPERTY);
-       return this;
-    }
-    public PalletRequest<T> selectLoadWeight(){
-       selectProperty(Pallet.LOAD_WEIGHT_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the loadWeight with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  loadWeight) to fetch loadWeight property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-    /**
-     * fill the loadWeight with customized aggrFunction, TEAQL uses ({aggrFunction}(loadWeight) AS loadWeight to fetch loadWeight property.
-     * @param aggrFunction  aggrFunction
-     */
-    public PalletRequest<T> selectLoadWeight(AggrFunction aggrFunction){
-       selectProperty(Pallet.LOAD_WEIGHT_PROPERTY, aggrFunction);
-       return this;
-    }
-
-
-    public PalletRequest<T> unselectLoadWeight(){
-       unselectProperty(Pallet.LOAD_WEIGHT_PROPERTY);
        return this;
     }
     public PalletRequest<T> selectStatus(){
@@ -359,51 +333,6 @@ public class PalletRequest<T extends Pallet> extends BaseRequest<T> {
 
     public PalletRequest<T> withPalletIdSoundingLike(String palletId){
        return withPalletId(Operator.SOUNDS_LIKE, palletId);
-    }
-
-
-
-    public PalletRequest<T> filterByLoadWeight(BigDecimal... loadWeight){
-      if (loadWeight == null || loadWeight.length == 0) {
-        throw new IllegalArgumentException("filterByLoadWeight parameter loadWeight cannot be empty");
-      }
-      return appendSearchCriteria(createLoadWeightCriteria(Operator.EQUAL, (Object[])loadWeight));
-    }
-
-    public PalletRequest<T> withLoadWeight(Operator operator, Object... values){
-       return appendSearchCriteria(createLoadWeightCriteria(operator, values));
-    }
-
-    public PalletRequest<T> withLoadWeightIsUnknown(){
-       return withLoadWeight(Operator.IS_NULL);
-    }
-
-    public PalletRequest<T> withLoadWeightIsKnown(){
-       return withLoadWeight(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createLoadWeightCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(Pallet.LOAD_WEIGHT_PROPERTY, operator, values);
-    }
-
-    public PalletRequest<T> withLoadWeightGreaterThan(BigDecimal loadWeight){
-       return withLoadWeight(Operator.GREATER_THAN, loadWeight);
-    }
-
-    public PalletRequest<T> withLoadWeightGreaterThanOrEqualTo(BigDecimal loadWeight){
-       return withLoadWeight(Operator.GREATER_THAN_OR_EQUAL, loadWeight);
-    }
-
-    public PalletRequest<T> withLoadWeightLessThan(BigDecimal loadWeight){
-       return withLoadWeight(Operator.LESS_THAN, loadWeight);
-    }
-
-    public PalletRequest<T> withLoadWeightLessThanOrEqualTo(BigDecimal loadWeight){
-       return withLoadWeight(Operator.LESS_THAN_OR_EQUAL, loadWeight);
-    }
-
-    public PalletRequest<T> withLoadWeightBetween(BigDecimal startOfLoadWeight, BigDecimal endOfLoadWeight){
-       return withLoadWeight(Operator.BETWEEN, startOfLoadWeight, endOfLoadWeight);
     }
 
 
@@ -653,70 +582,6 @@ public class PalletRequest<T extends Pallet> extends BaseRequest<T> {
         super.count(retName);
         return this;
     }
-    public PalletRequest minLoadWeight(){
-        return minLoadWeightAs(prefix("minOf",Pallet.LOAD_WEIGHT_PROPERTY));
-    }
-
-    public PalletRequest minLoadWeightAs(String retName){
-        super.min(retName, Pallet.LOAD_WEIGHT_PROPERTY);
-        return this;
-    }
-    public PalletRequest maxLoadWeight(){
-        return maxLoadWeightAs(prefix("maxOf",Pallet.LOAD_WEIGHT_PROPERTY));
-    }
-
-    public PalletRequest maxLoadWeightAs(String retName){
-        super.max(retName, Pallet.LOAD_WEIGHT_PROPERTY);
-        return this;
-    }
-    public PalletRequest sumLoadWeight(){
-        return sumLoadWeightAs(prefix("sumOf",Pallet.LOAD_WEIGHT_PROPERTY));
-    }
-
-    public PalletRequest sumLoadWeightAs(String retName){
-        super.sum(retName, Pallet.LOAD_WEIGHT_PROPERTY);
-        return this;
-    }
-    public PalletRequest avgLoadWeight(){
-        return avgLoadWeightAs(prefix("avgOf",Pallet.LOAD_WEIGHT_PROPERTY));
-    }
-
-    public PalletRequest avgLoadWeightAs(String retName){
-        super.avg(retName, Pallet.LOAD_WEIGHT_PROPERTY);
-        return this;
-    }
-    public PalletRequest standardDeviationLoadWeight(){
-        return standardDeviationLoadWeightAs(prefix("standardDeviationOf",Pallet.LOAD_WEIGHT_PROPERTY));
-    }
-
-    public PalletRequest standardDeviationLoadWeightAs(String retName){
-        super.standardDeviation(retName, Pallet.LOAD_WEIGHT_PROPERTY);
-        return this;
-    }
-    public PalletRequest squareRootOfPopulationStandardDeviationLoadWeight(){
-        return squareRootOfPopulationStandardDeviationLoadWeightAs(prefix("squareRootOfPopulationStandardDeviationOf",Pallet.LOAD_WEIGHT_PROPERTY));
-    }
-
-    public PalletRequest squareRootOfPopulationStandardDeviationLoadWeightAs(String retName){
-        super.squareRootOfPopulationStandardDeviation(retName, Pallet.LOAD_WEIGHT_PROPERTY);
-        return this;
-    }
-    public PalletRequest sampleVarianceLoadWeight(){
-        return sampleVarianceLoadWeightAs(prefix("sampleVarianceOf",Pallet.LOAD_WEIGHT_PROPERTY));
-    }
-
-    public PalletRequest sampleVarianceLoadWeightAs(String retName){
-        super.sampleVariance(retName, Pallet.LOAD_WEIGHT_PROPERTY);
-        return this;
-    }
-    public PalletRequest samplePopulationVarianceLoadWeight(){
-        return samplePopulationVarianceLoadWeightAs(prefix("samplePopulationVarianceOf",Pallet.LOAD_WEIGHT_PROPERTY));
-    }
-
-    public PalletRequest samplePopulationVarianceLoadWeightAs(String retName){
-        super.samplePopulationVariance(retName, Pallet.LOAD_WEIGHT_PROPERTY);
-        return this;
-    }
     public PalletRequest<T> groupByWarehouseWithDetails(){
        return groupByWarehouseWithDetails(Q.warehouses().unlimited());
     }
@@ -725,7 +590,6 @@ public class PalletRequest<T extends Pallet> extends BaseRequest<T> {
        aggregate(Pallet.WAREHOUSE_PROPERTY, subRequest);
        return this;
     }
-
 
 
 
@@ -778,21 +642,6 @@ public class PalletRequest<T extends Pallet> extends BaseRequest<T> {
 
     public PalletRequest<T> groupByPalletIdWithFunction(String retName, AggrFunction function){
        groupBy(retName, Pallet.PALLET_ID_PROPERTY, function);
-       return this;
-    }
-
-    public PalletRequest<T> groupByLoadWeight(){
-       groupBy(Pallet.LOAD_WEIGHT_PROPERTY);
-       return this;
-    }
-
-    public PalletRequest<T> groupByLoadWeightAs(String retName){
-       groupBy(retName, Pallet.LOAD_WEIGHT_PROPERTY);
-       return this;
-    }
-
-    public PalletRequest<T> groupByLoadWeightWithFunction(String retName, AggrFunction function){
-       groupBy(retName, Pallet.LOAD_WEIGHT_PROPERTY, function);
        return this;
     }
 
@@ -896,16 +745,6 @@ public class PalletRequest<T extends Pallet> extends BaseRequest<T> {
        addOrderByDescendingUsingGBK(Pallet.PALLET_ID_PROPERTY);
        return this;
     }
-    public PalletRequest<T> orderByLoadWeightAscending(){
-       addOrderByAscending(Pallet.LOAD_WEIGHT_PROPERTY);
-       return this;
-    }
-
-    public PalletRequest<T> orderByLoadWeightDescending(){
-       addOrderByDescending(Pallet.LOAD_WEIGHT_PROPERTY);
-       return this;
-    }
-
     public PalletRequest<T> orderByStatusAscending(){
        addOrderByAscending(Pallet.STATUS_PROPERTY);
        return this;
@@ -961,7 +800,6 @@ public class PalletRequest<T extends Pallet> extends BaseRequest<T> {
            .groupByWarehouseWith(warehouse);
        return warehouse;
     }
-
 
 
 

@@ -1,7 +1,5 @@
 package com.doublechaintech.enterpriselogisticsservice.safetytraining;
 
-import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember;
-import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMemberExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
@@ -36,19 +34,25 @@ public class SafetyTrainingExpression<T, E, U extends SafetyTraining> extends Ex
      }
 
 
-    public StaffMemberExpression<T, U, StaffMember> getStaff(){
-       return new StaffMemberExpression(this, $it ->  ((SafetyTraining)$it).getStaff());
+    public Expression<T, String> getTitle(){
+       return apply(SafetyTraining::getTitle);
+    }
+    public SafetyTrainingExpression<T, U, U> updateTitle(String title){
+       return new SafetyTrainingExpression(this, $it ->  ((SafetyTraining)$it).updateTitle(title));
     }
 
-    public SafetyTrainingExpression<T, U, U> updateStaff(StaffMember staff){
-       return new SafetyTrainingExpression(this, $it ->  ((SafetyTraining)$it).updateStaff(staff));
+    public Expression<T, String> getDescription(){
+       return apply(SafetyTraining::getDescription);
+    }
+    public SafetyTrainingExpression<T, U, U> updateDescription(String description){
+       return new SafetyTrainingExpression(this, $it ->  ((SafetyTraining)$it).updateDescription(description));
     }
 
-    public Expression<T, String> getCourseName(){
-       return apply(SafetyTraining::getCourseName);
+    public Expression<T, String> getDurationHours(){
+       return apply(SafetyTraining::getDurationHours);
     }
-    public SafetyTrainingExpression<T, U, U> updateCourseName(String courseName){
-       return new SafetyTrainingExpression(this, $it ->  ((SafetyTraining)$it).updateCourseName(courseName));
+    public SafetyTrainingExpression<T, U, U> updateDurationHours(String durationHours){
+       return new SafetyTrainingExpression(this, $it ->  ((SafetyTraining)$it).updateDurationHours(durationHours));
     }
 
     public Expression<T, LocalDate> getCompletionDate(){
@@ -56,13 +60,6 @@ public class SafetyTrainingExpression<T, E, U extends SafetyTraining> extends Ex
     }
     public SafetyTrainingExpression<T, U, U> updateCompletionDate(LocalDate completionDate){
        return new SafetyTrainingExpression(this, $it ->  ((SafetyTraining)$it).updateCompletionDate(completionDate));
-    }
-
-    public Expression<T, String> getCertificateNumber(){
-       return apply(SafetyTraining::getCertificateNumber);
-    }
-    public SafetyTrainingExpression<T, U, U> updateCertificateNumber(String certificateNumber){
-       return new SafetyTrainingExpression(this, $it ->  ((SafetyTraining)$it).updateCertificateNumber(certificateNumber));
     }
 
     public Expression<T, String> getStatus(){

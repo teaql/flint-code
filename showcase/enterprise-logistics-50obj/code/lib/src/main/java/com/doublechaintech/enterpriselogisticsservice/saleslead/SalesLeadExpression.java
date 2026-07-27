@@ -1,10 +1,11 @@
 package com.doublechaintech.enterpriselogisticsservice.saleslead;
 
+import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember;
+import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMemberExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.function.Function;
 
@@ -41,6 +42,13 @@ public class SalesLeadExpression<T, E, U extends SalesLead> extends ExpressionAd
        return new SalesLeadExpression(this, $it ->  ((SalesLead)$it).updateName(name));
     }
 
+    public Expression<T, String> getCompany(){
+       return apply(SalesLead::getCompany);
+    }
+    public SalesLeadExpression<T, U, U> updateCompany(String company){
+       return new SalesLeadExpression(this, $it ->  ((SalesLead)$it).updateCompany(company));
+    }
+
     public Expression<T, String> getEmail(){
        return apply(SalesLead::getEmail);
     }
@@ -48,10 +56,10 @@ public class SalesLeadExpression<T, E, U extends SalesLead> extends ExpressionAd
        return new SalesLeadExpression(this, $it ->  ((SalesLead)$it).updateEmail(email));
     }
 
-    public Expression<T, Integer> getPhone(){
+    public Expression<T, String> getPhone(){
        return apply(SalesLead::getPhone);
     }
-    public SalesLeadExpression<T, U, U> updatePhone(Integer phone){
+    public SalesLeadExpression<T, U, U> updatePhone(String phone){
        return new SalesLeadExpression(this, $it ->  ((SalesLead)$it).updatePhone(phone));
     }
 
@@ -69,11 +77,12 @@ public class SalesLeadExpression<T, E, U extends SalesLead> extends ExpressionAd
        return new SalesLeadExpression(this, $it ->  ((SalesLead)$it).updateStatus(status));
     }
 
-    public Expression<T, BigDecimal> getEstimatedValue(){
-       return apply(SalesLead::getEstimatedValue);
+    public StaffMemberExpression<T, U, StaffMember> getAssignedTo(){
+       return new StaffMemberExpression(this, $it ->  ((SalesLead)$it).getAssignedTo());
     }
-    public SalesLeadExpression<T, U, U> updateEstimatedValue(BigDecimal estimatedValue){
-       return new SalesLeadExpression(this, $it ->  ((SalesLead)$it).updateEstimatedValue(estimatedValue));
+
+    public SalesLeadExpression<T, U, U> updateAssignedTo(StaffMember assignedTo){
+       return new SalesLeadExpression(this, $it ->  ((SalesLead)$it).updateAssignedTo(assignedTo));
     }
 
     public Expression<T, LocalDateTime> getCreatedTime(){
@@ -83,11 +92,11 @@ public class SalesLeadExpression<T, E, U extends SalesLead> extends ExpressionAd
        return new SalesLeadExpression(this, $it ->  ((SalesLead)$it).updateCreatedTime(createdTime));
     }
 
-    public Expression<T, LocalDateTime> getUpdateTime(){
-       return apply(SalesLead::getUpdateTime);
+    public Expression<T, LocalDateTime> getUpdatedTime(){
+       return apply(SalesLead::getUpdatedTime);
     }
-    public SalesLeadExpression<T, U, U> updateUpdateTime(LocalDateTime updateTime){
-       return new SalesLeadExpression(this, $it ->  ((SalesLead)$it).updateUpdateTime(updateTime));
+    public SalesLeadExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
+       return new SalesLeadExpression(this, $it ->  ((SalesLead)$it).updateUpdatedTime(updatedTime));
     }
 
 }

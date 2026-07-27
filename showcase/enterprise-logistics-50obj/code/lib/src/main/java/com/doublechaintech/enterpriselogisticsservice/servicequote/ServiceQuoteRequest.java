@@ -14,6 +14,7 @@ import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> {
@@ -87,7 +88,7 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
 
     public ServiceQuoteRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectQuoteNumber().selectDescription().selectEstimatedCost().selectCurrency().selectStatus().selectValidUntil().selectPrivateCustomerIdOnly().selectCorporateCustomerIdOnly().selectVersion();
+        return selectId().selectQuoteNumber().selectEstimatedCost().selectCurrency().selectValidUntil().selectStatus().selectPrivateCustomerIdOnly().selectCorporateCustomerIdOnly().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public ServiceQuoteRequest<T> selectSelfFields(){
@@ -96,12 +97,12 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
 
     public ServiceQuoteRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectQuoteNumber().selectDescription().selectEstimatedCost().selectCurrency().selectStatus().selectValidUntil().selectPrivateCustomer().selectCorporateCustomer().selectVersion();
+        return selectId().selectQuoteNumber().selectEstimatedCost().selectCurrency().selectValidUntil().selectStatus().selectPrivateCustomer().selectCorporateCustomer().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public ServiceQuoteRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectQuoteNumber().selectDescription().selectEstimatedCost().selectCurrency().selectStatus().selectValidUntil().selectPrivateCustomer().selectCorporateCustomer().selectVersion();
+        return selectId().selectQuoteNumber().selectEstimatedCost().selectCurrency().selectValidUntil().selectStatus().selectPrivateCustomer().selectCorporateCustomer().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
 
@@ -137,23 +138,6 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
 
     public ServiceQuoteRequest<T> unselectQuoteNumber(){
        unselectProperty(ServiceQuote.QUOTE_NUMBER_PROPERTY);
-       return this;
-    }
-    public ServiceQuoteRequest<T> selectDescription(){
-       selectProperty(ServiceQuote.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the description with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  description) to fetch description property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public ServiceQuoteRequest<T> unselectDescription(){
-       unselectProperty(ServiceQuote.DESCRIPTION_PROPERTY);
        return this;
     }
     public ServiceQuoteRequest<T> selectEstimatedCost(){
@@ -198,23 +182,6 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
        unselectProperty(ServiceQuote.CURRENCY_PROPERTY);
        return this;
     }
-    public ServiceQuoteRequest<T> selectStatus(){
-       selectProperty(ServiceQuote.STATUS_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the status with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  status) to fetch status property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public ServiceQuoteRequest<T> unselectStatus(){
-       unselectProperty(ServiceQuote.STATUS_PROPERTY);
-       return this;
-    }
     public ServiceQuoteRequest<T> selectValidUntil(){
        selectProperty(ServiceQuote.VALID_UNTIL_PROPERTY);
        return this;
@@ -230,6 +197,23 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
 
     public ServiceQuoteRequest<T> unselectValidUntil(){
        unselectProperty(ServiceQuote.VALID_UNTIL_PROPERTY);
+       return this;
+    }
+    public ServiceQuoteRequest<T> selectStatus(){
+       selectProperty(ServiceQuote.STATUS_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the status with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  status) to fetch status property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public ServiceQuoteRequest<T> unselectStatus(){
+       unselectProperty(ServiceQuote.STATUS_PROPERTY);
        return this;
     }
     public ServiceQuoteRequest<T> selectPrivateCustomerIdOnly(){
@@ -268,6 +252,40 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
 
     public ServiceQuoteRequest<T> unselectCorporateCustomer(){
        unselectProperty(ServiceQuote.CORPORATE_CUSTOMER_PROPERTY);
+       return this;
+    }
+    public ServiceQuoteRequest<T> selectCreatedAt(){
+       selectProperty(ServiceQuote.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the createdAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdAt) to fetch createdAt property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public ServiceQuoteRequest<T> unselectCreatedAt(){
+       unselectProperty(ServiceQuote.CREATED_AT_PROPERTY);
+       return this;
+    }
+    public ServiceQuoteRequest<T> selectUpdatedAt(){
+       selectProperty(ServiceQuote.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the updatedAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedAt) to fetch updatedAt property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public ServiceQuoteRequest<T> unselectUpdatedAt(){
+       unselectProperty(ServiceQuote.UPDATED_AT_PROPERTY);
        return this;
     }
     public ServiceQuoteRequest<T> selectVersion(){
@@ -364,69 +382,6 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
 
     public ServiceQuoteRequest<T> withQuoteNumberSoundingLike(String quoteNumber){
        return withQuoteNumber(Operator.SOUNDS_LIKE, quoteNumber);
-    }
-
-
-
-    public ServiceQuoteRequest<T> filterByDescription(String... description){
-      if (description == null || description.length == 0) {
-        throw new IllegalArgumentException("filterByDescription parameter description cannot be empty");
-      }
-      return appendSearchCriteria(createDescriptionCriteria(Operator.EQUAL, (Object[])description));
-    }
-
-    public ServiceQuoteRequest<T> withDescription(Operator operator, Object... values){
-       return appendSearchCriteria(createDescriptionCriteria(operator, values));
-    }
-
-    public ServiceQuoteRequest<T> withDescriptionIsUnknown(){
-       return withDescription(Operator.IS_NULL);
-    }
-
-    public ServiceQuoteRequest<T> withDescriptionIsKnown(){
-       return withDescription(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createDescriptionCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(ServiceQuote.DESCRIPTION_PROPERTY, operator, values);
-    }
-
-    public ServiceQuoteRequest<T> withDescriptionGreaterThan(String description){
-       return withDescription(Operator.GREATER_THAN, description);
-    }
-
-    public ServiceQuoteRequest<T> withDescriptionGreaterThanOrEqualTo(String description){
-       return withDescription(Operator.GREATER_THAN_OR_EQUAL, description);
-    }
-
-    public ServiceQuoteRequest<T> withDescriptionLessThan(String description){
-       return withDescription(Operator.LESS_THAN, description);
-    }
-
-    public ServiceQuoteRequest<T> withDescriptionLessThanOrEqualTo(String description){
-       return withDescription(Operator.LESS_THAN_OR_EQUAL, description);
-    }
-
-    public ServiceQuoteRequest<T> withDescriptionBetween(String startOfDescription, String endOfDescription){
-       return withDescription(Operator.BETWEEN, startOfDescription, endOfDescription);
-    }
-    public ServiceQuoteRequest<T> withDescriptionStartingWith(String description){
-       return withDescription(Operator.BEGIN_WITH, description);
-    }
-    public ServiceQuoteRequest<T> withDescriptionContaining(String description){
-       return withDescription(Operator.CONTAIN, description);
-    }
-
-    public ServiceQuoteRequest<T> withDescriptionEndingWith(String description){
-       return withDescription(Operator.END_WITH, description);
-    }
-
-    public ServiceQuoteRequest<T> withDescriptionIs(String description){
-       return withDescription(Operator.EQUAL, description);
-    }
-
-    public ServiceQuoteRequest<T> withDescriptionSoundingLike(String description){
-       return withDescription(Operator.SOUNDS_LIKE, description);
     }
 
 
@@ -539,69 +494,6 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
 
 
 
-    public ServiceQuoteRequest<T> filterByStatus(String... status){
-      if (status == null || status.length == 0) {
-        throw new IllegalArgumentException("filterByStatus parameter status cannot be empty");
-      }
-      return appendSearchCriteria(createStatusCriteria(Operator.EQUAL, (Object[])status));
-    }
-
-    public ServiceQuoteRequest<T> withStatus(Operator operator, Object... values){
-       return appendSearchCriteria(createStatusCriteria(operator, values));
-    }
-
-    public ServiceQuoteRequest<T> withStatusIsUnknown(){
-       return withStatus(Operator.IS_NULL);
-    }
-
-    public ServiceQuoteRequest<T> withStatusIsKnown(){
-       return withStatus(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createStatusCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(ServiceQuote.STATUS_PROPERTY, operator, values);
-    }
-
-    public ServiceQuoteRequest<T> withStatusGreaterThan(String status){
-       return withStatus(Operator.GREATER_THAN, status);
-    }
-
-    public ServiceQuoteRequest<T> withStatusGreaterThanOrEqualTo(String status){
-       return withStatus(Operator.GREATER_THAN_OR_EQUAL, status);
-    }
-
-    public ServiceQuoteRequest<T> withStatusLessThan(String status){
-       return withStatus(Operator.LESS_THAN, status);
-    }
-
-    public ServiceQuoteRequest<T> withStatusLessThanOrEqualTo(String status){
-       return withStatus(Operator.LESS_THAN_OR_EQUAL, status);
-    }
-
-    public ServiceQuoteRequest<T> withStatusBetween(String startOfStatus, String endOfStatus){
-       return withStatus(Operator.BETWEEN, startOfStatus, endOfStatus);
-    }
-    public ServiceQuoteRequest<T> withStatusStartingWith(String status){
-       return withStatus(Operator.BEGIN_WITH, status);
-    }
-    public ServiceQuoteRequest<T> withStatusContaining(String status){
-       return withStatus(Operator.CONTAIN, status);
-    }
-
-    public ServiceQuoteRequest<T> withStatusEndingWith(String status){
-       return withStatus(Operator.END_WITH, status);
-    }
-
-    public ServiceQuoteRequest<T> withStatusIs(String status){
-       return withStatus(Operator.EQUAL, status);
-    }
-
-    public ServiceQuoteRequest<T> withStatusSoundingLike(String status){
-       return withStatus(Operator.SOUNDS_LIKE, status);
-    }
-
-
-
     public ServiceQuoteRequest<T> filterByValidUntil(LocalDate... validUntil){
       if (validUntil == null || validUntil.length == 0) {
         throw new IllegalArgumentException("filterByValidUntil parameter validUntil cannot be empty");
@@ -664,6 +556,69 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
        return withValidUntil(Operator.BETWEEN, startOfValidUntil, endOfValidUntil);
     }
 
+
+
+
+    public ServiceQuoteRequest<T> filterByStatus(String... status){
+      if (status == null || status.length == 0) {
+        throw new IllegalArgumentException("filterByStatus parameter status cannot be empty");
+      }
+      return appendSearchCriteria(createStatusCriteria(Operator.EQUAL, (Object[])status));
+    }
+
+    public ServiceQuoteRequest<T> withStatus(Operator operator, Object... values){
+       return appendSearchCriteria(createStatusCriteria(operator, values));
+    }
+
+    public ServiceQuoteRequest<T> withStatusIsUnknown(){
+       return withStatus(Operator.IS_NULL);
+    }
+
+    public ServiceQuoteRequest<T> withStatusIsKnown(){
+       return withStatus(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createStatusCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ServiceQuote.STATUS_PROPERTY, operator, values);
+    }
+
+    public ServiceQuoteRequest<T> withStatusGreaterThan(String status){
+       return withStatus(Operator.GREATER_THAN, status);
+    }
+
+    public ServiceQuoteRequest<T> withStatusGreaterThanOrEqualTo(String status){
+       return withStatus(Operator.GREATER_THAN_OR_EQUAL, status);
+    }
+
+    public ServiceQuoteRequest<T> withStatusLessThan(String status){
+       return withStatus(Operator.LESS_THAN, status);
+    }
+
+    public ServiceQuoteRequest<T> withStatusLessThanOrEqualTo(String status){
+       return withStatus(Operator.LESS_THAN_OR_EQUAL, status);
+    }
+
+    public ServiceQuoteRequest<T> withStatusBetween(String startOfStatus, String endOfStatus){
+       return withStatus(Operator.BETWEEN, startOfStatus, endOfStatus);
+    }
+    public ServiceQuoteRequest<T> withStatusStartingWith(String status){
+       return withStatus(Operator.BEGIN_WITH, status);
+    }
+    public ServiceQuoteRequest<T> withStatusContaining(String status){
+       return withStatus(Operator.CONTAIN, status);
+    }
+
+    public ServiceQuoteRequest<T> withStatusEndingWith(String status){
+       return withStatus(Operator.END_WITH, status);
+    }
+
+    public ServiceQuoteRequest<T> withStatusIs(String status){
+       return withStatus(Operator.EQUAL, status);
+    }
+
+    public ServiceQuoteRequest<T> withStatusSoundingLike(String status){
+       return withStatus(Operator.SOUNDS_LIKE, status);
+    }
 
 
 
@@ -732,6 +687,136 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
     public ServiceQuoteRequest<T> withCorporateCustomerMatching(CorporateCustomerRequest corporateCustomer){
        return appendSearchCriteria(new SubQuerySearchCriteria(ServiceQuote.CORPORATE_CUSTOMER_PROPERTY, corporateCustomer, CorporateCustomer.ID_PROPERTY));
     }
+
+    public ServiceQuoteRequest<T> filterByCreatedAt(LocalDateTime... createdAt){
+      if (createdAt == null || createdAt.length == 0) {
+        throw new IllegalArgumentException("filterByCreatedAt parameter createdAt cannot be empty");
+      }
+      return appendSearchCriteria(createCreatedAtCriteria(Operator.EQUAL, (Object[])createdAt));
+    }
+
+    public ServiceQuoteRequest<T> withCreatedAt(Operator operator, Object... values){
+       return appendSearchCriteria(createCreatedAtCriteria(operator, values));
+    }
+
+    public ServiceQuoteRequest<T> withCreatedAtIsUnknown(){
+       return withCreatedAt(Operator.IS_NULL);
+    }
+
+    public ServiceQuoteRequest<T> withCreatedAtIsKnown(){
+       return withCreatedAt(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createCreatedAtCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ServiceQuote.CREATED_AT_PROPERTY, operator, values);
+    }
+
+    public ServiceQuoteRequest<T> withCreatedAtGreaterThan(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public ServiceQuoteRequest<T> withCreatedAtGreaterThanOrEqualTo(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN_OR_EQUAL, createdAt);
+    }
+
+    public ServiceQuoteRequest<T> withCreatedAtLessThan(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public ServiceQuoteRequest<T> withCreatedAtLessThanOrEqualTo(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN_OR_EQUAL, createdAt);
+    }
+
+    public ServiceQuoteRequest<T> withCreatedAtBetween(LocalDateTime startOfCreatedAt, LocalDateTime endOfCreatedAt){
+       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    }
+    public ServiceQuoteRequest<T> withCreatedAtBefore(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public ServiceQuoteRequest<T> withCreatedAtBefore(Date createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public ServiceQuoteRequest<T> withCreatedAtAfter(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public ServiceQuoteRequest<T> withCreatedAtAfter(Date createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public ServiceQuoteRequest<T> withCreatedAtBetween(Date startOfCreatedAt, Date endOfCreatedAt){
+       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    }
+
+
+
+
+    public ServiceQuoteRequest<T> filterByUpdatedAt(LocalDateTime... updatedAt){
+      if (updatedAt == null || updatedAt.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedAt parameter updatedAt cannot be empty");
+      }
+      return appendSearchCriteria(createUpdatedAtCriteria(Operator.EQUAL, (Object[])updatedAt));
+    }
+
+    public ServiceQuoteRequest<T> withUpdatedAt(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedAtCriteria(operator, values));
+    }
+
+    public ServiceQuoteRequest<T> withUpdatedAtIsUnknown(){
+       return withUpdatedAt(Operator.IS_NULL);
+    }
+
+    public ServiceQuoteRequest<T> withUpdatedAtIsKnown(){
+       return withUpdatedAt(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createUpdatedAtCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ServiceQuote.UPDATED_AT_PROPERTY, operator, values);
+    }
+
+    public ServiceQuoteRequest<T> withUpdatedAtGreaterThan(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public ServiceQuoteRequest<T> withUpdatedAtGreaterThanOrEqualTo(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN_OR_EQUAL, updatedAt);
+    }
+
+    public ServiceQuoteRequest<T> withUpdatedAtLessThan(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public ServiceQuoteRequest<T> withUpdatedAtLessThanOrEqualTo(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN_OR_EQUAL, updatedAt);
+    }
+
+    public ServiceQuoteRequest<T> withUpdatedAtBetween(LocalDateTime startOfUpdatedAt, LocalDateTime endOfUpdatedAt){
+       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    }
+    public ServiceQuoteRequest<T> withUpdatedAtBefore(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public ServiceQuoteRequest<T> withUpdatedAtBefore(Date updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public ServiceQuoteRequest<T> withUpdatedAtAfter(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public ServiceQuoteRequest<T> withUpdatedAtAfter(Date updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public ServiceQuoteRequest<T> withUpdatedAtBetween(Date startOfUpdatedAt, Date endOfUpdatedAt){
+       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    }
+
+
+
 
     public ServiceQuoteRequest<T> filterByVersion(Long... version){
       if (version == null || version.length == 0) {
@@ -869,6 +954,8 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
 
 
 
+
+
     public ServiceQuoteRequest<T> groupById(){
        groupBy(ServiceQuote.ID_PROPERTY);
        return this;
@@ -896,21 +983,6 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
 
     public ServiceQuoteRequest<T> groupByQuoteNumberWithFunction(String retName, AggrFunction function){
        groupBy(retName, ServiceQuote.QUOTE_NUMBER_PROPERTY, function);
-       return this;
-    }
-
-    public ServiceQuoteRequest<T> groupByDescription(){
-       groupBy(ServiceQuote.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    public ServiceQuoteRequest<T> groupByDescriptionAs(String retName){
-       groupBy(retName, ServiceQuote.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    public ServiceQuoteRequest<T> groupByDescriptionWithFunction(String retName, AggrFunction function){
-       groupBy(retName, ServiceQuote.DESCRIPTION_PROPERTY, function);
        return this;
     }
 
@@ -944,21 +1016,6 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
        return this;
     }
 
-    public ServiceQuoteRequest<T> groupByStatus(){
-       groupBy(ServiceQuote.STATUS_PROPERTY);
-       return this;
-    }
-
-    public ServiceQuoteRequest<T> groupByStatusAs(String retName){
-       groupBy(retName, ServiceQuote.STATUS_PROPERTY);
-       return this;
-    }
-
-    public ServiceQuoteRequest<T> groupByStatusWithFunction(String retName, AggrFunction function){
-       groupBy(retName, ServiceQuote.STATUS_PROPERTY, function);
-       return this;
-    }
-
     public ServiceQuoteRequest<T> groupByValidUntil(){
        groupBy(ServiceQuote.VALID_UNTIL_PROPERTY);
        return this;
@@ -971,6 +1028,21 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
 
     public ServiceQuoteRequest<T> groupByValidUntilWithFunction(String retName, AggrFunction function){
        groupBy(retName, ServiceQuote.VALID_UNTIL_PROPERTY, function);
+       return this;
+    }
+
+    public ServiceQuoteRequest<T> groupByStatus(){
+       groupBy(ServiceQuote.STATUS_PROPERTY);
+       return this;
+    }
+
+    public ServiceQuoteRequest<T> groupByStatusAs(String retName){
+       groupBy(retName, ServiceQuote.STATUS_PROPERTY);
+       return this;
+    }
+
+    public ServiceQuoteRequest<T> groupByStatusWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ServiceQuote.STATUS_PROPERTY, function);
        return this;
     }
     public ServiceQuoteRequest<T> groupByPrivateCustomerWith(PrivateCustomerRequest subRequest){
@@ -1007,6 +1079,36 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
 
     public ServiceQuoteRequest<T> groupByCorporateCustomerWithFunction(String retName, AggrFunction function){
        groupBy(retName, ServiceQuote.CORPORATE_CUSTOMER_PROPERTY, function);
+       return this;
+    }
+
+    public ServiceQuoteRequest<T> groupByCreatedAt(){
+       groupBy(ServiceQuote.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public ServiceQuoteRequest<T> groupByCreatedAtAs(String retName){
+       groupBy(retName, ServiceQuote.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public ServiceQuoteRequest<T> groupByCreatedAtWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ServiceQuote.CREATED_AT_PROPERTY, function);
+       return this;
+    }
+
+    public ServiceQuoteRequest<T> groupByUpdatedAt(){
+       groupBy(ServiceQuote.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public ServiceQuoteRequest<T> groupByUpdatedAtAs(String retName){
+       groupBy(retName, ServiceQuote.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public ServiceQuoteRequest<T> groupByUpdatedAtWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ServiceQuote.UPDATED_AT_PROPERTY, function);
        return this;
     }
 
@@ -1055,24 +1157,6 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
        addOrderByDescendingUsingGBK(ServiceQuote.QUOTE_NUMBER_PROPERTY);
        return this;
     }
-    public ServiceQuoteRequest<T> orderByDescriptionAscending(){
-       addOrderByAscending(ServiceQuote.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    public ServiceQuoteRequest<T> orderByDescriptionDescending(){
-       addOrderByDescending(ServiceQuote.DESCRIPTION_PROPERTY);
-       return this;
-    }
-    public ServiceQuoteRequest<T> orderByDescriptionAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(ServiceQuote.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    public ServiceQuoteRequest<T> orderByDescriptionDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(ServiceQuote.DESCRIPTION_PROPERTY);
-       return this;
-    }
     public ServiceQuoteRequest<T> orderByEstimatedCostAscending(){
        addOrderByAscending(ServiceQuote.ESTIMATED_COST_PROPERTY);
        return this;
@@ -1101,6 +1185,16 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
        addOrderByDescendingUsingGBK(ServiceQuote.CURRENCY_PROPERTY);
        return this;
     }
+    public ServiceQuoteRequest<T> orderByValidUntilAscending(){
+       addOrderByAscending(ServiceQuote.VALID_UNTIL_PROPERTY);
+       return this;
+    }
+
+    public ServiceQuoteRequest<T> orderByValidUntilDescending(){
+       addOrderByDescending(ServiceQuote.VALID_UNTIL_PROPERTY);
+       return this;
+    }
+
     public ServiceQuoteRequest<T> orderByStatusAscending(){
        addOrderByAscending(ServiceQuote.STATUS_PROPERTY);
        return this;
@@ -1119,16 +1213,6 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
        addOrderByDescendingUsingGBK(ServiceQuote.STATUS_PROPERTY);
        return this;
     }
-    public ServiceQuoteRequest<T> orderByValidUntilAscending(){
-       addOrderByAscending(ServiceQuote.VALID_UNTIL_PROPERTY);
-       return this;
-    }
-
-    public ServiceQuoteRequest<T> orderByValidUntilDescending(){
-       addOrderByDescending(ServiceQuote.VALID_UNTIL_PROPERTY);
-       return this;
-    }
-
     public ServiceQuoteRequest<T> orderByPrivateCustomerAscending(){
        addOrderByAscending(ServiceQuote.PRIVATE_CUSTOMER_PROPERTY);
        return this;
@@ -1146,6 +1230,26 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
 
     public ServiceQuoteRequest<T> orderByCorporateCustomerDescending(){
        addOrderByDescending(ServiceQuote.CORPORATE_CUSTOMER_PROPERTY);
+       return this;
+    }
+
+    public ServiceQuoteRequest<T> orderByCreatedAtAscending(){
+       addOrderByAscending(ServiceQuote.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public ServiceQuoteRequest<T> orderByCreatedAtDescending(){
+       addOrderByDescending(ServiceQuote.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public ServiceQuoteRequest<T> orderByUpdatedAtAscending(){
+       addOrderByAscending(ServiceQuote.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public ServiceQuoteRequest<T> orderByUpdatedAtDescending(){
+       addOrderByDescending(ServiceQuote.UPDATED_AT_PROPERTY);
        return this;
     }
 
@@ -1173,6 +1277,8 @@ public class ServiceQuoteRequest<T extends ServiceQuote> extends BaseRequest<T> 
            .groupByCorporateCustomerWith(corporateCustomer);
        return corporateCustomer;
     }
+
+
 
 
 

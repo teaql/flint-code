@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
-  <!-- Service Contract -->
+  <!-- 1. Service Contract -->
   <service_contract _name="Service Contract"
-                    _module="Compliance" _module_key="compliance"
-                    contract_number="string()"
-                    title="string()"
-                    start_date="2023-01-01"
-                    end_date="2024-01-01"
-                    status="string()"
-                    total_value="10000.00"
-                    created_time="createTime()"
-                    updated_time="updateTime()">
-    <_audit_mask_fields>
-      <field name="client_signature_data" />
-    </_audit_mask_fields>
+                     _module="Compliance" _module_key="compliance"
+                     contract_number="string()"
+                     title="string()"
+                     start_date="2023-01-01"
+                     end_date="2024-01-01"
+                     status="active"
+                     total_value="100000.00"
+                     currency="USD"
+                     corporate_customer="corporate_customer()"
+                     created_time="createTime()"
+                     update_time="updateTime()">
+    <_audit_mask_fields />
   </service_contract>
 
-  <!-- Insurance Policy -->
+  <!-- 2. Insurance Policy -->
   <insurance_policy _name="Insurance Policy"
                     _module="Compliance" _module_key="compliance"
                     policy_number="string()"
@@ -25,41 +25,51 @@
                     premium="1000.00"
                     start_date="2023-01-01"
                     end_date="2024-01-01"
-                    status="string()"
+                    status="active"
                     created_time="createTime()"
-                    updated_time="updateTime()" />
+                    update_time="updateTime()">
+    <_audit_mask_fields />
+  </insurance_policy>
 
-  <!-- Claims Record -->
+  <!-- 3. Claims Record -->
   <claims_record _name="Claims Record"
                  _module="Compliance" _module_key="compliance"
                  claim_number="string()"
-                 claim_amount="5000.00"
-                 status="string()"
                  description="string()"
+                 claim_amount="5000.00"
+                 status="pending"
                  resolution_date="2023-06-15"
+                 moving_order="moving_order()"
+                 insurance_policy="insurance_policy()"
                  created_time="createTime()"
-                 updated_time="updateTime()" />
+                 update_time="updateTime()">
+    <_audit_mask_fields />
+  </claims_record>
 
-  <!-- Customs Declaration -->
+  <!-- 4. Customs Declaration -->
   <customs_declaration _name="Customs Declaration"
                        _module="Compliance" _module_key="compliance"
                        declaration_number="string()"
-                       port_of_entry="string()"
-                       country_of_origin="string()"
-                       declared_value="15000.00"
-                       status="string()"
-                       clearance_date="2023-05-20"
+                       origin_country="US"
+                       destination_country="CN"
+                       total_value="20000.00"
+                       status="submitted"
+                       moving_order="moving_order()"
                        created_time="createTime()"
-                       updated_time="updateTime()" />
+                       update_time="updateTime()">
+    <_audit_mask_fields />
+  </customs_declaration>
 
-  <!-- Audit Log -->
+  <!-- 5. Audit Log -->
   <audit_log _name="Audit Log"
              _module="Compliance" _module_key="compliance"
              action="string()"
              entity_type="string()"
              entity_id="string()"
-             user_id="string()"
+             user_account="user_account()"
              ip_address="string()"
-             details="string()"
-             created_time="createTime()" />
+             created_time="createTime()"
+             update_time="updateTime()">
+    <_audit_mask_fields />
+  </audit_log>
 </root>

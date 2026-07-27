@@ -1,5 +1,9 @@
 package com.doublechaintech.enterpriselogisticsservice.claimsrecord;
 
+import com.doublechaintech.enterpriselogisticsservice.insurancepolicy.InsurancePolicy;
+import com.doublechaintech.enterpriselogisticsservice.insurancepolicy.InsurancePolicyExpression;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
@@ -42,6 +46,13 @@ public class ClaimsRecordExpression<T, E, U extends ClaimsRecord> extends Expres
        return new ClaimsRecordExpression(this, $it ->  ((ClaimsRecord)$it).updateClaimNumber(claimNumber));
     }
 
+    public Expression<T, String> getDescription(){
+       return apply(ClaimsRecord::getDescription);
+    }
+    public ClaimsRecordExpression<T, U, U> updateDescription(String description){
+       return new ClaimsRecordExpression(this, $it ->  ((ClaimsRecord)$it).updateDescription(description));
+    }
+
     public Expression<T, BigDecimal> getClaimAmount(){
        return apply(ClaimsRecord::getClaimAmount);
     }
@@ -56,18 +67,27 @@ public class ClaimsRecordExpression<T, E, U extends ClaimsRecord> extends Expres
        return new ClaimsRecordExpression(this, $it ->  ((ClaimsRecord)$it).updateStatus(status));
     }
 
-    public Expression<T, String> getDescription(){
-       return apply(ClaimsRecord::getDescription);
-    }
-    public ClaimsRecordExpression<T, U, U> updateDescription(String description){
-       return new ClaimsRecordExpression(this, $it ->  ((ClaimsRecord)$it).updateDescription(description));
-    }
-
     public Expression<T, LocalDate> getResolutionDate(){
        return apply(ClaimsRecord::getResolutionDate);
     }
     public ClaimsRecordExpression<T, U, U> updateResolutionDate(LocalDate resolutionDate){
        return new ClaimsRecordExpression(this, $it ->  ((ClaimsRecord)$it).updateResolutionDate(resolutionDate));
+    }
+
+    public MovingOrderExpression<T, U, MovingOrder> getMovingOrder(){
+       return new MovingOrderExpression(this, $it ->  ((ClaimsRecord)$it).getMovingOrder());
+    }
+
+    public ClaimsRecordExpression<T, U, U> updateMovingOrder(MovingOrder movingOrder){
+       return new ClaimsRecordExpression(this, $it ->  ((ClaimsRecord)$it).updateMovingOrder(movingOrder));
+    }
+
+    public InsurancePolicyExpression<T, U, InsurancePolicy> getInsurancePolicy(){
+       return new InsurancePolicyExpression(this, $it ->  ((ClaimsRecord)$it).getInsurancePolicy());
+    }
+
+    public ClaimsRecordExpression<T, U, U> updateInsurancePolicy(InsurancePolicy insurancePolicy){
+       return new ClaimsRecordExpression(this, $it ->  ((ClaimsRecord)$it).updateInsurancePolicy(insurancePolicy));
     }
 
     public Expression<T, LocalDateTime> getCreatedTime(){
@@ -77,11 +97,11 @@ public class ClaimsRecordExpression<T, E, U extends ClaimsRecord> extends Expres
        return new ClaimsRecordExpression(this, $it ->  ((ClaimsRecord)$it).updateCreatedTime(createdTime));
     }
 
-    public Expression<T, LocalDateTime> getUpdatedTime(){
-       return apply(ClaimsRecord::getUpdatedTime);
+    public Expression<T, LocalDateTime> getUpdateTime(){
+       return apply(ClaimsRecord::getUpdateTime);
     }
-    public ClaimsRecordExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
-       return new ClaimsRecordExpression(this, $it ->  ((ClaimsRecord)$it).updateUpdatedTime(updatedTime));
+    public ClaimsRecordExpression<T, U, U> updateUpdateTime(LocalDateTime updateTime){
+       return new ClaimsRecordExpression(this, $it ->  ((ClaimsRecord)$it).updateUpdateTime(updateTime));
     }
 
 }

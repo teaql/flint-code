@@ -10,7 +10,6 @@ import io.teaql.core.SearchCriteria;
 import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -85,7 +84,7 @@ public class DriverAssignmentRequest<T extends DriverAssignment> extends BaseReq
 
     public DriverAssignmentRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectVehicleIdOnly().selectDriver().selectStartDate().selectEndDate().selectStatus().selectCreatedAt().selectVersion();
+        return selectId().selectStartTime().selectEndTime().selectStatus().selectVehicleIdOnly().selectDriver().selectVersion();
     }
 
     public DriverAssignmentRequest<T> selectSelfFields(){
@@ -94,12 +93,12 @@ public class DriverAssignmentRequest<T extends DriverAssignment> extends BaseReq
 
     public DriverAssignmentRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectVehicle().selectDriver().selectStartDate().selectEndDate().selectStatus().selectCreatedAt().selectVersion();
+        return selectId().selectStartTime().selectEndTime().selectStatus().selectVehicle().selectDriver().selectVersion();
     }
 
     public DriverAssignmentRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectVehicle().selectDriver().selectStartDate().selectEndDate().selectStatus().selectCreatedAt().selectVersion();
+        return selectId().selectStartTime().selectEndTime().selectStatus().selectVehicle().selectDriver().selectVersion();
     }
 
 
@@ -118,6 +117,57 @@ public class DriverAssignmentRequest<T extends DriverAssignment> extends BaseReq
 
     public DriverAssignmentRequest<T> unselectId(){
        unselectProperty(DriverAssignment.ID_PROPERTY);
+       return this;
+    }
+    public DriverAssignmentRequest<T> selectStartTime(){
+       selectProperty(DriverAssignment.START_TIME_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the startTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  startTime) to fetch startTime property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public DriverAssignmentRequest<T> unselectStartTime(){
+       unselectProperty(DriverAssignment.START_TIME_PROPERTY);
+       return this;
+    }
+    public DriverAssignmentRequest<T> selectEndTime(){
+       selectProperty(DriverAssignment.END_TIME_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the endTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  endTime) to fetch endTime property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public DriverAssignmentRequest<T> unselectEndTime(){
+       unselectProperty(DriverAssignment.END_TIME_PROPERTY);
+       return this;
+    }
+    public DriverAssignmentRequest<T> selectStatus(){
+       selectProperty(DriverAssignment.STATUS_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the status with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  status) to fetch status property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public DriverAssignmentRequest<T> unselectStatus(){
+       unselectProperty(DriverAssignment.STATUS_PROPERTY);
        return this;
     }
     public DriverAssignmentRequest<T> selectVehicleIdOnly(){
@@ -156,74 +206,6 @@ public class DriverAssignmentRequest<T extends DriverAssignment> extends BaseReq
        unselectProperty(DriverAssignment.DRIVER_PROPERTY);
        return this;
     }
-    public DriverAssignmentRequest<T> selectStartDate(){
-       selectProperty(DriverAssignment.START_DATE_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the startDate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  startDate) to fetch startDate property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public DriverAssignmentRequest<T> unselectStartDate(){
-       unselectProperty(DriverAssignment.START_DATE_PROPERTY);
-       return this;
-    }
-    public DriverAssignmentRequest<T> selectEndDate(){
-       selectProperty(DriverAssignment.END_DATE_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the endDate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  endDate) to fetch endDate property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public DriverAssignmentRequest<T> unselectEndDate(){
-       unselectProperty(DriverAssignment.END_DATE_PROPERTY);
-       return this;
-    }
-    public DriverAssignmentRequest<T> selectStatus(){
-       selectProperty(DriverAssignment.STATUS_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the status with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  status) to fetch status property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public DriverAssignmentRequest<T> unselectStatus(){
-       unselectProperty(DriverAssignment.STATUS_PROPERTY);
-       return this;
-    }
-    public DriverAssignmentRequest<T> selectCreatedAt(){
-       selectProperty(DriverAssignment.CREATED_AT_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the createdAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdAt) to fetch createdAt property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public DriverAssignmentRequest<T> unselectCreatedAt(){
-       unselectProperty(DriverAssignment.CREATED_AT_PROPERTY);
-       return this;
-    }
     public DriverAssignmentRequest<T> selectVersion(){
        selectProperty(DriverAssignment.VERSION_PROPERTY);
        return this;
@@ -255,6 +237,199 @@ public class DriverAssignmentRequest<T extends DriverAssignment> extends BaseReq
     }
     public DriverAssignmentRequest<T> withIdIn(Long... id){
        return withId(Operator.EQUAL, (Object[])id);
+    }
+
+
+
+    public DriverAssignmentRequest<T> filterByStartTime(LocalDateTime... startTime){
+      if (startTime == null || startTime.length == 0) {
+        throw new IllegalArgumentException("filterByStartTime parameter startTime cannot be empty");
+      }
+      return appendSearchCriteria(createStartTimeCriteria(Operator.EQUAL, (Object[])startTime));
+    }
+
+    public DriverAssignmentRequest<T> withStartTime(Operator operator, Object... values){
+       return appendSearchCriteria(createStartTimeCriteria(operator, values));
+    }
+
+    public DriverAssignmentRequest<T> withStartTimeIsUnknown(){
+       return withStartTime(Operator.IS_NULL);
+    }
+
+    public DriverAssignmentRequest<T> withStartTimeIsKnown(){
+       return withStartTime(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createStartTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DriverAssignment.START_TIME_PROPERTY, operator, values);
+    }
+
+    public DriverAssignmentRequest<T> withStartTimeGreaterThan(LocalDateTime startTime){
+       return withStartTime(Operator.GREATER_THAN, startTime);
+    }
+
+    public DriverAssignmentRequest<T> withStartTimeGreaterThanOrEqualTo(LocalDateTime startTime){
+       return withStartTime(Operator.GREATER_THAN_OR_EQUAL, startTime);
+    }
+
+    public DriverAssignmentRequest<T> withStartTimeLessThan(LocalDateTime startTime){
+       return withStartTime(Operator.LESS_THAN, startTime);
+    }
+
+    public DriverAssignmentRequest<T> withStartTimeLessThanOrEqualTo(LocalDateTime startTime){
+       return withStartTime(Operator.LESS_THAN_OR_EQUAL, startTime);
+    }
+
+    public DriverAssignmentRequest<T> withStartTimeBetween(LocalDateTime startOfStartTime, LocalDateTime endOfStartTime){
+       return withStartTime(Operator.BETWEEN, startOfStartTime, endOfStartTime);
+    }
+    public DriverAssignmentRequest<T> withStartTimeBefore(LocalDateTime startTime){
+       return withStartTime(Operator.LESS_THAN, startTime);
+    }
+
+    public DriverAssignmentRequest<T> withStartTimeBefore(Date startTime){
+       return withStartTime(Operator.LESS_THAN, startTime);
+    }
+
+    public DriverAssignmentRequest<T> withStartTimeAfter(LocalDateTime startTime){
+       return withStartTime(Operator.GREATER_THAN, startTime);
+    }
+
+    public DriverAssignmentRequest<T> withStartTimeAfter(Date startTime){
+       return withStartTime(Operator.GREATER_THAN, startTime);
+    }
+
+    public DriverAssignmentRequest<T> withStartTimeBetween(Date startOfStartTime, Date endOfStartTime){
+       return withStartTime(Operator.BETWEEN, startOfStartTime, endOfStartTime);
+    }
+
+
+
+
+    public DriverAssignmentRequest<T> filterByEndTime(LocalDateTime... endTime){
+      if (endTime == null || endTime.length == 0) {
+        throw new IllegalArgumentException("filterByEndTime parameter endTime cannot be empty");
+      }
+      return appendSearchCriteria(createEndTimeCriteria(Operator.EQUAL, (Object[])endTime));
+    }
+
+    public DriverAssignmentRequest<T> withEndTime(Operator operator, Object... values){
+       return appendSearchCriteria(createEndTimeCriteria(operator, values));
+    }
+
+    public DriverAssignmentRequest<T> withEndTimeIsUnknown(){
+       return withEndTime(Operator.IS_NULL);
+    }
+
+    public DriverAssignmentRequest<T> withEndTimeIsKnown(){
+       return withEndTime(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createEndTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DriverAssignment.END_TIME_PROPERTY, operator, values);
+    }
+
+    public DriverAssignmentRequest<T> withEndTimeGreaterThan(LocalDateTime endTime){
+       return withEndTime(Operator.GREATER_THAN, endTime);
+    }
+
+    public DriverAssignmentRequest<T> withEndTimeGreaterThanOrEqualTo(LocalDateTime endTime){
+       return withEndTime(Operator.GREATER_THAN_OR_EQUAL, endTime);
+    }
+
+    public DriverAssignmentRequest<T> withEndTimeLessThan(LocalDateTime endTime){
+       return withEndTime(Operator.LESS_THAN, endTime);
+    }
+
+    public DriverAssignmentRequest<T> withEndTimeLessThanOrEqualTo(LocalDateTime endTime){
+       return withEndTime(Operator.LESS_THAN_OR_EQUAL, endTime);
+    }
+
+    public DriverAssignmentRequest<T> withEndTimeBetween(LocalDateTime startOfEndTime, LocalDateTime endOfEndTime){
+       return withEndTime(Operator.BETWEEN, startOfEndTime, endOfEndTime);
+    }
+    public DriverAssignmentRequest<T> withEndTimeBefore(LocalDateTime endTime){
+       return withEndTime(Operator.LESS_THAN, endTime);
+    }
+
+    public DriverAssignmentRequest<T> withEndTimeBefore(Date endTime){
+       return withEndTime(Operator.LESS_THAN, endTime);
+    }
+
+    public DriverAssignmentRequest<T> withEndTimeAfter(LocalDateTime endTime){
+       return withEndTime(Operator.GREATER_THAN, endTime);
+    }
+
+    public DriverAssignmentRequest<T> withEndTimeAfter(Date endTime){
+       return withEndTime(Operator.GREATER_THAN, endTime);
+    }
+
+    public DriverAssignmentRequest<T> withEndTimeBetween(Date startOfEndTime, Date endOfEndTime){
+       return withEndTime(Operator.BETWEEN, startOfEndTime, endOfEndTime);
+    }
+
+
+
+
+    public DriverAssignmentRequest<T> filterByStatus(String... status){
+      if (status == null || status.length == 0) {
+        throw new IllegalArgumentException("filterByStatus parameter status cannot be empty");
+      }
+      return appendSearchCriteria(createStatusCriteria(Operator.EQUAL, (Object[])status));
+    }
+
+    public DriverAssignmentRequest<T> withStatus(Operator operator, Object... values){
+       return appendSearchCriteria(createStatusCriteria(operator, values));
+    }
+
+    public DriverAssignmentRequest<T> withStatusIsUnknown(){
+       return withStatus(Operator.IS_NULL);
+    }
+
+    public DriverAssignmentRequest<T> withStatusIsKnown(){
+       return withStatus(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createStatusCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(DriverAssignment.STATUS_PROPERTY, operator, values);
+    }
+
+    public DriverAssignmentRequest<T> withStatusGreaterThan(String status){
+       return withStatus(Operator.GREATER_THAN, status);
+    }
+
+    public DriverAssignmentRequest<T> withStatusGreaterThanOrEqualTo(String status){
+       return withStatus(Operator.GREATER_THAN_OR_EQUAL, status);
+    }
+
+    public DriverAssignmentRequest<T> withStatusLessThan(String status){
+       return withStatus(Operator.LESS_THAN, status);
+    }
+
+    public DriverAssignmentRequest<T> withStatusLessThanOrEqualTo(String status){
+       return withStatus(Operator.LESS_THAN_OR_EQUAL, status);
+    }
+
+    public DriverAssignmentRequest<T> withStatusBetween(String startOfStatus, String endOfStatus){
+       return withStatus(Operator.BETWEEN, startOfStatus, endOfStatus);
+    }
+    public DriverAssignmentRequest<T> withStatusStartingWith(String status){
+       return withStatus(Operator.BEGIN_WITH, status);
+    }
+    public DriverAssignmentRequest<T> withStatusContaining(String status){
+       return withStatus(Operator.CONTAIN, status);
+    }
+
+    public DriverAssignmentRequest<T> withStatusEndingWith(String status){
+       return withStatus(Operator.END_WITH, status);
+    }
+
+    public DriverAssignmentRequest<T> withStatusIs(String status){
+       return withStatus(Operator.EQUAL, status);
+    }
+
+    public DriverAssignmentRequest<T> withStatusSoundingLike(String status){
+       return withStatus(Operator.SOUNDS_LIKE, status);
     }
 
 
@@ -355,264 +530,6 @@ public class DriverAssignmentRequest<T extends DriverAssignment> extends BaseReq
 
 
 
-    public DriverAssignmentRequest<T> filterByStartDate(LocalDate... startDate){
-      if (startDate == null || startDate.length == 0) {
-        throw new IllegalArgumentException("filterByStartDate parameter startDate cannot be empty");
-      }
-      return appendSearchCriteria(createStartDateCriteria(Operator.EQUAL, (Object[])startDate));
-    }
-
-    public DriverAssignmentRequest<T> withStartDate(Operator operator, Object... values){
-       return appendSearchCriteria(createStartDateCriteria(operator, values));
-    }
-
-    public DriverAssignmentRequest<T> withStartDateIsUnknown(){
-       return withStartDate(Operator.IS_NULL);
-    }
-
-    public DriverAssignmentRequest<T> withStartDateIsKnown(){
-       return withStartDate(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createStartDateCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(DriverAssignment.START_DATE_PROPERTY, operator, values);
-    }
-
-    public DriverAssignmentRequest<T> withStartDateGreaterThan(LocalDate startDate){
-       return withStartDate(Operator.GREATER_THAN, startDate);
-    }
-
-    public DriverAssignmentRequest<T> withStartDateGreaterThanOrEqualTo(LocalDate startDate){
-       return withStartDate(Operator.GREATER_THAN_OR_EQUAL, startDate);
-    }
-
-    public DriverAssignmentRequest<T> withStartDateLessThan(LocalDate startDate){
-       return withStartDate(Operator.LESS_THAN, startDate);
-    }
-
-    public DriverAssignmentRequest<T> withStartDateLessThanOrEqualTo(LocalDate startDate){
-       return withStartDate(Operator.LESS_THAN_OR_EQUAL, startDate);
-    }
-
-    public DriverAssignmentRequest<T> withStartDateBetween(LocalDate startOfStartDate, LocalDate endOfStartDate){
-       return withStartDate(Operator.BETWEEN, startOfStartDate, endOfStartDate);
-    }
-    public DriverAssignmentRequest<T> withStartDateBefore(LocalDate startDate){
-       return withStartDate(Operator.LESS_THAN, startDate);
-    }
-
-    public DriverAssignmentRequest<T> withStartDateBefore(Date startDate){
-       return withStartDate(Operator.LESS_THAN, startDate);
-    }
-
-    public DriverAssignmentRequest<T> withStartDateAfter(LocalDate startDate){
-       return withStartDate(Operator.GREATER_THAN, startDate);
-    }
-
-    public DriverAssignmentRequest<T> withStartDateAfter(Date startDate){
-       return withStartDate(Operator.GREATER_THAN, startDate);
-    }
-
-    public DriverAssignmentRequest<T> withStartDateBetween(Date startOfStartDate, Date endOfStartDate){
-       return withStartDate(Operator.BETWEEN, startOfStartDate, endOfStartDate);
-    }
-
-
-
-
-    public DriverAssignmentRequest<T> filterByEndDate(LocalDate... endDate){
-      if (endDate == null || endDate.length == 0) {
-        throw new IllegalArgumentException("filterByEndDate parameter endDate cannot be empty");
-      }
-      return appendSearchCriteria(createEndDateCriteria(Operator.EQUAL, (Object[])endDate));
-    }
-
-    public DriverAssignmentRequest<T> withEndDate(Operator operator, Object... values){
-       return appendSearchCriteria(createEndDateCriteria(operator, values));
-    }
-
-    public DriverAssignmentRequest<T> withEndDateIsUnknown(){
-       return withEndDate(Operator.IS_NULL);
-    }
-
-    public DriverAssignmentRequest<T> withEndDateIsKnown(){
-       return withEndDate(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createEndDateCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(DriverAssignment.END_DATE_PROPERTY, operator, values);
-    }
-
-    public DriverAssignmentRequest<T> withEndDateGreaterThan(LocalDate endDate){
-       return withEndDate(Operator.GREATER_THAN, endDate);
-    }
-
-    public DriverAssignmentRequest<T> withEndDateGreaterThanOrEqualTo(LocalDate endDate){
-       return withEndDate(Operator.GREATER_THAN_OR_EQUAL, endDate);
-    }
-
-    public DriverAssignmentRequest<T> withEndDateLessThan(LocalDate endDate){
-       return withEndDate(Operator.LESS_THAN, endDate);
-    }
-
-    public DriverAssignmentRequest<T> withEndDateLessThanOrEqualTo(LocalDate endDate){
-       return withEndDate(Operator.LESS_THAN_OR_EQUAL, endDate);
-    }
-
-    public DriverAssignmentRequest<T> withEndDateBetween(LocalDate startOfEndDate, LocalDate endOfEndDate){
-       return withEndDate(Operator.BETWEEN, startOfEndDate, endOfEndDate);
-    }
-    public DriverAssignmentRequest<T> withEndDateBefore(LocalDate endDate){
-       return withEndDate(Operator.LESS_THAN, endDate);
-    }
-
-    public DriverAssignmentRequest<T> withEndDateBefore(Date endDate){
-       return withEndDate(Operator.LESS_THAN, endDate);
-    }
-
-    public DriverAssignmentRequest<T> withEndDateAfter(LocalDate endDate){
-       return withEndDate(Operator.GREATER_THAN, endDate);
-    }
-
-    public DriverAssignmentRequest<T> withEndDateAfter(Date endDate){
-       return withEndDate(Operator.GREATER_THAN, endDate);
-    }
-
-    public DriverAssignmentRequest<T> withEndDateBetween(Date startOfEndDate, Date endOfEndDate){
-       return withEndDate(Operator.BETWEEN, startOfEndDate, endOfEndDate);
-    }
-
-
-
-
-    public DriverAssignmentRequest<T> filterByStatus(String... status){
-      if (status == null || status.length == 0) {
-        throw new IllegalArgumentException("filterByStatus parameter status cannot be empty");
-      }
-      return appendSearchCriteria(createStatusCriteria(Operator.EQUAL, (Object[])status));
-    }
-
-    public DriverAssignmentRequest<T> withStatus(Operator operator, Object... values){
-       return appendSearchCriteria(createStatusCriteria(operator, values));
-    }
-
-    public DriverAssignmentRequest<T> withStatusIsUnknown(){
-       return withStatus(Operator.IS_NULL);
-    }
-
-    public DriverAssignmentRequest<T> withStatusIsKnown(){
-       return withStatus(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createStatusCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(DriverAssignment.STATUS_PROPERTY, operator, values);
-    }
-
-    public DriverAssignmentRequest<T> withStatusGreaterThan(String status){
-       return withStatus(Operator.GREATER_THAN, status);
-    }
-
-    public DriverAssignmentRequest<T> withStatusGreaterThanOrEqualTo(String status){
-       return withStatus(Operator.GREATER_THAN_OR_EQUAL, status);
-    }
-
-    public DriverAssignmentRequest<T> withStatusLessThan(String status){
-       return withStatus(Operator.LESS_THAN, status);
-    }
-
-    public DriverAssignmentRequest<T> withStatusLessThanOrEqualTo(String status){
-       return withStatus(Operator.LESS_THAN_OR_EQUAL, status);
-    }
-
-    public DriverAssignmentRequest<T> withStatusBetween(String startOfStatus, String endOfStatus){
-       return withStatus(Operator.BETWEEN, startOfStatus, endOfStatus);
-    }
-    public DriverAssignmentRequest<T> withStatusStartingWith(String status){
-       return withStatus(Operator.BEGIN_WITH, status);
-    }
-    public DriverAssignmentRequest<T> withStatusContaining(String status){
-       return withStatus(Operator.CONTAIN, status);
-    }
-
-    public DriverAssignmentRequest<T> withStatusEndingWith(String status){
-       return withStatus(Operator.END_WITH, status);
-    }
-
-    public DriverAssignmentRequest<T> withStatusIs(String status){
-       return withStatus(Operator.EQUAL, status);
-    }
-
-    public DriverAssignmentRequest<T> withStatusSoundingLike(String status){
-       return withStatus(Operator.SOUNDS_LIKE, status);
-    }
-
-
-
-    public DriverAssignmentRequest<T> filterByCreatedAt(LocalDateTime... createdAt){
-      if (createdAt == null || createdAt.length == 0) {
-        throw new IllegalArgumentException("filterByCreatedAt parameter createdAt cannot be empty");
-      }
-      return appendSearchCriteria(createCreatedAtCriteria(Operator.EQUAL, (Object[])createdAt));
-    }
-
-    public DriverAssignmentRequest<T> withCreatedAt(Operator operator, Object... values){
-       return appendSearchCriteria(createCreatedAtCriteria(operator, values));
-    }
-
-    public DriverAssignmentRequest<T> withCreatedAtIsUnknown(){
-       return withCreatedAt(Operator.IS_NULL);
-    }
-
-    public DriverAssignmentRequest<T> withCreatedAtIsKnown(){
-       return withCreatedAt(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createCreatedAtCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(DriverAssignment.CREATED_AT_PROPERTY, operator, values);
-    }
-
-    public DriverAssignmentRequest<T> withCreatedAtGreaterThan(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
-    }
-
-    public DriverAssignmentRequest<T> withCreatedAtGreaterThanOrEqualTo(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN_OR_EQUAL, createdAt);
-    }
-
-    public DriverAssignmentRequest<T> withCreatedAtLessThan(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
-    }
-
-    public DriverAssignmentRequest<T> withCreatedAtLessThanOrEqualTo(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN_OR_EQUAL, createdAt);
-    }
-
-    public DriverAssignmentRequest<T> withCreatedAtBetween(LocalDateTime startOfCreatedAt, LocalDateTime endOfCreatedAt){
-       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
-    }
-    public DriverAssignmentRequest<T> withCreatedAtBefore(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
-    }
-
-    public DriverAssignmentRequest<T> withCreatedAtBefore(Date createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
-    }
-
-    public DriverAssignmentRequest<T> withCreatedAtAfter(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
-    }
-
-    public DriverAssignmentRequest<T> withCreatedAtAfter(Date createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
-    }
-
-    public DriverAssignmentRequest<T> withCreatedAtBetween(Date startOfCreatedAt, Date endOfCreatedAt){
-       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
-    }
-
-
-
-
     public DriverAssignmentRequest<T> filterByVersion(Long... version){
       if (version == null || version.length == 0) {
         throw new IllegalArgumentException("filterByVersion parameter version cannot be empty");
@@ -677,10 +594,6 @@ public class DriverAssignmentRequest<T extends DriverAssignment> extends BaseReq
 
 
 
-
-
-
-
     public DriverAssignmentRequest<T> groupById(){
        groupBy(DriverAssignment.ID_PROPERTY);
        return this;
@@ -693,6 +606,51 @@ public class DriverAssignmentRequest<T extends DriverAssignment> extends BaseReq
 
     public DriverAssignmentRequest<T> groupByIdWithFunction(String retName, AggrFunction function){
        groupBy(retName, DriverAssignment.ID_PROPERTY, function);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> groupByStartTime(){
+       groupBy(DriverAssignment.START_TIME_PROPERTY);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> groupByStartTimeAs(String retName){
+       groupBy(retName, DriverAssignment.START_TIME_PROPERTY);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> groupByStartTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DriverAssignment.START_TIME_PROPERTY, function);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> groupByEndTime(){
+       groupBy(DriverAssignment.END_TIME_PROPERTY);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> groupByEndTimeAs(String retName){
+       groupBy(retName, DriverAssignment.END_TIME_PROPERTY);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> groupByEndTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DriverAssignment.END_TIME_PROPERTY, function);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> groupByStatus(){
+       groupBy(DriverAssignment.STATUS_PROPERTY);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> groupByStatusAs(String retName){
+       groupBy(retName, DriverAssignment.STATUS_PROPERTY);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> groupByStatusWithFunction(String retName, AggrFunction function){
+       groupBy(retName, DriverAssignment.STATUS_PROPERTY, function);
        return this;
     }
     public DriverAssignmentRequest<T> groupByVehicleWith(VehicleRequest subRequest){
@@ -729,66 +687,6 @@ public class DriverAssignmentRequest<T extends DriverAssignment> extends BaseReq
        return this;
     }
 
-    public DriverAssignmentRequest<T> groupByStartDate(){
-       groupBy(DriverAssignment.START_DATE_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> groupByStartDateAs(String retName){
-       groupBy(retName, DriverAssignment.START_DATE_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> groupByStartDateWithFunction(String retName, AggrFunction function){
-       groupBy(retName, DriverAssignment.START_DATE_PROPERTY, function);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> groupByEndDate(){
-       groupBy(DriverAssignment.END_DATE_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> groupByEndDateAs(String retName){
-       groupBy(retName, DriverAssignment.END_DATE_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> groupByEndDateWithFunction(String retName, AggrFunction function){
-       groupBy(retName, DriverAssignment.END_DATE_PROPERTY, function);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> groupByStatus(){
-       groupBy(DriverAssignment.STATUS_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> groupByStatusAs(String retName){
-       groupBy(retName, DriverAssignment.STATUS_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> groupByStatusWithFunction(String retName, AggrFunction function){
-       groupBy(retName, DriverAssignment.STATUS_PROPERTY, function);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> groupByCreatedAt(){
-       groupBy(DriverAssignment.CREATED_AT_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> groupByCreatedAtAs(String retName){
-       groupBy(retName, DriverAssignment.CREATED_AT_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> groupByCreatedAtWithFunction(String retName, AggrFunction function){
-       groupBy(retName, DriverAssignment.CREATED_AT_PROPERTY, function);
-       return this;
-    }
-
     public DriverAssignmentRequest<T> groupByVersion(){
        groupBy(DriverAssignment.VERSION_PROPERTY);
        return this;
@@ -816,6 +714,44 @@ public class DriverAssignmentRequest<T extends DriverAssignment> extends BaseReq
        return this;
     }
 
+    public DriverAssignmentRequest<T> orderByStartTimeAscending(){
+       addOrderByAscending(DriverAssignment.START_TIME_PROPERTY);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> orderByStartTimeDescending(){
+       addOrderByDescending(DriverAssignment.START_TIME_PROPERTY);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> orderByEndTimeAscending(){
+       addOrderByAscending(DriverAssignment.END_TIME_PROPERTY);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> orderByEndTimeDescending(){
+       addOrderByDescending(DriverAssignment.END_TIME_PROPERTY);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> orderByStatusAscending(){
+       addOrderByAscending(DriverAssignment.STATUS_PROPERTY);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> orderByStatusDescending(){
+       addOrderByDescending(DriverAssignment.STATUS_PROPERTY);
+       return this;
+    }
+    public DriverAssignmentRequest<T> orderByStatusAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(DriverAssignment.STATUS_PROPERTY);
+       return this;
+    }
+
+    public DriverAssignmentRequest<T> orderByStatusDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(DriverAssignment.STATUS_PROPERTY);
+       return this;
+    }
     public DriverAssignmentRequest<T> orderByVehicleAscending(){
        addOrderByAscending(DriverAssignment.VEHICLE_PROPERTY);
        return this;
@@ -844,54 +780,6 @@ public class DriverAssignmentRequest<T extends DriverAssignment> extends BaseReq
        addOrderByDescendingUsingGBK(DriverAssignment.DRIVER_PROPERTY);
        return this;
     }
-    public DriverAssignmentRequest<T> orderByStartDateAscending(){
-       addOrderByAscending(DriverAssignment.START_DATE_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> orderByStartDateDescending(){
-       addOrderByDescending(DriverAssignment.START_DATE_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> orderByEndDateAscending(){
-       addOrderByAscending(DriverAssignment.END_DATE_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> orderByEndDateDescending(){
-       addOrderByDescending(DriverAssignment.END_DATE_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> orderByStatusAscending(){
-       addOrderByAscending(DriverAssignment.STATUS_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> orderByStatusDescending(){
-       addOrderByDescending(DriverAssignment.STATUS_PROPERTY);
-       return this;
-    }
-    public DriverAssignmentRequest<T> orderByStatusAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(DriverAssignment.STATUS_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> orderByStatusDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(DriverAssignment.STATUS_PROPERTY);
-       return this;
-    }
-    public DriverAssignmentRequest<T> orderByCreatedAtAscending(){
-       addOrderByAscending(DriverAssignment.CREATED_AT_PROPERTY);
-       return this;
-    }
-
-    public DriverAssignmentRequest<T> orderByCreatedAtDescending(){
-       addOrderByDescending(DriverAssignment.CREATED_AT_PROPERTY);
-       return this;
-    }
-
     public DriverAssignmentRequest<T> orderByVersionAscending(){
        addOrderByAscending(DriverAssignment.VERSION_PROPERTY);
        return this;
@@ -909,10 +797,6 @@ public class DriverAssignmentRequest<T extends DriverAssignment> extends BaseReq
            .groupByVehicleWith(vehicle);
        return vehicle;
     }
-
-
-
-
 
 
 

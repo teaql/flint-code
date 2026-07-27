@@ -86,7 +86,7 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
 
     public PromotionCampaignRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectName().selectStartDate().selectEndDate().selectBudget().selectStatus().selectDescription().selectCreatedTime().selectUpdateTime().selectVersion();
+        return selectId().selectName().selectDescription().selectStartDate().selectEndDate().selectBudget().selectStatus().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public PromotionCampaignRequest<T> selectSelfFields(){
@@ -95,13 +95,13 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
 
     public PromotionCampaignRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectName().selectStartDate().selectEndDate().selectBudget().selectStatus().selectDescription().selectCreatedTime().selectUpdateTime().selectVersion();
+        return selectId().selectName().selectDescription().selectStartDate().selectEndDate().selectBudget().selectStatus().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public PromotionCampaignRequest<T> selectChildren(){
         super.selectAny();
         selectMarketingRoiList();
-        return selectId().selectName().selectStartDate().selectEndDate().selectBudget().selectStatus().selectDescription().selectCreatedTime().selectUpdateTime().selectVersion();
+        return selectId().selectName().selectDescription().selectStartDate().selectEndDate().selectBudget().selectStatus().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
 
@@ -137,6 +137,23 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
 
     public PromotionCampaignRequest<T> unselectName(){
        unselectProperty(PromotionCampaign.NAME_PROPERTY);
+       return this;
+    }
+    public PromotionCampaignRequest<T> selectDescription(){
+       selectProperty(PromotionCampaign.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the description with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  description) to fetch description property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public PromotionCampaignRequest<T> unselectDescription(){
+       unselectProperty(PromotionCampaign.DESCRIPTION_PROPERTY);
        return this;
     }
     public PromotionCampaignRequest<T> selectStartDate(){
@@ -215,23 +232,6 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
        unselectProperty(PromotionCampaign.STATUS_PROPERTY);
        return this;
     }
-    public PromotionCampaignRequest<T> selectDescription(){
-       selectProperty(PromotionCampaign.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the description with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  description) to fetch description property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public PromotionCampaignRequest<T> unselectDescription(){
-       unselectProperty(PromotionCampaign.DESCRIPTION_PROPERTY);
-       return this;
-    }
     public PromotionCampaignRequest<T> selectCreatedTime(){
        selectProperty(PromotionCampaign.CREATED_TIME_PROPERTY);
        return this;
@@ -249,21 +249,21 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
        unselectProperty(PromotionCampaign.CREATED_TIME_PROPERTY);
        return this;
     }
-    public PromotionCampaignRequest<T> selectUpdateTime(){
-       selectProperty(PromotionCampaign.UPDATE_TIME_PROPERTY);
+    public PromotionCampaignRequest<T> selectUpdatedTime(){
+       selectProperty(PromotionCampaign.UPDATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the updateTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updateTime) to fetch updateTime property.
+     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public PromotionCampaignRequest<T> unselectUpdateTime(){
-       unselectProperty(PromotionCampaign.UPDATE_TIME_PROPERTY);
+    public PromotionCampaignRequest<T> unselectUpdatedTime(){
+       unselectProperty(PromotionCampaign.UPDATED_TIME_PROPERTY);
        return this;
     }
     public PromotionCampaignRequest<T> selectVersion(){
@@ -368,6 +368,69 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
 
     public PromotionCampaignRequest<T> withNameSoundingLike(String name){
        return withName(Operator.SOUNDS_LIKE, name);
+    }
+
+
+
+    public PromotionCampaignRequest<T> filterByDescription(String... description){
+      if (description == null || description.length == 0) {
+        throw new IllegalArgumentException("filterByDescription parameter description cannot be empty");
+      }
+      return appendSearchCriteria(createDescriptionCriteria(Operator.EQUAL, (Object[])description));
+    }
+
+    public PromotionCampaignRequest<T> withDescription(Operator operator, Object... values){
+       return appendSearchCriteria(createDescriptionCriteria(operator, values));
+    }
+
+    public PromotionCampaignRequest<T> withDescriptionIsUnknown(){
+       return withDescription(Operator.IS_NULL);
+    }
+
+    public PromotionCampaignRequest<T> withDescriptionIsKnown(){
+       return withDescription(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createDescriptionCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PromotionCampaign.DESCRIPTION_PROPERTY, operator, values);
+    }
+
+    public PromotionCampaignRequest<T> withDescriptionGreaterThan(String description){
+       return withDescription(Operator.GREATER_THAN, description);
+    }
+
+    public PromotionCampaignRequest<T> withDescriptionGreaterThanOrEqualTo(String description){
+       return withDescription(Operator.GREATER_THAN_OR_EQUAL, description);
+    }
+
+    public PromotionCampaignRequest<T> withDescriptionLessThan(String description){
+       return withDescription(Operator.LESS_THAN, description);
+    }
+
+    public PromotionCampaignRequest<T> withDescriptionLessThanOrEqualTo(String description){
+       return withDescription(Operator.LESS_THAN_OR_EQUAL, description);
+    }
+
+    public PromotionCampaignRequest<T> withDescriptionBetween(String startOfDescription, String endOfDescription){
+       return withDescription(Operator.BETWEEN, startOfDescription, endOfDescription);
+    }
+    public PromotionCampaignRequest<T> withDescriptionStartingWith(String description){
+       return withDescription(Operator.BEGIN_WITH, description);
+    }
+    public PromotionCampaignRequest<T> withDescriptionContaining(String description){
+       return withDescription(Operator.CONTAIN, description);
+    }
+
+    public PromotionCampaignRequest<T> withDescriptionEndingWith(String description){
+       return withDescription(Operator.END_WITH, description);
+    }
+
+    public PromotionCampaignRequest<T> withDescriptionIs(String description){
+       return withDescription(Operator.EQUAL, description);
+    }
+
+    public PromotionCampaignRequest<T> withDescriptionSoundingLike(String description){
+       return withDescription(Operator.SOUNDS_LIKE, description);
     }
 
 
@@ -610,69 +673,6 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
 
 
 
-    public PromotionCampaignRequest<T> filterByDescription(String... description){
-      if (description == null || description.length == 0) {
-        throw new IllegalArgumentException("filterByDescription parameter description cannot be empty");
-      }
-      return appendSearchCriteria(createDescriptionCriteria(Operator.EQUAL, (Object[])description));
-    }
-
-    public PromotionCampaignRequest<T> withDescription(Operator operator, Object... values){
-       return appendSearchCriteria(createDescriptionCriteria(operator, values));
-    }
-
-    public PromotionCampaignRequest<T> withDescriptionIsUnknown(){
-       return withDescription(Operator.IS_NULL);
-    }
-
-    public PromotionCampaignRequest<T> withDescriptionIsKnown(){
-       return withDescription(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createDescriptionCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(PromotionCampaign.DESCRIPTION_PROPERTY, operator, values);
-    }
-
-    public PromotionCampaignRequest<T> withDescriptionGreaterThan(String description){
-       return withDescription(Operator.GREATER_THAN, description);
-    }
-
-    public PromotionCampaignRequest<T> withDescriptionGreaterThanOrEqualTo(String description){
-       return withDescription(Operator.GREATER_THAN_OR_EQUAL, description);
-    }
-
-    public PromotionCampaignRequest<T> withDescriptionLessThan(String description){
-       return withDescription(Operator.LESS_THAN, description);
-    }
-
-    public PromotionCampaignRequest<T> withDescriptionLessThanOrEqualTo(String description){
-       return withDescription(Operator.LESS_THAN_OR_EQUAL, description);
-    }
-
-    public PromotionCampaignRequest<T> withDescriptionBetween(String startOfDescription, String endOfDescription){
-       return withDescription(Operator.BETWEEN, startOfDescription, endOfDescription);
-    }
-    public PromotionCampaignRequest<T> withDescriptionStartingWith(String description){
-       return withDescription(Operator.BEGIN_WITH, description);
-    }
-    public PromotionCampaignRequest<T> withDescriptionContaining(String description){
-       return withDescription(Operator.CONTAIN, description);
-    }
-
-    public PromotionCampaignRequest<T> withDescriptionEndingWith(String description){
-       return withDescription(Operator.END_WITH, description);
-    }
-
-    public PromotionCampaignRequest<T> withDescriptionIs(String description){
-       return withDescription(Operator.EQUAL, description);
-    }
-
-    public PromotionCampaignRequest<T> withDescriptionSoundingLike(String description){
-       return withDescription(Operator.SOUNDS_LIKE, description);
-    }
-
-
-
     public PromotionCampaignRequest<T> filterByCreatedTime(LocalDateTime... createdTime){
       if (createdTime == null || createdTime.length == 0) {
         throw new IllegalArgumentException("filterByCreatedTime parameter createdTime cannot be empty");
@@ -738,66 +738,66 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
 
 
 
-    public PromotionCampaignRequest<T> filterByUpdateTime(LocalDateTime... updateTime){
-      if (updateTime == null || updateTime.length == 0) {
-        throw new IllegalArgumentException("filterByUpdateTime parameter updateTime cannot be empty");
+    public PromotionCampaignRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
+      if (updatedTime == null || updatedTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
       }
-      return appendSearchCriteria(createUpdateTimeCriteria(Operator.EQUAL, (Object[])updateTime));
+      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
     }
 
-    public PromotionCampaignRequest<T> withUpdateTime(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdateTimeCriteria(operator, values));
+    public PromotionCampaignRequest<T> withUpdatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
     }
 
-    public PromotionCampaignRequest<T> withUpdateTimeIsUnknown(){
-       return withUpdateTime(Operator.IS_NULL);
+    public PromotionCampaignRequest<T> withUpdatedTimeIsUnknown(){
+       return withUpdatedTime(Operator.IS_NULL);
     }
 
-    public PromotionCampaignRequest<T> withUpdateTimeIsKnown(){
-       return withUpdateTime(Operator.IS_NOT_NULL);
+    public PromotionCampaignRequest<T> withUpdatedTimeIsKnown(){
+       return withUpdatedTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createUpdateTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(PromotionCampaign.UPDATE_TIME_PROPERTY, operator, values);
+    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PromotionCampaign.UPDATED_TIME_PROPERTY, operator, values);
     }
 
-    public PromotionCampaignRequest<T> withUpdateTimeGreaterThan(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public PromotionCampaignRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public PromotionCampaignRequest<T> withUpdateTimeGreaterThanOrEqualTo(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN_OR_EQUAL, updateTime);
+    public PromotionCampaignRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
     }
 
-    public PromotionCampaignRequest<T> withUpdateTimeLessThan(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    public PromotionCampaignRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public PromotionCampaignRequest<T> withUpdateTimeLessThanOrEqualTo(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN_OR_EQUAL, updateTime);
+    public PromotionCampaignRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
     }
 
-    public PromotionCampaignRequest<T> withUpdateTimeBetween(LocalDateTime startOfUpdateTime, LocalDateTime endOfUpdateTime){
-       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    public PromotionCampaignRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
-    public PromotionCampaignRequest<T> withUpdateTimeBefore(LocalDateTime updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
-    }
-
-    public PromotionCampaignRequest<T> withUpdateTimeBefore(Date updateTime){
-       return withUpdateTime(Operator.LESS_THAN, updateTime);
+    public PromotionCampaignRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public PromotionCampaignRequest<T> withUpdateTimeAfter(LocalDateTime updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public PromotionCampaignRequest<T> withUpdatedTimeBefore(Date updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
     }
 
-    public PromotionCampaignRequest<T> withUpdateTimeAfter(Date updateTime){
-       return withUpdateTime(Operator.GREATER_THAN, updateTime);
+    public PromotionCampaignRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
     }
 
-    public PromotionCampaignRequest<T> withUpdateTimeBetween(Date startOfUpdateTime, Date endOfUpdateTime){
-       return withUpdateTime(Operator.BETWEEN, startOfUpdateTime, endOfUpdateTime);
+    public PromotionCampaignRequest<T> withUpdatedTimeAfter(Date updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public PromotionCampaignRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
 
 
@@ -969,6 +969,21 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
        return this;
     }
 
+    public PromotionCampaignRequest<T> groupByDescription(){
+       groupBy(PromotionCampaign.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public PromotionCampaignRequest<T> groupByDescriptionAs(String retName){
+       groupBy(retName, PromotionCampaign.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public PromotionCampaignRequest<T> groupByDescriptionWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PromotionCampaign.DESCRIPTION_PROPERTY, function);
+       return this;
+    }
+
     public PromotionCampaignRequest<T> groupByStartDate(){
        groupBy(PromotionCampaign.START_DATE_PROPERTY);
        return this;
@@ -1029,21 +1044,6 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
        return this;
     }
 
-    public PromotionCampaignRequest<T> groupByDescription(){
-       groupBy(PromotionCampaign.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    public PromotionCampaignRequest<T> groupByDescriptionAs(String retName){
-       groupBy(retName, PromotionCampaign.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    public PromotionCampaignRequest<T> groupByDescriptionWithFunction(String retName, AggrFunction function){
-       groupBy(retName, PromotionCampaign.DESCRIPTION_PROPERTY, function);
-       return this;
-    }
-
     public PromotionCampaignRequest<T> groupByCreatedTime(){
        groupBy(PromotionCampaign.CREATED_TIME_PROPERTY);
        return this;
@@ -1059,18 +1059,18 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
        return this;
     }
 
-    public PromotionCampaignRequest<T> groupByUpdateTime(){
-       groupBy(PromotionCampaign.UPDATE_TIME_PROPERTY);
+    public PromotionCampaignRequest<T> groupByUpdatedTime(){
+       groupBy(PromotionCampaign.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public PromotionCampaignRequest<T> groupByUpdateTimeAs(String retName){
-       groupBy(retName, PromotionCampaign.UPDATE_TIME_PROPERTY);
+    public PromotionCampaignRequest<T> groupByUpdatedTimeAs(String retName){
+       groupBy(retName, PromotionCampaign.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public PromotionCampaignRequest<T> groupByUpdateTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, PromotionCampaign.UPDATE_TIME_PROPERTY, function);
+    public PromotionCampaignRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PromotionCampaign.UPDATED_TIME_PROPERTY, function);
        return this;
     }
 
@@ -1117,6 +1117,24 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
 
     public PromotionCampaignRequest<T> orderByNameDescendingUsingGBK(){
        addOrderByDescendingUsingGBK(PromotionCampaign.NAME_PROPERTY);
+       return this;
+    }
+    public PromotionCampaignRequest<T> orderByDescriptionAscending(){
+       addOrderByAscending(PromotionCampaign.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public PromotionCampaignRequest<T> orderByDescriptionDescending(){
+       addOrderByDescending(PromotionCampaign.DESCRIPTION_PROPERTY);
+       return this;
+    }
+    public PromotionCampaignRequest<T> orderByDescriptionAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(PromotionCampaign.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    public PromotionCampaignRequest<T> orderByDescriptionDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(PromotionCampaign.DESCRIPTION_PROPERTY);
        return this;
     }
     public PromotionCampaignRequest<T> orderByStartDateAscending(){
@@ -1167,24 +1185,6 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
        addOrderByDescendingUsingGBK(PromotionCampaign.STATUS_PROPERTY);
        return this;
     }
-    public PromotionCampaignRequest<T> orderByDescriptionAscending(){
-       addOrderByAscending(PromotionCampaign.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    public PromotionCampaignRequest<T> orderByDescriptionDescending(){
-       addOrderByDescending(PromotionCampaign.DESCRIPTION_PROPERTY);
-       return this;
-    }
-    public PromotionCampaignRequest<T> orderByDescriptionAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(PromotionCampaign.DESCRIPTION_PROPERTY);
-       return this;
-    }
-
-    public PromotionCampaignRequest<T> orderByDescriptionDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(PromotionCampaign.DESCRIPTION_PROPERTY);
-       return this;
-    }
     public PromotionCampaignRequest<T> orderByCreatedTimeAscending(){
        addOrderByAscending(PromotionCampaign.CREATED_TIME_PROPERTY);
        return this;
@@ -1195,13 +1195,13 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
        return this;
     }
 
-    public PromotionCampaignRequest<T> orderByUpdateTimeAscending(){
-       addOrderByAscending(PromotionCampaign.UPDATE_TIME_PROPERTY);
+    public PromotionCampaignRequest<T> orderByUpdatedTimeAscending(){
+       addOrderByAscending(PromotionCampaign.UPDATED_TIME_PROPERTY);
        return this;
     }
 
-    public PromotionCampaignRequest<T> orderByUpdateTimeDescending(){
-       addOrderByDescending(PromotionCampaign.UPDATE_TIME_PROPERTY);
+    public PromotionCampaignRequest<T> orderByUpdatedTimeDescending(){
+       addOrderByDescending(PromotionCampaign.UPDATED_TIME_PROPERTY);
        return this;
     }
 
@@ -1240,181 +1240,181 @@ public class PromotionCampaignRequest<T extends PromotionCampaign> extends BaseR
     public PromotionCampaignRequest<T> countMarketingRoisWith(String name, MarketingRoiRequest subRequest){
         return statsFromMarketingRoisAs(name, subRequest.count(), true);
     }
-    public PromotionCampaignRequest<T> minTotalSpendOfMarketingRois(){
-        return minTotalSpendOfMarketingRoisAs("minTotalSpendOfMarketingRois");
+    public PromotionCampaignRequest<T> minSpendOfMarketingRois(){
+        return minSpendOfMarketingRoisAs("minSpendOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> minTotalSpendOfMarketingRoisAs(String name){
-        return minTotalSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> minSpendOfMarketingRoisAs(String name){
+        return minSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> minTotalSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.minTotalSpend(), true);
+    public PromotionCampaignRequest<T> minSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.minSpend(), true);
     }
-    public PromotionCampaignRequest<T> maxTotalSpendOfMarketingRois(){
-        return maxTotalSpendOfMarketingRoisAs("maxTotalSpendOfMarketingRois");
-    }
-
-    public PromotionCampaignRequest<T> maxTotalSpendOfMarketingRoisAs(String name){
-        return maxTotalSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> maxSpendOfMarketingRois(){
+        return maxSpendOfMarketingRoisAs("maxSpendOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> maxTotalSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.maxTotalSpend(), true);
-    }
-    public PromotionCampaignRequest<T> sumTotalSpendOfMarketingRois(){
-        return sumTotalSpendOfMarketingRoisAs("sumTotalSpendOfMarketingRois");
+    public PromotionCampaignRequest<T> maxSpendOfMarketingRoisAs(String name){
+        return maxSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> sumTotalSpendOfMarketingRoisAs(String name){
-        return sumTotalSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> maxSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.maxSpend(), true);
+    }
+    public PromotionCampaignRequest<T> sumSpendOfMarketingRois(){
+        return sumSpendOfMarketingRoisAs("sumSpendOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> sumTotalSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.sumTotalSpend(), true);
-    }
-    public PromotionCampaignRequest<T> avgTotalSpendOfMarketingRois(){
-        return avgTotalSpendOfMarketingRoisAs("avgTotalSpendOfMarketingRois");
+    public PromotionCampaignRequest<T> sumSpendOfMarketingRoisAs(String name){
+        return sumSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> avgTotalSpendOfMarketingRoisAs(String name){
-        return avgTotalSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> sumSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.sumSpend(), true);
+    }
+    public PromotionCampaignRequest<T> avgSpendOfMarketingRois(){
+        return avgSpendOfMarketingRoisAs("avgSpendOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> avgTotalSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.avgTotalSpend(), true);
-    }
-    public PromotionCampaignRequest<T> standardDeviationTotalSpendOfMarketingRois(){
-        return standardDeviationTotalSpendOfMarketingRoisAs("stdDevTotalSpendOfMarketingRois");
+    public PromotionCampaignRequest<T> avgSpendOfMarketingRoisAs(String name){
+        return avgSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> standardDeviationTotalSpendOfMarketingRoisAs(String name){
-        return standardDeviationTotalSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> avgSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.avgSpend(), true);
+    }
+    public PromotionCampaignRequest<T> standardDeviationSpendOfMarketingRois(){
+        return standardDeviationSpendOfMarketingRoisAs("stdDevSpendOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> standardDeviationTotalSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.standardDeviationTotalSpend(), true);
-    }
-    public PromotionCampaignRequest<T> squareRootOfPopulationStandardDeviationTotalSpendOfMarketingRois(){
-        return squareRootOfPopulationStandardDeviationTotalSpendOfMarketingRoisAs("stdDevPopTotalSpendOfMarketingRois");
+    public PromotionCampaignRequest<T> standardDeviationSpendOfMarketingRoisAs(String name){
+        return standardDeviationSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> squareRootOfPopulationStandardDeviationTotalSpendOfMarketingRoisAs(String name){
-        return squareRootOfPopulationStandardDeviationTotalSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> standardDeviationSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.standardDeviationSpend(), true);
+    }
+    public PromotionCampaignRequest<T> squareRootOfPopulationStandardDeviationSpendOfMarketingRois(){
+        return squareRootOfPopulationStandardDeviationSpendOfMarketingRoisAs("stdDevPopSpendOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> squareRootOfPopulationStandardDeviationTotalSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.squareRootOfPopulationStandardDeviationTotalSpend(), true);
-    }
-    public PromotionCampaignRequest<T> sampleVarianceTotalSpendOfMarketingRois(){
-        return sampleVarianceTotalSpendOfMarketingRoisAs("varSampTotalSpendOfMarketingRois");
+    public PromotionCampaignRequest<T> squareRootOfPopulationStandardDeviationSpendOfMarketingRoisAs(String name){
+        return squareRootOfPopulationStandardDeviationSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> sampleVarianceTotalSpendOfMarketingRoisAs(String name){
-        return sampleVarianceTotalSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> squareRootOfPopulationStandardDeviationSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.squareRootOfPopulationStandardDeviationSpend(), true);
+    }
+    public PromotionCampaignRequest<T> sampleVarianceSpendOfMarketingRois(){
+        return sampleVarianceSpendOfMarketingRoisAs("varSampSpendOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> sampleVarianceTotalSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.sampleVarianceTotalSpend(), true);
-    }
-    public PromotionCampaignRequest<T> samplePopulationVarianceTotalSpendOfMarketingRois(){
-        return samplePopulationVarianceTotalSpendOfMarketingRoisAs("varPopTotalSpendOfMarketingRois");
+    public PromotionCampaignRequest<T> sampleVarianceSpendOfMarketingRoisAs(String name){
+        return sampleVarianceSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> samplePopulationVarianceTotalSpendOfMarketingRoisAs(String name){
-        return samplePopulationVarianceTotalSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> sampleVarianceSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.sampleVarianceSpend(), true);
+    }
+    public PromotionCampaignRequest<T> samplePopulationVarianceSpendOfMarketingRois(){
+        return samplePopulationVarianceSpendOfMarketingRoisAs("varPopSpendOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> samplePopulationVarianceTotalSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.samplePopulationVarianceTotalSpend(), true);
-    }
-    public PromotionCampaignRequest<T> minTotalRevenueOfMarketingRois(){
-        return minTotalRevenueOfMarketingRoisAs("minTotalRevenueOfMarketingRois");
+    public PromotionCampaignRequest<T> samplePopulationVarianceSpendOfMarketingRoisAs(String name){
+        return samplePopulationVarianceSpendOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> minTotalRevenueOfMarketingRoisAs(String name){
-        return minTotalRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> samplePopulationVarianceSpendOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.samplePopulationVarianceSpend(), true);
+    }
+    public PromotionCampaignRequest<T> minRevenueOfMarketingRois(){
+        return minRevenueOfMarketingRoisAs("minRevenueOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> minTotalRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.minTotalRevenue(), true);
-    }
-    public PromotionCampaignRequest<T> maxTotalRevenueOfMarketingRois(){
-        return maxTotalRevenueOfMarketingRoisAs("maxTotalRevenueOfMarketingRois");
+    public PromotionCampaignRequest<T> minRevenueOfMarketingRoisAs(String name){
+        return minRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> maxTotalRevenueOfMarketingRoisAs(String name){
-        return maxTotalRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> minRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.minRevenue(), true);
+    }
+    public PromotionCampaignRequest<T> maxRevenueOfMarketingRois(){
+        return maxRevenueOfMarketingRoisAs("maxRevenueOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> maxTotalRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.maxTotalRevenue(), true);
-    }
-    public PromotionCampaignRequest<T> sumTotalRevenueOfMarketingRois(){
-        return sumTotalRevenueOfMarketingRoisAs("sumTotalRevenueOfMarketingRois");
+    public PromotionCampaignRequest<T> maxRevenueOfMarketingRoisAs(String name){
+        return maxRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> sumTotalRevenueOfMarketingRoisAs(String name){
-        return sumTotalRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> maxRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.maxRevenue(), true);
+    }
+    public PromotionCampaignRequest<T> sumRevenueOfMarketingRois(){
+        return sumRevenueOfMarketingRoisAs("sumRevenueOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> sumTotalRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.sumTotalRevenue(), true);
-    }
-    public PromotionCampaignRequest<T> avgTotalRevenueOfMarketingRois(){
-        return avgTotalRevenueOfMarketingRoisAs("avgTotalRevenueOfMarketingRois");
+    public PromotionCampaignRequest<T> sumRevenueOfMarketingRoisAs(String name){
+        return sumRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> avgTotalRevenueOfMarketingRoisAs(String name){
-        return avgTotalRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> sumRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.sumRevenue(), true);
+    }
+    public PromotionCampaignRequest<T> avgRevenueOfMarketingRois(){
+        return avgRevenueOfMarketingRoisAs("avgRevenueOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> avgTotalRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.avgTotalRevenue(), true);
-    }
-    public PromotionCampaignRequest<T> standardDeviationTotalRevenueOfMarketingRois(){
-        return standardDeviationTotalRevenueOfMarketingRoisAs("stdDevTotalRevenueOfMarketingRois");
+    public PromotionCampaignRequest<T> avgRevenueOfMarketingRoisAs(String name){
+        return avgRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> standardDeviationTotalRevenueOfMarketingRoisAs(String name){
-        return standardDeviationTotalRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> avgRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.avgRevenue(), true);
+    }
+    public PromotionCampaignRequest<T> standardDeviationRevenueOfMarketingRois(){
+        return standardDeviationRevenueOfMarketingRoisAs("stdDevRevenueOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> standardDeviationTotalRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.standardDeviationTotalRevenue(), true);
-    }
-    public PromotionCampaignRequest<T> squareRootOfPopulationStandardDeviationTotalRevenueOfMarketingRois(){
-        return squareRootOfPopulationStandardDeviationTotalRevenueOfMarketingRoisAs("stdDevPopTotalRevenueOfMarketingRois");
+    public PromotionCampaignRequest<T> standardDeviationRevenueOfMarketingRoisAs(String name){
+        return standardDeviationRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> squareRootOfPopulationStandardDeviationTotalRevenueOfMarketingRoisAs(String name){
-        return squareRootOfPopulationStandardDeviationTotalRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> standardDeviationRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.standardDeviationRevenue(), true);
+    }
+    public PromotionCampaignRequest<T> squareRootOfPopulationStandardDeviationRevenueOfMarketingRois(){
+        return squareRootOfPopulationStandardDeviationRevenueOfMarketingRoisAs("stdDevPopRevenueOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> squareRootOfPopulationStandardDeviationTotalRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.squareRootOfPopulationStandardDeviationTotalRevenue(), true);
-    }
-    public PromotionCampaignRequest<T> sampleVarianceTotalRevenueOfMarketingRois(){
-        return sampleVarianceTotalRevenueOfMarketingRoisAs("varSampTotalRevenueOfMarketingRois");
+    public PromotionCampaignRequest<T> squareRootOfPopulationStandardDeviationRevenueOfMarketingRoisAs(String name){
+        return squareRootOfPopulationStandardDeviationRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> sampleVarianceTotalRevenueOfMarketingRoisAs(String name){
-        return sampleVarianceTotalRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> squareRootOfPopulationStandardDeviationRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.squareRootOfPopulationStandardDeviationRevenue(), true);
+    }
+    public PromotionCampaignRequest<T> sampleVarianceRevenueOfMarketingRois(){
+        return sampleVarianceRevenueOfMarketingRoisAs("varSampRevenueOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> sampleVarianceTotalRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.sampleVarianceTotalRevenue(), true);
-    }
-    public PromotionCampaignRequest<T> samplePopulationVarianceTotalRevenueOfMarketingRois(){
-        return samplePopulationVarianceTotalRevenueOfMarketingRoisAs("varPopTotalRevenueOfMarketingRois");
+    public PromotionCampaignRequest<T> sampleVarianceRevenueOfMarketingRoisAs(String name){
+        return sampleVarianceRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
     }
 
-    public PromotionCampaignRequest<T> samplePopulationVarianceTotalRevenueOfMarketingRoisAs(String name){
-        return samplePopulationVarianceTotalRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    public PromotionCampaignRequest<T> sampleVarianceRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.sampleVarianceRevenue(), true);
+    }
+    public PromotionCampaignRequest<T> samplePopulationVarianceRevenueOfMarketingRois(){
+        return samplePopulationVarianceRevenueOfMarketingRoisAs("varPopRevenueOfMarketingRois");
     }
 
-    public PromotionCampaignRequest<T> samplePopulationVarianceTotalRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
-        return statsFromMarketingRoisAs(name, subRequest.samplePopulationVarianceTotalRevenue(), true);
+    public PromotionCampaignRequest<T> samplePopulationVarianceRevenueOfMarketingRoisAs(String name){
+        return samplePopulationVarianceRevenueOfMarketingRoisAs(name, Q.marketingRois().unlimited());
+    }
+
+    public PromotionCampaignRequest<T> samplePopulationVarianceRevenueOfMarketingRoisAs(String name, MarketingRoiRequest subRequest){
+        return statsFromMarketingRoisAs(name, subRequest.samplePopulationVarianceRevenue(), true);
     }
     public PromotionCampaignRequest<T> minRoiPercentageOfMarketingRois(){
         return minRoiPercentageOfMarketingRoisAs("minRoiPercentageOfMarketingRois");

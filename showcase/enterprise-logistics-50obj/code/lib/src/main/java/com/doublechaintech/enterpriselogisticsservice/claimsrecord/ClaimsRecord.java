@@ -1,5 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.claimsrecord;
 
+import com.doublechaintech.enterpriselogisticsservice.insurancepolicy.InsurancePolicy;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
@@ -22,22 +24,29 @@ public class ClaimsRecord extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "ClaimsRecord";
 
     public static final String CLAIM_NUMBER_PROPERTY = "claimNumber";
+    public static final String DESCRIPTION_PROPERTY = "description";
     public static final String CLAIM_AMOUNT_PROPERTY = "claimAmount";
     public static final String STATUS_PROPERTY = "status";
-    public static final String DESCRIPTION_PROPERTY = "description";
     public static final String RESOLUTION_DATE_PROPERTY = "resolutionDate";
+    public static final String MOVING_ORDER_PROPERTY = "movingOrder";
+    public static final String INSURANCE_POLICY_PROPERTY = "insurancePolicy";
     public static final String CREATED_TIME_PROPERTY = "createdTime";
-    public static final String UPDATED_TIME_PROPERTY = "updatedTime";
+    public static final String UPDATE_TIME_PROPERTY = "updateTime";
     private String claimNumber;
+    private String description;
     private BigDecimal claimAmount;
     private String status;
-    private String description;
     private LocalDate resolutionDate;
+    private MovingOrder movingOrder;
+    private InsurancePolicy insurancePolicy;
     private LocalDateTime createdTime;
-    private LocalDateTime updatedTime;
+    private LocalDateTime updateTime;
 
     public String getClaimNumber(){
         return this.claimNumber;
+    }
+    public String getDescription(){
+        return this.description;
     }
     public BigDecimal getClaimAmount(){
         return this.claimAmount;
@@ -45,17 +54,20 @@ public class ClaimsRecord extends BaseEntity implements RemoteInput {
     public String getStatus(){
         return this.status;
     }
-    public String getDescription(){
-        return this.description;
-    }
     public LocalDate getResolutionDate(){
         return this.resolutionDate;
+    }
+    public MovingOrder getMovingOrder(){
+        return this.movingOrder;
+    }
+    public InsurancePolicy getInsurancePolicy(){
+        return this.insurancePolicy;
     }
     public LocalDateTime getCreatedTime(){
         return this.createdTime;
     }
-    public LocalDateTime getUpdatedTime(){
-        return this.updatedTime;
+    public LocalDateTime getUpdateTime(){
+        return this.updateTime;
     }
     public ClaimsRecord updateClaimNumber(String claimNumber){
         claimNumber = (claimNumber == null ? null : claimNumber.trim());
@@ -64,6 +76,15 @@ public class ClaimsRecord extends BaseEntity implements RemoteInput {
         }
         handleUpdate(CLAIM_NUMBER_PROPERTY, getClaimNumber(), claimNumber);
         this.claimNumber = claimNumber;
+        return this;
+    }
+    public ClaimsRecord updateDescription(String description){
+        description = (description == null ? null : description.trim());
+        if(Objects.equals(this.description, description)){
+            return this;
+        }
+        handleUpdate(DESCRIPTION_PROPERTY, getDescription(), description);
+        this.description = description;
         return this;
     }
     public ClaimsRecord updateClaimAmount(BigDecimal claimAmount){
@@ -83,21 +104,28 @@ public class ClaimsRecord extends BaseEntity implements RemoteInput {
         this.status = status;
         return this;
     }
-    public ClaimsRecord updateDescription(String description){
-        description = (description == null ? null : description.trim());
-        if(Objects.equals(this.description, description)){
-            return this;
-        }
-        handleUpdate(DESCRIPTION_PROPERTY, getDescription(), description);
-        this.description = description;
-        return this;
-    }
     public ClaimsRecord updateResolutionDate(LocalDate resolutionDate){
         if(Objects.equals(this.resolutionDate, resolutionDate)){
             return this;
         }
         handleUpdate(RESOLUTION_DATE_PROPERTY, getResolutionDate(), resolutionDate);
         this.resolutionDate = resolutionDate;
+        return this;
+    }
+    public ClaimsRecord updateMovingOrder(MovingOrder movingOrder){
+        if(Objects.equals(this.movingOrder, movingOrder)){
+            return this;
+        }
+        handleUpdate(MOVING_ORDER_PROPERTY, getMovingOrder(), movingOrder);
+        this.movingOrder = movingOrder;
+        return this;
+    }
+    public ClaimsRecord updateInsurancePolicy(InsurancePolicy insurancePolicy){
+        if(Objects.equals(this.insurancePolicy, insurancePolicy)){
+            return this;
+        }
+        handleUpdate(INSURANCE_POLICY_PROPERTY, getInsurancePolicy(), insurancePolicy);
+        this.insurancePolicy = insurancePolicy;
         return this;
     }
     public ClaimsRecord updateCreatedTime(LocalDateTime createdTime){
@@ -108,12 +136,12 @@ public class ClaimsRecord extends BaseEntity implements RemoteInput {
         this.createdTime = createdTime;
         return this;
     }
-    public ClaimsRecord updateUpdatedTime(LocalDateTime updatedTime){
-        if(Objects.equals(this.updatedTime, updatedTime)){
+    public ClaimsRecord updateUpdateTime(LocalDateTime updateTime){
+        if(Objects.equals(this.updateTime, updateTime)){
             return this;
         }
-        handleUpdate(UPDATED_TIME_PROPERTY, getUpdatedTime(), updatedTime);
-        this.updatedTime = updatedTime;
+        handleUpdate(UPDATE_TIME_PROPERTY, getUpdateTime(), updateTime);
+        this.updateTime = updateTime;
         return this;
     }
 
@@ -146,17 +174,21 @@ public class ClaimsRecord extends BaseEntity implements RemoteInput {
         switch (property) {
             case "claimNumber": this.claimNumber = (value == null ? null : ((String)value).trim()); break;
 
+            case "description": this.description = (value == null ? null : ((String)value).trim()); break;
+
             case "claimAmount": this.claimAmount = (BigDecimal) value; break;
 
             case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
-            case "description": this.description = (value == null ? null : ((String)value).trim()); break;
-
             case "resolutionDate": this.resolutionDate = (LocalDate) value; break;
+
+            case "movingOrder": this.movingOrder = (MovingOrder) value; break;
+
+            case "insurancePolicy": this.insurancePolicy = (InsurancePolicy) value; break;
 
             case "createdTime": this.createdTime = (LocalDateTime) value; break;
 
-            case "updatedTime": this.updatedTime = (LocalDateTime) value; break;
+            case "updateTime": this.updateTime = (LocalDateTime) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -167,12 +199,14 @@ public class ClaimsRecord extends BaseEntity implements RemoteInput {
     public Object __internalGet(String property) {
         switch (property) {
             case "claimNumber": return this.claimNumber;
+            case "description": return this.description;
             case "claimAmount": return this.claimAmount;
             case "status": return this.status;
-            case "description": return this.description;
             case "resolutionDate": return this.resolutionDate;
+            case "movingOrder": return this.movingOrder;
+            case "insurancePolicy": return this.insurancePolicy;
             case "createdTime": return this.createdTime;
-            case "updatedTime": return this.updatedTime;
+            case "updateTime": return this.updateTime;
             default: return super.__internalGet(property);
         }
     }

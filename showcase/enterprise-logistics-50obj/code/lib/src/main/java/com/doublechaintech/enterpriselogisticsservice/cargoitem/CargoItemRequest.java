@@ -85,7 +85,7 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
 
     public CargoItemRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectItemId().selectMovingOrderIdOnly().selectDescription().selectCategory().selectWeightKg().selectVolumeM3().selectValue().selectFragile().selectCreateTime().selectVersion();
+        return selectId().selectItemCode().selectDescription().selectWeightKg().selectVolumeM3().selectFragile().selectMovingOrderIdOnly().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public CargoItemRequest<T> selectSelfFields(){
@@ -94,12 +94,12 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
 
     public CargoItemRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectItemId().selectMovingOrder().selectDescription().selectCategory().selectWeightKg().selectVolumeM3().selectValue().selectFragile().selectCreateTime().selectVersion();
+        return selectId().selectItemCode().selectDescription().selectWeightKg().selectVolumeM3().selectFragile().selectMovingOrder().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public CargoItemRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectItemId().selectMovingOrder().selectDescription().selectCategory().selectWeightKg().selectVolumeM3().selectValue().selectFragile().selectCreateTime().selectVersion();
+        return selectId().selectItemCode().selectDescription().selectWeightKg().selectVolumeM3().selectFragile().selectMovingOrder().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
 
@@ -120,40 +120,21 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
        unselectProperty(CargoItem.ID_PROPERTY);
        return this;
     }
-    public CargoItemRequest<T> selectItemId(){
-       selectProperty(CargoItem.ITEM_ID_PROPERTY);
+    public CargoItemRequest<T> selectItemCode(){
+       selectProperty(CargoItem.ITEM_CODE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the itemId with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  itemId) to fetch itemId property.
+     * fill the itemCode with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  itemCode) to fetch itemCode property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public CargoItemRequest<T> unselectItemId(){
-       unselectProperty(CargoItem.ITEM_ID_PROPERTY);
-       return this;
-    }
-    public CargoItemRequest<T> selectMovingOrderIdOnly(){
-       selectProperty(CargoItem.MOVING_ORDER_PROPERTY);
-       return this;
-    }
-
-    public CargoItemRequest<T> selectMovingOrder(){
-        return selectMovingOrderWith(Q.movingOrders().unlimited().selectSelf());
-    }
-
-    public CargoItemRequest<T> selectMovingOrderWith(MovingOrderRequest movingOrder){
-       selectProperty(CargoItem.MOVING_ORDER_PROPERTY);
-       enhanceRelation(CargoItem.MOVING_ORDER_PROPERTY, movingOrder);
-       return this;
-    }
-
-    public CargoItemRequest<T> unselectMovingOrder(){
-       unselectProperty(CargoItem.MOVING_ORDER_PROPERTY);
+    public CargoItemRequest<T> unselectItemCode(){
+       unselectProperty(CargoItem.ITEM_CODE_PROPERTY);
        return this;
     }
     public CargoItemRequest<T> selectDescription(){
@@ -171,23 +152,6 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
 
     public CargoItemRequest<T> unselectDescription(){
        unselectProperty(CargoItem.DESCRIPTION_PROPERTY);
-       return this;
-    }
-    public CargoItemRequest<T> selectCategory(){
-       selectProperty(CargoItem.CATEGORY_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the category with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  category) to fetch category property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public CargoItemRequest<T> unselectCategory(){
-       unselectProperty(CargoItem.CATEGORY_PROPERTY);
        return this;
     }
     public CargoItemRequest<T> selectWeightKg(){
@@ -240,31 +204,6 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
        unselectProperty(CargoItem.VOLUME_M3_PROPERTY);
        return this;
     }
-    public CargoItemRequest<T> selectValue(){
-       selectProperty(CargoItem.VALUE_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the value with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  value) to fetch value property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-    /**
-     * fill the value with customized aggrFunction, TEAQL uses ({aggrFunction}(value) AS value to fetch value property.
-     * @param aggrFunction  aggrFunction
-     */
-    public CargoItemRequest<T> selectValue(AggrFunction aggrFunction){
-       selectProperty(CargoItem.VALUE_PROPERTY, aggrFunction);
-       return this;
-    }
-
-
-    public CargoItemRequest<T> unselectValue(){
-       unselectProperty(CargoItem.VALUE_PROPERTY);
-       return this;
-    }
     public CargoItemRequest<T> selectFragile(){
        selectProperty(CargoItem.FRAGILE_PROPERTY);
        return this;
@@ -282,21 +221,57 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
        unselectProperty(CargoItem.FRAGILE_PROPERTY);
        return this;
     }
-    public CargoItemRequest<T> selectCreateTime(){
-       selectProperty(CargoItem.CREATE_TIME_PROPERTY);
+    public CargoItemRequest<T> selectMovingOrderIdOnly(){
+       selectProperty(CargoItem.MOVING_ORDER_PROPERTY);
+       return this;
+    }
+
+    public CargoItemRequest<T> selectMovingOrder(){
+        return selectMovingOrderWith(Q.movingOrders().unlimited().selectSelf());
+    }
+
+    public CargoItemRequest<T> selectMovingOrderWith(MovingOrderRequest movingOrder){
+       selectProperty(CargoItem.MOVING_ORDER_PROPERTY);
+       enhanceRelation(CargoItem.MOVING_ORDER_PROPERTY, movingOrder);
+       return this;
+    }
+
+    public CargoItemRequest<T> unselectMovingOrder(){
+       unselectProperty(CargoItem.MOVING_ORDER_PROPERTY);
+       return this;
+    }
+    public CargoItemRequest<T> selectCreatedTime(){
+       selectProperty(CargoItem.CREATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the createTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createTime) to fetch createTime property.
+     * fill the createdTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdTime) to fetch createdTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public CargoItemRequest<T> unselectCreateTime(){
-       unselectProperty(CargoItem.CREATE_TIME_PROPERTY);
+    public CargoItemRequest<T> unselectCreatedTime(){
+       unselectProperty(CargoItem.CREATED_TIME_PROPERTY);
+       return this;
+    }
+    public CargoItemRequest<T> selectUpdatedTime(){
+       selectProperty(CargoItem.UPDATED_TIME_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public CargoItemRequest<T> unselectUpdatedTime(){
+       unselectProperty(CargoItem.UPDATED_TIME_PROPERTY);
        return this;
     }
     public CargoItemRequest<T> selectVersion(){
@@ -334,101 +309,68 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
 
 
 
-    public CargoItemRequest<T> filterByItemId(String... itemId){
-      if (itemId == null || itemId.length == 0) {
-        throw new IllegalArgumentException("filterByItemId parameter itemId cannot be empty");
+    public CargoItemRequest<T> filterByItemCode(String... itemCode){
+      if (itemCode == null || itemCode.length == 0) {
+        throw new IllegalArgumentException("filterByItemCode parameter itemCode cannot be empty");
       }
-      return appendSearchCriteria(createItemIdCriteria(Operator.EQUAL, (Object[])itemId));
+      return appendSearchCriteria(createItemCodeCriteria(Operator.EQUAL, (Object[])itemCode));
     }
 
-    public CargoItemRequest<T> withItemId(Operator operator, Object... values){
-       return appendSearchCriteria(createItemIdCriteria(operator, values));
+    public CargoItemRequest<T> withItemCode(Operator operator, Object... values){
+       return appendSearchCriteria(createItemCodeCriteria(operator, values));
     }
 
-    public CargoItemRequest<T> withItemIdIsUnknown(){
-       return withItemId(Operator.IS_NULL);
+    public CargoItemRequest<T> withItemCodeIsUnknown(){
+       return withItemCode(Operator.IS_NULL);
     }
 
-    public CargoItemRequest<T> withItemIdIsKnown(){
-       return withItemId(Operator.IS_NOT_NULL);
+    public CargoItemRequest<T> withItemCodeIsKnown(){
+       return withItemCode(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createItemIdCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CargoItem.ITEM_ID_PROPERTY, operator, values);
+    public SearchCriteria createItemCodeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CargoItem.ITEM_CODE_PROPERTY, operator, values);
     }
 
-    public CargoItemRequest<T> withItemIdGreaterThan(String itemId){
-       return withItemId(Operator.GREATER_THAN, itemId);
+    public CargoItemRequest<T> withItemCodeGreaterThan(String itemCode){
+       return withItemCode(Operator.GREATER_THAN, itemCode);
     }
 
-    public CargoItemRequest<T> withItemIdGreaterThanOrEqualTo(String itemId){
-       return withItemId(Operator.GREATER_THAN_OR_EQUAL, itemId);
+    public CargoItemRequest<T> withItemCodeGreaterThanOrEqualTo(String itemCode){
+       return withItemCode(Operator.GREATER_THAN_OR_EQUAL, itemCode);
     }
 
-    public CargoItemRequest<T> withItemIdLessThan(String itemId){
-       return withItemId(Operator.LESS_THAN, itemId);
+    public CargoItemRequest<T> withItemCodeLessThan(String itemCode){
+       return withItemCode(Operator.LESS_THAN, itemCode);
     }
 
-    public CargoItemRequest<T> withItemIdLessThanOrEqualTo(String itemId){
-       return withItemId(Operator.LESS_THAN_OR_EQUAL, itemId);
+    public CargoItemRequest<T> withItemCodeLessThanOrEqualTo(String itemCode){
+       return withItemCode(Operator.LESS_THAN_OR_EQUAL, itemCode);
     }
 
-    public CargoItemRequest<T> withItemIdBetween(String startOfItemId, String endOfItemId){
-       return withItemId(Operator.BETWEEN, startOfItemId, endOfItemId);
+    public CargoItemRequest<T> withItemCodeBetween(String startOfItemCode, String endOfItemCode){
+       return withItemCode(Operator.BETWEEN, startOfItemCode, endOfItemCode);
     }
-    public CargoItemRequest<T> withItemIdStartingWith(String itemId){
-       return withItemId(Operator.BEGIN_WITH, itemId);
+    public CargoItemRequest<T> withItemCodeStartingWith(String itemCode){
+       return withItemCode(Operator.BEGIN_WITH, itemCode);
     }
-    public CargoItemRequest<T> withItemIdContaining(String itemId){
-       return withItemId(Operator.CONTAIN, itemId);
-    }
-
-    public CargoItemRequest<T> withItemIdEndingWith(String itemId){
-       return withItemId(Operator.END_WITH, itemId);
+    public CargoItemRequest<T> withItemCodeContaining(String itemCode){
+       return withItemCode(Operator.CONTAIN, itemCode);
     }
 
-    public CargoItemRequest<T> withItemIdIs(String itemId){
-       return withItemId(Operator.EQUAL, itemId);
+    public CargoItemRequest<T> withItemCodeEndingWith(String itemCode){
+       return withItemCode(Operator.END_WITH, itemCode);
     }
 
-    public CargoItemRequest<T> withItemIdSoundingLike(String itemId){
-       return withItemId(Operator.SOUNDS_LIKE, itemId);
+    public CargoItemRequest<T> withItemCodeIs(String itemCode){
+       return withItemCode(Operator.EQUAL, itemCode);
+    }
+
+    public CargoItemRequest<T> withItemCodeSoundingLike(String itemCode){
+       return withItemCode(Operator.SOUNDS_LIKE, itemCode);
     }
 
 
-
-    public CargoItemRequest<T> filterByMovingOrder(MovingOrder... movingOrder){
-      if (movingOrder == null || movingOrder.length == 0) {
-        throw new IllegalArgumentException("filterByMovingOrder parameter movingOrder cannot be empty");
-      }
-      return appendSearchCriteria(createMovingOrderCriteria(Operator.EQUAL, (Object[])movingOrder));
-    }
-
-    public CargoItemRequest<T> withMovingOrder(Operator operator, Object... values){
-       return appendSearchCriteria(createMovingOrderCriteria(operator, values));
-    }
-
-    public CargoItemRequest<T> withMovingOrderIsUnknown(){
-       return withMovingOrder(Operator.IS_NULL);
-    }
-
-    public CargoItemRequest<T> withMovingOrderIsKnown(){
-       return withMovingOrder(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createMovingOrderCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CargoItem.MOVING_ORDER_PROPERTY, operator, values);
-    }
-
-    public CargoItemRequest<T> filterByMovingOrder(Long movingOrder){
-      if(movingOrder == null){
-         return this;
-      }
-      return withMovingOrder(Operator.EQUAL, movingOrder);
-    }
-    public CargoItemRequest<T> withMovingOrderMatching(MovingOrderRequest movingOrder){
-       return appendSearchCriteria(new SubQuerySearchCriteria(CargoItem.MOVING_ORDER_PROPERTY, movingOrder, MovingOrder.ID_PROPERTY));
-    }
 
     public CargoItemRequest<T> filterByDescription(String... description){
       if (description == null || description.length == 0) {
@@ -489,69 +431,6 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
 
     public CargoItemRequest<T> withDescriptionSoundingLike(String description){
        return withDescription(Operator.SOUNDS_LIKE, description);
-    }
-
-
-
-    public CargoItemRequest<T> filterByCategory(String... category){
-      if (category == null || category.length == 0) {
-        throw new IllegalArgumentException("filterByCategory parameter category cannot be empty");
-      }
-      return appendSearchCriteria(createCategoryCriteria(Operator.EQUAL, (Object[])category));
-    }
-
-    public CargoItemRequest<T> withCategory(Operator operator, Object... values){
-       return appendSearchCriteria(createCategoryCriteria(operator, values));
-    }
-
-    public CargoItemRequest<T> withCategoryIsUnknown(){
-       return withCategory(Operator.IS_NULL);
-    }
-
-    public CargoItemRequest<T> withCategoryIsKnown(){
-       return withCategory(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createCategoryCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CargoItem.CATEGORY_PROPERTY, operator, values);
-    }
-
-    public CargoItemRequest<T> withCategoryGreaterThan(String category){
-       return withCategory(Operator.GREATER_THAN, category);
-    }
-
-    public CargoItemRequest<T> withCategoryGreaterThanOrEqualTo(String category){
-       return withCategory(Operator.GREATER_THAN_OR_EQUAL, category);
-    }
-
-    public CargoItemRequest<T> withCategoryLessThan(String category){
-       return withCategory(Operator.LESS_THAN, category);
-    }
-
-    public CargoItemRequest<T> withCategoryLessThanOrEqualTo(String category){
-       return withCategory(Operator.LESS_THAN_OR_EQUAL, category);
-    }
-
-    public CargoItemRequest<T> withCategoryBetween(String startOfCategory, String endOfCategory){
-       return withCategory(Operator.BETWEEN, startOfCategory, endOfCategory);
-    }
-    public CargoItemRequest<T> withCategoryStartingWith(String category){
-       return withCategory(Operator.BEGIN_WITH, category);
-    }
-    public CargoItemRequest<T> withCategoryContaining(String category){
-       return withCategory(Operator.CONTAIN, category);
-    }
-
-    public CargoItemRequest<T> withCategoryEndingWith(String category){
-       return withCategory(Operator.END_WITH, category);
-    }
-
-    public CargoItemRequest<T> withCategoryIs(String category){
-       return withCategory(Operator.EQUAL, category);
-    }
-
-    public CargoItemRequest<T> withCategorySoundingLike(String category){
-       return withCategory(Operator.SOUNDS_LIKE, category);
     }
 
 
@@ -646,51 +525,6 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
 
 
 
-    public CargoItemRequest<T> filterByValue(BigDecimal... value){
-      if (value == null || value.length == 0) {
-        throw new IllegalArgumentException("filterByValue parameter value cannot be empty");
-      }
-      return appendSearchCriteria(createValueCriteria(Operator.EQUAL, (Object[])value));
-    }
-
-    public CargoItemRequest<T> withValue(Operator operator, Object... values){
-       return appendSearchCriteria(createValueCriteria(operator, values));
-    }
-
-    public CargoItemRequest<T> withValueIsUnknown(){
-       return withValue(Operator.IS_NULL);
-    }
-
-    public CargoItemRequest<T> withValueIsKnown(){
-       return withValue(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createValueCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CargoItem.VALUE_PROPERTY, operator, values);
-    }
-
-    public CargoItemRequest<T> withValueGreaterThan(BigDecimal value){
-       return withValue(Operator.GREATER_THAN, value);
-    }
-
-    public CargoItemRequest<T> withValueGreaterThanOrEqualTo(BigDecimal value){
-       return withValue(Operator.GREATER_THAN_OR_EQUAL, value);
-    }
-
-    public CargoItemRequest<T> withValueLessThan(BigDecimal value){
-       return withValue(Operator.LESS_THAN, value);
-    }
-
-    public CargoItemRequest<T> withValueLessThanOrEqualTo(BigDecimal value){
-       return withValue(Operator.LESS_THAN_OR_EQUAL, value);
-    }
-
-    public CargoItemRequest<T> withValueBetween(BigDecimal startOfValue, BigDecimal endOfValue){
-       return withValue(Operator.BETWEEN, startOfValue, endOfValue);
-    }
-
-
-
     public CargoItemRequest<T> filterByFragile(Boolean... fragile){
       if (fragile == null || fragile.length == 0) {
         throw new IllegalArgumentException("filterByFragile parameter fragile cannot be empty");
@@ -723,66 +557,164 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
     }
 
 
-    public CargoItemRequest<T> filterByCreateTime(LocalDateTime... createTime){
-      if (createTime == null || createTime.length == 0) {
-        throw new IllegalArgumentException("filterByCreateTime parameter createTime cannot be empty");
+    public CargoItemRequest<T> filterByMovingOrder(MovingOrder... movingOrder){
+      if (movingOrder == null || movingOrder.length == 0) {
+        throw new IllegalArgumentException("filterByMovingOrder parameter movingOrder cannot be empty");
       }
-      return appendSearchCriteria(createCreateTimeCriteria(Operator.EQUAL, (Object[])createTime));
+      return appendSearchCriteria(createMovingOrderCriteria(Operator.EQUAL, (Object[])movingOrder));
     }
 
-    public CargoItemRequest<T> withCreateTime(Operator operator, Object... values){
-       return appendSearchCriteria(createCreateTimeCriteria(operator, values));
+    public CargoItemRequest<T> withMovingOrder(Operator operator, Object... values){
+       return appendSearchCriteria(createMovingOrderCriteria(operator, values));
     }
 
-    public CargoItemRequest<T> withCreateTimeIsUnknown(){
-       return withCreateTime(Operator.IS_NULL);
+    public CargoItemRequest<T> withMovingOrderIsUnknown(){
+       return withMovingOrder(Operator.IS_NULL);
     }
 
-    public CargoItemRequest<T> withCreateTimeIsKnown(){
-       return withCreateTime(Operator.IS_NOT_NULL);
+    public CargoItemRequest<T> withMovingOrderIsKnown(){
+       return withMovingOrder(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCreateTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CargoItem.CREATE_TIME_PROPERTY, operator, values);
+    public SearchCriteria createMovingOrderCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CargoItem.MOVING_ORDER_PROPERTY, operator, values);
     }
 
-    public CargoItemRequest<T> withCreateTimeGreaterThan(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public CargoItemRequest<T> filterByMovingOrder(Long movingOrder){
+      if(movingOrder == null){
+         return this;
+      }
+      return withMovingOrder(Operator.EQUAL, movingOrder);
+    }
+    public CargoItemRequest<T> withMovingOrderMatching(MovingOrderRequest movingOrder){
+       return appendSearchCriteria(new SubQuerySearchCriteria(CargoItem.MOVING_ORDER_PROPERTY, movingOrder, MovingOrder.ID_PROPERTY));
     }
 
-    public CargoItemRequest<T> withCreateTimeGreaterThanOrEqualTo(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN_OR_EQUAL, createTime);
+    public CargoItemRequest<T> filterByCreatedTime(LocalDateTime... createdTime){
+      if (createdTime == null || createdTime.length == 0) {
+        throw new IllegalArgumentException("filterByCreatedTime parameter createdTime cannot be empty");
+      }
+      return appendSearchCriteria(createCreatedTimeCriteria(Operator.EQUAL, (Object[])createdTime));
     }
 
-    public CargoItemRequest<T> withCreateTimeLessThan(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
+    public CargoItemRequest<T> withCreatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createCreatedTimeCriteria(operator, values));
     }
 
-    public CargoItemRequest<T> withCreateTimeLessThanOrEqualTo(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN_OR_EQUAL, createTime);
+    public CargoItemRequest<T> withCreatedTimeIsUnknown(){
+       return withCreatedTime(Operator.IS_NULL);
     }
 
-    public CargoItemRequest<T> withCreateTimeBetween(LocalDateTime startOfCreateTime, LocalDateTime endOfCreateTime){
-       return withCreateTime(Operator.BETWEEN, startOfCreateTime, endOfCreateTime);
-    }
-    public CargoItemRequest<T> withCreateTimeBefore(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
+    public CargoItemRequest<T> withCreatedTimeIsKnown(){
+       return withCreatedTime(Operator.IS_NOT_NULL);
     }
 
-    public CargoItemRequest<T> withCreateTimeBefore(Date createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
+    public SearchCriteria createCreatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CargoItem.CREATED_TIME_PROPERTY, operator, values);
     }
 
-    public CargoItemRequest<T> withCreateTimeAfter(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public CargoItemRequest<T> withCreatedTimeGreaterThan(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
     }
 
-    public CargoItemRequest<T> withCreateTimeAfter(Date createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public CargoItemRequest<T> withCreatedTimeGreaterThanOrEqualTo(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN_OR_EQUAL, createdTime);
     }
 
-    public CargoItemRequest<T> withCreateTimeBetween(Date startOfCreateTime, Date endOfCreateTime){
-       return withCreateTime(Operator.BETWEEN, startOfCreateTime, endOfCreateTime);
+    public CargoItemRequest<T> withCreatedTimeLessThan(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
+    }
+
+    public CargoItemRequest<T> withCreatedTimeLessThanOrEqualTo(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN_OR_EQUAL, createdTime);
+    }
+
+    public CargoItemRequest<T> withCreatedTimeBetween(LocalDateTime startOfCreatedTime, LocalDateTime endOfCreatedTime){
+       return withCreatedTime(Operator.BETWEEN, startOfCreatedTime, endOfCreatedTime);
+    }
+    public CargoItemRequest<T> withCreatedTimeBefore(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
+    }
+
+    public CargoItemRequest<T> withCreatedTimeBefore(Date createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
+    }
+
+    public CargoItemRequest<T> withCreatedTimeAfter(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
+    }
+
+    public CargoItemRequest<T> withCreatedTimeAfter(Date createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
+    }
+
+    public CargoItemRequest<T> withCreatedTimeBetween(Date startOfCreatedTime, Date endOfCreatedTime){
+       return withCreatedTime(Operator.BETWEEN, startOfCreatedTime, endOfCreatedTime);
+    }
+
+
+
+
+    public CargoItemRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
+      if (updatedTime == null || updatedTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
+      }
+      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
+    }
+
+    public CargoItemRequest<T> withUpdatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
+    }
+
+    public CargoItemRequest<T> withUpdatedTimeIsUnknown(){
+       return withUpdatedTime(Operator.IS_NULL);
+    }
+
+    public CargoItemRequest<T> withUpdatedTimeIsKnown(){
+       return withUpdatedTime(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CargoItem.UPDATED_TIME_PROPERTY, operator, values);
+    }
+
+    public CargoItemRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public CargoItemRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
+    }
+
+    public CargoItemRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    }
+
+    public CargoItemRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
+    }
+
+    public CargoItemRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
+    }
+    public CargoItemRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    }
+
+    public CargoItemRequest<T> withUpdatedTimeBefore(Date updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    }
+
+    public CargoItemRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public CargoItemRequest<T> withUpdatedTimeAfter(Date updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public CargoItemRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
 
 
@@ -968,70 +900,6 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
         super.samplePopulationVariance(retName, CargoItem.VOLUME_M3_PROPERTY);
         return this;
     }
-    public CargoItemRequest minValue(){
-        return minValueAs(prefix("minOf",CargoItem.VALUE_PROPERTY));
-    }
-
-    public CargoItemRequest minValueAs(String retName){
-        super.min(retName, CargoItem.VALUE_PROPERTY);
-        return this;
-    }
-    public CargoItemRequest maxValue(){
-        return maxValueAs(prefix("maxOf",CargoItem.VALUE_PROPERTY));
-    }
-
-    public CargoItemRequest maxValueAs(String retName){
-        super.max(retName, CargoItem.VALUE_PROPERTY);
-        return this;
-    }
-    public CargoItemRequest sumValue(){
-        return sumValueAs(prefix("sumOf",CargoItem.VALUE_PROPERTY));
-    }
-
-    public CargoItemRequest sumValueAs(String retName){
-        super.sum(retName, CargoItem.VALUE_PROPERTY);
-        return this;
-    }
-    public CargoItemRequest avgValue(){
-        return avgValueAs(prefix("avgOf",CargoItem.VALUE_PROPERTY));
-    }
-
-    public CargoItemRequest avgValueAs(String retName){
-        super.avg(retName, CargoItem.VALUE_PROPERTY);
-        return this;
-    }
-    public CargoItemRequest standardDeviationValue(){
-        return standardDeviationValueAs(prefix("standardDeviationOf",CargoItem.VALUE_PROPERTY));
-    }
-
-    public CargoItemRequest standardDeviationValueAs(String retName){
-        super.standardDeviation(retName, CargoItem.VALUE_PROPERTY);
-        return this;
-    }
-    public CargoItemRequest squareRootOfPopulationStandardDeviationValue(){
-        return squareRootOfPopulationStandardDeviationValueAs(prefix("squareRootOfPopulationStandardDeviationOf",CargoItem.VALUE_PROPERTY));
-    }
-
-    public CargoItemRequest squareRootOfPopulationStandardDeviationValueAs(String retName){
-        super.squareRootOfPopulationStandardDeviation(retName, CargoItem.VALUE_PROPERTY);
-        return this;
-    }
-    public CargoItemRequest sampleVarianceValue(){
-        return sampleVarianceValueAs(prefix("sampleVarianceOf",CargoItem.VALUE_PROPERTY));
-    }
-
-    public CargoItemRequest sampleVarianceValueAs(String retName){
-        super.sampleVariance(retName, CargoItem.VALUE_PROPERTY);
-        return this;
-    }
-    public CargoItemRequest samplePopulationVarianceValue(){
-        return samplePopulationVarianceValueAs(prefix("samplePopulationVarianceOf",CargoItem.VALUE_PROPERTY));
-    }
-
-    public CargoItemRequest samplePopulationVarianceValueAs(String retName){
-        super.samplePopulationVariance(retName, CargoItem.VALUE_PROPERTY);
-        return this;
-    }
     public CargoItemRequest<T> groupByMovingOrderWithDetails(){
        return groupByMovingOrderWithDetails(Q.movingOrders().unlimited());
     }
@@ -1040,11 +908,6 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
        aggregate(CargoItem.MOVING_ORDER_PROPERTY, subRequest);
        return this;
     }
-
-
-
-
-
 
 
 
@@ -1065,36 +928,18 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
        return this;
     }
 
-    public CargoItemRequest<T> groupByItemId(){
-       groupBy(CargoItem.ITEM_ID_PROPERTY);
+    public CargoItemRequest<T> groupByItemCode(){
+       groupBy(CargoItem.ITEM_CODE_PROPERTY);
        return this;
     }
 
-    public CargoItemRequest<T> groupByItemIdAs(String retName){
-       groupBy(retName, CargoItem.ITEM_ID_PROPERTY);
+    public CargoItemRequest<T> groupByItemCodeAs(String retName){
+       groupBy(retName, CargoItem.ITEM_CODE_PROPERTY);
        return this;
     }
 
-    public CargoItemRequest<T> groupByItemIdWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CargoItem.ITEM_ID_PROPERTY, function);
-       return this;
-    }
-    public CargoItemRequest<T> groupByMovingOrderWith(MovingOrderRequest subRequest){
-       groupBy(CargoItem.MOVING_ORDER_PROPERTY, subRequest);
-       return this;
-    }
-    public CargoItemRequest<T> groupByMovingOrder(){
-       groupBy(CargoItem.MOVING_ORDER_PROPERTY);
-       return this;
-    }
-
-    public CargoItemRequest<T> groupByMovingOrderAs(String retName){
-       groupBy(retName, CargoItem.MOVING_ORDER_PROPERTY);
-       return this;
-    }
-
-    public CargoItemRequest<T> groupByMovingOrderWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CargoItem.MOVING_ORDER_PROPERTY, function);
+    public CargoItemRequest<T> groupByItemCodeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CargoItem.ITEM_CODE_PROPERTY, function);
        return this;
     }
 
@@ -1110,21 +955,6 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
 
     public CargoItemRequest<T> groupByDescriptionWithFunction(String retName, AggrFunction function){
        groupBy(retName, CargoItem.DESCRIPTION_PROPERTY, function);
-       return this;
-    }
-
-    public CargoItemRequest<T> groupByCategory(){
-       groupBy(CargoItem.CATEGORY_PROPERTY);
-       return this;
-    }
-
-    public CargoItemRequest<T> groupByCategoryAs(String retName){
-       groupBy(retName, CargoItem.CATEGORY_PROPERTY);
-       return this;
-    }
-
-    public CargoItemRequest<T> groupByCategoryWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CargoItem.CATEGORY_PROPERTY, function);
        return this;
     }
 
@@ -1158,21 +988,6 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
        return this;
     }
 
-    public CargoItemRequest<T> groupByValue(){
-       groupBy(CargoItem.VALUE_PROPERTY);
-       return this;
-    }
-
-    public CargoItemRequest<T> groupByValueAs(String retName){
-       groupBy(retName, CargoItem.VALUE_PROPERTY);
-       return this;
-    }
-
-    public CargoItemRequest<T> groupByValueWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CargoItem.VALUE_PROPERTY, function);
-       return this;
-    }
-
     public CargoItemRequest<T> groupByFragile(){
        groupBy(CargoItem.FRAGILE_PROPERTY);
        return this;
@@ -1187,19 +1002,52 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
        groupBy(retName, CargoItem.FRAGILE_PROPERTY, function);
        return this;
     }
-
-    public CargoItemRequest<T> groupByCreateTime(){
-       groupBy(CargoItem.CREATE_TIME_PROPERTY);
+    public CargoItemRequest<T> groupByMovingOrderWith(MovingOrderRequest subRequest){
+       groupBy(CargoItem.MOVING_ORDER_PROPERTY, subRequest);
+       return this;
+    }
+    public CargoItemRequest<T> groupByMovingOrder(){
+       groupBy(CargoItem.MOVING_ORDER_PROPERTY);
        return this;
     }
 
-    public CargoItemRequest<T> groupByCreateTimeAs(String retName){
-       groupBy(retName, CargoItem.CREATE_TIME_PROPERTY);
+    public CargoItemRequest<T> groupByMovingOrderAs(String retName){
+       groupBy(retName, CargoItem.MOVING_ORDER_PROPERTY);
        return this;
     }
 
-    public CargoItemRequest<T> groupByCreateTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CargoItem.CREATE_TIME_PROPERTY, function);
+    public CargoItemRequest<T> groupByMovingOrderWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CargoItem.MOVING_ORDER_PROPERTY, function);
+       return this;
+    }
+
+    public CargoItemRequest<T> groupByCreatedTime(){
+       groupBy(CargoItem.CREATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public CargoItemRequest<T> groupByCreatedTimeAs(String retName){
+       groupBy(retName, CargoItem.CREATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public CargoItemRequest<T> groupByCreatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CargoItem.CREATED_TIME_PROPERTY, function);
+       return this;
+    }
+
+    public CargoItemRequest<T> groupByUpdatedTime(){
+       groupBy(CargoItem.UPDATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public CargoItemRequest<T> groupByUpdatedTimeAs(String retName){
+       groupBy(retName, CargoItem.UPDATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public CargoItemRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CargoItem.UPDATED_TIME_PROPERTY, function);
        return this;
     }
 
@@ -1230,34 +1078,24 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
        return this;
     }
 
-    public CargoItemRequest<T> orderByItemIdAscending(){
-       addOrderByAscending(CargoItem.ITEM_ID_PROPERTY);
+    public CargoItemRequest<T> orderByItemCodeAscending(){
+       addOrderByAscending(CargoItem.ITEM_CODE_PROPERTY);
        return this;
     }
 
-    public CargoItemRequest<T> orderByItemIdDescending(){
-       addOrderByDescending(CargoItem.ITEM_ID_PROPERTY);
+    public CargoItemRequest<T> orderByItemCodeDescending(){
+       addOrderByDescending(CargoItem.ITEM_CODE_PROPERTY);
        return this;
     }
-    public CargoItemRequest<T> orderByItemIdAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(CargoItem.ITEM_ID_PROPERTY);
-       return this;
-    }
-
-    public CargoItemRequest<T> orderByItemIdDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(CargoItem.ITEM_ID_PROPERTY);
-       return this;
-    }
-    public CargoItemRequest<T> orderByMovingOrderAscending(){
-       addOrderByAscending(CargoItem.MOVING_ORDER_PROPERTY);
+    public CargoItemRequest<T> orderByItemCodeAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(CargoItem.ITEM_CODE_PROPERTY);
        return this;
     }
 
-    public CargoItemRequest<T> orderByMovingOrderDescending(){
-       addOrderByDescending(CargoItem.MOVING_ORDER_PROPERTY);
+    public CargoItemRequest<T> orderByItemCodeDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(CargoItem.ITEM_CODE_PROPERTY);
        return this;
     }
-
     public CargoItemRequest<T> orderByDescriptionAscending(){
        addOrderByAscending(CargoItem.DESCRIPTION_PROPERTY);
        return this;
@@ -1274,24 +1112,6 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
 
     public CargoItemRequest<T> orderByDescriptionDescendingUsingGBK(){
        addOrderByDescendingUsingGBK(CargoItem.DESCRIPTION_PROPERTY);
-       return this;
-    }
-    public CargoItemRequest<T> orderByCategoryAscending(){
-       addOrderByAscending(CargoItem.CATEGORY_PROPERTY);
-       return this;
-    }
-
-    public CargoItemRequest<T> orderByCategoryDescending(){
-       addOrderByDescending(CargoItem.CATEGORY_PROPERTY);
-       return this;
-    }
-    public CargoItemRequest<T> orderByCategoryAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(CargoItem.CATEGORY_PROPERTY);
-       return this;
-    }
-
-    public CargoItemRequest<T> orderByCategoryDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(CargoItem.CATEGORY_PROPERTY);
        return this;
     }
     public CargoItemRequest<T> orderByWeightKgAscending(){
@@ -1314,16 +1134,6 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
        return this;
     }
 
-    public CargoItemRequest<T> orderByValueAscending(){
-       addOrderByAscending(CargoItem.VALUE_PROPERTY);
-       return this;
-    }
-
-    public CargoItemRequest<T> orderByValueDescending(){
-       addOrderByDescending(CargoItem.VALUE_PROPERTY);
-       return this;
-    }
-
     public CargoItemRequest<T> orderByFragileAscending(){
        addOrderByAscending(CargoItem.FRAGILE_PROPERTY);
        return this;
@@ -1334,13 +1144,33 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
        return this;
     }
 
-    public CargoItemRequest<T> orderByCreateTimeAscending(){
-       addOrderByAscending(CargoItem.CREATE_TIME_PROPERTY);
+    public CargoItemRequest<T> orderByMovingOrderAscending(){
+       addOrderByAscending(CargoItem.MOVING_ORDER_PROPERTY);
        return this;
     }
 
-    public CargoItemRequest<T> orderByCreateTimeDescending(){
-       addOrderByDescending(CargoItem.CREATE_TIME_PROPERTY);
+    public CargoItemRequest<T> orderByMovingOrderDescending(){
+       addOrderByDescending(CargoItem.MOVING_ORDER_PROPERTY);
+       return this;
+    }
+
+    public CargoItemRequest<T> orderByCreatedTimeAscending(){
+       addOrderByAscending(CargoItem.CREATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public CargoItemRequest<T> orderByCreatedTimeDescending(){
+       addOrderByDescending(CargoItem.CREATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public CargoItemRequest<T> orderByUpdatedTimeAscending(){
+       addOrderByAscending(CargoItem.UPDATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public CargoItemRequest<T> orderByUpdatedTimeDescending(){
+       addOrderByDescending(CargoItem.UPDATED_TIME_PROPERTY);
        return this;
     }
 
@@ -1361,11 +1191,6 @@ public class CargoItemRequest<T extends CargoItem> extends BaseRequest<T> {
            .groupByMovingOrderWith(movingOrder);
        return movingOrder;
     }
-
-
-
-
-
 
 
 

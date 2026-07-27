@@ -21,24 +21,24 @@ public class ContainerUnit extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "ContainerUnit";
 
     public static final String STORAGE_CONTAINER_PROPERTY = "storageContainer";
-    public static final String UNIT_TYPE_PROPERTY = "unitType";
-    public static final String QUANTITY_PROPERTY = "quantity";
+    public static final String UNIT_NUMBER_PROPERTY = "unitNumber";
+    public static final String ITEM_COUNT_PROPERTY = "itemCount";
     public static final String CREATE_TIME_PROPERTY = "createTime";
     public static final String UPDATE_TIME_PROPERTY = "updateTime";
     private StorageContainer storageContainer;
-    private String unitType;
-    private Integer quantity;
+    private String unitNumber;
+    private Integer itemCount;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 
     public StorageContainer getStorageContainer(){
         return this.storageContainer;
     }
-    public String getUnitType(){
-        return this.unitType;
+    public String getUnitNumber(){
+        return this.unitNumber;
     }
-    public Integer getQuantity(){
-        return this.quantity;
+    public Integer getItemCount(){
+        return this.itemCount;
     }
     public LocalDateTime getCreateTime(){
         return this.createTime;
@@ -54,21 +54,21 @@ public class ContainerUnit extends BaseEntity implements RemoteInput {
         this.storageContainer = storageContainer;
         return this;
     }
-    public ContainerUnit updateUnitType(String unitType){
-        unitType = (unitType == null ? null : unitType.trim());
-        if(Objects.equals(this.unitType, unitType)){
+    public ContainerUnit updateUnitNumber(String unitNumber){
+        unitNumber = (unitNumber == null ? null : unitNumber.trim());
+        if(Objects.equals(this.unitNumber, unitNumber)){
             return this;
         }
-        handleUpdate(UNIT_TYPE_PROPERTY, getUnitType(), unitType);
-        this.unitType = unitType;
+        handleUpdate(UNIT_NUMBER_PROPERTY, getUnitNumber(), unitNumber);
+        this.unitNumber = unitNumber;
         return this;
     }
-    public ContainerUnit updateQuantity(Integer quantity){
-        if(Objects.equals(this.quantity, quantity)){
+    public ContainerUnit updateItemCount(Integer itemCount){
+        if(Objects.equals(this.itemCount, itemCount)){
             return this;
         }
-        handleUpdate(QUANTITY_PROPERTY, getQuantity(), quantity);
-        this.quantity = quantity;
+        handleUpdate(ITEM_COUNT_PROPERTY, getItemCount(), itemCount);
+        this.itemCount = itemCount;
         return this;
     }
     public ContainerUnit updateCreateTime(LocalDateTime createTime){
@@ -117,9 +117,9 @@ public class ContainerUnit extends BaseEntity implements RemoteInput {
         switch (property) {
             case "storageContainer": this.storageContainer = (StorageContainer) value; break;
 
-            case "unitType": this.unitType = (value == null ? null : ((String)value).trim()); break;
+            case "unitNumber": this.unitNumber = (value == null ? null : ((String)value).trim()); break;
 
-            case "quantity": this.quantity = (Integer) value; break;
+            case "itemCount": this.itemCount = (Integer) value; break;
 
             case "createTime": this.createTime = (LocalDateTime) value; break;
 
@@ -134,8 +134,8 @@ public class ContainerUnit extends BaseEntity implements RemoteInput {
     public Object __internalGet(String property) {
         switch (property) {
             case "storageContainer": return this.storageContainer;
-            case "unitType": return this.unitType;
-            case "quantity": return this.quantity;
+            case "unitNumber": return this.unitNumber;
+            case "itemCount": return this.itemCount;
             case "createTime": return this.createTime;
             case "updateTime": return this.updateTime;
             default: return super.__internalGet(property);

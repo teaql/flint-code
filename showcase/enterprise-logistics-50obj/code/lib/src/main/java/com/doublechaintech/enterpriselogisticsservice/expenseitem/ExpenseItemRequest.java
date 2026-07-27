@@ -1,17 +1,13 @@
 package com.doublechaintech.enterpriselogisticsservice.expenseitem;
 
-import com.doublechaintech.enterpriselogisticsservice.Q;
-import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember;
-import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMemberRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
 import io.teaql.core.SearchCriteria;
-import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Date;
 
 public class ExpenseItemRequest<T extends ExpenseItem> extends BaseRequest<T> {
@@ -85,7 +81,7 @@ public class ExpenseItemRequest<T extends ExpenseItem> extends BaseRequest<T> {
 
     public ExpenseItemRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectCategory().selectCreatedAt().selectUpdatedAt().selectStaffMemberIdOnly().selectVersion();
+        return selectId().selectName().selectDescription().selectAmount().selectCurrency().selectExpenseType().selectExpenseDate().selectEmployee().selectStatus().selectVersion();
     }
 
     public ExpenseItemRequest<T> selectSelfFields(){
@@ -94,12 +90,12 @@ public class ExpenseItemRequest<T extends ExpenseItem> extends BaseRequest<T> {
 
     public ExpenseItemRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectCategory().selectCreatedAt().selectUpdatedAt().selectStaffMember().selectVersion();
+        return selectId().selectName().selectDescription().selectAmount().selectCurrency().selectExpenseType().selectExpenseDate().selectEmployee().selectStatus().selectVersion();
     }
 
     public ExpenseItemRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectCategory().selectCreatedAt().selectUpdatedAt().selectStaffMember().selectVersion();
+        return selectId().selectName().selectDescription().selectAmount().selectCurrency().selectExpenseType().selectExpenseDate().selectEmployee().selectStatus().selectVersion();
     }
 
 
@@ -137,21 +133,21 @@ public class ExpenseItemRequest<T extends ExpenseItem> extends BaseRequest<T> {
        unselectProperty(ExpenseItem.NAME_PROPERTY);
        return this;
     }
-    public ExpenseItemRequest<T> selectCode(){
-       selectProperty(ExpenseItem.CODE_PROPERTY);
+    public ExpenseItemRequest<T> selectDescription(){
+       selectProperty(ExpenseItem.DESCRIPTION_PROPERTY);
        return this;
     }
 
     /**
-     * fill the code with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  code) to fetch code property.
+     * fill the description with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  description) to fetch description property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public ExpenseItemRequest<T> unselectCode(){
-       unselectProperty(ExpenseItem.CODE_PROPERTY);
+    public ExpenseItemRequest<T> unselectDescription(){
+       unselectProperty(ExpenseItem.DESCRIPTION_PROPERTY);
        return this;
     }
     public ExpenseItemRequest<T> selectAmount(){
@@ -196,74 +192,72 @@ public class ExpenseItemRequest<T extends ExpenseItem> extends BaseRequest<T> {
        unselectProperty(ExpenseItem.CURRENCY_PROPERTY);
        return this;
     }
-    public ExpenseItemRequest<T> selectCategory(){
-       selectProperty(ExpenseItem.CATEGORY_PROPERTY);
+    public ExpenseItemRequest<T> selectExpenseType(){
+       selectProperty(ExpenseItem.EXPENSE_TYPE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the category with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  category) to fetch category property.
+     * fill the expenseType with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  expenseType) to fetch expenseType property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public ExpenseItemRequest<T> unselectCategory(){
-       unselectProperty(ExpenseItem.CATEGORY_PROPERTY);
+    public ExpenseItemRequest<T> unselectExpenseType(){
+       unselectProperty(ExpenseItem.EXPENSE_TYPE_PROPERTY);
        return this;
     }
-    public ExpenseItemRequest<T> selectCreatedAt(){
-       selectProperty(ExpenseItem.CREATED_AT_PROPERTY);
+    public ExpenseItemRequest<T> selectExpenseDate(){
+       selectProperty(ExpenseItem.EXPENSE_DATE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the createdAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdAt) to fetch createdAt property.
+     * fill the expenseDate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  expenseDate) to fetch expenseDate property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public ExpenseItemRequest<T> unselectCreatedAt(){
-       unselectProperty(ExpenseItem.CREATED_AT_PROPERTY);
+    public ExpenseItemRequest<T> unselectExpenseDate(){
+       unselectProperty(ExpenseItem.EXPENSE_DATE_PROPERTY);
        return this;
     }
-    public ExpenseItemRequest<T> selectUpdatedAt(){
-       selectProperty(ExpenseItem.UPDATED_AT_PROPERTY);
+    public ExpenseItemRequest<T> selectEmployee(){
+       selectProperty(ExpenseItem.EMPLOYEE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the updatedAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedAt) to fetch updatedAt property.
+     * fill the employee with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  employee) to fetch employee property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public ExpenseItemRequest<T> unselectUpdatedAt(){
-       unselectProperty(ExpenseItem.UPDATED_AT_PROPERTY);
+    public ExpenseItemRequest<T> unselectEmployee(){
+       unselectProperty(ExpenseItem.EMPLOYEE_PROPERTY);
        return this;
     }
-    public ExpenseItemRequest<T> selectStaffMemberIdOnly(){
-       selectProperty(ExpenseItem.STAFF_MEMBER_PROPERTY);
-       return this;
-    }
-
-    public ExpenseItemRequest<T> selectStaffMember(){
-        return selectStaffMemberWith(Q.staffMembers().unlimited().selectSelf());
-    }
-
-    public ExpenseItemRequest<T> selectStaffMemberWith(StaffMemberRequest staffMember){
-       selectProperty(ExpenseItem.STAFF_MEMBER_PROPERTY);
-       enhanceRelation(ExpenseItem.STAFF_MEMBER_PROPERTY, staffMember);
+    public ExpenseItemRequest<T> selectStatus(){
+       selectProperty(ExpenseItem.STATUS_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> unselectStaffMember(){
-       unselectProperty(ExpenseItem.STAFF_MEMBER_PROPERTY);
+    /**
+     * fill the status with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  status) to fetch status property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public ExpenseItemRequest<T> unselectStatus(){
+       unselectProperty(ExpenseItem.STATUS_PROPERTY);
        return this;
     }
     public ExpenseItemRequest<T> selectVersion(){
@@ -364,65 +358,65 @@ public class ExpenseItemRequest<T extends ExpenseItem> extends BaseRequest<T> {
 
 
 
-    public ExpenseItemRequest<T> filterByCode(String... code){
-      if (code == null || code.length == 0) {
-        throw new IllegalArgumentException("filterByCode parameter code cannot be empty");
+    public ExpenseItemRequest<T> filterByDescription(String... description){
+      if (description == null || description.length == 0) {
+        throw new IllegalArgumentException("filterByDescription parameter description cannot be empty");
       }
-      return appendSearchCriteria(createCodeCriteria(Operator.EQUAL, (Object[])code));
+      return appendSearchCriteria(createDescriptionCriteria(Operator.EQUAL, (Object[])description));
     }
 
-    public ExpenseItemRequest<T> withCode(Operator operator, Object... values){
-       return appendSearchCriteria(createCodeCriteria(operator, values));
+    public ExpenseItemRequest<T> withDescription(Operator operator, Object... values){
+       return appendSearchCriteria(createDescriptionCriteria(operator, values));
     }
 
-    public ExpenseItemRequest<T> withCodeIsUnknown(){
-       return withCode(Operator.IS_NULL);
+    public ExpenseItemRequest<T> withDescriptionIsUnknown(){
+       return withDescription(Operator.IS_NULL);
     }
 
-    public ExpenseItemRequest<T> withCodeIsKnown(){
-       return withCode(Operator.IS_NOT_NULL);
+    public ExpenseItemRequest<T> withDescriptionIsKnown(){
+       return withDescription(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCodeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(ExpenseItem.CODE_PROPERTY, operator, values);
+    public SearchCriteria createDescriptionCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ExpenseItem.DESCRIPTION_PROPERTY, operator, values);
     }
 
-    public ExpenseItemRequest<T> withCodeGreaterThan(String code){
-       return withCode(Operator.GREATER_THAN, code);
+    public ExpenseItemRequest<T> withDescriptionGreaterThan(String description){
+       return withDescription(Operator.GREATER_THAN, description);
     }
 
-    public ExpenseItemRequest<T> withCodeGreaterThanOrEqualTo(String code){
-       return withCode(Operator.GREATER_THAN_OR_EQUAL, code);
+    public ExpenseItemRequest<T> withDescriptionGreaterThanOrEqualTo(String description){
+       return withDescription(Operator.GREATER_THAN_OR_EQUAL, description);
     }
 
-    public ExpenseItemRequest<T> withCodeLessThan(String code){
-       return withCode(Operator.LESS_THAN, code);
+    public ExpenseItemRequest<T> withDescriptionLessThan(String description){
+       return withDescription(Operator.LESS_THAN, description);
     }
 
-    public ExpenseItemRequest<T> withCodeLessThanOrEqualTo(String code){
-       return withCode(Operator.LESS_THAN_OR_EQUAL, code);
+    public ExpenseItemRequest<T> withDescriptionLessThanOrEqualTo(String description){
+       return withDescription(Operator.LESS_THAN_OR_EQUAL, description);
     }
 
-    public ExpenseItemRequest<T> withCodeBetween(String startOfCode, String endOfCode){
-       return withCode(Operator.BETWEEN, startOfCode, endOfCode);
+    public ExpenseItemRequest<T> withDescriptionBetween(String startOfDescription, String endOfDescription){
+       return withDescription(Operator.BETWEEN, startOfDescription, endOfDescription);
     }
-    public ExpenseItemRequest<T> withCodeStartingWith(String code){
-       return withCode(Operator.BEGIN_WITH, code);
+    public ExpenseItemRequest<T> withDescriptionStartingWith(String description){
+       return withDescription(Operator.BEGIN_WITH, description);
     }
-    public ExpenseItemRequest<T> withCodeContaining(String code){
-       return withCode(Operator.CONTAIN, code);
-    }
-
-    public ExpenseItemRequest<T> withCodeEndingWith(String code){
-       return withCode(Operator.END_WITH, code);
+    public ExpenseItemRequest<T> withDescriptionContaining(String description){
+       return withDescription(Operator.CONTAIN, description);
     }
 
-    public ExpenseItemRequest<T> withCodeIs(String code){
-       return withCode(Operator.EQUAL, code);
+    public ExpenseItemRequest<T> withDescriptionEndingWith(String description){
+       return withDescription(Operator.END_WITH, description);
     }
 
-    public ExpenseItemRequest<T> withCodeSoundingLike(String code){
-       return withCode(Operator.SOUNDS_LIKE, code);
+    public ExpenseItemRequest<T> withDescriptionIs(String description){
+       return withDescription(Operator.EQUAL, description);
+    }
+
+    public ExpenseItemRequest<T> withDescriptionSoundingLike(String description){
+       return withDescription(Operator.SOUNDS_LIKE, description);
     }
 
 
@@ -535,231 +529,259 @@ public class ExpenseItemRequest<T extends ExpenseItem> extends BaseRequest<T> {
 
 
 
-    public ExpenseItemRequest<T> filterByCategory(String... category){
-      if (category == null || category.length == 0) {
-        throw new IllegalArgumentException("filterByCategory parameter category cannot be empty");
+    public ExpenseItemRequest<T> filterByExpenseType(String... expenseType){
+      if (expenseType == null || expenseType.length == 0) {
+        throw new IllegalArgumentException("filterByExpenseType parameter expenseType cannot be empty");
       }
-      return appendSearchCriteria(createCategoryCriteria(Operator.EQUAL, (Object[])category));
+      return appendSearchCriteria(createExpenseTypeCriteria(Operator.EQUAL, (Object[])expenseType));
     }
 
-    public ExpenseItemRequest<T> withCategory(Operator operator, Object... values){
-       return appendSearchCriteria(createCategoryCriteria(operator, values));
+    public ExpenseItemRequest<T> withExpenseType(Operator operator, Object... values){
+       return appendSearchCriteria(createExpenseTypeCriteria(operator, values));
     }
 
-    public ExpenseItemRequest<T> withCategoryIsUnknown(){
-       return withCategory(Operator.IS_NULL);
+    public ExpenseItemRequest<T> withExpenseTypeIsUnknown(){
+       return withExpenseType(Operator.IS_NULL);
     }
 
-    public ExpenseItemRequest<T> withCategoryIsKnown(){
-       return withCategory(Operator.IS_NOT_NULL);
+    public ExpenseItemRequest<T> withExpenseTypeIsKnown(){
+       return withExpenseType(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCategoryCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(ExpenseItem.CATEGORY_PROPERTY, operator, values);
+    public SearchCriteria createExpenseTypeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ExpenseItem.EXPENSE_TYPE_PROPERTY, operator, values);
     }
 
-    public ExpenseItemRequest<T> withCategoryGreaterThan(String category){
-       return withCategory(Operator.GREATER_THAN, category);
+    public ExpenseItemRequest<T> withExpenseTypeGreaterThan(String expenseType){
+       return withExpenseType(Operator.GREATER_THAN, expenseType);
     }
 
-    public ExpenseItemRequest<T> withCategoryGreaterThanOrEqualTo(String category){
-       return withCategory(Operator.GREATER_THAN_OR_EQUAL, category);
+    public ExpenseItemRequest<T> withExpenseTypeGreaterThanOrEqualTo(String expenseType){
+       return withExpenseType(Operator.GREATER_THAN_OR_EQUAL, expenseType);
     }
 
-    public ExpenseItemRequest<T> withCategoryLessThan(String category){
-       return withCategory(Operator.LESS_THAN, category);
+    public ExpenseItemRequest<T> withExpenseTypeLessThan(String expenseType){
+       return withExpenseType(Operator.LESS_THAN, expenseType);
     }
 
-    public ExpenseItemRequest<T> withCategoryLessThanOrEqualTo(String category){
-       return withCategory(Operator.LESS_THAN_OR_EQUAL, category);
+    public ExpenseItemRequest<T> withExpenseTypeLessThanOrEqualTo(String expenseType){
+       return withExpenseType(Operator.LESS_THAN_OR_EQUAL, expenseType);
     }
 
-    public ExpenseItemRequest<T> withCategoryBetween(String startOfCategory, String endOfCategory){
-       return withCategory(Operator.BETWEEN, startOfCategory, endOfCategory);
+    public ExpenseItemRequest<T> withExpenseTypeBetween(String startOfExpenseType, String endOfExpenseType){
+       return withExpenseType(Operator.BETWEEN, startOfExpenseType, endOfExpenseType);
     }
-    public ExpenseItemRequest<T> withCategoryStartingWith(String category){
-       return withCategory(Operator.BEGIN_WITH, category);
+    public ExpenseItemRequest<T> withExpenseTypeStartingWith(String expenseType){
+       return withExpenseType(Operator.BEGIN_WITH, expenseType);
     }
-    public ExpenseItemRequest<T> withCategoryContaining(String category){
-       return withCategory(Operator.CONTAIN, category);
-    }
-
-    public ExpenseItemRequest<T> withCategoryEndingWith(String category){
-       return withCategory(Operator.END_WITH, category);
+    public ExpenseItemRequest<T> withExpenseTypeContaining(String expenseType){
+       return withExpenseType(Operator.CONTAIN, expenseType);
     }
 
-    public ExpenseItemRequest<T> withCategoryIs(String category){
-       return withCategory(Operator.EQUAL, category);
+    public ExpenseItemRequest<T> withExpenseTypeEndingWith(String expenseType){
+       return withExpenseType(Operator.END_WITH, expenseType);
     }
 
-    public ExpenseItemRequest<T> withCategorySoundingLike(String category){
-       return withCategory(Operator.SOUNDS_LIKE, category);
+    public ExpenseItemRequest<T> withExpenseTypeIs(String expenseType){
+       return withExpenseType(Operator.EQUAL, expenseType);
+    }
+
+    public ExpenseItemRequest<T> withExpenseTypeSoundingLike(String expenseType){
+       return withExpenseType(Operator.SOUNDS_LIKE, expenseType);
     }
 
 
 
-    public ExpenseItemRequest<T> filterByCreatedAt(LocalDateTime... createdAt){
-      if (createdAt == null || createdAt.length == 0) {
-        throw new IllegalArgumentException("filterByCreatedAt parameter createdAt cannot be empty");
+    public ExpenseItemRequest<T> filterByExpenseDate(LocalDate... expenseDate){
+      if (expenseDate == null || expenseDate.length == 0) {
+        throw new IllegalArgumentException("filterByExpenseDate parameter expenseDate cannot be empty");
       }
-      return appendSearchCriteria(createCreatedAtCriteria(Operator.EQUAL, (Object[])createdAt));
+      return appendSearchCriteria(createExpenseDateCriteria(Operator.EQUAL, (Object[])expenseDate));
     }
 
-    public ExpenseItemRequest<T> withCreatedAt(Operator operator, Object... values){
-       return appendSearchCriteria(createCreatedAtCriteria(operator, values));
+    public ExpenseItemRequest<T> withExpenseDate(Operator operator, Object... values){
+       return appendSearchCriteria(createExpenseDateCriteria(operator, values));
     }
 
-    public ExpenseItemRequest<T> withCreatedAtIsUnknown(){
-       return withCreatedAt(Operator.IS_NULL);
+    public ExpenseItemRequest<T> withExpenseDateIsUnknown(){
+       return withExpenseDate(Operator.IS_NULL);
     }
 
-    public ExpenseItemRequest<T> withCreatedAtIsKnown(){
-       return withCreatedAt(Operator.IS_NOT_NULL);
+    public ExpenseItemRequest<T> withExpenseDateIsKnown(){
+       return withExpenseDate(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCreatedAtCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(ExpenseItem.CREATED_AT_PROPERTY, operator, values);
+    public SearchCriteria createExpenseDateCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ExpenseItem.EXPENSE_DATE_PROPERTY, operator, values);
     }
 
-    public ExpenseItemRequest<T> withCreatedAtGreaterThan(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    public ExpenseItemRequest<T> withExpenseDateGreaterThan(LocalDate expenseDate){
+       return withExpenseDate(Operator.GREATER_THAN, expenseDate);
     }
 
-    public ExpenseItemRequest<T> withCreatedAtGreaterThanOrEqualTo(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN_OR_EQUAL, createdAt);
+    public ExpenseItemRequest<T> withExpenseDateGreaterThanOrEqualTo(LocalDate expenseDate){
+       return withExpenseDate(Operator.GREATER_THAN_OR_EQUAL, expenseDate);
     }
 
-    public ExpenseItemRequest<T> withCreatedAtLessThan(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    public ExpenseItemRequest<T> withExpenseDateLessThan(LocalDate expenseDate){
+       return withExpenseDate(Operator.LESS_THAN, expenseDate);
     }
 
-    public ExpenseItemRequest<T> withCreatedAtLessThanOrEqualTo(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN_OR_EQUAL, createdAt);
+    public ExpenseItemRequest<T> withExpenseDateLessThanOrEqualTo(LocalDate expenseDate){
+       return withExpenseDate(Operator.LESS_THAN_OR_EQUAL, expenseDate);
     }
 
-    public ExpenseItemRequest<T> withCreatedAtBetween(LocalDateTime startOfCreatedAt, LocalDateTime endOfCreatedAt){
-       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    public ExpenseItemRequest<T> withExpenseDateBetween(LocalDate startOfExpenseDate, LocalDate endOfExpenseDate){
+       return withExpenseDate(Operator.BETWEEN, startOfExpenseDate, endOfExpenseDate);
     }
-    public ExpenseItemRequest<T> withCreatedAtBefore(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
-    }
-
-    public ExpenseItemRequest<T> withCreatedAtBefore(Date createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    public ExpenseItemRequest<T> withExpenseDateBefore(LocalDate expenseDate){
+       return withExpenseDate(Operator.LESS_THAN, expenseDate);
     }
 
-    public ExpenseItemRequest<T> withCreatedAtAfter(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    public ExpenseItemRequest<T> withExpenseDateBefore(Date expenseDate){
+       return withExpenseDate(Operator.LESS_THAN, expenseDate);
     }
 
-    public ExpenseItemRequest<T> withCreatedAtAfter(Date createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    public ExpenseItemRequest<T> withExpenseDateAfter(LocalDate expenseDate){
+       return withExpenseDate(Operator.GREATER_THAN, expenseDate);
     }
 
-    public ExpenseItemRequest<T> withCreatedAtBetween(Date startOfCreatedAt, Date endOfCreatedAt){
-       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    public ExpenseItemRequest<T> withExpenseDateAfter(Date expenseDate){
+       return withExpenseDate(Operator.GREATER_THAN, expenseDate);
+    }
+
+    public ExpenseItemRequest<T> withExpenseDateBetween(Date startOfExpenseDate, Date endOfExpenseDate){
+       return withExpenseDate(Operator.BETWEEN, startOfExpenseDate, endOfExpenseDate);
     }
 
 
 
 
-    public ExpenseItemRequest<T> filterByUpdatedAt(LocalDateTime... updatedAt){
-      if (updatedAt == null || updatedAt.length == 0) {
-        throw new IllegalArgumentException("filterByUpdatedAt parameter updatedAt cannot be empty");
+    public ExpenseItemRequest<T> filterByEmployee(String... employee){
+      if (employee == null || employee.length == 0) {
+        throw new IllegalArgumentException("filterByEmployee parameter employee cannot be empty");
       }
-      return appendSearchCriteria(createUpdatedAtCriteria(Operator.EQUAL, (Object[])updatedAt));
+      return appendSearchCriteria(createEmployeeCriteria(Operator.EQUAL, (Object[])employee));
     }
 
-    public ExpenseItemRequest<T> withUpdatedAt(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdatedAtCriteria(operator, values));
+    public ExpenseItemRequest<T> withEmployee(Operator operator, Object... values){
+       return appendSearchCriteria(createEmployeeCriteria(operator, values));
     }
 
-    public ExpenseItemRequest<T> withUpdatedAtIsUnknown(){
-       return withUpdatedAt(Operator.IS_NULL);
+    public ExpenseItemRequest<T> withEmployeeIsUnknown(){
+       return withEmployee(Operator.IS_NULL);
     }
 
-    public ExpenseItemRequest<T> withUpdatedAtIsKnown(){
-       return withUpdatedAt(Operator.IS_NOT_NULL);
+    public ExpenseItemRequest<T> withEmployeeIsKnown(){
+       return withEmployee(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createUpdatedAtCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(ExpenseItem.UPDATED_AT_PROPERTY, operator, values);
+    public SearchCriteria createEmployeeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ExpenseItem.EMPLOYEE_PROPERTY, operator, values);
     }
 
-    public ExpenseItemRequest<T> withUpdatedAtGreaterThan(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    public ExpenseItemRequest<T> withEmployeeGreaterThan(String employee){
+       return withEmployee(Operator.GREATER_THAN, employee);
     }
 
-    public ExpenseItemRequest<T> withUpdatedAtGreaterThanOrEqualTo(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN_OR_EQUAL, updatedAt);
+    public ExpenseItemRequest<T> withEmployeeGreaterThanOrEqualTo(String employee){
+       return withEmployee(Operator.GREATER_THAN_OR_EQUAL, employee);
     }
 
-    public ExpenseItemRequest<T> withUpdatedAtLessThan(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    public ExpenseItemRequest<T> withEmployeeLessThan(String employee){
+       return withEmployee(Operator.LESS_THAN, employee);
     }
 
-    public ExpenseItemRequest<T> withUpdatedAtLessThanOrEqualTo(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN_OR_EQUAL, updatedAt);
+    public ExpenseItemRequest<T> withEmployeeLessThanOrEqualTo(String employee){
+       return withEmployee(Operator.LESS_THAN_OR_EQUAL, employee);
     }
 
-    public ExpenseItemRequest<T> withUpdatedAtBetween(LocalDateTime startOfUpdatedAt, LocalDateTime endOfUpdatedAt){
-       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    public ExpenseItemRequest<T> withEmployeeBetween(String startOfEmployee, String endOfEmployee){
+       return withEmployee(Operator.BETWEEN, startOfEmployee, endOfEmployee);
     }
-    public ExpenseItemRequest<T> withUpdatedAtBefore(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    public ExpenseItemRequest<T> withEmployeeStartingWith(String employee){
+       return withEmployee(Operator.BEGIN_WITH, employee);
     }
-
-    public ExpenseItemRequest<T> withUpdatedAtBefore(Date updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
-    }
-
-    public ExpenseItemRequest<T> withUpdatedAtAfter(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    public ExpenseItemRequest<T> withEmployeeContaining(String employee){
+       return withEmployee(Operator.CONTAIN, employee);
     }
 
-    public ExpenseItemRequest<T> withUpdatedAtAfter(Date updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    public ExpenseItemRequest<T> withEmployeeEndingWith(String employee){
+       return withEmployee(Operator.END_WITH, employee);
     }
 
-    public ExpenseItemRequest<T> withUpdatedAtBetween(Date startOfUpdatedAt, Date endOfUpdatedAt){
-       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    public ExpenseItemRequest<T> withEmployeeIs(String employee){
+       return withEmployee(Operator.EQUAL, employee);
+    }
+
+    public ExpenseItemRequest<T> withEmployeeSoundingLike(String employee){
+       return withEmployee(Operator.SOUNDS_LIKE, employee);
     }
 
 
 
-
-    public ExpenseItemRequest<T> filterByStaffMember(StaffMember... staffMember){
-      if (staffMember == null || staffMember.length == 0) {
-        throw new IllegalArgumentException("filterByStaffMember parameter staffMember cannot be empty");
+    public ExpenseItemRequest<T> filterByStatus(String... status){
+      if (status == null || status.length == 0) {
+        throw new IllegalArgumentException("filterByStatus parameter status cannot be empty");
       }
-      return appendSearchCriteria(createStaffMemberCriteria(Operator.EQUAL, (Object[])staffMember));
+      return appendSearchCriteria(createStatusCriteria(Operator.EQUAL, (Object[])status));
     }
 
-    public ExpenseItemRequest<T> withStaffMember(Operator operator, Object... values){
-       return appendSearchCriteria(createStaffMemberCriteria(operator, values));
+    public ExpenseItemRequest<T> withStatus(Operator operator, Object... values){
+       return appendSearchCriteria(createStatusCriteria(operator, values));
     }
 
-    public ExpenseItemRequest<T> withStaffMemberIsUnknown(){
-       return withStaffMember(Operator.IS_NULL);
+    public ExpenseItemRequest<T> withStatusIsUnknown(){
+       return withStatus(Operator.IS_NULL);
     }
 
-    public ExpenseItemRequest<T> withStaffMemberIsKnown(){
-       return withStaffMember(Operator.IS_NOT_NULL);
+    public ExpenseItemRequest<T> withStatusIsKnown(){
+       return withStatus(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createStaffMemberCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(ExpenseItem.STAFF_MEMBER_PROPERTY, operator, values);
+    public SearchCriteria createStatusCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(ExpenseItem.STATUS_PROPERTY, operator, values);
     }
 
-    public ExpenseItemRequest<T> filterByStaffMember(Long staffMember){
-      if(staffMember == null){
-         return this;
-      }
-      return withStaffMember(Operator.EQUAL, staffMember);
+    public ExpenseItemRequest<T> withStatusGreaterThan(String status){
+       return withStatus(Operator.GREATER_THAN, status);
     }
-    public ExpenseItemRequest<T> withStaffMemberMatching(StaffMemberRequest staffMember){
-       return appendSearchCriteria(new SubQuerySearchCriteria(ExpenseItem.STAFF_MEMBER_PROPERTY, staffMember, StaffMember.ID_PROPERTY));
+
+    public ExpenseItemRequest<T> withStatusGreaterThanOrEqualTo(String status){
+       return withStatus(Operator.GREATER_THAN_OR_EQUAL, status);
     }
+
+    public ExpenseItemRequest<T> withStatusLessThan(String status){
+       return withStatus(Operator.LESS_THAN, status);
+    }
+
+    public ExpenseItemRequest<T> withStatusLessThanOrEqualTo(String status){
+       return withStatus(Operator.LESS_THAN_OR_EQUAL, status);
+    }
+
+    public ExpenseItemRequest<T> withStatusBetween(String startOfStatus, String endOfStatus){
+       return withStatus(Operator.BETWEEN, startOfStatus, endOfStatus);
+    }
+    public ExpenseItemRequest<T> withStatusStartingWith(String status){
+       return withStatus(Operator.BEGIN_WITH, status);
+    }
+    public ExpenseItemRequest<T> withStatusContaining(String status){
+       return withStatus(Operator.CONTAIN, status);
+    }
+
+    public ExpenseItemRequest<T> withStatusEndingWith(String status){
+       return withStatus(Operator.END_WITH, status);
+    }
+
+    public ExpenseItemRequest<T> withStatusIs(String status){
+       return withStatus(Operator.EQUAL, status);
+    }
+
+    public ExpenseItemRequest<T> withStatusSoundingLike(String status){
+       return withStatus(Operator.SOUNDS_LIKE, status);
+    }
+
+
 
     public ExpenseItemRequest<T> filterByVersion(Long... version){
       if (version == null || version.length == 0) {
@@ -877,16 +899,6 @@ public class ExpenseItemRequest<T extends ExpenseItem> extends BaseRequest<T> {
         super.samplePopulationVariance(retName, ExpenseItem.AMOUNT_PROPERTY);
         return this;
     }
-    public ExpenseItemRequest<T> groupByStaffMemberWithDetails(){
-       return groupByStaffMemberWithDetails(Q.staffMembers().unlimited());
-    }
-
-    public ExpenseItemRequest<T> groupByStaffMemberWithDetails(StaffMemberRequest subRequest){
-       aggregate(ExpenseItem.STAFF_MEMBER_PROPERTY, subRequest);
-       return this;
-    }
-
-
 
     public ExpenseItemRequest<T> groupById(){
        groupBy(ExpenseItem.ID_PROPERTY);
@@ -918,18 +930,18 @@ public class ExpenseItemRequest<T extends ExpenseItem> extends BaseRequest<T> {
        return this;
     }
 
-    public ExpenseItemRequest<T> groupByCode(){
-       groupBy(ExpenseItem.CODE_PROPERTY);
+    public ExpenseItemRequest<T> groupByDescription(){
+       groupBy(ExpenseItem.DESCRIPTION_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> groupByCodeAs(String retName){
-       groupBy(retName, ExpenseItem.CODE_PROPERTY);
+    public ExpenseItemRequest<T> groupByDescriptionAs(String retName){
+       groupBy(retName, ExpenseItem.DESCRIPTION_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> groupByCodeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, ExpenseItem.CODE_PROPERTY, function);
+    public ExpenseItemRequest<T> groupByDescriptionWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ExpenseItem.DESCRIPTION_PROPERTY, function);
        return this;
     }
 
@@ -963,66 +975,63 @@ public class ExpenseItemRequest<T extends ExpenseItem> extends BaseRequest<T> {
        return this;
     }
 
-    public ExpenseItemRequest<T> groupByCategory(){
-       groupBy(ExpenseItem.CATEGORY_PROPERTY);
+    public ExpenseItemRequest<T> groupByExpenseType(){
+       groupBy(ExpenseItem.EXPENSE_TYPE_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> groupByCategoryAs(String retName){
-       groupBy(retName, ExpenseItem.CATEGORY_PROPERTY);
+    public ExpenseItemRequest<T> groupByExpenseTypeAs(String retName){
+       groupBy(retName, ExpenseItem.EXPENSE_TYPE_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> groupByCategoryWithFunction(String retName, AggrFunction function){
-       groupBy(retName, ExpenseItem.CATEGORY_PROPERTY, function);
+    public ExpenseItemRequest<T> groupByExpenseTypeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ExpenseItem.EXPENSE_TYPE_PROPERTY, function);
        return this;
     }
 
-    public ExpenseItemRequest<T> groupByCreatedAt(){
-       groupBy(ExpenseItem.CREATED_AT_PROPERTY);
+    public ExpenseItemRequest<T> groupByExpenseDate(){
+       groupBy(ExpenseItem.EXPENSE_DATE_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> groupByCreatedAtAs(String retName){
-       groupBy(retName, ExpenseItem.CREATED_AT_PROPERTY);
+    public ExpenseItemRequest<T> groupByExpenseDateAs(String retName){
+       groupBy(retName, ExpenseItem.EXPENSE_DATE_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> groupByCreatedAtWithFunction(String retName, AggrFunction function){
-       groupBy(retName, ExpenseItem.CREATED_AT_PROPERTY, function);
+    public ExpenseItemRequest<T> groupByExpenseDateWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ExpenseItem.EXPENSE_DATE_PROPERTY, function);
        return this;
     }
 
-    public ExpenseItemRequest<T> groupByUpdatedAt(){
-       groupBy(ExpenseItem.UPDATED_AT_PROPERTY);
+    public ExpenseItemRequest<T> groupByEmployee(){
+       groupBy(ExpenseItem.EMPLOYEE_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> groupByUpdatedAtAs(String retName){
-       groupBy(retName, ExpenseItem.UPDATED_AT_PROPERTY);
+    public ExpenseItemRequest<T> groupByEmployeeAs(String retName){
+       groupBy(retName, ExpenseItem.EMPLOYEE_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> groupByUpdatedAtWithFunction(String retName, AggrFunction function){
-       groupBy(retName, ExpenseItem.UPDATED_AT_PROPERTY, function);
-       return this;
-    }
-    public ExpenseItemRequest<T> groupByStaffMemberWith(StaffMemberRequest subRequest){
-       groupBy(ExpenseItem.STAFF_MEMBER_PROPERTY, subRequest);
-       return this;
-    }
-    public ExpenseItemRequest<T> groupByStaffMember(){
-       groupBy(ExpenseItem.STAFF_MEMBER_PROPERTY);
+    public ExpenseItemRequest<T> groupByEmployeeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ExpenseItem.EMPLOYEE_PROPERTY, function);
        return this;
     }
 
-    public ExpenseItemRequest<T> groupByStaffMemberAs(String retName){
-       groupBy(retName, ExpenseItem.STAFF_MEMBER_PROPERTY);
+    public ExpenseItemRequest<T> groupByStatus(){
+       groupBy(ExpenseItem.STATUS_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> groupByStaffMemberWithFunction(String retName, AggrFunction function){
-       groupBy(retName, ExpenseItem.STAFF_MEMBER_PROPERTY, function);
+    public ExpenseItemRequest<T> groupByStatusAs(String retName){
+       groupBy(retName, ExpenseItem.STATUS_PROPERTY);
+       return this;
+    }
+
+    public ExpenseItemRequest<T> groupByStatusWithFunction(String retName, AggrFunction function){
+       groupBy(retName, ExpenseItem.STATUS_PROPERTY, function);
        return this;
     }
 
@@ -1071,22 +1080,22 @@ public class ExpenseItemRequest<T extends ExpenseItem> extends BaseRequest<T> {
        addOrderByDescendingUsingGBK(ExpenseItem.NAME_PROPERTY);
        return this;
     }
-    public ExpenseItemRequest<T> orderByCodeAscending(){
-       addOrderByAscending(ExpenseItem.CODE_PROPERTY);
+    public ExpenseItemRequest<T> orderByDescriptionAscending(){
+       addOrderByAscending(ExpenseItem.DESCRIPTION_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> orderByCodeDescending(){
-       addOrderByDescending(ExpenseItem.CODE_PROPERTY);
+    public ExpenseItemRequest<T> orderByDescriptionDescending(){
+       addOrderByDescending(ExpenseItem.DESCRIPTION_PROPERTY);
        return this;
     }
-    public ExpenseItemRequest<T> orderByCodeAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(ExpenseItem.CODE_PROPERTY);
+    public ExpenseItemRequest<T> orderByDescriptionAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(ExpenseItem.DESCRIPTION_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> orderByCodeDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(ExpenseItem.CODE_PROPERTY);
+    public ExpenseItemRequest<T> orderByDescriptionDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(ExpenseItem.DESCRIPTION_PROPERTY);
        return this;
     }
     public ExpenseItemRequest<T> orderByAmountAscending(){
@@ -1117,54 +1126,70 @@ public class ExpenseItemRequest<T extends ExpenseItem> extends BaseRequest<T> {
        addOrderByDescendingUsingGBK(ExpenseItem.CURRENCY_PROPERTY);
        return this;
     }
-    public ExpenseItemRequest<T> orderByCategoryAscending(){
-       addOrderByAscending(ExpenseItem.CATEGORY_PROPERTY);
+    public ExpenseItemRequest<T> orderByExpenseTypeAscending(){
+       addOrderByAscending(ExpenseItem.EXPENSE_TYPE_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> orderByCategoryDescending(){
-       addOrderByDescending(ExpenseItem.CATEGORY_PROPERTY);
+    public ExpenseItemRequest<T> orderByExpenseTypeDescending(){
+       addOrderByDescending(ExpenseItem.EXPENSE_TYPE_PROPERTY);
        return this;
     }
-    public ExpenseItemRequest<T> orderByCategoryAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(ExpenseItem.CATEGORY_PROPERTY);
-       return this;
-    }
-
-    public ExpenseItemRequest<T> orderByCategoryDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(ExpenseItem.CATEGORY_PROPERTY);
-       return this;
-    }
-    public ExpenseItemRequest<T> orderByCreatedAtAscending(){
-       addOrderByAscending(ExpenseItem.CREATED_AT_PROPERTY);
+    public ExpenseItemRequest<T> orderByExpenseTypeAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(ExpenseItem.EXPENSE_TYPE_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> orderByCreatedAtDescending(){
-       addOrderByDescending(ExpenseItem.CREATED_AT_PROPERTY);
+    public ExpenseItemRequest<T> orderByExpenseTypeDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(ExpenseItem.EXPENSE_TYPE_PROPERTY);
+       return this;
+    }
+    public ExpenseItemRequest<T> orderByExpenseDateAscending(){
+       addOrderByAscending(ExpenseItem.EXPENSE_DATE_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> orderByUpdatedAtAscending(){
-       addOrderByAscending(ExpenseItem.UPDATED_AT_PROPERTY);
+    public ExpenseItemRequest<T> orderByExpenseDateDescending(){
+       addOrderByDescending(ExpenseItem.EXPENSE_DATE_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> orderByUpdatedAtDescending(){
-       addOrderByDescending(ExpenseItem.UPDATED_AT_PROPERTY);
+    public ExpenseItemRequest<T> orderByEmployeeAscending(){
+       addOrderByAscending(ExpenseItem.EMPLOYEE_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> orderByStaffMemberAscending(){
-       addOrderByAscending(ExpenseItem.STAFF_MEMBER_PROPERTY);
+    public ExpenseItemRequest<T> orderByEmployeeDescending(){
+       addOrderByDescending(ExpenseItem.EMPLOYEE_PROPERTY);
+       return this;
+    }
+    public ExpenseItemRequest<T> orderByEmployeeAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(ExpenseItem.EMPLOYEE_PROPERTY);
        return this;
     }
 
-    public ExpenseItemRequest<T> orderByStaffMemberDescending(){
-       addOrderByDescending(ExpenseItem.STAFF_MEMBER_PROPERTY);
+    public ExpenseItemRequest<T> orderByEmployeeDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(ExpenseItem.EMPLOYEE_PROPERTY);
+       return this;
+    }
+    public ExpenseItemRequest<T> orderByStatusAscending(){
+       addOrderByAscending(ExpenseItem.STATUS_PROPERTY);
        return this;
     }
 
+    public ExpenseItemRequest<T> orderByStatusDescending(){
+       addOrderByDescending(ExpenseItem.STATUS_PROPERTY);
+       return this;
+    }
+    public ExpenseItemRequest<T> orderByStatusAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(ExpenseItem.STATUS_PROPERTY);
+       return this;
+    }
+
+    public ExpenseItemRequest<T> orderByStatusDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(ExpenseItem.STATUS_PROPERTY);
+       return this;
+    }
     public ExpenseItemRequest<T> orderByVersionAscending(){
        addOrderByAscending(ExpenseItem.VERSION_PROPERTY);
        return this;
@@ -1176,23 +1201,7 @@ public class ExpenseItemRequest<T extends ExpenseItem> extends BaseRequest<T> {
     }
 
 
-    public StaffMemberRequest rollUpToStaffMember(){
-       StaffMemberRequest staffMember = Q.staffMembers().unlimited();
-       this.withStaffMemberMatching(staffMember)
-           .groupByStaffMemberWith(staffMember);
-       return staffMember;
-    }
 
-
-
-   public ExpenseItemRequest<T> facetByStaffMemberAs(String facetName, StaffMemberRequest staffMember){
-       return facetByStaffMemberAs(facetName, staffMember, true);
-   }
-
-   public ExpenseItemRequest<T> facetByStaffMemberAs(String facetName, StaffMemberRequest staffMember, boolean includeAllFacets){
-       addFacet(facetName, ExpenseItem.STAFF_MEMBER_PROPERTY, staffMember, includeAllFacets);
-       return this;
-   }
 
 
     /**

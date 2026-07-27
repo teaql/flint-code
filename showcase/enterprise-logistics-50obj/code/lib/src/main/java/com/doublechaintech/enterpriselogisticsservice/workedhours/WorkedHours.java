@@ -24,14 +24,14 @@ public class WorkedHours extends BaseEntity implements RemoteInput {
 
     public static final String STAFF_PROPERTY = "staff";
     public static final String SHIFT_PROPERTY = "shift";
-    public static final String DATE_PROPERTY = "date";
     public static final String HOURS_WORKED_PROPERTY = "hoursWorked";
+    public static final String DATE_PROPERTY = "date";
     public static final String CREATED_AT_PROPERTY = "createdAt";
     public static final String UPDATED_AT_PROPERTY = "updatedAt";
     private StaffMember staff;
     private WorkShift shift;
-    private LocalDate date;
     private String hoursWorked;
+    private LocalDate date;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -41,11 +41,11 @@ public class WorkedHours extends BaseEntity implements RemoteInput {
     public WorkShift getShift(){
         return this.shift;
     }
-    public LocalDate getDate(){
-        return this.date;
-    }
     public String getHoursWorked(){
         return this.hoursWorked;
+    }
+    public LocalDate getDate(){
+        return this.date;
     }
     public LocalDateTime getCreatedAt(){
         return this.createdAt;
@@ -69,14 +69,6 @@ public class WorkedHours extends BaseEntity implements RemoteInput {
         this.shift = shift;
         return this;
     }
-    public WorkedHours updateDate(LocalDate date){
-        if(Objects.equals(this.date, date)){
-            return this;
-        }
-        handleUpdate(DATE_PROPERTY, getDate(), date);
-        this.date = date;
-        return this;
-    }
     public WorkedHours updateHoursWorked(String hoursWorked){
         hoursWorked = (hoursWorked == null ? null : hoursWorked.trim());
         if(Objects.equals(this.hoursWorked, hoursWorked)){
@@ -84,6 +76,14 @@ public class WorkedHours extends BaseEntity implements RemoteInput {
         }
         handleUpdate(HOURS_WORKED_PROPERTY, getHoursWorked(), hoursWorked);
         this.hoursWorked = hoursWorked;
+        return this;
+    }
+    public WorkedHours updateDate(LocalDate date){
+        if(Objects.equals(this.date, date)){
+            return this;
+        }
+        handleUpdate(DATE_PROPERTY, getDate(), date);
+        this.date = date;
         return this;
     }
     public WorkedHours updateCreatedAt(LocalDateTime createdAt){
@@ -134,9 +134,9 @@ public class WorkedHours extends BaseEntity implements RemoteInput {
 
             case "shift": this.shift = (WorkShift) value; break;
 
-            case "date": this.date = (LocalDate) value; break;
-
             case "hoursWorked": this.hoursWorked = (value == null ? null : ((String)value).trim()); break;
+
+            case "date": this.date = (LocalDate) value; break;
 
             case "createdAt": this.createdAt = (LocalDateTime) value; break;
 
@@ -152,8 +152,8 @@ public class WorkedHours extends BaseEntity implements RemoteInput {
         switch (property) {
             case "staff": return this.staff;
             case "shift": return this.shift;
-            case "date": return this.date;
             case "hoursWorked": return this.hoursWorked;
+            case "date": return this.date;
             case "createdAt": return this.createdAt;
             case "updatedAt": return this.updatedAt;
             default: return super.__internalGet(property);

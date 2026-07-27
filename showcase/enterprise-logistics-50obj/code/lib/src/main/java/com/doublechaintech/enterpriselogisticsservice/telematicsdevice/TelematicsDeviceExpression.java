@@ -1,5 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.telematicsdevice;
 
+import com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog;
+import com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLogListExpression;
 import com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle;
 import com.doublechaintech.enterpriselogisticsservice.vehicle.VehicleExpression;
 import io.teaql.core.UserContext;
@@ -42,19 +44,11 @@ public class TelematicsDeviceExpression<T, E, U extends TelematicsDevice> extend
        return new TelematicsDeviceExpression(this, $it ->  ((TelematicsDevice)$it).updateDeviceId(deviceId));
     }
 
-    public VehicleExpression<T, U, Vehicle> getVehicle(){
-       return new VehicleExpression(this, $it ->  ((TelematicsDevice)$it).getVehicle());
+    public Expression<T, String> getImei(){
+       return apply(TelematicsDevice::getImei);
     }
-
-    public TelematicsDeviceExpression<T, U, U> updateVehicle(Vehicle vehicle){
-       return new TelematicsDeviceExpression(this, $it ->  ((TelematicsDevice)$it).updateVehicle(vehicle));
-    }
-
-    public Expression<T, String> getFirmwareVersion(){
-       return apply(TelematicsDevice::getFirmwareVersion);
-    }
-    public TelematicsDeviceExpression<T, U, U> updateFirmwareVersion(String firmwareVersion){
-       return new TelematicsDeviceExpression(this, $it ->  ((TelematicsDevice)$it).updateFirmwareVersion(firmwareVersion));
+    public TelematicsDeviceExpression<T, U, U> updateImei(String imei){
+       return new TelematicsDeviceExpression(this, $it ->  ((TelematicsDevice)$it).updateImei(imei));
     }
 
     public Expression<T, String> getStatus(){
@@ -64,6 +58,14 @@ public class TelematicsDeviceExpression<T, E, U extends TelematicsDevice> extend
        return new TelematicsDeviceExpression(this, $it ->  ((TelematicsDevice)$it).updateStatus(status));
     }
 
+    public VehicleExpression<T, U, Vehicle> getVehicle(){
+       return new VehicleExpression(this, $it ->  ((TelematicsDevice)$it).getVehicle());
+    }
+
+    public TelematicsDeviceExpression<T, U, U> updateVehicle(Vehicle vehicle){
+       return new TelematicsDeviceExpression(this, $it ->  ((TelematicsDevice)$it).updateVehicle(vehicle));
+    }
+
     public Expression<T, LocalDateTime> getCreatedAt(){
        return apply(TelematicsDevice::getCreatedAt);
     }
@@ -71,4 +73,17 @@ public class TelematicsDeviceExpression<T, E, U extends TelematicsDevice> extend
        return new TelematicsDeviceExpression(this, $it ->  ((TelematicsDevice)$it).updateCreatedAt(createdAt));
     }
 
+    public Expression<T, LocalDateTime> getUpdatedAt(){
+       return apply(TelematicsDevice::getUpdatedAt);
+    }
+    public TelematicsDeviceExpression<T, U, U> updateUpdatedAt(LocalDateTime updatedAt){
+       return new TelematicsDeviceExpression(this, $it ->  ((TelematicsDevice)$it).updateUpdatedAt(updatedAt));
+    }
+
+    public GpsLogListExpression<T, U, GpsLog> getGpsLogList(){
+        return new GpsLogListExpression(this, $it ->  ((TelematicsDevice)$it).getGpsLogList());
+    }
+    public TelematicsDeviceExpression<T, U, U> addGpsLog(GpsLog gpsLog){
+       return new TelematicsDeviceExpression(this, $it ->  ((TelematicsDevice)$it).addGpsLog(gpsLog));
+    }
 }

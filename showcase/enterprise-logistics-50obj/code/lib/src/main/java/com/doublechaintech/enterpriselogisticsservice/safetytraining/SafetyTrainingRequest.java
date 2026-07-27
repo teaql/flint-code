@@ -1,13 +1,9 @@
 package com.doublechaintech.enterpriselogisticsservice.safetytraining;
 
-import com.doublechaintech.enterpriselogisticsservice.Q;
-import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember;
-import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMemberRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
 import io.teaql.core.SearchCriteria;
-import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.time.LocalDate;
@@ -85,7 +81,7 @@ public class SafetyTrainingRequest<T extends SafetyTraining> extends BaseRequest
 
     public SafetyTrainingRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectStaffIdOnly().selectCourseName().selectCompletionDate().selectCertificateNumber().selectStatus().selectCreatedAt().selectUpdatedAt().selectVersion();
+        return selectId().selectTitle().selectDescription().selectDurationHours().selectCompletionDate().selectStatus().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public SafetyTrainingRequest<T> selectSelfFields(){
@@ -94,12 +90,12 @@ public class SafetyTrainingRequest<T extends SafetyTraining> extends BaseRequest
 
     public SafetyTrainingRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectStaff().selectCourseName().selectCompletionDate().selectCertificateNumber().selectStatus().selectCreatedAt().selectUpdatedAt().selectVersion();
+        return selectId().selectTitle().selectDescription().selectDurationHours().selectCompletionDate().selectStatus().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public SafetyTrainingRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectStaff().selectCourseName().selectCompletionDate().selectCertificateNumber().selectStatus().selectCreatedAt().selectUpdatedAt().selectVersion();
+        return selectId().selectTitle().selectDescription().selectDurationHours().selectCompletionDate().selectStatus().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
 
@@ -120,40 +116,55 @@ public class SafetyTrainingRequest<T extends SafetyTraining> extends BaseRequest
        unselectProperty(SafetyTraining.ID_PROPERTY);
        return this;
     }
-    public SafetyTrainingRequest<T> selectStaffIdOnly(){
-       selectProperty(SafetyTraining.STAFF_PROPERTY);
-       return this;
-    }
-
-    public SafetyTrainingRequest<T> selectStaff(){
-        return selectStaffWith(Q.staffMembers().unlimited().selectSelf());
-    }
-
-    public SafetyTrainingRequest<T> selectStaffWith(StaffMemberRequest staff){
-       selectProperty(SafetyTraining.STAFF_PROPERTY);
-       enhanceRelation(SafetyTraining.STAFF_PROPERTY, staff);
-       return this;
-    }
-
-    public SafetyTrainingRequest<T> unselectStaff(){
-       unselectProperty(SafetyTraining.STAFF_PROPERTY);
-       return this;
-    }
-    public SafetyTrainingRequest<T> selectCourseName(){
-       selectProperty(SafetyTraining.COURSE_NAME_PROPERTY);
+    public SafetyTrainingRequest<T> selectTitle(){
+       selectProperty(SafetyTraining.TITLE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the courseName with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  courseName) to fetch courseName property.
+     * fill the title with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  title) to fetch title property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public SafetyTrainingRequest<T> unselectCourseName(){
-       unselectProperty(SafetyTraining.COURSE_NAME_PROPERTY);
+    public SafetyTrainingRequest<T> unselectTitle(){
+       unselectProperty(SafetyTraining.TITLE_PROPERTY);
+       return this;
+    }
+    public SafetyTrainingRequest<T> selectDescription(){
+       selectProperty(SafetyTraining.DESCRIPTION_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the description with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  description) to fetch description property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public SafetyTrainingRequest<T> unselectDescription(){
+       unselectProperty(SafetyTraining.DESCRIPTION_PROPERTY);
+       return this;
+    }
+    public SafetyTrainingRequest<T> selectDurationHours(){
+       selectProperty(SafetyTraining.DURATION_HOURS_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the durationHours with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  durationHours) to fetch durationHours property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public SafetyTrainingRequest<T> unselectDurationHours(){
+       unselectProperty(SafetyTraining.DURATION_HOURS_PROPERTY);
        return this;
     }
     public SafetyTrainingRequest<T> selectCompletionDate(){
@@ -171,23 +182,6 @@ public class SafetyTrainingRequest<T extends SafetyTraining> extends BaseRequest
 
     public SafetyTrainingRequest<T> unselectCompletionDate(){
        unselectProperty(SafetyTraining.COMPLETION_DATE_PROPERTY);
-       return this;
-    }
-    public SafetyTrainingRequest<T> selectCertificateNumber(){
-       selectProperty(SafetyTraining.CERTIFICATE_NUMBER_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the certificateNumber with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  certificateNumber) to fetch certificateNumber property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public SafetyTrainingRequest<T> unselectCertificateNumber(){
-       unselectProperty(SafetyTraining.CERTIFICATE_NUMBER_PROPERTY);
        return this;
     }
     public SafetyTrainingRequest<T> selectStatus(){
@@ -276,98 +270,191 @@ public class SafetyTrainingRequest<T extends SafetyTraining> extends BaseRequest
 
 
 
-    public SafetyTrainingRequest<T> filterByStaff(StaffMember... staff){
-      if (staff == null || staff.length == 0) {
-        throw new IllegalArgumentException("filterByStaff parameter staff cannot be empty");
+    public SafetyTrainingRequest<T> filterByTitle(String... title){
+      if (title == null || title.length == 0) {
+        throw new IllegalArgumentException("filterByTitle parameter title cannot be empty");
       }
-      return appendSearchCriteria(createStaffCriteria(Operator.EQUAL, (Object[])staff));
+      return appendSearchCriteria(createTitleCriteria(Operator.EQUAL, (Object[])title));
     }
 
-    public SafetyTrainingRequest<T> withStaff(Operator operator, Object... values){
-       return appendSearchCriteria(createStaffCriteria(operator, values));
+    public SafetyTrainingRequest<T> withTitle(Operator operator, Object... values){
+       return appendSearchCriteria(createTitleCriteria(operator, values));
     }
 
-    public SafetyTrainingRequest<T> withStaffIsUnknown(){
-       return withStaff(Operator.IS_NULL);
+    public SafetyTrainingRequest<T> withTitleIsUnknown(){
+       return withTitle(Operator.IS_NULL);
     }
 
-    public SafetyTrainingRequest<T> withStaffIsKnown(){
-       return withStaff(Operator.IS_NOT_NULL);
+    public SafetyTrainingRequest<T> withTitleIsKnown(){
+       return withTitle(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createStaffCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(SafetyTraining.STAFF_PROPERTY, operator, values);
+    public SearchCriteria createTitleCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(SafetyTraining.TITLE_PROPERTY, operator, values);
     }
 
-    public SafetyTrainingRequest<T> filterByStaff(Long staff){
-      if(staff == null){
-         return this;
+    public SafetyTrainingRequest<T> withTitleGreaterThan(String title){
+       return withTitle(Operator.GREATER_THAN, title);
+    }
+
+    public SafetyTrainingRequest<T> withTitleGreaterThanOrEqualTo(String title){
+       return withTitle(Operator.GREATER_THAN_OR_EQUAL, title);
+    }
+
+    public SafetyTrainingRequest<T> withTitleLessThan(String title){
+       return withTitle(Operator.LESS_THAN, title);
+    }
+
+    public SafetyTrainingRequest<T> withTitleLessThanOrEqualTo(String title){
+       return withTitle(Operator.LESS_THAN_OR_EQUAL, title);
+    }
+
+    public SafetyTrainingRequest<T> withTitleBetween(String startOfTitle, String endOfTitle){
+       return withTitle(Operator.BETWEEN, startOfTitle, endOfTitle);
+    }
+    public SafetyTrainingRequest<T> withTitleStartingWith(String title){
+       return withTitle(Operator.BEGIN_WITH, title);
+    }
+    public SafetyTrainingRequest<T> withTitleContaining(String title){
+       return withTitle(Operator.CONTAIN, title);
+    }
+
+    public SafetyTrainingRequest<T> withTitleEndingWith(String title){
+       return withTitle(Operator.END_WITH, title);
+    }
+
+    public SafetyTrainingRequest<T> withTitleIs(String title){
+       return withTitle(Operator.EQUAL, title);
+    }
+
+    public SafetyTrainingRequest<T> withTitleSoundingLike(String title){
+       return withTitle(Operator.SOUNDS_LIKE, title);
+    }
+
+
+
+    public SafetyTrainingRequest<T> filterByDescription(String... description){
+      if (description == null || description.length == 0) {
+        throw new IllegalArgumentException("filterByDescription parameter description cannot be empty");
       }
-      return withStaff(Operator.EQUAL, staff);
-    }
-    public SafetyTrainingRequest<T> withStaffMatching(StaffMemberRequest staff){
-       return appendSearchCriteria(new SubQuerySearchCriteria(SafetyTraining.STAFF_PROPERTY, staff, StaffMember.ID_PROPERTY));
+      return appendSearchCriteria(createDescriptionCriteria(Operator.EQUAL, (Object[])description));
     }
 
-    public SafetyTrainingRequest<T> filterByCourseName(String... courseName){
-      if (courseName == null || courseName.length == 0) {
-        throw new IllegalArgumentException("filterByCourseName parameter courseName cannot be empty");
+    public SafetyTrainingRequest<T> withDescription(Operator operator, Object... values){
+       return appendSearchCriteria(createDescriptionCriteria(operator, values));
+    }
+
+    public SafetyTrainingRequest<T> withDescriptionIsUnknown(){
+       return withDescription(Operator.IS_NULL);
+    }
+
+    public SafetyTrainingRequest<T> withDescriptionIsKnown(){
+       return withDescription(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createDescriptionCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(SafetyTraining.DESCRIPTION_PROPERTY, operator, values);
+    }
+
+    public SafetyTrainingRequest<T> withDescriptionGreaterThan(String description){
+       return withDescription(Operator.GREATER_THAN, description);
+    }
+
+    public SafetyTrainingRequest<T> withDescriptionGreaterThanOrEqualTo(String description){
+       return withDescription(Operator.GREATER_THAN_OR_EQUAL, description);
+    }
+
+    public SafetyTrainingRequest<T> withDescriptionLessThan(String description){
+       return withDescription(Operator.LESS_THAN, description);
+    }
+
+    public SafetyTrainingRequest<T> withDescriptionLessThanOrEqualTo(String description){
+       return withDescription(Operator.LESS_THAN_OR_EQUAL, description);
+    }
+
+    public SafetyTrainingRequest<T> withDescriptionBetween(String startOfDescription, String endOfDescription){
+       return withDescription(Operator.BETWEEN, startOfDescription, endOfDescription);
+    }
+    public SafetyTrainingRequest<T> withDescriptionStartingWith(String description){
+       return withDescription(Operator.BEGIN_WITH, description);
+    }
+    public SafetyTrainingRequest<T> withDescriptionContaining(String description){
+       return withDescription(Operator.CONTAIN, description);
+    }
+
+    public SafetyTrainingRequest<T> withDescriptionEndingWith(String description){
+       return withDescription(Operator.END_WITH, description);
+    }
+
+    public SafetyTrainingRequest<T> withDescriptionIs(String description){
+       return withDescription(Operator.EQUAL, description);
+    }
+
+    public SafetyTrainingRequest<T> withDescriptionSoundingLike(String description){
+       return withDescription(Operator.SOUNDS_LIKE, description);
+    }
+
+
+
+    public SafetyTrainingRequest<T> filterByDurationHours(String... durationHours){
+      if (durationHours == null || durationHours.length == 0) {
+        throw new IllegalArgumentException("filterByDurationHours parameter durationHours cannot be empty");
       }
-      return appendSearchCriteria(createCourseNameCriteria(Operator.EQUAL, (Object[])courseName));
+      return appendSearchCriteria(createDurationHoursCriteria(Operator.EQUAL, (Object[])durationHours));
     }
 
-    public SafetyTrainingRequest<T> withCourseName(Operator operator, Object... values){
-       return appendSearchCriteria(createCourseNameCriteria(operator, values));
+    public SafetyTrainingRequest<T> withDurationHours(Operator operator, Object... values){
+       return appendSearchCriteria(createDurationHoursCriteria(operator, values));
     }
 
-    public SafetyTrainingRequest<T> withCourseNameIsUnknown(){
-       return withCourseName(Operator.IS_NULL);
+    public SafetyTrainingRequest<T> withDurationHoursIsUnknown(){
+       return withDurationHours(Operator.IS_NULL);
     }
 
-    public SafetyTrainingRequest<T> withCourseNameIsKnown(){
-       return withCourseName(Operator.IS_NOT_NULL);
+    public SafetyTrainingRequest<T> withDurationHoursIsKnown(){
+       return withDurationHours(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCourseNameCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(SafetyTraining.COURSE_NAME_PROPERTY, operator, values);
+    public SearchCriteria createDurationHoursCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(SafetyTraining.DURATION_HOURS_PROPERTY, operator, values);
     }
 
-    public SafetyTrainingRequest<T> withCourseNameGreaterThan(String courseName){
-       return withCourseName(Operator.GREATER_THAN, courseName);
+    public SafetyTrainingRequest<T> withDurationHoursGreaterThan(String durationHours){
+       return withDurationHours(Operator.GREATER_THAN, durationHours);
     }
 
-    public SafetyTrainingRequest<T> withCourseNameGreaterThanOrEqualTo(String courseName){
-       return withCourseName(Operator.GREATER_THAN_OR_EQUAL, courseName);
+    public SafetyTrainingRequest<T> withDurationHoursGreaterThanOrEqualTo(String durationHours){
+       return withDurationHours(Operator.GREATER_THAN_OR_EQUAL, durationHours);
     }
 
-    public SafetyTrainingRequest<T> withCourseNameLessThan(String courseName){
-       return withCourseName(Operator.LESS_THAN, courseName);
+    public SafetyTrainingRequest<T> withDurationHoursLessThan(String durationHours){
+       return withDurationHours(Operator.LESS_THAN, durationHours);
     }
 
-    public SafetyTrainingRequest<T> withCourseNameLessThanOrEqualTo(String courseName){
-       return withCourseName(Operator.LESS_THAN_OR_EQUAL, courseName);
+    public SafetyTrainingRequest<T> withDurationHoursLessThanOrEqualTo(String durationHours){
+       return withDurationHours(Operator.LESS_THAN_OR_EQUAL, durationHours);
     }
 
-    public SafetyTrainingRequest<T> withCourseNameBetween(String startOfCourseName, String endOfCourseName){
-       return withCourseName(Operator.BETWEEN, startOfCourseName, endOfCourseName);
+    public SafetyTrainingRequest<T> withDurationHoursBetween(String startOfDurationHours, String endOfDurationHours){
+       return withDurationHours(Operator.BETWEEN, startOfDurationHours, endOfDurationHours);
     }
-    public SafetyTrainingRequest<T> withCourseNameStartingWith(String courseName){
-       return withCourseName(Operator.BEGIN_WITH, courseName);
+    public SafetyTrainingRequest<T> withDurationHoursStartingWith(String durationHours){
+       return withDurationHours(Operator.BEGIN_WITH, durationHours);
     }
-    public SafetyTrainingRequest<T> withCourseNameContaining(String courseName){
-       return withCourseName(Operator.CONTAIN, courseName);
-    }
-
-    public SafetyTrainingRequest<T> withCourseNameEndingWith(String courseName){
-       return withCourseName(Operator.END_WITH, courseName);
+    public SafetyTrainingRequest<T> withDurationHoursContaining(String durationHours){
+       return withDurationHours(Operator.CONTAIN, durationHours);
     }
 
-    public SafetyTrainingRequest<T> withCourseNameIs(String courseName){
-       return withCourseName(Operator.EQUAL, courseName);
+    public SafetyTrainingRequest<T> withDurationHoursEndingWith(String durationHours){
+       return withDurationHours(Operator.END_WITH, durationHours);
     }
 
-    public SafetyTrainingRequest<T> withCourseNameSoundingLike(String courseName){
-       return withCourseName(Operator.SOUNDS_LIKE, courseName);
+    public SafetyTrainingRequest<T> withDurationHoursIs(String durationHours){
+       return withDurationHours(Operator.EQUAL, durationHours);
+    }
+
+    public SafetyTrainingRequest<T> withDurationHoursSoundingLike(String durationHours){
+       return withDurationHours(Operator.SOUNDS_LIKE, durationHours);
     }
 
 
@@ -434,69 +521,6 @@ public class SafetyTrainingRequest<T extends SafetyTraining> extends BaseRequest
        return withCompletionDate(Operator.BETWEEN, startOfCompletionDate, endOfCompletionDate);
     }
 
-
-
-
-    public SafetyTrainingRequest<T> filterByCertificateNumber(String... certificateNumber){
-      if (certificateNumber == null || certificateNumber.length == 0) {
-        throw new IllegalArgumentException("filterByCertificateNumber parameter certificateNumber cannot be empty");
-      }
-      return appendSearchCriteria(createCertificateNumberCriteria(Operator.EQUAL, (Object[])certificateNumber));
-    }
-
-    public SafetyTrainingRequest<T> withCertificateNumber(Operator operator, Object... values){
-       return appendSearchCriteria(createCertificateNumberCriteria(operator, values));
-    }
-
-    public SafetyTrainingRequest<T> withCertificateNumberIsUnknown(){
-       return withCertificateNumber(Operator.IS_NULL);
-    }
-
-    public SafetyTrainingRequest<T> withCertificateNumberIsKnown(){
-       return withCertificateNumber(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createCertificateNumberCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(SafetyTraining.CERTIFICATE_NUMBER_PROPERTY, operator, values);
-    }
-
-    public SafetyTrainingRequest<T> withCertificateNumberGreaterThan(String certificateNumber){
-       return withCertificateNumber(Operator.GREATER_THAN, certificateNumber);
-    }
-
-    public SafetyTrainingRequest<T> withCertificateNumberGreaterThanOrEqualTo(String certificateNumber){
-       return withCertificateNumber(Operator.GREATER_THAN_OR_EQUAL, certificateNumber);
-    }
-
-    public SafetyTrainingRequest<T> withCertificateNumberLessThan(String certificateNumber){
-       return withCertificateNumber(Operator.LESS_THAN, certificateNumber);
-    }
-
-    public SafetyTrainingRequest<T> withCertificateNumberLessThanOrEqualTo(String certificateNumber){
-       return withCertificateNumber(Operator.LESS_THAN_OR_EQUAL, certificateNumber);
-    }
-
-    public SafetyTrainingRequest<T> withCertificateNumberBetween(String startOfCertificateNumber, String endOfCertificateNumber){
-       return withCertificateNumber(Operator.BETWEEN, startOfCertificateNumber, endOfCertificateNumber);
-    }
-    public SafetyTrainingRequest<T> withCertificateNumberStartingWith(String certificateNumber){
-       return withCertificateNumber(Operator.BEGIN_WITH, certificateNumber);
-    }
-    public SafetyTrainingRequest<T> withCertificateNumberContaining(String certificateNumber){
-       return withCertificateNumber(Operator.CONTAIN, certificateNumber);
-    }
-
-    public SafetyTrainingRequest<T> withCertificateNumberEndingWith(String certificateNumber){
-       return withCertificateNumber(Operator.END_WITH, certificateNumber);
-    }
-
-    public SafetyTrainingRequest<T> withCertificateNumberIs(String certificateNumber){
-       return withCertificateNumber(Operator.EQUAL, certificateNumber);
-    }
-
-    public SafetyTrainingRequest<T> withCertificateNumberSoundingLike(String certificateNumber){
-       return withCertificateNumber(Operator.SOUNDS_LIKE, certificateNumber);
-    }
 
 
 
@@ -745,22 +769,6 @@ public class SafetyTrainingRequest<T extends SafetyTraining> extends BaseRequest
         super.count(retName);
         return this;
     }
-    public SafetyTrainingRequest<T> groupByStaffWithDetails(){
-       return groupByStaffWithDetails(Q.staffMembers().unlimited());
-    }
-
-    public SafetyTrainingRequest<T> groupByStaffWithDetails(StaffMemberRequest subRequest){
-       aggregate(SafetyTraining.STAFF_PROPERTY, subRequest);
-       return this;
-    }
-
-
-
-
-
-
-
-
 
     public SafetyTrainingRequest<T> groupById(){
        groupBy(SafetyTraining.ID_PROPERTY);
@@ -776,37 +784,49 @@ public class SafetyTrainingRequest<T extends SafetyTraining> extends BaseRequest
        groupBy(retName, SafetyTraining.ID_PROPERTY, function);
        return this;
     }
-    public SafetyTrainingRequest<T> groupByStaffWith(StaffMemberRequest subRequest){
-       groupBy(SafetyTraining.STAFF_PROPERTY, subRequest);
-       return this;
-    }
-    public SafetyTrainingRequest<T> groupByStaff(){
-       groupBy(SafetyTraining.STAFF_PROPERTY);
+
+    public SafetyTrainingRequest<T> groupByTitle(){
+       groupBy(SafetyTraining.TITLE_PROPERTY);
        return this;
     }
 
-    public SafetyTrainingRequest<T> groupByStaffAs(String retName){
-       groupBy(retName, SafetyTraining.STAFF_PROPERTY);
+    public SafetyTrainingRequest<T> groupByTitleAs(String retName){
+       groupBy(retName, SafetyTraining.TITLE_PROPERTY);
        return this;
     }
 
-    public SafetyTrainingRequest<T> groupByStaffWithFunction(String retName, AggrFunction function){
-       groupBy(retName, SafetyTraining.STAFF_PROPERTY, function);
+    public SafetyTrainingRequest<T> groupByTitleWithFunction(String retName, AggrFunction function){
+       groupBy(retName, SafetyTraining.TITLE_PROPERTY, function);
        return this;
     }
 
-    public SafetyTrainingRequest<T> groupByCourseName(){
-       groupBy(SafetyTraining.COURSE_NAME_PROPERTY);
+    public SafetyTrainingRequest<T> groupByDescription(){
+       groupBy(SafetyTraining.DESCRIPTION_PROPERTY);
        return this;
     }
 
-    public SafetyTrainingRequest<T> groupByCourseNameAs(String retName){
-       groupBy(retName, SafetyTraining.COURSE_NAME_PROPERTY);
+    public SafetyTrainingRequest<T> groupByDescriptionAs(String retName){
+       groupBy(retName, SafetyTraining.DESCRIPTION_PROPERTY);
        return this;
     }
 
-    public SafetyTrainingRequest<T> groupByCourseNameWithFunction(String retName, AggrFunction function){
-       groupBy(retName, SafetyTraining.COURSE_NAME_PROPERTY, function);
+    public SafetyTrainingRequest<T> groupByDescriptionWithFunction(String retName, AggrFunction function){
+       groupBy(retName, SafetyTraining.DESCRIPTION_PROPERTY, function);
+       return this;
+    }
+
+    public SafetyTrainingRequest<T> groupByDurationHours(){
+       groupBy(SafetyTraining.DURATION_HOURS_PROPERTY);
+       return this;
+    }
+
+    public SafetyTrainingRequest<T> groupByDurationHoursAs(String retName){
+       groupBy(retName, SafetyTraining.DURATION_HOURS_PROPERTY);
+       return this;
+    }
+
+    public SafetyTrainingRequest<T> groupByDurationHoursWithFunction(String retName, AggrFunction function){
+       groupBy(retName, SafetyTraining.DURATION_HOURS_PROPERTY, function);
        return this;
     }
 
@@ -822,21 +842,6 @@ public class SafetyTrainingRequest<T extends SafetyTraining> extends BaseRequest
 
     public SafetyTrainingRequest<T> groupByCompletionDateWithFunction(String retName, AggrFunction function){
        groupBy(retName, SafetyTraining.COMPLETION_DATE_PROPERTY, function);
-       return this;
-    }
-
-    public SafetyTrainingRequest<T> groupByCertificateNumber(){
-       groupBy(SafetyTraining.CERTIFICATE_NUMBER_PROPERTY);
-       return this;
-    }
-
-    public SafetyTrainingRequest<T> groupByCertificateNumberAs(String retName){
-       groupBy(retName, SafetyTraining.CERTIFICATE_NUMBER_PROPERTY);
-       return this;
-    }
-
-    public SafetyTrainingRequest<T> groupByCertificateNumberWithFunction(String retName, AggrFunction function){
-       groupBy(retName, SafetyTraining.CERTIFICATE_NUMBER_PROPERTY, function);
        return this;
     }
 
@@ -912,32 +917,58 @@ public class SafetyTrainingRequest<T extends SafetyTraining> extends BaseRequest
        return this;
     }
 
-    public SafetyTrainingRequest<T> orderByStaffAscending(){
-       addOrderByAscending(SafetyTraining.STAFF_PROPERTY);
+    public SafetyTrainingRequest<T> orderByTitleAscending(){
+       addOrderByAscending(SafetyTraining.TITLE_PROPERTY);
        return this;
     }
 
-    public SafetyTrainingRequest<T> orderByStaffDescending(){
-       addOrderByDescending(SafetyTraining.STAFF_PROPERTY);
+    public SafetyTrainingRequest<T> orderByTitleDescending(){
+       addOrderByDescending(SafetyTraining.TITLE_PROPERTY);
+       return this;
+    }
+    public SafetyTrainingRequest<T> orderByTitleAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(SafetyTraining.TITLE_PROPERTY);
        return this;
     }
 
-    public SafetyTrainingRequest<T> orderByCourseNameAscending(){
-       addOrderByAscending(SafetyTraining.COURSE_NAME_PROPERTY);
+    public SafetyTrainingRequest<T> orderByTitleDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(SafetyTraining.TITLE_PROPERTY);
+       return this;
+    }
+    public SafetyTrainingRequest<T> orderByDescriptionAscending(){
+       addOrderByAscending(SafetyTraining.DESCRIPTION_PROPERTY);
        return this;
     }
 
-    public SafetyTrainingRequest<T> orderByCourseNameDescending(){
-       addOrderByDescending(SafetyTraining.COURSE_NAME_PROPERTY);
+    public SafetyTrainingRequest<T> orderByDescriptionDescending(){
+       addOrderByDescending(SafetyTraining.DESCRIPTION_PROPERTY);
        return this;
     }
-    public SafetyTrainingRequest<T> orderByCourseNameAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(SafetyTraining.COURSE_NAME_PROPERTY);
+    public SafetyTrainingRequest<T> orderByDescriptionAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(SafetyTraining.DESCRIPTION_PROPERTY);
        return this;
     }
 
-    public SafetyTrainingRequest<T> orderByCourseNameDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(SafetyTraining.COURSE_NAME_PROPERTY);
+    public SafetyTrainingRequest<T> orderByDescriptionDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(SafetyTraining.DESCRIPTION_PROPERTY);
+       return this;
+    }
+    public SafetyTrainingRequest<T> orderByDurationHoursAscending(){
+       addOrderByAscending(SafetyTraining.DURATION_HOURS_PROPERTY);
+       return this;
+    }
+
+    public SafetyTrainingRequest<T> orderByDurationHoursDescending(){
+       addOrderByDescending(SafetyTraining.DURATION_HOURS_PROPERTY);
+       return this;
+    }
+    public SafetyTrainingRequest<T> orderByDurationHoursAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(SafetyTraining.DURATION_HOURS_PROPERTY);
+       return this;
+    }
+
+    public SafetyTrainingRequest<T> orderByDurationHoursDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(SafetyTraining.DURATION_HOURS_PROPERTY);
        return this;
     }
     public SafetyTrainingRequest<T> orderByCompletionDateAscending(){
@@ -950,24 +981,6 @@ public class SafetyTrainingRequest<T extends SafetyTraining> extends BaseRequest
        return this;
     }
 
-    public SafetyTrainingRequest<T> orderByCertificateNumberAscending(){
-       addOrderByAscending(SafetyTraining.CERTIFICATE_NUMBER_PROPERTY);
-       return this;
-    }
-
-    public SafetyTrainingRequest<T> orderByCertificateNumberDescending(){
-       addOrderByDescending(SafetyTraining.CERTIFICATE_NUMBER_PROPERTY);
-       return this;
-    }
-    public SafetyTrainingRequest<T> orderByCertificateNumberAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(SafetyTraining.CERTIFICATE_NUMBER_PROPERTY);
-       return this;
-    }
-
-    public SafetyTrainingRequest<T> orderByCertificateNumberDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(SafetyTraining.CERTIFICATE_NUMBER_PROPERTY);
-       return this;
-    }
     public SafetyTrainingRequest<T> orderByStatusAscending(){
        addOrderByAscending(SafetyTraining.STATUS_PROPERTY);
        return this;
@@ -1017,29 +1030,7 @@ public class SafetyTrainingRequest<T extends SafetyTraining> extends BaseRequest
     }
 
 
-    public StaffMemberRequest rollUpToStaff(){
-       StaffMemberRequest staff = Q.staffMembers().unlimited();
-       this.withStaffMatching(staff)
-           .groupByStaffWith(staff);
-       return staff;
-    }
 
-
-
-
-
-
-
-
-
-   public SafetyTrainingRequest<T> facetByStaffAs(String facetName, StaffMemberRequest staff){
-       return facetByStaffAs(facetName, staff, true);
-   }
-
-   public SafetyTrainingRequest<T> facetByStaffAs(String facetName, StaffMemberRequest staff, boolean includeAllFacets){
-       addFacet(facetName, SafetyTraining.STAFF_PROPERTY, staff, includeAllFacets);
-       return this;
-   }
 
 
     /**

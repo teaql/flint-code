@@ -54,18 +54,18 @@ public class WorkedHoursExpression<T, E, U extends WorkedHours> extends Expressi
        return new WorkedHoursExpression(this, $it ->  ((WorkedHours)$it).updateShift(shift));
     }
 
-    public Expression<T, LocalDate> getDate(){
-       return apply(WorkedHours::getDate);
-    }
-    public WorkedHoursExpression<T, U, U> updateDate(LocalDate date){
-       return new WorkedHoursExpression(this, $it ->  ((WorkedHours)$it).updateDate(date));
-    }
-
     public Expression<T, String> getHoursWorked(){
        return apply(WorkedHours::getHoursWorked);
     }
     public WorkedHoursExpression<T, U, U> updateHoursWorked(String hoursWorked){
        return new WorkedHoursExpression(this, $it ->  ((WorkedHours)$it).updateHoursWorked(hoursWorked));
+    }
+
+    public Expression<T, LocalDate> getDate(){
+       return apply(WorkedHours::getDate);
+    }
+    public WorkedHoursExpression<T, U, U> updateDate(LocalDate date){
+       return new WorkedHoursExpression(this, $it ->  ((WorkedHours)$it).updateDate(date));
     }
 
     public Expression<T, LocalDateTime> getCreatedAt(){

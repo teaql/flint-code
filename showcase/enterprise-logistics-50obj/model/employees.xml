@@ -15,14 +15,14 @@
   <work_shift _name="Work Shift"
               _module="HR" _module_key="hr"
               id="id()" name="string()" start_time="time()" end_time="time()"
-              shift_type="string()"
+              shift_date="date()"
               created_at="createTime()" updated_at="updateTime()" />
 
   <!-- 3. Worked hours -->
   <worked_hours _name="Worked Hours"
                 _module="HR" _module_key="hr"
                 id="id()" staff="staff_member()" shift="work_shift()"
-                date="date()" hours_worked="double()"
+                hours_worked="double()" date="date()"
                 created_at="createTime()" updated_at="updateTime()" />
 
   <!-- 4. Salary slip -->
@@ -37,15 +37,15 @@
   <performance_review _name="Performance Review"
                       _module="HR" _module_key="hr"
                       id="id()" staff="staff_member()" reviewer="staff_member()"
-                      review_date="date()" score="int()" comments="string()"
+                      review_date="date()" score="double()" comments="string()"
                       status="string()"
                       created_at="createTime()" updated_at="updateTime()" />
 
   <!-- 6. Safety training -->
   <safety_training _name="Safety Training"
                    _module="HR" _module_key="hr"
-                   id="id()" staff="staff_member()" course_name="string()"
-                   completion_date="date()" certificate_number="string()"
+                   id="id()" title="string()" description="string()"
+                   duration_hours="double()" completion_date="date()"
                    status="string()"
                    created_at="createTime()" updated_at="updateTime()" />
 </root>

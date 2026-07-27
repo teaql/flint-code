@@ -6,7 +6,6 @@ import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -21,36 +20,56 @@ import java.util.Objects;
 public class DriverAssignment extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "DriverAssignment";
 
+    public static final String START_TIME_PROPERTY = "startTime";
+    public static final String END_TIME_PROPERTY = "endTime";
+    public static final String STATUS_PROPERTY = "status";
     public static final String VEHICLE_PROPERTY = "vehicle";
     public static final String DRIVER_PROPERTY = "driver";
-    public static final String START_DATE_PROPERTY = "startDate";
-    public static final String END_DATE_PROPERTY = "endDate";
-    public static final String STATUS_PROPERTY = "status";
-    public static final String CREATED_AT_PROPERTY = "createdAt";
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private String status;
     private Vehicle vehicle;
     private String driver;
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private String status;
-    private LocalDateTime createdAt;
 
+    public LocalDateTime getStartTime(){
+        return this.startTime;
+    }
+    public LocalDateTime getEndTime(){
+        return this.endTime;
+    }
+    public String getStatus(){
+        return this.status;
+    }
     public Vehicle getVehicle(){
         return this.vehicle;
     }
     public String getDriver(){
         return this.driver;
     }
-    public LocalDate getStartDate(){
-        return this.startDate;
+    public DriverAssignment updateStartTime(LocalDateTime startTime){
+        if(Objects.equals(this.startTime, startTime)){
+            return this;
+        }
+        handleUpdate(START_TIME_PROPERTY, getStartTime(), startTime);
+        this.startTime = startTime;
+        return this;
     }
-    public LocalDate getEndDate(){
-        return this.endDate;
+    public DriverAssignment updateEndTime(LocalDateTime endTime){
+        if(Objects.equals(this.endTime, endTime)){
+            return this;
+        }
+        handleUpdate(END_TIME_PROPERTY, getEndTime(), endTime);
+        this.endTime = endTime;
+        return this;
     }
-    public String getStatus(){
-        return this.status;
-    }
-    public LocalDateTime getCreatedAt(){
-        return this.createdAt;
+    public DriverAssignment updateStatus(String status){
+        status = (status == null ? null : status.trim());
+        if(Objects.equals(this.status, status)){
+            return this;
+        }
+        handleUpdate(STATUS_PROPERTY, getStatus(), status);
+        this.status = status;
+        return this;
     }
     public DriverAssignment updateVehicle(Vehicle vehicle){
         if(Objects.equals(this.vehicle, vehicle)){
@@ -67,39 +86,6 @@ public class DriverAssignment extends BaseEntity implements RemoteInput {
         }
         handleUpdate(DRIVER_PROPERTY, getDriver(), driver);
         this.driver = driver;
-        return this;
-    }
-    public DriverAssignment updateStartDate(LocalDate startDate){
-        if(Objects.equals(this.startDate, startDate)){
-            return this;
-        }
-        handleUpdate(START_DATE_PROPERTY, getStartDate(), startDate);
-        this.startDate = startDate;
-        return this;
-    }
-    public DriverAssignment updateEndDate(LocalDate endDate){
-        if(Objects.equals(this.endDate, endDate)){
-            return this;
-        }
-        handleUpdate(END_DATE_PROPERTY, getEndDate(), endDate);
-        this.endDate = endDate;
-        return this;
-    }
-    public DriverAssignment updateStatus(String status){
-        status = (status == null ? null : status.trim());
-        if(Objects.equals(this.status, status)){
-            return this;
-        }
-        handleUpdate(STATUS_PROPERTY, getStatus(), status);
-        this.status = status;
-        return this;
-    }
-    public DriverAssignment updateCreatedAt(LocalDateTime createdAt){
-        if(Objects.equals(this.createdAt, createdAt)){
-            return this;
-        }
-        handleUpdate(CREATED_AT_PROPERTY, getCreatedAt(), createdAt);
-        this.createdAt = createdAt;
         return this;
     }
 
@@ -130,17 +116,15 @@ public class DriverAssignment extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public void __internalSet(String property, Object value) {
         switch (property) {
-            case "vehicle": this.vehicle = (Vehicle) value; break;
+            case "startTime": this.startTime = (LocalDateTime) value; break;
 
-            case "driver": this.driver = (value == null ? null : ((String)value).trim()); break;
-
-            case "startDate": this.startDate = (LocalDate) value; break;
-
-            case "endDate": this.endDate = (LocalDate) value; break;
+            case "endTime": this.endTime = (LocalDateTime) value; break;
 
             case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
-            case "createdAt": this.createdAt = (LocalDateTime) value; break;
+            case "vehicle": this.vehicle = (Vehicle) value; break;
+
+            case "driver": this.driver = (value == null ? null : ((String)value).trim()); break;
 
             default: super.__internalSet(property, value);
         }
@@ -150,12 +134,11 @@ public class DriverAssignment extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public Object __internalGet(String property) {
         switch (property) {
+            case "startTime": return this.startTime;
+            case "endTime": return this.endTime;
+            case "status": return this.status;
             case "vehicle": return this.vehicle;
             case "driver": return this.driver;
-            case "startDate": return this.startDate;
-            case "endDate": return this.endDate;
-            case "status": return this.status;
-            case "createdAt": return this.createdAt;
             default: return super.__internalGet(property);
         }
     }

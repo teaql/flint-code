@@ -6,6 +6,7 @@ import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -22,15 +23,13 @@ public class InventoryCheck extends BaseEntity implements RemoteInput {
 
     public static final String WAREHOUSE_PROPERTY = "warehouse";
     public static final String CHECK_DATE_PROPERTY = "checkDate";
-    public static final String TOTAL_ITEMS_PROPERTY = "totalItems";
-    public static final String DISCREPANCIES_PROPERTY = "discrepancies";
+    public static final String CHECKER_PROPERTY = "checker";
     public static final String STATUS_PROPERTY = "status";
     public static final String CREATE_TIME_PROPERTY = "createTime";
     public static final String UPDATE_TIME_PROPERTY = "updateTime";
     private Warehouse warehouse;
-    private String checkDate;
-    private Integer totalItems;
-    private Integer discrepancies;
+    private LocalDate checkDate;
+    private String checker;
     private String status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
@@ -38,14 +37,11 @@ public class InventoryCheck extends BaseEntity implements RemoteInput {
     public Warehouse getWarehouse(){
         return this.warehouse;
     }
-    public String getCheckDate(){
+    public LocalDate getCheckDate(){
         return this.checkDate;
     }
-    public Integer getTotalItems(){
-        return this.totalItems;
-    }
-    public Integer getDiscrepancies(){
-        return this.discrepancies;
+    public String getChecker(){
+        return this.checker;
     }
     public String getStatus(){
         return this.status;
@@ -64,8 +60,7 @@ public class InventoryCheck extends BaseEntity implements RemoteInput {
         this.warehouse = warehouse;
         return this;
     }
-    public InventoryCheck updateCheckDate(String checkDate){
-        checkDate = (checkDate == null ? null : checkDate.trim());
+    public InventoryCheck updateCheckDate(LocalDate checkDate){
         if(Objects.equals(this.checkDate, checkDate)){
             return this;
         }
@@ -73,20 +68,13 @@ public class InventoryCheck extends BaseEntity implements RemoteInput {
         this.checkDate = checkDate;
         return this;
     }
-    public InventoryCheck updateTotalItems(Integer totalItems){
-        if(Objects.equals(this.totalItems, totalItems)){
+    public InventoryCheck updateChecker(String checker){
+        checker = (checker == null ? null : checker.trim());
+        if(Objects.equals(this.checker, checker)){
             return this;
         }
-        handleUpdate(TOTAL_ITEMS_PROPERTY, getTotalItems(), totalItems);
-        this.totalItems = totalItems;
-        return this;
-    }
-    public InventoryCheck updateDiscrepancies(Integer discrepancies){
-        if(Objects.equals(this.discrepancies, discrepancies)){
-            return this;
-        }
-        handleUpdate(DISCREPANCIES_PROPERTY, getDiscrepancies(), discrepancies);
-        this.discrepancies = discrepancies;
+        handleUpdate(CHECKER_PROPERTY, getChecker(), checker);
+        this.checker = checker;
         return this;
     }
     public InventoryCheck updateStatus(String status){
@@ -144,11 +132,9 @@ public class InventoryCheck extends BaseEntity implements RemoteInput {
         switch (property) {
             case "warehouse": this.warehouse = (Warehouse) value; break;
 
-            case "checkDate": this.checkDate = (value == null ? null : ((String)value).trim()); break;
+            case "checkDate": this.checkDate = (LocalDate) value; break;
 
-            case "totalItems": this.totalItems = (Integer) value; break;
-
-            case "discrepancies": this.discrepancies = (Integer) value; break;
+            case "checker": this.checker = (value == null ? null : ((String)value).trim()); break;
 
             case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
@@ -166,8 +152,7 @@ public class InventoryCheck extends BaseEntity implements RemoteInput {
         switch (property) {
             case "warehouse": return this.warehouse;
             case "checkDate": return this.checkDate;
-            case "totalItems": return this.totalItems;
-            case "discrepancies": return this.discrepancies;
+            case "checker": return this.checker;
             case "status": return this.status;
             case "createTime": return this.createTime;
             case "updateTime": return this.updateTime;

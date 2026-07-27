@@ -5,10 +5,6 @@ import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
 import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderRequest;
 import com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord;
 import com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecordRequest;
-import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomerRequest;
-import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee;
-import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFeeRequest;
 import com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord;
 import com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecordRequest;
 import io.teaql.core.AggrFunction;
@@ -19,7 +15,7 @@ import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Date;
 
 public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
@@ -93,7 +89,7 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
 
     public InvoiceRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectStatus().selectCreatedAt().selectUpdatedAt().selectMovingOrderIdOnly().selectCustomerIdOnly().selectVersion();
+        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectStatus().selectIssueDate().selectDueDate().selectMovingOrderIdOnly().selectCustomer().selectVersion();
     }
 
     public InvoiceRequest<T> selectSelfFields(){
@@ -102,13 +98,13 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
 
     public InvoiceRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectStatus().selectCreatedAt().selectUpdatedAt().selectMovingOrder().selectCustomer().selectVersion();
+        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectStatus().selectIssueDate().selectDueDate().selectMovingOrder().selectCustomer().selectVersion();
     }
 
     public InvoiceRequest<T> selectChildren(){
         super.selectAny();
-        selectStorageFeeList().selectPaymentRecordList().selectTaxRecordList();
-        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectStatus().selectCreatedAt().selectUpdatedAt().selectMovingOrder().selectCustomer().selectVersion();
+        selectPaymentRecordList().selectTaxRecordList();
+        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectStatus().selectIssueDate().selectDueDate().selectMovingOrder().selectCustomer().selectVersion();
     }
 
 
@@ -222,38 +218,38 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
        unselectProperty(Invoice.STATUS_PROPERTY);
        return this;
     }
-    public InvoiceRequest<T> selectCreatedAt(){
-       selectProperty(Invoice.CREATED_AT_PROPERTY);
+    public InvoiceRequest<T> selectIssueDate(){
+       selectProperty(Invoice.ISSUE_DATE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the createdAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdAt) to fetch createdAt property.
+     * fill the issueDate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  issueDate) to fetch issueDate property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public InvoiceRequest<T> unselectCreatedAt(){
-       unselectProperty(Invoice.CREATED_AT_PROPERTY);
+    public InvoiceRequest<T> unselectIssueDate(){
+       unselectProperty(Invoice.ISSUE_DATE_PROPERTY);
        return this;
     }
-    public InvoiceRequest<T> selectUpdatedAt(){
-       selectProperty(Invoice.UPDATED_AT_PROPERTY);
+    public InvoiceRequest<T> selectDueDate(){
+       selectProperty(Invoice.DUE_DATE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the updatedAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedAt) to fetch updatedAt property.
+     * fill the dueDate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  dueDate) to fetch dueDate property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public InvoiceRequest<T> unselectUpdatedAt(){
-       unselectProperty(Invoice.UPDATED_AT_PROPERTY);
+    public InvoiceRequest<T> unselectDueDate(){
+       unselectProperty(Invoice.DUE_DATE_PROPERTY);
        return this;
     }
     public InvoiceRequest<T> selectMovingOrderIdOnly(){
@@ -275,20 +271,18 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
        unselectProperty(Invoice.MOVING_ORDER_PROPERTY);
        return this;
     }
-    public InvoiceRequest<T> selectCustomerIdOnly(){
-       selectProperty(Invoice.CUSTOMER_PROPERTY);
-       return this;
-    }
-
     public InvoiceRequest<T> selectCustomer(){
-        return selectCustomerWith(Q.privateCustomers().unlimited().selectSelf());
-    }
-
-    public InvoiceRequest<T> selectCustomerWith(PrivateCustomerRequest customer){
        selectProperty(Invoice.CUSTOMER_PROPERTY);
-       enhanceRelation(Invoice.CUSTOMER_PROPERTY, customer);
        return this;
     }
+
+    /**
+     * fill the customer with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  customer) to fetch customer property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
 
     public InvoiceRequest<T> unselectCustomer(){
        unselectProperty(Invoice.CUSTOMER_PROPERTY);
@@ -309,14 +303,6 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
 
     public InvoiceRequest<T> unselectVersion(){
        unselectProperty(Invoice.VERSION_PROPERTY);
-       return this;
-    }
-    public InvoiceRequest<T> selectStorageFeeList(){
-       return selectStorageFeeListWith(Q.storageFees().selectSelf());
-    }
-
-    public InvoiceRequest<T> selectStorageFeeListWith(StorageFeeRequest storageFeeList){
-       enhanceRelation(Invoice.STORAGE_FEE_LIST_PROPERTY, storageFeeList);
        return this;
     }
     public InvoiceRequest<T> selectPaymentRecordList(){
@@ -650,131 +636,131 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
 
 
 
-    public InvoiceRequest<T> filterByCreatedAt(LocalDateTime... createdAt){
-      if (createdAt == null || createdAt.length == 0) {
-        throw new IllegalArgumentException("filterByCreatedAt parameter createdAt cannot be empty");
+    public InvoiceRequest<T> filterByIssueDate(LocalDate... issueDate){
+      if (issueDate == null || issueDate.length == 0) {
+        throw new IllegalArgumentException("filterByIssueDate parameter issueDate cannot be empty");
       }
-      return appendSearchCriteria(createCreatedAtCriteria(Operator.EQUAL, (Object[])createdAt));
+      return appendSearchCriteria(createIssueDateCriteria(Operator.EQUAL, (Object[])issueDate));
     }
 
-    public InvoiceRequest<T> withCreatedAt(Operator operator, Object... values){
-       return appendSearchCriteria(createCreatedAtCriteria(operator, values));
+    public InvoiceRequest<T> withIssueDate(Operator operator, Object... values){
+       return appendSearchCriteria(createIssueDateCriteria(operator, values));
     }
 
-    public InvoiceRequest<T> withCreatedAtIsUnknown(){
-       return withCreatedAt(Operator.IS_NULL);
+    public InvoiceRequest<T> withIssueDateIsUnknown(){
+       return withIssueDate(Operator.IS_NULL);
     }
 
-    public InvoiceRequest<T> withCreatedAtIsKnown(){
-       return withCreatedAt(Operator.IS_NOT_NULL);
+    public InvoiceRequest<T> withIssueDateIsKnown(){
+       return withIssueDate(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCreatedAtCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(Invoice.CREATED_AT_PROPERTY, operator, values);
+    public SearchCriteria createIssueDateCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(Invoice.ISSUE_DATE_PROPERTY, operator, values);
     }
 
-    public InvoiceRequest<T> withCreatedAtGreaterThan(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    public InvoiceRequest<T> withIssueDateGreaterThan(LocalDate issueDate){
+       return withIssueDate(Operator.GREATER_THAN, issueDate);
     }
 
-    public InvoiceRequest<T> withCreatedAtGreaterThanOrEqualTo(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN_OR_EQUAL, createdAt);
+    public InvoiceRequest<T> withIssueDateGreaterThanOrEqualTo(LocalDate issueDate){
+       return withIssueDate(Operator.GREATER_THAN_OR_EQUAL, issueDate);
     }
 
-    public InvoiceRequest<T> withCreatedAtLessThan(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    public InvoiceRequest<T> withIssueDateLessThan(LocalDate issueDate){
+       return withIssueDate(Operator.LESS_THAN, issueDate);
     }
 
-    public InvoiceRequest<T> withCreatedAtLessThanOrEqualTo(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN_OR_EQUAL, createdAt);
+    public InvoiceRequest<T> withIssueDateLessThanOrEqualTo(LocalDate issueDate){
+       return withIssueDate(Operator.LESS_THAN_OR_EQUAL, issueDate);
     }
 
-    public InvoiceRequest<T> withCreatedAtBetween(LocalDateTime startOfCreatedAt, LocalDateTime endOfCreatedAt){
-       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    public InvoiceRequest<T> withIssueDateBetween(LocalDate startOfIssueDate, LocalDate endOfIssueDate){
+       return withIssueDate(Operator.BETWEEN, startOfIssueDate, endOfIssueDate);
     }
-    public InvoiceRequest<T> withCreatedAtBefore(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
-    }
-
-    public InvoiceRequest<T> withCreatedAtBefore(Date createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    public InvoiceRequest<T> withIssueDateBefore(LocalDate issueDate){
+       return withIssueDate(Operator.LESS_THAN, issueDate);
     }
 
-    public InvoiceRequest<T> withCreatedAtAfter(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    public InvoiceRequest<T> withIssueDateBefore(Date issueDate){
+       return withIssueDate(Operator.LESS_THAN, issueDate);
     }
 
-    public InvoiceRequest<T> withCreatedAtAfter(Date createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    public InvoiceRequest<T> withIssueDateAfter(LocalDate issueDate){
+       return withIssueDate(Operator.GREATER_THAN, issueDate);
     }
 
-    public InvoiceRequest<T> withCreatedAtBetween(Date startOfCreatedAt, Date endOfCreatedAt){
-       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    public InvoiceRequest<T> withIssueDateAfter(Date issueDate){
+       return withIssueDate(Operator.GREATER_THAN, issueDate);
+    }
+
+    public InvoiceRequest<T> withIssueDateBetween(Date startOfIssueDate, Date endOfIssueDate){
+       return withIssueDate(Operator.BETWEEN, startOfIssueDate, endOfIssueDate);
     }
 
 
 
 
-    public InvoiceRequest<T> filterByUpdatedAt(LocalDateTime... updatedAt){
-      if (updatedAt == null || updatedAt.length == 0) {
-        throw new IllegalArgumentException("filterByUpdatedAt parameter updatedAt cannot be empty");
+    public InvoiceRequest<T> filterByDueDate(LocalDate... dueDate){
+      if (dueDate == null || dueDate.length == 0) {
+        throw new IllegalArgumentException("filterByDueDate parameter dueDate cannot be empty");
       }
-      return appendSearchCriteria(createUpdatedAtCriteria(Operator.EQUAL, (Object[])updatedAt));
+      return appendSearchCriteria(createDueDateCriteria(Operator.EQUAL, (Object[])dueDate));
     }
 
-    public InvoiceRequest<T> withUpdatedAt(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdatedAtCriteria(operator, values));
+    public InvoiceRequest<T> withDueDate(Operator operator, Object... values){
+       return appendSearchCriteria(createDueDateCriteria(operator, values));
     }
 
-    public InvoiceRequest<T> withUpdatedAtIsUnknown(){
-       return withUpdatedAt(Operator.IS_NULL);
+    public InvoiceRequest<T> withDueDateIsUnknown(){
+       return withDueDate(Operator.IS_NULL);
     }
 
-    public InvoiceRequest<T> withUpdatedAtIsKnown(){
-       return withUpdatedAt(Operator.IS_NOT_NULL);
+    public InvoiceRequest<T> withDueDateIsKnown(){
+       return withDueDate(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createUpdatedAtCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(Invoice.UPDATED_AT_PROPERTY, operator, values);
+    public SearchCriteria createDueDateCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(Invoice.DUE_DATE_PROPERTY, operator, values);
     }
 
-    public InvoiceRequest<T> withUpdatedAtGreaterThan(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    public InvoiceRequest<T> withDueDateGreaterThan(LocalDate dueDate){
+       return withDueDate(Operator.GREATER_THAN, dueDate);
     }
 
-    public InvoiceRequest<T> withUpdatedAtGreaterThanOrEqualTo(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN_OR_EQUAL, updatedAt);
+    public InvoiceRequest<T> withDueDateGreaterThanOrEqualTo(LocalDate dueDate){
+       return withDueDate(Operator.GREATER_THAN_OR_EQUAL, dueDate);
     }
 
-    public InvoiceRequest<T> withUpdatedAtLessThan(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    public InvoiceRequest<T> withDueDateLessThan(LocalDate dueDate){
+       return withDueDate(Operator.LESS_THAN, dueDate);
     }
 
-    public InvoiceRequest<T> withUpdatedAtLessThanOrEqualTo(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN_OR_EQUAL, updatedAt);
+    public InvoiceRequest<T> withDueDateLessThanOrEqualTo(LocalDate dueDate){
+       return withDueDate(Operator.LESS_THAN_OR_EQUAL, dueDate);
     }
 
-    public InvoiceRequest<T> withUpdatedAtBetween(LocalDateTime startOfUpdatedAt, LocalDateTime endOfUpdatedAt){
-       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    public InvoiceRequest<T> withDueDateBetween(LocalDate startOfDueDate, LocalDate endOfDueDate){
+       return withDueDate(Operator.BETWEEN, startOfDueDate, endOfDueDate);
     }
-    public InvoiceRequest<T> withUpdatedAtBefore(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
-    }
-
-    public InvoiceRequest<T> withUpdatedAtBefore(Date updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    public InvoiceRequest<T> withDueDateBefore(LocalDate dueDate){
+       return withDueDate(Operator.LESS_THAN, dueDate);
     }
 
-    public InvoiceRequest<T> withUpdatedAtAfter(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    public InvoiceRequest<T> withDueDateBefore(Date dueDate){
+       return withDueDate(Operator.LESS_THAN, dueDate);
     }
 
-    public InvoiceRequest<T> withUpdatedAtAfter(Date updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    public InvoiceRequest<T> withDueDateAfter(LocalDate dueDate){
+       return withDueDate(Operator.GREATER_THAN, dueDate);
     }
 
-    public InvoiceRequest<T> withUpdatedAtBetween(Date startOfUpdatedAt, Date endOfUpdatedAt){
-       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    public InvoiceRequest<T> withDueDateAfter(Date dueDate){
+       return withDueDate(Operator.GREATER_THAN, dueDate);
+    }
+
+    public InvoiceRequest<T> withDueDateBetween(Date startOfDueDate, Date endOfDueDate){
+       return withDueDate(Operator.BETWEEN, startOfDueDate, endOfDueDate);
     }
 
 
@@ -813,7 +799,7 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
        return appendSearchCriteria(new SubQuerySearchCriteria(Invoice.MOVING_ORDER_PROPERTY, movingOrder, MovingOrder.ID_PROPERTY));
     }
 
-    public InvoiceRequest<T> filterByCustomer(PrivateCustomer... customer){
+    public InvoiceRequest<T> filterByCustomer(String... customer){
       if (customer == null || customer.length == 0) {
         throw new IllegalArgumentException("filterByCustomer parameter customer cannot be empty");
       }
@@ -836,15 +822,45 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
         return createBasicSearchCriteria(Invoice.CUSTOMER_PROPERTY, operator, values);
     }
 
-    public InvoiceRequest<T> filterByCustomer(Long customer){
-      if(customer == null){
-         return this;
-      }
-      return withCustomer(Operator.EQUAL, customer);
+    public InvoiceRequest<T> withCustomerGreaterThan(String customer){
+       return withCustomer(Operator.GREATER_THAN, customer);
     }
-    public InvoiceRequest<T> withCustomerMatching(PrivateCustomerRequest customer){
-       return appendSearchCriteria(new SubQuerySearchCriteria(Invoice.CUSTOMER_PROPERTY, customer, PrivateCustomer.ID_PROPERTY));
+
+    public InvoiceRequest<T> withCustomerGreaterThanOrEqualTo(String customer){
+       return withCustomer(Operator.GREATER_THAN_OR_EQUAL, customer);
     }
+
+    public InvoiceRequest<T> withCustomerLessThan(String customer){
+       return withCustomer(Operator.LESS_THAN, customer);
+    }
+
+    public InvoiceRequest<T> withCustomerLessThanOrEqualTo(String customer){
+       return withCustomer(Operator.LESS_THAN_OR_EQUAL, customer);
+    }
+
+    public InvoiceRequest<T> withCustomerBetween(String startOfCustomer, String endOfCustomer){
+       return withCustomer(Operator.BETWEEN, startOfCustomer, endOfCustomer);
+    }
+    public InvoiceRequest<T> withCustomerStartingWith(String customer){
+       return withCustomer(Operator.BEGIN_WITH, customer);
+    }
+    public InvoiceRequest<T> withCustomerContaining(String customer){
+       return withCustomer(Operator.CONTAIN, customer);
+    }
+
+    public InvoiceRequest<T> withCustomerEndingWith(String customer){
+       return withCustomer(Operator.END_WITH, customer);
+    }
+
+    public InvoiceRequest<T> withCustomerIs(String customer){
+       return withCustomer(Operator.EQUAL, customer);
+    }
+
+    public InvoiceRequest<T> withCustomerSoundingLike(String customer){
+       return withCustomer(Operator.SOUNDS_LIKE, customer);
+    }
+
+
 
     public InvoiceRequest<T> filterByVersion(Long... version){
       if (version == null || version.length == 0) {
@@ -889,21 +905,6 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
        return withVersion(Operator.BETWEEN, startOfVersion, endOfVersion);
     }
 
-    public InvoiceRequest<T> withStorageFeeListMatching(StorageFeeRequest storageFeeRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(Invoice.ID_PROPERTY, storageFeeRequest, StorageFee.INVOICE_PROPERTY));
-    }
-
-    public InvoiceRequest<T> withoutStorageFeeListMatching(StorageFeeRequest storageFeeRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(Invoice.ID_PROPERTY, storageFeeRequest, StorageFee.INVOICE_PROPERTY)));
-    }
-
-    public InvoiceRequest<T> haveStorageFees(){
-        return withStorageFeeListMatching(Q.storageFees().unlimited());
-    }
-
-    public InvoiceRequest<T> haveNoStorageFees(){
-        return withoutStorageFeeListMatching(Q.storageFees().unlimited());
-    }
     public InvoiceRequest<T> withPaymentRecordListMatching(PaymentRecordRequest paymentRecordRequest){
         return appendSearchCriteria(new SubQuerySearchCriteria(Invoice.ID_PROPERTY, paymentRecordRequest, PaymentRecord.INVOICE_PROPERTY));
     }
@@ -1016,20 +1017,8 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
        return this;
     }
 
-    public InvoiceRequest<T> groupByCustomerWithDetails(){
-       return groupByCustomerWithDetails(Q.privateCustomers().unlimited());
-    }
-
-    public InvoiceRequest<T> groupByCustomerWithDetails(PrivateCustomerRequest subRequest){
-       aggregate(Invoice.CUSTOMER_PROPERTY, subRequest);
-       return this;
-    }
 
 
-    public InvoiceRequest<T> groupByStorageFeesWithDetails(StorageFeeRequest subRequest){
-       aggregate(Invoice.STORAGE_FEE_LIST_PROPERTY, subRequest);
-       return this;
-    }
     public InvoiceRequest<T> groupByPaymentRecordsWithDetails(PaymentRecordRequest subRequest){
        aggregate(Invoice.PAYMENT_RECORD_LIST_PROPERTY, subRequest);
        return this;
@@ -1129,33 +1118,33 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
        return this;
     }
 
-    public InvoiceRequest<T> groupByCreatedAt(){
-       groupBy(Invoice.CREATED_AT_PROPERTY);
+    public InvoiceRequest<T> groupByIssueDate(){
+       groupBy(Invoice.ISSUE_DATE_PROPERTY);
        return this;
     }
 
-    public InvoiceRequest<T> groupByCreatedAtAs(String retName){
-       groupBy(retName, Invoice.CREATED_AT_PROPERTY);
+    public InvoiceRequest<T> groupByIssueDateAs(String retName){
+       groupBy(retName, Invoice.ISSUE_DATE_PROPERTY);
        return this;
     }
 
-    public InvoiceRequest<T> groupByCreatedAtWithFunction(String retName, AggrFunction function){
-       groupBy(retName, Invoice.CREATED_AT_PROPERTY, function);
+    public InvoiceRequest<T> groupByIssueDateWithFunction(String retName, AggrFunction function){
+       groupBy(retName, Invoice.ISSUE_DATE_PROPERTY, function);
        return this;
     }
 
-    public InvoiceRequest<T> groupByUpdatedAt(){
-       groupBy(Invoice.UPDATED_AT_PROPERTY);
+    public InvoiceRequest<T> groupByDueDate(){
+       groupBy(Invoice.DUE_DATE_PROPERTY);
        return this;
     }
 
-    public InvoiceRequest<T> groupByUpdatedAtAs(String retName){
-       groupBy(retName, Invoice.UPDATED_AT_PROPERTY);
+    public InvoiceRequest<T> groupByDueDateAs(String retName){
+       groupBy(retName, Invoice.DUE_DATE_PROPERTY);
        return this;
     }
 
-    public InvoiceRequest<T> groupByUpdatedAtWithFunction(String retName, AggrFunction function){
-       groupBy(retName, Invoice.UPDATED_AT_PROPERTY, function);
+    public InvoiceRequest<T> groupByDueDateWithFunction(String retName, AggrFunction function){
+       groupBy(retName, Invoice.DUE_DATE_PROPERTY, function);
        return this;
     }
     public InvoiceRequest<T> groupByMovingOrderWith(MovingOrderRequest subRequest){
@@ -1176,10 +1165,7 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
        groupBy(retName, Invoice.MOVING_ORDER_PROPERTY, function);
        return this;
     }
-    public InvoiceRequest<T> groupByCustomerWith(PrivateCustomerRequest subRequest){
-       groupBy(Invoice.CUSTOMER_PROPERTY, subRequest);
-       return this;
-    }
+
     public InvoiceRequest<T> groupByCustomer(){
        groupBy(Invoice.CUSTOMER_PROPERTY);
        return this;
@@ -1304,23 +1290,23 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
        addOrderByDescendingUsingGBK(Invoice.STATUS_PROPERTY);
        return this;
     }
-    public InvoiceRequest<T> orderByCreatedAtAscending(){
-       addOrderByAscending(Invoice.CREATED_AT_PROPERTY);
+    public InvoiceRequest<T> orderByIssueDateAscending(){
+       addOrderByAscending(Invoice.ISSUE_DATE_PROPERTY);
        return this;
     }
 
-    public InvoiceRequest<T> orderByCreatedAtDescending(){
-       addOrderByDescending(Invoice.CREATED_AT_PROPERTY);
+    public InvoiceRequest<T> orderByIssueDateDescending(){
+       addOrderByDescending(Invoice.ISSUE_DATE_PROPERTY);
        return this;
     }
 
-    public InvoiceRequest<T> orderByUpdatedAtAscending(){
-       addOrderByAscending(Invoice.UPDATED_AT_PROPERTY);
+    public InvoiceRequest<T> orderByDueDateAscending(){
+       addOrderByAscending(Invoice.DUE_DATE_PROPERTY);
        return this;
     }
 
-    public InvoiceRequest<T> orderByUpdatedAtDescending(){
-       addOrderByDescending(Invoice.UPDATED_AT_PROPERTY);
+    public InvoiceRequest<T> orderByDueDateDescending(){
+       addOrderByDescending(Invoice.DUE_DATE_PROPERTY);
        return this;
     }
 
@@ -1343,7 +1329,15 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
        addOrderByDescending(Invoice.CUSTOMER_PROPERTY);
        return this;
     }
+    public InvoiceRequest<T> orderByCustomerAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(Invoice.CUSTOMER_PROPERTY);
+       return this;
+    }
 
+    public InvoiceRequest<T> orderByCustomerDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(Invoice.CUSTOMER_PROPERTY);
+       return this;
+    }
     public InvoiceRequest<T> orderByVersionAscending(){
        addOrderByAscending(Invoice.VERSION_PROPERTY);
        return this;
@@ -1355,19 +1349,6 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
     }
 
 
-    public InvoiceRequest<T> statsFromStorageFeesAs(String name, StorageFeeRequest subRequest){
-       return statsFromStorageFeesAs(name, subRequest, false);
-    }
-
-    public InvoiceRequest<T> statsFromStorageFeesAs(String name, StorageFeeRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(StorageFee.INVOICE_PROPERTY);
-       addAggregateDynamicProperty(name, subRequest, singleResult);
-       return this;
-    }
-
-    public InvoiceRequest<T> statsFromStorageFees(StorageFeeRequest subRequest){
-       return statsFromStorageFeesAs(REFINEMENTS, subRequest);
-    }
     public InvoiceRequest<T> statsFromPaymentRecordsAs(String name, PaymentRecordRequest subRequest){
        return statsFromPaymentRecordsAs(name, subRequest, false);
     }
@@ -1401,25 +1382,8 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
        return movingOrder;
     }
 
-    public PrivateCustomerRequest rollUpToCustomer(){
-       PrivateCustomerRequest customer = Q.privateCustomers().unlimited();
-       this.withCustomerMatching(customer)
-           .groupByCustomerWith(customer);
-       return customer;
-    }
 
 
-    public InvoiceRequest<T> countStorageFees(){
-        return countStorageFeesAs("Count");
-    }
-
-    public InvoiceRequest<T> countStorageFeesAs(String name){
-        return countStorageFeesWith(name, Q.storageFees().unlimited());
-    }
-
-    public InvoiceRequest<T> countStorageFeesWith(String name, StorageFeeRequest subRequest){
-        return statsFromStorageFeesAs(name, subRequest.count(), true);
-    }
     public InvoiceRequest<T> countPaymentRecords(){
         return countPaymentRecordsAs("Count");
     }
@@ -1441,94 +1405,6 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
 
     public InvoiceRequest<T> countTaxRecordsWith(String name, TaxRecordRequest subRequest){
         return statsFromTaxRecordsAs(name, subRequest.count(), true);
-    }
-    public InvoiceRequest<T> minFeeAmountOfStorageFees(){
-        return minFeeAmountOfStorageFeesAs("minFeeAmountOfStorageFees");
-    }
-
-    public InvoiceRequest<T> minFeeAmountOfStorageFeesAs(String name){
-        return minFeeAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
-    }
-
-    public InvoiceRequest<T> minFeeAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
-        return statsFromStorageFeesAs(name, subRequest.minFeeAmount(), true);
-    }
-    public InvoiceRequest<T> maxFeeAmountOfStorageFees(){
-        return maxFeeAmountOfStorageFeesAs("maxFeeAmountOfStorageFees");
-    }
-
-    public InvoiceRequest<T> maxFeeAmountOfStorageFeesAs(String name){
-        return maxFeeAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
-    }
-
-    public InvoiceRequest<T> maxFeeAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
-        return statsFromStorageFeesAs(name, subRequest.maxFeeAmount(), true);
-    }
-    public InvoiceRequest<T> sumFeeAmountOfStorageFees(){
-        return sumFeeAmountOfStorageFeesAs("sumFeeAmountOfStorageFees");
-    }
-
-    public InvoiceRequest<T> sumFeeAmountOfStorageFeesAs(String name){
-        return sumFeeAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
-    }
-
-    public InvoiceRequest<T> sumFeeAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
-        return statsFromStorageFeesAs(name, subRequest.sumFeeAmount(), true);
-    }
-    public InvoiceRequest<T> avgFeeAmountOfStorageFees(){
-        return avgFeeAmountOfStorageFeesAs("avgFeeAmountOfStorageFees");
-    }
-
-    public InvoiceRequest<T> avgFeeAmountOfStorageFeesAs(String name){
-        return avgFeeAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
-    }
-
-    public InvoiceRequest<T> avgFeeAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
-        return statsFromStorageFeesAs(name, subRequest.avgFeeAmount(), true);
-    }
-    public InvoiceRequest<T> standardDeviationFeeAmountOfStorageFees(){
-        return standardDeviationFeeAmountOfStorageFeesAs("stdDevFeeAmountOfStorageFees");
-    }
-
-    public InvoiceRequest<T> standardDeviationFeeAmountOfStorageFeesAs(String name){
-        return standardDeviationFeeAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
-    }
-
-    public InvoiceRequest<T> standardDeviationFeeAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
-        return statsFromStorageFeesAs(name, subRequest.standardDeviationFeeAmount(), true);
-    }
-    public InvoiceRequest<T> squareRootOfPopulationStandardDeviationFeeAmountOfStorageFees(){
-        return squareRootOfPopulationStandardDeviationFeeAmountOfStorageFeesAs("stdDevPopFeeAmountOfStorageFees");
-    }
-
-    public InvoiceRequest<T> squareRootOfPopulationStandardDeviationFeeAmountOfStorageFeesAs(String name){
-        return squareRootOfPopulationStandardDeviationFeeAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
-    }
-
-    public InvoiceRequest<T> squareRootOfPopulationStandardDeviationFeeAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
-        return statsFromStorageFeesAs(name, subRequest.squareRootOfPopulationStandardDeviationFeeAmount(), true);
-    }
-    public InvoiceRequest<T> sampleVarianceFeeAmountOfStorageFees(){
-        return sampleVarianceFeeAmountOfStorageFeesAs("varSampFeeAmountOfStorageFees");
-    }
-
-    public InvoiceRequest<T> sampleVarianceFeeAmountOfStorageFeesAs(String name){
-        return sampleVarianceFeeAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
-    }
-
-    public InvoiceRequest<T> sampleVarianceFeeAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
-        return statsFromStorageFeesAs(name, subRequest.sampleVarianceFeeAmount(), true);
-    }
-    public InvoiceRequest<T> samplePopulationVarianceFeeAmountOfStorageFees(){
-        return samplePopulationVarianceFeeAmountOfStorageFeesAs("varPopFeeAmountOfStorageFees");
-    }
-
-    public InvoiceRequest<T> samplePopulationVarianceFeeAmountOfStorageFeesAs(String name){
-        return samplePopulationVarianceFeeAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
-    }
-
-    public InvoiceRequest<T> samplePopulationVarianceFeeAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
-        return statsFromStorageFeesAs(name, subRequest.samplePopulationVarianceFeeAmount(), true);
     }
     public InvoiceRequest<T> minAmountOfPaymentRecords(){
         return minAmountOfPaymentRecordsAs("minAmountOfPaymentRecords");
@@ -1618,93 +1494,93 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
     public InvoiceRequest<T> samplePopulationVarianceAmountOfPaymentRecordsAs(String name, PaymentRecordRequest subRequest){
         return statsFromPaymentRecordsAs(name, subRequest.samplePopulationVarianceAmount(), true);
     }
-    public InvoiceRequest<T> minAmountOfTaxRecords(){
-        return minAmountOfTaxRecordsAs("minAmountOfTaxRecords");
+    public InvoiceRequest<T> minTaxAmountOfTaxRecords(){
+        return minTaxAmountOfTaxRecordsAs("minTaxAmountOfTaxRecords");
     }
 
-    public InvoiceRequest<T> minAmountOfTaxRecordsAs(String name){
-        return minAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
+    public InvoiceRequest<T> minTaxAmountOfTaxRecordsAs(String name){
+        return minTaxAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
     }
 
-    public InvoiceRequest<T> minAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
-        return statsFromTaxRecordsAs(name, subRequest.minAmount(), true);
+    public InvoiceRequest<T> minTaxAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
+        return statsFromTaxRecordsAs(name, subRequest.minTaxAmount(), true);
     }
-    public InvoiceRequest<T> maxAmountOfTaxRecords(){
-        return maxAmountOfTaxRecordsAs("maxAmountOfTaxRecords");
-    }
-
-    public InvoiceRequest<T> maxAmountOfTaxRecordsAs(String name){
-        return maxAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
+    public InvoiceRequest<T> maxTaxAmountOfTaxRecords(){
+        return maxTaxAmountOfTaxRecordsAs("maxTaxAmountOfTaxRecords");
     }
 
-    public InvoiceRequest<T> maxAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
-        return statsFromTaxRecordsAs(name, subRequest.maxAmount(), true);
-    }
-    public InvoiceRequest<T> sumAmountOfTaxRecords(){
-        return sumAmountOfTaxRecordsAs("sumAmountOfTaxRecords");
+    public InvoiceRequest<T> maxTaxAmountOfTaxRecordsAs(String name){
+        return maxTaxAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
     }
 
-    public InvoiceRequest<T> sumAmountOfTaxRecordsAs(String name){
-        return sumAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
+    public InvoiceRequest<T> maxTaxAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
+        return statsFromTaxRecordsAs(name, subRequest.maxTaxAmount(), true);
+    }
+    public InvoiceRequest<T> sumTaxAmountOfTaxRecords(){
+        return sumTaxAmountOfTaxRecordsAs("sumTaxAmountOfTaxRecords");
     }
 
-    public InvoiceRequest<T> sumAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
-        return statsFromTaxRecordsAs(name, subRequest.sumAmount(), true);
-    }
-    public InvoiceRequest<T> avgAmountOfTaxRecords(){
-        return avgAmountOfTaxRecordsAs("avgAmountOfTaxRecords");
+    public InvoiceRequest<T> sumTaxAmountOfTaxRecordsAs(String name){
+        return sumTaxAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
     }
 
-    public InvoiceRequest<T> avgAmountOfTaxRecordsAs(String name){
-        return avgAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
+    public InvoiceRequest<T> sumTaxAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
+        return statsFromTaxRecordsAs(name, subRequest.sumTaxAmount(), true);
+    }
+    public InvoiceRequest<T> avgTaxAmountOfTaxRecords(){
+        return avgTaxAmountOfTaxRecordsAs("avgTaxAmountOfTaxRecords");
     }
 
-    public InvoiceRequest<T> avgAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
-        return statsFromTaxRecordsAs(name, subRequest.avgAmount(), true);
-    }
-    public InvoiceRequest<T> standardDeviationAmountOfTaxRecords(){
-        return standardDeviationAmountOfTaxRecordsAs("stdDevAmountOfTaxRecords");
+    public InvoiceRequest<T> avgTaxAmountOfTaxRecordsAs(String name){
+        return avgTaxAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
     }
 
-    public InvoiceRequest<T> standardDeviationAmountOfTaxRecordsAs(String name){
-        return standardDeviationAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
+    public InvoiceRequest<T> avgTaxAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
+        return statsFromTaxRecordsAs(name, subRequest.avgTaxAmount(), true);
+    }
+    public InvoiceRequest<T> standardDeviationTaxAmountOfTaxRecords(){
+        return standardDeviationTaxAmountOfTaxRecordsAs("stdDevTaxAmountOfTaxRecords");
     }
 
-    public InvoiceRequest<T> standardDeviationAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
-        return statsFromTaxRecordsAs(name, subRequest.standardDeviationAmount(), true);
-    }
-    public InvoiceRequest<T> squareRootOfPopulationStandardDeviationAmountOfTaxRecords(){
-        return squareRootOfPopulationStandardDeviationAmountOfTaxRecordsAs("stdDevPopAmountOfTaxRecords");
+    public InvoiceRequest<T> standardDeviationTaxAmountOfTaxRecordsAs(String name){
+        return standardDeviationTaxAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
     }
 
-    public InvoiceRequest<T> squareRootOfPopulationStandardDeviationAmountOfTaxRecordsAs(String name){
-        return squareRootOfPopulationStandardDeviationAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
+    public InvoiceRequest<T> standardDeviationTaxAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
+        return statsFromTaxRecordsAs(name, subRequest.standardDeviationTaxAmount(), true);
+    }
+    public InvoiceRequest<T> squareRootOfPopulationStandardDeviationTaxAmountOfTaxRecords(){
+        return squareRootOfPopulationStandardDeviationTaxAmountOfTaxRecordsAs("stdDevPopTaxAmountOfTaxRecords");
     }
 
-    public InvoiceRequest<T> squareRootOfPopulationStandardDeviationAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
-        return statsFromTaxRecordsAs(name, subRequest.squareRootOfPopulationStandardDeviationAmount(), true);
-    }
-    public InvoiceRequest<T> sampleVarianceAmountOfTaxRecords(){
-        return sampleVarianceAmountOfTaxRecordsAs("varSampAmountOfTaxRecords");
+    public InvoiceRequest<T> squareRootOfPopulationStandardDeviationTaxAmountOfTaxRecordsAs(String name){
+        return squareRootOfPopulationStandardDeviationTaxAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
     }
 
-    public InvoiceRequest<T> sampleVarianceAmountOfTaxRecordsAs(String name){
-        return sampleVarianceAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
+    public InvoiceRequest<T> squareRootOfPopulationStandardDeviationTaxAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
+        return statsFromTaxRecordsAs(name, subRequest.squareRootOfPopulationStandardDeviationTaxAmount(), true);
+    }
+    public InvoiceRequest<T> sampleVarianceTaxAmountOfTaxRecords(){
+        return sampleVarianceTaxAmountOfTaxRecordsAs("varSampTaxAmountOfTaxRecords");
     }
 
-    public InvoiceRequest<T> sampleVarianceAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
-        return statsFromTaxRecordsAs(name, subRequest.sampleVarianceAmount(), true);
-    }
-    public InvoiceRequest<T> samplePopulationVarianceAmountOfTaxRecords(){
-        return samplePopulationVarianceAmountOfTaxRecordsAs("varPopAmountOfTaxRecords");
+    public InvoiceRequest<T> sampleVarianceTaxAmountOfTaxRecordsAs(String name){
+        return sampleVarianceTaxAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
     }
 
-    public InvoiceRequest<T> samplePopulationVarianceAmountOfTaxRecordsAs(String name){
-        return samplePopulationVarianceAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
+    public InvoiceRequest<T> sampleVarianceTaxAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
+        return statsFromTaxRecordsAs(name, subRequest.sampleVarianceTaxAmount(), true);
+    }
+    public InvoiceRequest<T> samplePopulationVarianceTaxAmountOfTaxRecords(){
+        return samplePopulationVarianceTaxAmountOfTaxRecordsAs("varPopTaxAmountOfTaxRecords");
     }
 
-    public InvoiceRequest<T> samplePopulationVarianceAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
-        return statsFromTaxRecordsAs(name, subRequest.samplePopulationVarianceAmount(), true);
+    public InvoiceRequest<T> samplePopulationVarianceTaxAmountOfTaxRecordsAs(String name){
+        return samplePopulationVarianceTaxAmountOfTaxRecordsAs(name, Q.taxRecords().unlimited());
+    }
+
+    public InvoiceRequest<T> samplePopulationVarianceTaxAmountOfTaxRecordsAs(String name, TaxRecordRequest subRequest){
+        return statsFromTaxRecordsAs(name, subRequest.samplePopulationVarianceTaxAmount(), true);
     }
     public InvoiceRequest<T> minTaxRateOfTaxRecords(){
         return minTaxRateOfTaxRecordsAs("minTaxRateOfTaxRecords");
@@ -1801,14 +1677,6 @@ public class InvoiceRequest<T extends Invoice> extends BaseRequest<T> {
 
    public InvoiceRequest<T> facetByMovingOrderAs(String facetName, MovingOrderRequest movingOrder, boolean includeAllFacets){
        addFacet(facetName, Invoice.MOVING_ORDER_PROPERTY, movingOrder, includeAllFacets);
-       return this;
-   }
-   public InvoiceRequest<T> facetByCustomerAs(String facetName, PrivateCustomerRequest customer){
-       return facetByCustomerAs(facetName, customer, true);
-   }
-
-   public InvoiceRequest<T> facetByCustomerAs(String facetName, PrivateCustomerRequest customer, boolean includeAllFacets){
-       addFacet(facetName, Invoice.CUSTOMER_PROPERTY, customer, includeAllFacets);
        return this;
    }
 

@@ -9,6 +9,7 @@ import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -23,27 +24,26 @@ public class ServiceQuote extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "ServiceQuote";
 
     public static final String QUOTE_NUMBER_PROPERTY = "quoteNumber";
-    public static final String DESCRIPTION_PROPERTY = "description";
     public static final String ESTIMATED_COST_PROPERTY = "estimatedCost";
     public static final String CURRENCY_PROPERTY = "currency";
-    public static final String STATUS_PROPERTY = "status";
     public static final String VALID_UNTIL_PROPERTY = "validUntil";
+    public static final String STATUS_PROPERTY = "status";
     public static final String PRIVATE_CUSTOMER_PROPERTY = "privateCustomer";
     public static final String CORPORATE_CUSTOMER_PROPERTY = "corporateCustomer";
+    public static final String CREATED_AT_PROPERTY = "createdAt";
+    public static final String UPDATED_AT_PROPERTY = "updatedAt";
     private String quoteNumber;
-    private String description;
     private BigDecimal estimatedCost;
     private String currency;
-    private String status;
     private LocalDate validUntil;
+    private String status;
     private PrivateCustomer privateCustomer;
     private CorporateCustomer corporateCustomer;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public String getQuoteNumber(){
         return this.quoteNumber;
-    }
-    public String getDescription(){
-        return this.description;
     }
     public BigDecimal getEstimatedCost(){
         return this.estimatedCost;
@@ -51,17 +51,23 @@ public class ServiceQuote extends BaseEntity implements RemoteInput {
     public String getCurrency(){
         return this.currency;
     }
-    public String getStatus(){
-        return this.status;
-    }
     public LocalDate getValidUntil(){
         return this.validUntil;
+    }
+    public String getStatus(){
+        return this.status;
     }
     public PrivateCustomer getPrivateCustomer(){
         return this.privateCustomer;
     }
     public CorporateCustomer getCorporateCustomer(){
         return this.corporateCustomer;
+    }
+    public LocalDateTime getCreatedAt(){
+        return this.createdAt;
+    }
+    public LocalDateTime getUpdatedAt(){
+        return this.updatedAt;
     }
     public ServiceQuote updateQuoteNumber(String quoteNumber){
         quoteNumber = (quoteNumber == null ? null : quoteNumber.trim());
@@ -70,15 +76,6 @@ public class ServiceQuote extends BaseEntity implements RemoteInput {
         }
         handleUpdate(QUOTE_NUMBER_PROPERTY, getQuoteNumber(), quoteNumber);
         this.quoteNumber = quoteNumber;
-        return this;
-    }
-    public ServiceQuote updateDescription(String description){
-        description = (description == null ? null : description.trim());
-        if(Objects.equals(this.description, description)){
-            return this;
-        }
-        handleUpdate(DESCRIPTION_PROPERTY, getDescription(), description);
-        this.description = description;
         return this;
     }
     public ServiceQuote updateEstimatedCost(BigDecimal estimatedCost){
@@ -98,6 +95,14 @@ public class ServiceQuote extends BaseEntity implements RemoteInput {
         this.currency = currency;
         return this;
     }
+    public ServiceQuote updateValidUntil(LocalDate validUntil){
+        if(Objects.equals(this.validUntil, validUntil)){
+            return this;
+        }
+        handleUpdate(VALID_UNTIL_PROPERTY, getValidUntil(), validUntil);
+        this.validUntil = validUntil;
+        return this;
+    }
     public ServiceQuote updateStatus(String status){
         status = (status == null ? null : status.trim());
         if(Objects.equals(this.status, status)){
@@ -105,14 +110,6 @@ public class ServiceQuote extends BaseEntity implements RemoteInput {
         }
         handleUpdate(STATUS_PROPERTY, getStatus(), status);
         this.status = status;
-        return this;
-    }
-    public ServiceQuote updateValidUntil(LocalDate validUntil){
-        if(Objects.equals(this.validUntil, validUntil)){
-            return this;
-        }
-        handleUpdate(VALID_UNTIL_PROPERTY, getValidUntil(), validUntil);
-        this.validUntil = validUntil;
         return this;
     }
     public ServiceQuote updatePrivateCustomer(PrivateCustomer privateCustomer){
@@ -129,6 +126,22 @@ public class ServiceQuote extends BaseEntity implements RemoteInput {
         }
         handleUpdate(CORPORATE_CUSTOMER_PROPERTY, getCorporateCustomer(), corporateCustomer);
         this.corporateCustomer = corporateCustomer;
+        return this;
+    }
+    public ServiceQuote updateCreatedAt(LocalDateTime createdAt){
+        if(Objects.equals(this.createdAt, createdAt)){
+            return this;
+        }
+        handleUpdate(CREATED_AT_PROPERTY, getCreatedAt(), createdAt);
+        this.createdAt = createdAt;
+        return this;
+    }
+    public ServiceQuote updateUpdatedAt(LocalDateTime updatedAt){
+        if(Objects.equals(this.updatedAt, updatedAt)){
+            return this;
+        }
+        handleUpdate(UPDATED_AT_PROPERTY, getUpdatedAt(), updatedAt);
+        this.updatedAt = updatedAt;
         return this;
     }
 
@@ -161,19 +174,21 @@ public class ServiceQuote extends BaseEntity implements RemoteInput {
         switch (property) {
             case "quoteNumber": this.quoteNumber = (value == null ? null : ((String)value).trim()); break;
 
-            case "description": this.description = (value == null ? null : ((String)value).trim()); break;
-
             case "estimatedCost": this.estimatedCost = (BigDecimal) value; break;
 
             case "currency": this.currency = (value == null ? null : ((String)value).trim()); break;
 
-            case "status": this.status = (value == null ? null : ((String)value).trim()); break;
-
             case "validUntil": this.validUntil = (LocalDate) value; break;
+
+            case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
             case "privateCustomer": this.privateCustomer = (PrivateCustomer) value; break;
 
             case "corporateCustomer": this.corporateCustomer = (CorporateCustomer) value; break;
+
+            case "createdAt": this.createdAt = (LocalDateTime) value; break;
+
+            case "updatedAt": this.updatedAt = (LocalDateTime) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -184,13 +199,14 @@ public class ServiceQuote extends BaseEntity implements RemoteInput {
     public Object __internalGet(String property) {
         switch (property) {
             case "quoteNumber": return this.quoteNumber;
-            case "description": return this.description;
             case "estimatedCost": return this.estimatedCost;
             case "currency": return this.currency;
-            case "status": return this.status;
             case "validUntil": return this.validUntil;
+            case "status": return this.status;
             case "privateCustomer": return this.privateCustomer;
             case "corporateCustomer": return this.corporateCustomer;
+            case "createdAt": return this.createdAt;
+            case "updatedAt": return this.updatedAt;
             default: return super.__internalGet(property);
         }
     }

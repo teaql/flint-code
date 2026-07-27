@@ -11,8 +11,6 @@ import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Date;
 
 public class TaxRecordRequest<T extends TaxRecord> extends BaseRequest<T> {
 
@@ -85,7 +83,7 @@ public class TaxRecordRequest<T extends TaxRecord> extends BaseRequest<T> {
 
     public TaxRecordRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectTaxRate().selectTaxType().selectCreatedAt().selectUpdatedAt().selectInvoiceIdOnly().selectVersion();
+        return selectId().selectName().selectTaxCode().selectTaxAmount().selectCurrency().selectTaxRate().selectTaxPeriod().selectFilingStatus().selectInvoiceIdOnly().selectVersion();
     }
 
     public TaxRecordRequest<T> selectSelfFields(){
@@ -94,12 +92,12 @@ public class TaxRecordRequest<T extends TaxRecord> extends BaseRequest<T> {
 
     public TaxRecordRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectTaxRate().selectTaxType().selectCreatedAt().selectUpdatedAt().selectInvoice().selectVersion();
+        return selectId().selectName().selectTaxCode().selectTaxAmount().selectCurrency().selectTaxRate().selectTaxPeriod().selectFilingStatus().selectInvoice().selectVersion();
     }
 
     public TaxRecordRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectName().selectCode().selectAmount().selectCurrency().selectTaxRate().selectTaxType().selectCreatedAt().selectUpdatedAt().selectInvoice().selectVersion();
+        return selectId().selectName().selectTaxCode().selectTaxAmount().selectCurrency().selectTaxRate().selectTaxPeriod().selectFilingStatus().selectInvoice().selectVersion();
     }
 
 
@@ -137,46 +135,46 @@ public class TaxRecordRequest<T extends TaxRecord> extends BaseRequest<T> {
        unselectProperty(TaxRecord.NAME_PROPERTY);
        return this;
     }
-    public TaxRecordRequest<T> selectCode(){
-       selectProperty(TaxRecord.CODE_PROPERTY);
+    public TaxRecordRequest<T> selectTaxCode(){
+       selectProperty(TaxRecord.TAX_CODE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the code with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  code) to fetch code property.
+     * fill the taxCode with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  taxCode) to fetch taxCode property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public TaxRecordRequest<T> unselectCode(){
-       unselectProperty(TaxRecord.CODE_PROPERTY);
+    public TaxRecordRequest<T> unselectTaxCode(){
+       unselectProperty(TaxRecord.TAX_CODE_PROPERTY);
        return this;
     }
-    public TaxRecordRequest<T> selectAmount(){
-       selectProperty(TaxRecord.AMOUNT_PROPERTY);
+    public TaxRecordRequest<T> selectTaxAmount(){
+       selectProperty(TaxRecord.TAX_AMOUNT_PROPERTY);
        return this;
     }
 
     /**
-     * fill the amount with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  amount) to fetch amount property.
+     * fill the taxAmount with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  taxAmount) to fetch taxAmount property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
     /**
-     * fill the amount with customized aggrFunction, TEAQL uses ({aggrFunction}(amount) AS amount to fetch amount property.
+     * fill the taxAmount with customized aggrFunction, TEAQL uses ({aggrFunction}(taxAmount) AS taxAmount to fetch taxAmount property.
      * @param aggrFunction  aggrFunction
      */
-    public TaxRecordRequest<T> selectAmount(AggrFunction aggrFunction){
-       selectProperty(TaxRecord.AMOUNT_PROPERTY, aggrFunction);
+    public TaxRecordRequest<T> selectTaxAmount(AggrFunction aggrFunction){
+       selectProperty(TaxRecord.TAX_AMOUNT_PROPERTY, aggrFunction);
        return this;
     }
 
 
-    public TaxRecordRequest<T> unselectAmount(){
-       unselectProperty(TaxRecord.AMOUNT_PROPERTY);
+    public TaxRecordRequest<T> unselectTaxAmount(){
+       unselectProperty(TaxRecord.TAX_AMOUNT_PROPERTY);
        return this;
     }
     public TaxRecordRequest<T> selectCurrency(){
@@ -221,55 +219,38 @@ public class TaxRecordRequest<T extends TaxRecord> extends BaseRequest<T> {
        unselectProperty(TaxRecord.TAX_RATE_PROPERTY);
        return this;
     }
-    public TaxRecordRequest<T> selectTaxType(){
-       selectProperty(TaxRecord.TAX_TYPE_PROPERTY);
+    public TaxRecordRequest<T> selectTaxPeriod(){
+       selectProperty(TaxRecord.TAX_PERIOD_PROPERTY);
        return this;
     }
 
     /**
-     * fill the taxType with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  taxType) to fetch taxType property.
+     * fill the taxPeriod with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  taxPeriod) to fetch taxPeriod property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public TaxRecordRequest<T> unselectTaxType(){
-       unselectProperty(TaxRecord.TAX_TYPE_PROPERTY);
+    public TaxRecordRequest<T> unselectTaxPeriod(){
+       unselectProperty(TaxRecord.TAX_PERIOD_PROPERTY);
        return this;
     }
-    public TaxRecordRequest<T> selectCreatedAt(){
-       selectProperty(TaxRecord.CREATED_AT_PROPERTY);
+    public TaxRecordRequest<T> selectFilingStatus(){
+       selectProperty(TaxRecord.FILING_STATUS_PROPERTY);
        return this;
     }
 
     /**
-     * fill the createdAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdAt) to fetch createdAt property.
+     * fill the filingStatus with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  filingStatus) to fetch filingStatus property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public TaxRecordRequest<T> unselectCreatedAt(){
-       unselectProperty(TaxRecord.CREATED_AT_PROPERTY);
-       return this;
-    }
-    public TaxRecordRequest<T> selectUpdatedAt(){
-       selectProperty(TaxRecord.UPDATED_AT_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the updatedAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedAt) to fetch updatedAt property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public TaxRecordRequest<T> unselectUpdatedAt(){
-       unselectProperty(TaxRecord.UPDATED_AT_PROPERTY);
+    public TaxRecordRequest<T> unselectFilingStatus(){
+       unselectProperty(TaxRecord.FILING_STATUS_PROPERTY);
        return this;
     }
     public TaxRecordRequest<T> selectInvoiceIdOnly(){
@@ -389,110 +370,110 @@ public class TaxRecordRequest<T extends TaxRecord> extends BaseRequest<T> {
 
 
 
-    public TaxRecordRequest<T> filterByCode(String... code){
-      if (code == null || code.length == 0) {
-        throw new IllegalArgumentException("filterByCode parameter code cannot be empty");
+    public TaxRecordRequest<T> filterByTaxCode(String... taxCode){
+      if (taxCode == null || taxCode.length == 0) {
+        throw new IllegalArgumentException("filterByTaxCode parameter taxCode cannot be empty");
       }
-      return appendSearchCriteria(createCodeCriteria(Operator.EQUAL, (Object[])code));
+      return appendSearchCriteria(createTaxCodeCriteria(Operator.EQUAL, (Object[])taxCode));
     }
 
-    public TaxRecordRequest<T> withCode(Operator operator, Object... values){
-       return appendSearchCriteria(createCodeCriteria(operator, values));
+    public TaxRecordRequest<T> withTaxCode(Operator operator, Object... values){
+       return appendSearchCriteria(createTaxCodeCriteria(operator, values));
     }
 
-    public TaxRecordRequest<T> withCodeIsUnknown(){
-       return withCode(Operator.IS_NULL);
+    public TaxRecordRequest<T> withTaxCodeIsUnknown(){
+       return withTaxCode(Operator.IS_NULL);
     }
 
-    public TaxRecordRequest<T> withCodeIsKnown(){
-       return withCode(Operator.IS_NOT_NULL);
+    public TaxRecordRequest<T> withTaxCodeIsKnown(){
+       return withTaxCode(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCodeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TaxRecord.CODE_PROPERTY, operator, values);
+    public SearchCriteria createTaxCodeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(TaxRecord.TAX_CODE_PROPERTY, operator, values);
     }
 
-    public TaxRecordRequest<T> withCodeGreaterThan(String code){
-       return withCode(Operator.GREATER_THAN, code);
+    public TaxRecordRequest<T> withTaxCodeGreaterThan(String taxCode){
+       return withTaxCode(Operator.GREATER_THAN, taxCode);
     }
 
-    public TaxRecordRequest<T> withCodeGreaterThanOrEqualTo(String code){
-       return withCode(Operator.GREATER_THAN_OR_EQUAL, code);
+    public TaxRecordRequest<T> withTaxCodeGreaterThanOrEqualTo(String taxCode){
+       return withTaxCode(Operator.GREATER_THAN_OR_EQUAL, taxCode);
     }
 
-    public TaxRecordRequest<T> withCodeLessThan(String code){
-       return withCode(Operator.LESS_THAN, code);
+    public TaxRecordRequest<T> withTaxCodeLessThan(String taxCode){
+       return withTaxCode(Operator.LESS_THAN, taxCode);
     }
 
-    public TaxRecordRequest<T> withCodeLessThanOrEqualTo(String code){
-       return withCode(Operator.LESS_THAN_OR_EQUAL, code);
+    public TaxRecordRequest<T> withTaxCodeLessThanOrEqualTo(String taxCode){
+       return withTaxCode(Operator.LESS_THAN_OR_EQUAL, taxCode);
     }
 
-    public TaxRecordRequest<T> withCodeBetween(String startOfCode, String endOfCode){
-       return withCode(Operator.BETWEEN, startOfCode, endOfCode);
+    public TaxRecordRequest<T> withTaxCodeBetween(String startOfTaxCode, String endOfTaxCode){
+       return withTaxCode(Operator.BETWEEN, startOfTaxCode, endOfTaxCode);
     }
-    public TaxRecordRequest<T> withCodeStartingWith(String code){
-       return withCode(Operator.BEGIN_WITH, code);
+    public TaxRecordRequest<T> withTaxCodeStartingWith(String taxCode){
+       return withTaxCode(Operator.BEGIN_WITH, taxCode);
     }
-    public TaxRecordRequest<T> withCodeContaining(String code){
-       return withCode(Operator.CONTAIN, code);
-    }
-
-    public TaxRecordRequest<T> withCodeEndingWith(String code){
-       return withCode(Operator.END_WITH, code);
+    public TaxRecordRequest<T> withTaxCodeContaining(String taxCode){
+       return withTaxCode(Operator.CONTAIN, taxCode);
     }
 
-    public TaxRecordRequest<T> withCodeIs(String code){
-       return withCode(Operator.EQUAL, code);
+    public TaxRecordRequest<T> withTaxCodeEndingWith(String taxCode){
+       return withTaxCode(Operator.END_WITH, taxCode);
     }
 
-    public TaxRecordRequest<T> withCodeSoundingLike(String code){
-       return withCode(Operator.SOUNDS_LIKE, code);
+    public TaxRecordRequest<T> withTaxCodeIs(String taxCode){
+       return withTaxCode(Operator.EQUAL, taxCode);
+    }
+
+    public TaxRecordRequest<T> withTaxCodeSoundingLike(String taxCode){
+       return withTaxCode(Operator.SOUNDS_LIKE, taxCode);
     }
 
 
 
-    public TaxRecordRequest<T> filterByAmount(BigDecimal... amount){
-      if (amount == null || amount.length == 0) {
-        throw new IllegalArgumentException("filterByAmount parameter amount cannot be empty");
+    public TaxRecordRequest<T> filterByTaxAmount(BigDecimal... taxAmount){
+      if (taxAmount == null || taxAmount.length == 0) {
+        throw new IllegalArgumentException("filterByTaxAmount parameter taxAmount cannot be empty");
       }
-      return appendSearchCriteria(createAmountCriteria(Operator.EQUAL, (Object[])amount));
+      return appendSearchCriteria(createTaxAmountCriteria(Operator.EQUAL, (Object[])taxAmount));
     }
 
-    public TaxRecordRequest<T> withAmount(Operator operator, Object... values){
-       return appendSearchCriteria(createAmountCriteria(operator, values));
+    public TaxRecordRequest<T> withTaxAmount(Operator operator, Object... values){
+       return appendSearchCriteria(createTaxAmountCriteria(operator, values));
     }
 
-    public TaxRecordRequest<T> withAmountIsUnknown(){
-       return withAmount(Operator.IS_NULL);
+    public TaxRecordRequest<T> withTaxAmountIsUnknown(){
+       return withTaxAmount(Operator.IS_NULL);
     }
 
-    public TaxRecordRequest<T> withAmountIsKnown(){
-       return withAmount(Operator.IS_NOT_NULL);
+    public TaxRecordRequest<T> withTaxAmountIsKnown(){
+       return withTaxAmount(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createAmountCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TaxRecord.AMOUNT_PROPERTY, operator, values);
+    public SearchCriteria createTaxAmountCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(TaxRecord.TAX_AMOUNT_PROPERTY, operator, values);
     }
 
-    public TaxRecordRequest<T> withAmountGreaterThan(BigDecimal amount){
-       return withAmount(Operator.GREATER_THAN, amount);
+    public TaxRecordRequest<T> withTaxAmountGreaterThan(BigDecimal taxAmount){
+       return withTaxAmount(Operator.GREATER_THAN, taxAmount);
     }
 
-    public TaxRecordRequest<T> withAmountGreaterThanOrEqualTo(BigDecimal amount){
-       return withAmount(Operator.GREATER_THAN_OR_EQUAL, amount);
+    public TaxRecordRequest<T> withTaxAmountGreaterThanOrEqualTo(BigDecimal taxAmount){
+       return withTaxAmount(Operator.GREATER_THAN_OR_EQUAL, taxAmount);
     }
 
-    public TaxRecordRequest<T> withAmountLessThan(BigDecimal amount){
-       return withAmount(Operator.LESS_THAN, amount);
+    public TaxRecordRequest<T> withTaxAmountLessThan(BigDecimal taxAmount){
+       return withTaxAmount(Operator.LESS_THAN, taxAmount);
     }
 
-    public TaxRecordRequest<T> withAmountLessThanOrEqualTo(BigDecimal amount){
-       return withAmount(Operator.LESS_THAN_OR_EQUAL, amount);
+    public TaxRecordRequest<T> withTaxAmountLessThanOrEqualTo(BigDecimal taxAmount){
+       return withTaxAmount(Operator.LESS_THAN_OR_EQUAL, taxAmount);
     }
 
-    public TaxRecordRequest<T> withAmountBetween(BigDecimal startOfAmount, BigDecimal endOfAmount){
-       return withAmount(Operator.BETWEEN, startOfAmount, endOfAmount);
+    public TaxRecordRequest<T> withTaxAmountBetween(BigDecimal startOfTaxAmount, BigDecimal endOfTaxAmount){
+       return withTaxAmount(Operator.BETWEEN, startOfTaxAmount, endOfTaxAmount);
     }
 
 
@@ -605,196 +586,129 @@ public class TaxRecordRequest<T extends TaxRecord> extends BaseRequest<T> {
 
 
 
-    public TaxRecordRequest<T> filterByTaxType(String... taxType){
-      if (taxType == null || taxType.length == 0) {
-        throw new IllegalArgumentException("filterByTaxType parameter taxType cannot be empty");
+    public TaxRecordRequest<T> filterByTaxPeriod(String... taxPeriod){
+      if (taxPeriod == null || taxPeriod.length == 0) {
+        throw new IllegalArgumentException("filterByTaxPeriod parameter taxPeriod cannot be empty");
       }
-      return appendSearchCriteria(createTaxTypeCriteria(Operator.EQUAL, (Object[])taxType));
+      return appendSearchCriteria(createTaxPeriodCriteria(Operator.EQUAL, (Object[])taxPeriod));
     }
 
-    public TaxRecordRequest<T> withTaxType(Operator operator, Object... values){
-       return appendSearchCriteria(createTaxTypeCriteria(operator, values));
+    public TaxRecordRequest<T> withTaxPeriod(Operator operator, Object... values){
+       return appendSearchCriteria(createTaxPeriodCriteria(operator, values));
     }
 
-    public TaxRecordRequest<T> withTaxTypeIsUnknown(){
-       return withTaxType(Operator.IS_NULL);
+    public TaxRecordRequest<T> withTaxPeriodIsUnknown(){
+       return withTaxPeriod(Operator.IS_NULL);
     }
 
-    public TaxRecordRequest<T> withTaxTypeIsKnown(){
-       return withTaxType(Operator.IS_NOT_NULL);
+    public TaxRecordRequest<T> withTaxPeriodIsKnown(){
+       return withTaxPeriod(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createTaxTypeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TaxRecord.TAX_TYPE_PROPERTY, operator, values);
+    public SearchCriteria createTaxPeriodCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(TaxRecord.TAX_PERIOD_PROPERTY, operator, values);
     }
 
-    public TaxRecordRequest<T> withTaxTypeGreaterThan(String taxType){
-       return withTaxType(Operator.GREATER_THAN, taxType);
+    public TaxRecordRequest<T> withTaxPeriodGreaterThan(String taxPeriod){
+       return withTaxPeriod(Operator.GREATER_THAN, taxPeriod);
     }
 
-    public TaxRecordRequest<T> withTaxTypeGreaterThanOrEqualTo(String taxType){
-       return withTaxType(Operator.GREATER_THAN_OR_EQUAL, taxType);
+    public TaxRecordRequest<T> withTaxPeriodGreaterThanOrEqualTo(String taxPeriod){
+       return withTaxPeriod(Operator.GREATER_THAN_OR_EQUAL, taxPeriod);
     }
 
-    public TaxRecordRequest<T> withTaxTypeLessThan(String taxType){
-       return withTaxType(Operator.LESS_THAN, taxType);
+    public TaxRecordRequest<T> withTaxPeriodLessThan(String taxPeriod){
+       return withTaxPeriod(Operator.LESS_THAN, taxPeriod);
     }
 
-    public TaxRecordRequest<T> withTaxTypeLessThanOrEqualTo(String taxType){
-       return withTaxType(Operator.LESS_THAN_OR_EQUAL, taxType);
+    public TaxRecordRequest<T> withTaxPeriodLessThanOrEqualTo(String taxPeriod){
+       return withTaxPeriod(Operator.LESS_THAN_OR_EQUAL, taxPeriod);
     }
 
-    public TaxRecordRequest<T> withTaxTypeBetween(String startOfTaxType, String endOfTaxType){
-       return withTaxType(Operator.BETWEEN, startOfTaxType, endOfTaxType);
+    public TaxRecordRequest<T> withTaxPeriodBetween(String startOfTaxPeriod, String endOfTaxPeriod){
+       return withTaxPeriod(Operator.BETWEEN, startOfTaxPeriod, endOfTaxPeriod);
     }
-    public TaxRecordRequest<T> withTaxTypeStartingWith(String taxType){
-       return withTaxType(Operator.BEGIN_WITH, taxType);
+    public TaxRecordRequest<T> withTaxPeriodStartingWith(String taxPeriod){
+       return withTaxPeriod(Operator.BEGIN_WITH, taxPeriod);
     }
-    public TaxRecordRequest<T> withTaxTypeContaining(String taxType){
-       return withTaxType(Operator.CONTAIN, taxType);
-    }
-
-    public TaxRecordRequest<T> withTaxTypeEndingWith(String taxType){
-       return withTaxType(Operator.END_WITH, taxType);
+    public TaxRecordRequest<T> withTaxPeriodContaining(String taxPeriod){
+       return withTaxPeriod(Operator.CONTAIN, taxPeriod);
     }
 
-    public TaxRecordRequest<T> withTaxTypeIs(String taxType){
-       return withTaxType(Operator.EQUAL, taxType);
+    public TaxRecordRequest<T> withTaxPeriodEndingWith(String taxPeriod){
+       return withTaxPeriod(Operator.END_WITH, taxPeriod);
     }
 
-    public TaxRecordRequest<T> withTaxTypeSoundingLike(String taxType){
-       return withTaxType(Operator.SOUNDS_LIKE, taxType);
+    public TaxRecordRequest<T> withTaxPeriodIs(String taxPeriod){
+       return withTaxPeriod(Operator.EQUAL, taxPeriod);
+    }
+
+    public TaxRecordRequest<T> withTaxPeriodSoundingLike(String taxPeriod){
+       return withTaxPeriod(Operator.SOUNDS_LIKE, taxPeriod);
     }
 
 
 
-    public TaxRecordRequest<T> filterByCreatedAt(LocalDateTime... createdAt){
-      if (createdAt == null || createdAt.length == 0) {
-        throw new IllegalArgumentException("filterByCreatedAt parameter createdAt cannot be empty");
+    public TaxRecordRequest<T> filterByFilingStatus(String... filingStatus){
+      if (filingStatus == null || filingStatus.length == 0) {
+        throw new IllegalArgumentException("filterByFilingStatus parameter filingStatus cannot be empty");
       }
-      return appendSearchCriteria(createCreatedAtCriteria(Operator.EQUAL, (Object[])createdAt));
+      return appendSearchCriteria(createFilingStatusCriteria(Operator.EQUAL, (Object[])filingStatus));
     }
 
-    public TaxRecordRequest<T> withCreatedAt(Operator operator, Object... values){
-       return appendSearchCriteria(createCreatedAtCriteria(operator, values));
+    public TaxRecordRequest<T> withFilingStatus(Operator operator, Object... values){
+       return appendSearchCriteria(createFilingStatusCriteria(operator, values));
     }
 
-    public TaxRecordRequest<T> withCreatedAtIsUnknown(){
-       return withCreatedAt(Operator.IS_NULL);
+    public TaxRecordRequest<T> withFilingStatusIsUnknown(){
+       return withFilingStatus(Operator.IS_NULL);
     }
 
-    public TaxRecordRequest<T> withCreatedAtIsKnown(){
-       return withCreatedAt(Operator.IS_NOT_NULL);
+    public TaxRecordRequest<T> withFilingStatusIsKnown(){
+       return withFilingStatus(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCreatedAtCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TaxRecord.CREATED_AT_PROPERTY, operator, values);
+    public SearchCriteria createFilingStatusCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(TaxRecord.FILING_STATUS_PROPERTY, operator, values);
     }
 
-    public TaxRecordRequest<T> withCreatedAtGreaterThan(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    public TaxRecordRequest<T> withFilingStatusGreaterThan(String filingStatus){
+       return withFilingStatus(Operator.GREATER_THAN, filingStatus);
     }
 
-    public TaxRecordRequest<T> withCreatedAtGreaterThanOrEqualTo(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN_OR_EQUAL, createdAt);
+    public TaxRecordRequest<T> withFilingStatusGreaterThanOrEqualTo(String filingStatus){
+       return withFilingStatus(Operator.GREATER_THAN_OR_EQUAL, filingStatus);
     }
 
-    public TaxRecordRequest<T> withCreatedAtLessThan(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    public TaxRecordRequest<T> withFilingStatusLessThan(String filingStatus){
+       return withFilingStatus(Operator.LESS_THAN, filingStatus);
     }
 
-    public TaxRecordRequest<T> withCreatedAtLessThanOrEqualTo(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN_OR_EQUAL, createdAt);
+    public TaxRecordRequest<T> withFilingStatusLessThanOrEqualTo(String filingStatus){
+       return withFilingStatus(Operator.LESS_THAN_OR_EQUAL, filingStatus);
     }
 
-    public TaxRecordRequest<T> withCreatedAtBetween(LocalDateTime startOfCreatedAt, LocalDateTime endOfCreatedAt){
-       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    public TaxRecordRequest<T> withFilingStatusBetween(String startOfFilingStatus, String endOfFilingStatus){
+       return withFilingStatus(Operator.BETWEEN, startOfFilingStatus, endOfFilingStatus);
     }
-    public TaxRecordRequest<T> withCreatedAtBefore(LocalDateTime createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    public TaxRecordRequest<T> withFilingStatusStartingWith(String filingStatus){
+       return withFilingStatus(Operator.BEGIN_WITH, filingStatus);
     }
-
-    public TaxRecordRequest<T> withCreatedAtBefore(Date createdAt){
-       return withCreatedAt(Operator.LESS_THAN, createdAt);
-    }
-
-    public TaxRecordRequest<T> withCreatedAtAfter(LocalDateTime createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    public TaxRecordRequest<T> withFilingStatusContaining(String filingStatus){
+       return withFilingStatus(Operator.CONTAIN, filingStatus);
     }
 
-    public TaxRecordRequest<T> withCreatedAtAfter(Date createdAt){
-       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    public TaxRecordRequest<T> withFilingStatusEndingWith(String filingStatus){
+       return withFilingStatus(Operator.END_WITH, filingStatus);
     }
 
-    public TaxRecordRequest<T> withCreatedAtBetween(Date startOfCreatedAt, Date endOfCreatedAt){
-       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    public TaxRecordRequest<T> withFilingStatusIs(String filingStatus){
+       return withFilingStatus(Operator.EQUAL, filingStatus);
     }
 
-
-
-
-    public TaxRecordRequest<T> filterByUpdatedAt(LocalDateTime... updatedAt){
-      if (updatedAt == null || updatedAt.length == 0) {
-        throw new IllegalArgumentException("filterByUpdatedAt parameter updatedAt cannot be empty");
-      }
-      return appendSearchCriteria(createUpdatedAtCriteria(Operator.EQUAL, (Object[])updatedAt));
+    public TaxRecordRequest<T> withFilingStatusSoundingLike(String filingStatus){
+       return withFilingStatus(Operator.SOUNDS_LIKE, filingStatus);
     }
-
-    public TaxRecordRequest<T> withUpdatedAt(Operator operator, Object... values){
-       return appendSearchCriteria(createUpdatedAtCriteria(operator, values));
-    }
-
-    public TaxRecordRequest<T> withUpdatedAtIsUnknown(){
-       return withUpdatedAt(Operator.IS_NULL);
-    }
-
-    public TaxRecordRequest<T> withUpdatedAtIsKnown(){
-       return withUpdatedAt(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createUpdatedAtCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TaxRecord.UPDATED_AT_PROPERTY, operator, values);
-    }
-
-    public TaxRecordRequest<T> withUpdatedAtGreaterThan(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
-    }
-
-    public TaxRecordRequest<T> withUpdatedAtGreaterThanOrEqualTo(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN_OR_EQUAL, updatedAt);
-    }
-
-    public TaxRecordRequest<T> withUpdatedAtLessThan(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
-    }
-
-    public TaxRecordRequest<T> withUpdatedAtLessThanOrEqualTo(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN_OR_EQUAL, updatedAt);
-    }
-
-    public TaxRecordRequest<T> withUpdatedAtBetween(LocalDateTime startOfUpdatedAt, LocalDateTime endOfUpdatedAt){
-       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
-    }
-    public TaxRecordRequest<T> withUpdatedAtBefore(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
-    }
-
-    public TaxRecordRequest<T> withUpdatedAtBefore(Date updatedAt){
-       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
-    }
-
-    public TaxRecordRequest<T> withUpdatedAtAfter(LocalDateTime updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
-    }
-
-    public TaxRecordRequest<T> withUpdatedAtAfter(Date updatedAt){
-       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
-    }
-
-    public TaxRecordRequest<T> withUpdatedAtBetween(Date startOfUpdatedAt, Date endOfUpdatedAt){
-       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
-    }
-
 
 
 
@@ -883,68 +797,68 @@ public class TaxRecordRequest<T extends TaxRecord> extends BaseRequest<T> {
         super.count(retName);
         return this;
     }
-    public TaxRecordRequest minAmount(){
-        return minAmountAs(prefix("minOf",TaxRecord.AMOUNT_PROPERTY));
+    public TaxRecordRequest minTaxAmount(){
+        return minTaxAmountAs(prefix("minOf",TaxRecord.TAX_AMOUNT_PROPERTY));
     }
 
-    public TaxRecordRequest minAmountAs(String retName){
-        super.min(retName, TaxRecord.AMOUNT_PROPERTY);
+    public TaxRecordRequest minTaxAmountAs(String retName){
+        super.min(retName, TaxRecord.TAX_AMOUNT_PROPERTY);
         return this;
     }
-    public TaxRecordRequest maxAmount(){
-        return maxAmountAs(prefix("maxOf",TaxRecord.AMOUNT_PROPERTY));
+    public TaxRecordRequest maxTaxAmount(){
+        return maxTaxAmountAs(prefix("maxOf",TaxRecord.TAX_AMOUNT_PROPERTY));
     }
 
-    public TaxRecordRequest maxAmountAs(String retName){
-        super.max(retName, TaxRecord.AMOUNT_PROPERTY);
+    public TaxRecordRequest maxTaxAmountAs(String retName){
+        super.max(retName, TaxRecord.TAX_AMOUNT_PROPERTY);
         return this;
     }
-    public TaxRecordRequest sumAmount(){
-        return sumAmountAs(prefix("sumOf",TaxRecord.AMOUNT_PROPERTY));
+    public TaxRecordRequest sumTaxAmount(){
+        return sumTaxAmountAs(prefix("sumOf",TaxRecord.TAX_AMOUNT_PROPERTY));
     }
 
-    public TaxRecordRequest sumAmountAs(String retName){
-        super.sum(retName, TaxRecord.AMOUNT_PROPERTY);
+    public TaxRecordRequest sumTaxAmountAs(String retName){
+        super.sum(retName, TaxRecord.TAX_AMOUNT_PROPERTY);
         return this;
     }
-    public TaxRecordRequest avgAmount(){
-        return avgAmountAs(prefix("avgOf",TaxRecord.AMOUNT_PROPERTY));
+    public TaxRecordRequest avgTaxAmount(){
+        return avgTaxAmountAs(prefix("avgOf",TaxRecord.TAX_AMOUNT_PROPERTY));
     }
 
-    public TaxRecordRequest avgAmountAs(String retName){
-        super.avg(retName, TaxRecord.AMOUNT_PROPERTY);
+    public TaxRecordRequest avgTaxAmountAs(String retName){
+        super.avg(retName, TaxRecord.TAX_AMOUNT_PROPERTY);
         return this;
     }
-    public TaxRecordRequest standardDeviationAmount(){
-        return standardDeviationAmountAs(prefix("standardDeviationOf",TaxRecord.AMOUNT_PROPERTY));
+    public TaxRecordRequest standardDeviationTaxAmount(){
+        return standardDeviationTaxAmountAs(prefix("standardDeviationOf",TaxRecord.TAX_AMOUNT_PROPERTY));
     }
 
-    public TaxRecordRequest standardDeviationAmountAs(String retName){
-        super.standardDeviation(retName, TaxRecord.AMOUNT_PROPERTY);
+    public TaxRecordRequest standardDeviationTaxAmountAs(String retName){
+        super.standardDeviation(retName, TaxRecord.TAX_AMOUNT_PROPERTY);
         return this;
     }
-    public TaxRecordRequest squareRootOfPopulationStandardDeviationAmount(){
-        return squareRootOfPopulationStandardDeviationAmountAs(prefix("squareRootOfPopulationStandardDeviationOf",TaxRecord.AMOUNT_PROPERTY));
+    public TaxRecordRequest squareRootOfPopulationStandardDeviationTaxAmount(){
+        return squareRootOfPopulationStandardDeviationTaxAmountAs(prefix("squareRootOfPopulationStandardDeviationOf",TaxRecord.TAX_AMOUNT_PROPERTY));
     }
 
-    public TaxRecordRequest squareRootOfPopulationStandardDeviationAmountAs(String retName){
-        super.squareRootOfPopulationStandardDeviation(retName, TaxRecord.AMOUNT_PROPERTY);
+    public TaxRecordRequest squareRootOfPopulationStandardDeviationTaxAmountAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, TaxRecord.TAX_AMOUNT_PROPERTY);
         return this;
     }
-    public TaxRecordRequest sampleVarianceAmount(){
-        return sampleVarianceAmountAs(prefix("sampleVarianceOf",TaxRecord.AMOUNT_PROPERTY));
+    public TaxRecordRequest sampleVarianceTaxAmount(){
+        return sampleVarianceTaxAmountAs(prefix("sampleVarianceOf",TaxRecord.TAX_AMOUNT_PROPERTY));
     }
 
-    public TaxRecordRequest sampleVarianceAmountAs(String retName){
-        super.sampleVariance(retName, TaxRecord.AMOUNT_PROPERTY);
+    public TaxRecordRequest sampleVarianceTaxAmountAs(String retName){
+        super.sampleVariance(retName, TaxRecord.TAX_AMOUNT_PROPERTY);
         return this;
     }
-    public TaxRecordRequest samplePopulationVarianceAmount(){
-        return samplePopulationVarianceAmountAs(prefix("samplePopulationVarianceOf",TaxRecord.AMOUNT_PROPERTY));
+    public TaxRecordRequest samplePopulationVarianceTaxAmount(){
+        return samplePopulationVarianceTaxAmountAs(prefix("samplePopulationVarianceOf",TaxRecord.TAX_AMOUNT_PROPERTY));
     }
 
-    public TaxRecordRequest samplePopulationVarianceAmountAs(String retName){
-        super.samplePopulationVariance(retName, TaxRecord.AMOUNT_PROPERTY);
+    public TaxRecordRequest samplePopulationVarianceTaxAmountAs(String retName){
+        super.samplePopulationVariance(retName, TaxRecord.TAX_AMOUNT_PROPERTY);
         return this;
     }
     public TaxRecordRequest minTaxRate(){
@@ -1052,33 +966,33 @@ public class TaxRecordRequest<T extends TaxRecord> extends BaseRequest<T> {
        return this;
     }
 
-    public TaxRecordRequest<T> groupByCode(){
-       groupBy(TaxRecord.CODE_PROPERTY);
+    public TaxRecordRequest<T> groupByTaxCode(){
+       groupBy(TaxRecord.TAX_CODE_PROPERTY);
        return this;
     }
 
-    public TaxRecordRequest<T> groupByCodeAs(String retName){
-       groupBy(retName, TaxRecord.CODE_PROPERTY);
+    public TaxRecordRequest<T> groupByTaxCodeAs(String retName){
+       groupBy(retName, TaxRecord.TAX_CODE_PROPERTY);
        return this;
     }
 
-    public TaxRecordRequest<T> groupByCodeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TaxRecord.CODE_PROPERTY, function);
+    public TaxRecordRequest<T> groupByTaxCodeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, TaxRecord.TAX_CODE_PROPERTY, function);
        return this;
     }
 
-    public TaxRecordRequest<T> groupByAmount(){
-       groupBy(TaxRecord.AMOUNT_PROPERTY);
+    public TaxRecordRequest<T> groupByTaxAmount(){
+       groupBy(TaxRecord.TAX_AMOUNT_PROPERTY);
        return this;
     }
 
-    public TaxRecordRequest<T> groupByAmountAs(String retName){
-       groupBy(retName, TaxRecord.AMOUNT_PROPERTY);
+    public TaxRecordRequest<T> groupByTaxAmountAs(String retName){
+       groupBy(retName, TaxRecord.TAX_AMOUNT_PROPERTY);
        return this;
     }
 
-    public TaxRecordRequest<T> groupByAmountWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TaxRecord.AMOUNT_PROPERTY, function);
+    public TaxRecordRequest<T> groupByTaxAmountWithFunction(String retName, AggrFunction function){
+       groupBy(retName, TaxRecord.TAX_AMOUNT_PROPERTY, function);
        return this;
     }
 
@@ -1112,48 +1026,33 @@ public class TaxRecordRequest<T extends TaxRecord> extends BaseRequest<T> {
        return this;
     }
 
-    public TaxRecordRequest<T> groupByTaxType(){
-       groupBy(TaxRecord.TAX_TYPE_PROPERTY);
+    public TaxRecordRequest<T> groupByTaxPeriod(){
+       groupBy(TaxRecord.TAX_PERIOD_PROPERTY);
        return this;
     }
 
-    public TaxRecordRequest<T> groupByTaxTypeAs(String retName){
-       groupBy(retName, TaxRecord.TAX_TYPE_PROPERTY);
+    public TaxRecordRequest<T> groupByTaxPeriodAs(String retName){
+       groupBy(retName, TaxRecord.TAX_PERIOD_PROPERTY);
        return this;
     }
 
-    public TaxRecordRequest<T> groupByTaxTypeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TaxRecord.TAX_TYPE_PROPERTY, function);
+    public TaxRecordRequest<T> groupByTaxPeriodWithFunction(String retName, AggrFunction function){
+       groupBy(retName, TaxRecord.TAX_PERIOD_PROPERTY, function);
        return this;
     }
 
-    public TaxRecordRequest<T> groupByCreatedAt(){
-       groupBy(TaxRecord.CREATED_AT_PROPERTY);
+    public TaxRecordRequest<T> groupByFilingStatus(){
+       groupBy(TaxRecord.FILING_STATUS_PROPERTY);
        return this;
     }
 
-    public TaxRecordRequest<T> groupByCreatedAtAs(String retName){
-       groupBy(retName, TaxRecord.CREATED_AT_PROPERTY);
+    public TaxRecordRequest<T> groupByFilingStatusAs(String retName){
+       groupBy(retName, TaxRecord.FILING_STATUS_PROPERTY);
        return this;
     }
 
-    public TaxRecordRequest<T> groupByCreatedAtWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TaxRecord.CREATED_AT_PROPERTY, function);
-       return this;
-    }
-
-    public TaxRecordRequest<T> groupByUpdatedAt(){
-       groupBy(TaxRecord.UPDATED_AT_PROPERTY);
-       return this;
-    }
-
-    public TaxRecordRequest<T> groupByUpdatedAtAs(String retName){
-       groupBy(retName, TaxRecord.UPDATED_AT_PROPERTY);
-       return this;
-    }
-
-    public TaxRecordRequest<T> groupByUpdatedAtWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TaxRecord.UPDATED_AT_PROPERTY, function);
+    public TaxRecordRequest<T> groupByFilingStatusWithFunction(String retName, AggrFunction function){
+       groupBy(retName, TaxRecord.FILING_STATUS_PROPERTY, function);
        return this;
     }
     public TaxRecordRequest<T> groupByInvoiceWith(InvoiceRequest subRequest){
@@ -1220,31 +1119,31 @@ public class TaxRecordRequest<T extends TaxRecord> extends BaseRequest<T> {
        addOrderByDescendingUsingGBK(TaxRecord.NAME_PROPERTY);
        return this;
     }
-    public TaxRecordRequest<T> orderByCodeAscending(){
-       addOrderByAscending(TaxRecord.CODE_PROPERTY);
+    public TaxRecordRequest<T> orderByTaxCodeAscending(){
+       addOrderByAscending(TaxRecord.TAX_CODE_PROPERTY);
        return this;
     }
 
-    public TaxRecordRequest<T> orderByCodeDescending(){
-       addOrderByDescending(TaxRecord.CODE_PROPERTY);
+    public TaxRecordRequest<T> orderByTaxCodeDescending(){
+       addOrderByDescending(TaxRecord.TAX_CODE_PROPERTY);
        return this;
     }
-    public TaxRecordRequest<T> orderByCodeAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(TaxRecord.CODE_PROPERTY);
-       return this;
-    }
-
-    public TaxRecordRequest<T> orderByCodeDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(TaxRecord.CODE_PROPERTY);
-       return this;
-    }
-    public TaxRecordRequest<T> orderByAmountAscending(){
-       addOrderByAscending(TaxRecord.AMOUNT_PROPERTY);
+    public TaxRecordRequest<T> orderByTaxCodeAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(TaxRecord.TAX_CODE_PROPERTY);
        return this;
     }
 
-    public TaxRecordRequest<T> orderByAmountDescending(){
-       addOrderByDescending(TaxRecord.AMOUNT_PROPERTY);
+    public TaxRecordRequest<T> orderByTaxCodeDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(TaxRecord.TAX_CODE_PROPERTY);
+       return this;
+    }
+    public TaxRecordRequest<T> orderByTaxAmountAscending(){
+       addOrderByAscending(TaxRecord.TAX_AMOUNT_PROPERTY);
+       return this;
+    }
+
+    public TaxRecordRequest<T> orderByTaxAmountDescending(){
+       addOrderByDescending(TaxRecord.TAX_AMOUNT_PROPERTY);
        return this;
     }
 
@@ -1276,44 +1175,42 @@ public class TaxRecordRequest<T extends TaxRecord> extends BaseRequest<T> {
        return this;
     }
 
-    public TaxRecordRequest<T> orderByTaxTypeAscending(){
-       addOrderByAscending(TaxRecord.TAX_TYPE_PROPERTY);
+    public TaxRecordRequest<T> orderByTaxPeriodAscending(){
+       addOrderByAscending(TaxRecord.TAX_PERIOD_PROPERTY);
        return this;
     }
 
-    public TaxRecordRequest<T> orderByTaxTypeDescending(){
-       addOrderByDescending(TaxRecord.TAX_TYPE_PROPERTY);
+    public TaxRecordRequest<T> orderByTaxPeriodDescending(){
+       addOrderByDescending(TaxRecord.TAX_PERIOD_PROPERTY);
        return this;
     }
-    public TaxRecordRequest<T> orderByTaxTypeAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(TaxRecord.TAX_TYPE_PROPERTY);
-       return this;
-    }
-
-    public TaxRecordRequest<T> orderByTaxTypeDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(TaxRecord.TAX_TYPE_PROPERTY);
-       return this;
-    }
-    public TaxRecordRequest<T> orderByCreatedAtAscending(){
-       addOrderByAscending(TaxRecord.CREATED_AT_PROPERTY);
+    public TaxRecordRequest<T> orderByTaxPeriodAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(TaxRecord.TAX_PERIOD_PROPERTY);
        return this;
     }
 
-    public TaxRecordRequest<T> orderByCreatedAtDescending(){
-       addOrderByDescending(TaxRecord.CREATED_AT_PROPERTY);
+    public TaxRecordRequest<T> orderByTaxPeriodDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(TaxRecord.TAX_PERIOD_PROPERTY);
+       return this;
+    }
+    public TaxRecordRequest<T> orderByFilingStatusAscending(){
+       addOrderByAscending(TaxRecord.FILING_STATUS_PROPERTY);
        return this;
     }
 
-    public TaxRecordRequest<T> orderByUpdatedAtAscending(){
-       addOrderByAscending(TaxRecord.UPDATED_AT_PROPERTY);
+    public TaxRecordRequest<T> orderByFilingStatusDescending(){
+       addOrderByDescending(TaxRecord.FILING_STATUS_PROPERTY);
+       return this;
+    }
+    public TaxRecordRequest<T> orderByFilingStatusAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(TaxRecord.FILING_STATUS_PROPERTY);
        return this;
     }
 
-    public TaxRecordRequest<T> orderByUpdatedAtDescending(){
-       addOrderByDescending(TaxRecord.UPDATED_AT_PROPERTY);
+    public TaxRecordRequest<T> orderByFilingStatusDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(TaxRecord.FILING_STATUS_PROPERTY);
        return this;
     }
-
     public TaxRecordRequest<T> orderByInvoiceAscending(){
        addOrderByAscending(TaxRecord.INVOICE_PROPERTY);
        return this;

@@ -1,5 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.useraccount;
 
+import com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog;
+import com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLogListExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
@@ -33,11 +35,11 @@ public class UserAccountExpression<T, E, U extends UserAccount> extends Expressi
      }
 
 
-    public Expression<T, String> getName(){
-       return apply(UserAccount::getName);
+    public Expression<T, String> getUsername(){
+       return apply(UserAccount::getUsername);
     }
-    public UserAccountExpression<T, U, U> updateName(String name){
-       return new UserAccountExpression(this, $it ->  ((UserAccount)$it).updateName(name));
+    public UserAccountExpression<T, U, U> updateUsername(String username){
+       return new UserAccountExpression(this, $it ->  ((UserAccount)$it).updateUsername(username));
     }
 
     public Expression<T, String> getEmail(){
@@ -54,13 +56,6 @@ public class UserAccountExpression<T, E, U extends UserAccount> extends Expressi
        return new UserAccountExpression(this, $it ->  ((UserAccount)$it).updatePhone(phone));
     }
 
-    public Expression<T, String> getPasswordHash(){
-       return apply(UserAccount::getPasswordHash);
-    }
-    public UserAccountExpression<T, U, U> updatePasswordHash(String passwordHash){
-       return new UserAccountExpression(this, $it ->  ((UserAccount)$it).updatePasswordHash(passwordHash));
-    }
-
     public Expression<T, String> getStatus(){
        return apply(UserAccount::getStatus);
     }
@@ -68,18 +63,31 @@ public class UserAccountExpression<T, E, U extends UserAccount> extends Expressi
        return new UserAccountExpression(this, $it ->  ((UserAccount)$it).updateStatus(status));
     }
 
-    public Expression<T, LocalDateTime> getCreateTime(){
-       return apply(UserAccount::getCreateTime);
+    public Expression<T, String> getPasswordHash(){
+       return apply(UserAccount::getPasswordHash);
     }
-    public UserAccountExpression<T, U, U> updateCreateTime(LocalDateTime createTime){
-       return new UserAccountExpression(this, $it ->  ((UserAccount)$it).updateCreateTime(createTime));
-    }
-
-    public Expression<T, LocalDateTime> getUpdateTime(){
-       return apply(UserAccount::getUpdateTime);
-    }
-    public UserAccountExpression<T, U, U> updateUpdateTime(LocalDateTime updateTime){
-       return new UserAccountExpression(this, $it ->  ((UserAccount)$it).updateUpdateTime(updateTime));
+    public UserAccountExpression<T, U, U> updatePasswordHash(String passwordHash){
+       return new UserAccountExpression(this, $it ->  ((UserAccount)$it).updatePasswordHash(passwordHash));
     }
 
+    public Expression<T, LocalDateTime> getCreatedAt(){
+       return apply(UserAccount::getCreatedAt);
+    }
+    public UserAccountExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
+       return new UserAccountExpression(this, $it ->  ((UserAccount)$it).updateCreatedAt(createdAt));
+    }
+
+    public Expression<T, LocalDateTime> getUpdatedAt(){
+       return apply(UserAccount::getUpdatedAt);
+    }
+    public UserAccountExpression<T, U, U> updateUpdatedAt(LocalDateTime updatedAt){
+       return new UserAccountExpression(this, $it ->  ((UserAccount)$it).updateUpdatedAt(updatedAt));
+    }
+
+    public AuditLogListExpression<T, U, AuditLog> getAuditLogList(){
+        return new AuditLogListExpression(this, $it ->  ((UserAccount)$it).getAuditLogList());
+    }
+    public UserAccountExpression<T, U, U> addAuditLog(AuditLog auditLog){
+       return new UserAccountExpression(this, $it ->  ((UserAccount)$it).addAuditLog(auditLog));
+    }
 }

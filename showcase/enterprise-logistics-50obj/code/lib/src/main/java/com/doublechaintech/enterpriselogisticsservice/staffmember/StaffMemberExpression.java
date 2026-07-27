@@ -2,14 +2,12 @@ package com.doublechaintech.enterpriselogisticsservice.staffmember;
 
 import com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan;
 import com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlanListExpression;
-import com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem;
-import com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItemListExpression;
 import com.doublechaintech.enterpriselogisticsservice.performancereview.PerformanceReview;
 import com.doublechaintech.enterpriselogisticsservice.performancereview.PerformanceReviewListExpression;
-import com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining;
-import com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTrainingListExpression;
 import com.doublechaintech.enterpriselogisticsservice.salaryslip.SalarySlip;
 import com.doublechaintech.enterpriselogisticsservice.salaryslip.SalarySlipListExpression;
+import com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead;
+import com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLeadListExpression;
 import com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHours;
 import com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHoursListExpression;
 import io.teaql.core.UserContext;
@@ -135,11 +133,8 @@ public class StaffMemberExpression<T, E, U extends StaffMember> extends Expressi
     public PerformanceReviewListExpression<T, U, PerformanceReview> getPerformanceReviewListAsReviewer(){
         return new PerformanceReviewListExpression(this, $it ->  ((StaffMember)$it).getPerformanceReviewListAsReviewer());
     }
-    public SafetyTrainingListExpression<T, U, SafetyTraining> getSafetyTrainingList(){
-        return new SafetyTrainingListExpression(this, $it ->  ((StaffMember)$it).getSafetyTrainingList());
-    }
-    public ExpenseItemListExpression<T, U, ExpenseItem> getExpenseItemList(){
-        return new ExpenseItemListExpression(this, $it ->  ((StaffMember)$it).getExpenseItemList());
+    public SalesLeadListExpression<T, U, SalesLead> getSalesLeadList(){
+        return new SalesLeadListExpression(this, $it ->  ((StaffMember)$it).getSalesLeadList());
     }
     public StaffMemberExpression<T, U, U> addDispatchPlan(DispatchPlan dispatchPlan){
        return new StaffMemberExpression(this, $it ->  ((StaffMember)$it).addDispatchPlan(dispatchPlan));
@@ -159,10 +154,7 @@ public class StaffMemberExpression<T, E, U extends StaffMember> extends Expressi
     public StaffMemberExpression<T, U, U> addPerformanceReviewAsReviewer(PerformanceReview performanceReview){
        return new StaffMemberExpression(this, $it ->  ((StaffMember)$it).addPerformanceReviewAsReviewer(performanceReview));
     }
-    public StaffMemberExpression<T, U, U> addSafetyTraining(SafetyTraining safetyTraining){
-       return new StaffMemberExpression(this, $it ->  ((StaffMember)$it).addSafetyTraining(safetyTraining));
-    }
-    public StaffMemberExpression<T, U, U> addExpenseItem(ExpenseItem expenseItem){
-       return new StaffMemberExpression(this, $it ->  ((StaffMember)$it).addExpenseItem(expenseItem));
+    public StaffMemberExpression<T, U, U> addSalesLead(SalesLead salesLead){
+       return new StaffMemberExpression(this, $it ->  ((StaffMember)$it).addSalesLead(salesLead));
     }
 }

@@ -2,6 +2,8 @@ package com.doublechaintech.enterpriselogisticsservice.storagecontainer;
 
 import com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit;
 import com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnitChecker;
+import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee;
+import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFeeChecker;
 import com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse;
 import com.doublechaintech.enterpriselogisticsservice.warehouse.WarehouseChecker;
 import io.teaql.core.UserContext;
@@ -43,6 +45,10 @@ public class StorageContainerChecker implements Checker<StorageContainer>{
       for(int i = 0; storageContainer.getContainerUnitList() != null && i < storageContainer.getContainerUnitList().size(); i++){
          ContainerUnit containerUnit = storageContainer.getContainerUnitList().get(i);
          new ContainerUnitChecker().checkAndFix(_ctx, containerUnit, newLocation(_parentLocation, StorageContainer.CONTAINER_UNIT_LIST_PROPERTY, i));
+      }
+      for(int i = 0; storageContainer.getStorageFeeList() != null && i < storageContainer.getStorageFeeList().size(); i++){
+         StorageFee storageFee = storageContainer.getStorageFeeList().get(i);
+         new StorageFeeChecker().checkAndFix(_ctx, storageFee, newLocation(_parentLocation, StorageContainer.STORAGE_FEE_LIST_PROPERTY, i));
       }
     }
 

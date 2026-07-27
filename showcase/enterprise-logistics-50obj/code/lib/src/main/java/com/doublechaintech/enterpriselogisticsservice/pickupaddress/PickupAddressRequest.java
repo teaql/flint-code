@@ -10,6 +10,7 @@ import io.teaql.core.SearchCriteria;
 import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -84,7 +85,7 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
 
     public PickupAddressRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectAddressId().selectMovingOrderIdOnly().selectAddressLine1().selectAddressLine2().selectCity().selectState().selectZipCode().selectCountry().selectContactName().selectContactPhone().selectCreateTime().selectVersion();
+        return selectId().selectAddressLine1().selectAddressLine2().selectCity().selectStateProvince().selectPostalCode().selectCountry().selectLatitude().selectLongitude().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public PickupAddressRequest<T> selectSelfFields(){
@@ -93,12 +94,13 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
 
     public PickupAddressRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectAddressId().selectMovingOrder().selectAddressLine1().selectAddressLine2().selectCity().selectState().selectZipCode().selectCountry().selectContactName().selectContactPhone().selectCreateTime().selectVersion();
+        return selectId().selectAddressLine1().selectAddressLine2().selectCity().selectStateProvince().selectPostalCode().selectCountry().selectLatitude().selectLongitude().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public PickupAddressRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectAddressId().selectMovingOrder().selectAddressLine1().selectAddressLine2().selectCity().selectState().selectZipCode().selectCountry().selectContactName().selectContactPhone().selectCreateTime().selectVersion();
+        selectMovingOrderListAsPickupAddress().selectMovingOrderListAsDeliveryAddress();
+        return selectId().selectAddressLine1().selectAddressLine2().selectCity().selectStateProvince().selectPostalCode().selectCountry().selectLatitude().selectLongitude().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
 
@@ -117,42 +119,6 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
 
     public PickupAddressRequest<T> unselectId(){
        unselectProperty(PickupAddress.ID_PROPERTY);
-       return this;
-    }
-    public PickupAddressRequest<T> selectAddressId(){
-       selectProperty(PickupAddress.ADDRESS_ID_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the addressId with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  addressId) to fetch addressId property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public PickupAddressRequest<T> unselectAddressId(){
-       unselectProperty(PickupAddress.ADDRESS_ID_PROPERTY);
-       return this;
-    }
-    public PickupAddressRequest<T> selectMovingOrderIdOnly(){
-       selectProperty(PickupAddress.MOVING_ORDER_PROPERTY);
-       return this;
-    }
-
-    public PickupAddressRequest<T> selectMovingOrder(){
-        return selectMovingOrderWith(Q.movingOrders().unlimited().selectSelf());
-    }
-
-    public PickupAddressRequest<T> selectMovingOrderWith(MovingOrderRequest movingOrder){
-       selectProperty(PickupAddress.MOVING_ORDER_PROPERTY);
-       enhanceRelation(PickupAddress.MOVING_ORDER_PROPERTY, movingOrder);
-       return this;
-    }
-
-    public PickupAddressRequest<T> unselectMovingOrder(){
-       unselectProperty(PickupAddress.MOVING_ORDER_PROPERTY);
        return this;
     }
     public PickupAddressRequest<T> selectAddressLine1(){
@@ -206,38 +172,38 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
        unselectProperty(PickupAddress.CITY_PROPERTY);
        return this;
     }
-    public PickupAddressRequest<T> selectState(){
-       selectProperty(PickupAddress.STATE_PROPERTY);
+    public PickupAddressRequest<T> selectStateProvince(){
+       selectProperty(PickupAddress.STATE_PROVINCE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the state with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  state) to fetch state property.
+     * fill the stateProvince with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  stateProvince) to fetch stateProvince property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public PickupAddressRequest<T> unselectState(){
-       unselectProperty(PickupAddress.STATE_PROPERTY);
+    public PickupAddressRequest<T> unselectStateProvince(){
+       unselectProperty(PickupAddress.STATE_PROVINCE_PROPERTY);
        return this;
     }
-    public PickupAddressRequest<T> selectZipCode(){
-       selectProperty(PickupAddress.ZIP_CODE_PROPERTY);
+    public PickupAddressRequest<T> selectPostalCode(){
+       selectProperty(PickupAddress.POSTAL_CODE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the zipCode with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  zipCode) to fetch zipCode property.
+     * fill the postalCode with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  postalCode) to fetch postalCode property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public PickupAddressRequest<T> unselectZipCode(){
-       unselectProperty(PickupAddress.ZIP_CODE_PROPERTY);
+    public PickupAddressRequest<T> unselectPostalCode(){
+       unselectProperty(PickupAddress.POSTAL_CODE_PROPERTY);
        return this;
     }
     public PickupAddressRequest<T> selectCountry(){
@@ -257,55 +223,80 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
        unselectProperty(PickupAddress.COUNTRY_PROPERTY);
        return this;
     }
-    public PickupAddressRequest<T> selectContactName(){
-       selectProperty(PickupAddress.CONTACT_NAME_PROPERTY);
+    public PickupAddressRequest<T> selectLatitude(){
+       selectProperty(PickupAddress.LATITUDE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the contactName with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  contactName) to fetch contactName property.
+     * fill the latitude with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  latitude) to fetch latitude property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+    /**
+     * fill the latitude with customized aggrFunction, TEAQL uses ({aggrFunction}(latitude) AS latitude to fetch latitude property.
+     * @param aggrFunction  aggrFunction
+     */
+    public PickupAddressRequest<T> selectLatitude(AggrFunction aggrFunction){
+       selectProperty(PickupAddress.LATITUDE_PROPERTY, aggrFunction);
+       return this;
+    }
+
+
+    public PickupAddressRequest<T> unselectLatitude(){
+       unselectProperty(PickupAddress.LATITUDE_PROPERTY);
+       return this;
+    }
+    public PickupAddressRequest<T> selectLongitude(){
+       selectProperty(PickupAddress.LONGITUDE_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the longitude with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  longitude) to fetch longitude property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public PickupAddressRequest<T> unselectContactName(){
-       unselectProperty(PickupAddress.CONTACT_NAME_PROPERTY);
+    public PickupAddressRequest<T> unselectLongitude(){
+       unselectProperty(PickupAddress.LONGITUDE_PROPERTY);
        return this;
     }
-    public PickupAddressRequest<T> selectContactPhone(){
-       selectProperty(PickupAddress.CONTACT_PHONE_PROPERTY);
+    public PickupAddressRequest<T> selectCreatedTime(){
+       selectProperty(PickupAddress.CREATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the contactPhone with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  contactPhone) to fetch contactPhone property.
+     * fill the createdTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdTime) to fetch createdTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public PickupAddressRequest<T> unselectContactPhone(){
-       unselectProperty(PickupAddress.CONTACT_PHONE_PROPERTY);
+    public PickupAddressRequest<T> unselectCreatedTime(){
+       unselectProperty(PickupAddress.CREATED_TIME_PROPERTY);
        return this;
     }
-    public PickupAddressRequest<T> selectCreateTime(){
-       selectProperty(PickupAddress.CREATE_TIME_PROPERTY);
+    public PickupAddressRequest<T> selectUpdatedTime(){
+       selectProperty(PickupAddress.UPDATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the createTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createTime) to fetch createTime property.
+     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public PickupAddressRequest<T> unselectCreateTime(){
-       unselectProperty(PickupAddress.CREATE_TIME_PROPERTY);
+    public PickupAddressRequest<T> unselectUpdatedTime(){
+       unselectProperty(PickupAddress.UPDATED_TIME_PROPERTY);
        return this;
     }
     public PickupAddressRequest<T> selectVersion(){
@@ -325,6 +316,22 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
        unselectProperty(PickupAddress.VERSION_PROPERTY);
        return this;
     }
+    public PickupAddressRequest<T> selectMovingOrderListAsPickupAddress(){
+       return selectMovingOrderListAsPickupAddressWith(Q.movingOrders().selectSelf());
+    }
+
+    public PickupAddressRequest<T> selectMovingOrderListAsPickupAddressWith(MovingOrderRequest movingOrderListAsPickupAddress){
+       enhanceRelation(PickupAddress.MOVING_ORDER_LIST_AS_PICKUP_ADDRESS_PROPERTY, movingOrderListAsPickupAddress);
+       return this;
+    }
+    public PickupAddressRequest<T> selectMovingOrderListAsDeliveryAddress(){
+       return selectMovingOrderListAsDeliveryAddressWith(Q.movingOrders().selectSelf());
+    }
+
+    public PickupAddressRequest<T> selectMovingOrderListAsDeliveryAddressWith(MovingOrderRequest movingOrderListAsDeliveryAddress){
+       enhanceRelation(PickupAddress.MOVING_ORDER_LIST_AS_DELIVERY_ADDRESS_PROPERTY, movingOrderListAsDeliveryAddress);
+       return this;
+    }
 
     public PickupAddressRequest<T> withId(Operator operator, Object... values){
        return appendSearchCriteria(createIdCriteria(operator, values));
@@ -342,102 +349,6 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
     }
 
 
-
-    public PickupAddressRequest<T> filterByAddressId(String... addressId){
-      if (addressId == null || addressId.length == 0) {
-        throw new IllegalArgumentException("filterByAddressId parameter addressId cannot be empty");
-      }
-      return appendSearchCriteria(createAddressIdCriteria(Operator.EQUAL, (Object[])addressId));
-    }
-
-    public PickupAddressRequest<T> withAddressId(Operator operator, Object... values){
-       return appendSearchCriteria(createAddressIdCriteria(operator, values));
-    }
-
-    public PickupAddressRequest<T> withAddressIdIsUnknown(){
-       return withAddressId(Operator.IS_NULL);
-    }
-
-    public PickupAddressRequest<T> withAddressIdIsKnown(){
-       return withAddressId(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createAddressIdCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(PickupAddress.ADDRESS_ID_PROPERTY, operator, values);
-    }
-
-    public PickupAddressRequest<T> withAddressIdGreaterThan(String addressId){
-       return withAddressId(Operator.GREATER_THAN, addressId);
-    }
-
-    public PickupAddressRequest<T> withAddressIdGreaterThanOrEqualTo(String addressId){
-       return withAddressId(Operator.GREATER_THAN_OR_EQUAL, addressId);
-    }
-
-    public PickupAddressRequest<T> withAddressIdLessThan(String addressId){
-       return withAddressId(Operator.LESS_THAN, addressId);
-    }
-
-    public PickupAddressRequest<T> withAddressIdLessThanOrEqualTo(String addressId){
-       return withAddressId(Operator.LESS_THAN_OR_EQUAL, addressId);
-    }
-
-    public PickupAddressRequest<T> withAddressIdBetween(String startOfAddressId, String endOfAddressId){
-       return withAddressId(Operator.BETWEEN, startOfAddressId, endOfAddressId);
-    }
-    public PickupAddressRequest<T> withAddressIdStartingWith(String addressId){
-       return withAddressId(Operator.BEGIN_WITH, addressId);
-    }
-    public PickupAddressRequest<T> withAddressIdContaining(String addressId){
-       return withAddressId(Operator.CONTAIN, addressId);
-    }
-
-    public PickupAddressRequest<T> withAddressIdEndingWith(String addressId){
-       return withAddressId(Operator.END_WITH, addressId);
-    }
-
-    public PickupAddressRequest<T> withAddressIdIs(String addressId){
-       return withAddressId(Operator.EQUAL, addressId);
-    }
-
-    public PickupAddressRequest<T> withAddressIdSoundingLike(String addressId){
-       return withAddressId(Operator.SOUNDS_LIKE, addressId);
-    }
-
-
-
-    public PickupAddressRequest<T> filterByMovingOrder(MovingOrder... movingOrder){
-      if (movingOrder == null || movingOrder.length == 0) {
-        throw new IllegalArgumentException("filterByMovingOrder parameter movingOrder cannot be empty");
-      }
-      return appendSearchCriteria(createMovingOrderCriteria(Operator.EQUAL, (Object[])movingOrder));
-    }
-
-    public PickupAddressRequest<T> withMovingOrder(Operator operator, Object... values){
-       return appendSearchCriteria(createMovingOrderCriteria(operator, values));
-    }
-
-    public PickupAddressRequest<T> withMovingOrderIsUnknown(){
-       return withMovingOrder(Operator.IS_NULL);
-    }
-
-    public PickupAddressRequest<T> withMovingOrderIsKnown(){
-       return withMovingOrder(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createMovingOrderCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(PickupAddress.MOVING_ORDER_PROPERTY, operator, values);
-    }
-
-    public PickupAddressRequest<T> filterByMovingOrder(Long movingOrder){
-      if(movingOrder == null){
-         return this;
-      }
-      return withMovingOrder(Operator.EQUAL, movingOrder);
-    }
-    public PickupAddressRequest<T> withMovingOrderMatching(MovingOrderRequest movingOrder){
-       return appendSearchCriteria(new SubQuerySearchCriteria(PickupAddress.MOVING_ORDER_PROPERTY, movingOrder, MovingOrder.ID_PROPERTY));
-    }
 
     public PickupAddressRequest<T> filterByAddressLine1(String... addressLine1){
       if (addressLine1 == null || addressLine1.length == 0) {
@@ -628,128 +539,128 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
 
 
 
-    public PickupAddressRequest<T> filterByState(String... state){
-      if (state == null || state.length == 0) {
-        throw new IllegalArgumentException("filterByState parameter state cannot be empty");
+    public PickupAddressRequest<T> filterByStateProvince(String... stateProvince){
+      if (stateProvince == null || stateProvince.length == 0) {
+        throw new IllegalArgumentException("filterByStateProvince parameter stateProvince cannot be empty");
       }
-      return appendSearchCriteria(createStateCriteria(Operator.EQUAL, (Object[])state));
+      return appendSearchCriteria(createStateProvinceCriteria(Operator.EQUAL, (Object[])stateProvince));
     }
 
-    public PickupAddressRequest<T> withState(Operator operator, Object... values){
-       return appendSearchCriteria(createStateCriteria(operator, values));
+    public PickupAddressRequest<T> withStateProvince(Operator operator, Object... values){
+       return appendSearchCriteria(createStateProvinceCriteria(operator, values));
     }
 
-    public PickupAddressRequest<T> withStateIsUnknown(){
-       return withState(Operator.IS_NULL);
+    public PickupAddressRequest<T> withStateProvinceIsUnknown(){
+       return withStateProvince(Operator.IS_NULL);
     }
 
-    public PickupAddressRequest<T> withStateIsKnown(){
-       return withState(Operator.IS_NOT_NULL);
+    public PickupAddressRequest<T> withStateProvinceIsKnown(){
+       return withStateProvince(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createStateCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(PickupAddress.STATE_PROPERTY, operator, values);
+    public SearchCriteria createStateProvinceCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PickupAddress.STATE_PROVINCE_PROPERTY, operator, values);
     }
 
-    public PickupAddressRequest<T> withStateGreaterThan(String state){
-       return withState(Operator.GREATER_THAN, state);
+    public PickupAddressRequest<T> withStateProvinceGreaterThan(String stateProvince){
+       return withStateProvince(Operator.GREATER_THAN, stateProvince);
     }
 
-    public PickupAddressRequest<T> withStateGreaterThanOrEqualTo(String state){
-       return withState(Operator.GREATER_THAN_OR_EQUAL, state);
+    public PickupAddressRequest<T> withStateProvinceGreaterThanOrEqualTo(String stateProvince){
+       return withStateProvince(Operator.GREATER_THAN_OR_EQUAL, stateProvince);
     }
 
-    public PickupAddressRequest<T> withStateLessThan(String state){
-       return withState(Operator.LESS_THAN, state);
+    public PickupAddressRequest<T> withStateProvinceLessThan(String stateProvince){
+       return withStateProvince(Operator.LESS_THAN, stateProvince);
     }
 
-    public PickupAddressRequest<T> withStateLessThanOrEqualTo(String state){
-       return withState(Operator.LESS_THAN_OR_EQUAL, state);
+    public PickupAddressRequest<T> withStateProvinceLessThanOrEqualTo(String stateProvince){
+       return withStateProvince(Operator.LESS_THAN_OR_EQUAL, stateProvince);
     }
 
-    public PickupAddressRequest<T> withStateBetween(String startOfState, String endOfState){
-       return withState(Operator.BETWEEN, startOfState, endOfState);
+    public PickupAddressRequest<T> withStateProvinceBetween(String startOfStateProvince, String endOfStateProvince){
+       return withStateProvince(Operator.BETWEEN, startOfStateProvince, endOfStateProvince);
     }
-    public PickupAddressRequest<T> withStateStartingWith(String state){
-       return withState(Operator.BEGIN_WITH, state);
+    public PickupAddressRequest<T> withStateProvinceStartingWith(String stateProvince){
+       return withStateProvince(Operator.BEGIN_WITH, stateProvince);
     }
-    public PickupAddressRequest<T> withStateContaining(String state){
-       return withState(Operator.CONTAIN, state);
-    }
-
-    public PickupAddressRequest<T> withStateEndingWith(String state){
-       return withState(Operator.END_WITH, state);
+    public PickupAddressRequest<T> withStateProvinceContaining(String stateProvince){
+       return withStateProvince(Operator.CONTAIN, stateProvince);
     }
 
-    public PickupAddressRequest<T> withStateIs(String state){
-       return withState(Operator.EQUAL, state);
+    public PickupAddressRequest<T> withStateProvinceEndingWith(String stateProvince){
+       return withStateProvince(Operator.END_WITH, stateProvince);
     }
 
-    public PickupAddressRequest<T> withStateSoundingLike(String state){
-       return withState(Operator.SOUNDS_LIKE, state);
+    public PickupAddressRequest<T> withStateProvinceIs(String stateProvince){
+       return withStateProvince(Operator.EQUAL, stateProvince);
+    }
+
+    public PickupAddressRequest<T> withStateProvinceSoundingLike(String stateProvince){
+       return withStateProvince(Operator.SOUNDS_LIKE, stateProvince);
     }
 
 
 
-    public PickupAddressRequest<T> filterByZipCode(String... zipCode){
-      if (zipCode == null || zipCode.length == 0) {
-        throw new IllegalArgumentException("filterByZipCode parameter zipCode cannot be empty");
+    public PickupAddressRequest<T> filterByPostalCode(String... postalCode){
+      if (postalCode == null || postalCode.length == 0) {
+        throw new IllegalArgumentException("filterByPostalCode parameter postalCode cannot be empty");
       }
-      return appendSearchCriteria(createZipCodeCriteria(Operator.EQUAL, (Object[])zipCode));
+      return appendSearchCriteria(createPostalCodeCriteria(Operator.EQUAL, (Object[])postalCode));
     }
 
-    public PickupAddressRequest<T> withZipCode(Operator operator, Object... values){
-       return appendSearchCriteria(createZipCodeCriteria(operator, values));
+    public PickupAddressRequest<T> withPostalCode(Operator operator, Object... values){
+       return appendSearchCriteria(createPostalCodeCriteria(operator, values));
     }
 
-    public PickupAddressRequest<T> withZipCodeIsUnknown(){
-       return withZipCode(Operator.IS_NULL);
+    public PickupAddressRequest<T> withPostalCodeIsUnknown(){
+       return withPostalCode(Operator.IS_NULL);
     }
 
-    public PickupAddressRequest<T> withZipCodeIsKnown(){
-       return withZipCode(Operator.IS_NOT_NULL);
+    public PickupAddressRequest<T> withPostalCodeIsKnown(){
+       return withPostalCode(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createZipCodeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(PickupAddress.ZIP_CODE_PROPERTY, operator, values);
+    public SearchCriteria createPostalCodeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PickupAddress.POSTAL_CODE_PROPERTY, operator, values);
     }
 
-    public PickupAddressRequest<T> withZipCodeGreaterThan(String zipCode){
-       return withZipCode(Operator.GREATER_THAN, zipCode);
+    public PickupAddressRequest<T> withPostalCodeGreaterThan(String postalCode){
+       return withPostalCode(Operator.GREATER_THAN, postalCode);
     }
 
-    public PickupAddressRequest<T> withZipCodeGreaterThanOrEqualTo(String zipCode){
-       return withZipCode(Operator.GREATER_THAN_OR_EQUAL, zipCode);
+    public PickupAddressRequest<T> withPostalCodeGreaterThanOrEqualTo(String postalCode){
+       return withPostalCode(Operator.GREATER_THAN_OR_EQUAL, postalCode);
     }
 
-    public PickupAddressRequest<T> withZipCodeLessThan(String zipCode){
-       return withZipCode(Operator.LESS_THAN, zipCode);
+    public PickupAddressRequest<T> withPostalCodeLessThan(String postalCode){
+       return withPostalCode(Operator.LESS_THAN, postalCode);
     }
 
-    public PickupAddressRequest<T> withZipCodeLessThanOrEqualTo(String zipCode){
-       return withZipCode(Operator.LESS_THAN_OR_EQUAL, zipCode);
+    public PickupAddressRequest<T> withPostalCodeLessThanOrEqualTo(String postalCode){
+       return withPostalCode(Operator.LESS_THAN_OR_EQUAL, postalCode);
     }
 
-    public PickupAddressRequest<T> withZipCodeBetween(String startOfZipCode, String endOfZipCode){
-       return withZipCode(Operator.BETWEEN, startOfZipCode, endOfZipCode);
+    public PickupAddressRequest<T> withPostalCodeBetween(String startOfPostalCode, String endOfPostalCode){
+       return withPostalCode(Operator.BETWEEN, startOfPostalCode, endOfPostalCode);
     }
-    public PickupAddressRequest<T> withZipCodeStartingWith(String zipCode){
-       return withZipCode(Operator.BEGIN_WITH, zipCode);
+    public PickupAddressRequest<T> withPostalCodeStartingWith(String postalCode){
+       return withPostalCode(Operator.BEGIN_WITH, postalCode);
     }
-    public PickupAddressRequest<T> withZipCodeContaining(String zipCode){
-       return withZipCode(Operator.CONTAIN, zipCode);
-    }
-
-    public PickupAddressRequest<T> withZipCodeEndingWith(String zipCode){
-       return withZipCode(Operator.END_WITH, zipCode);
+    public PickupAddressRequest<T> withPostalCodeContaining(String postalCode){
+       return withPostalCode(Operator.CONTAIN, postalCode);
     }
 
-    public PickupAddressRequest<T> withZipCodeIs(String zipCode){
-       return withZipCode(Operator.EQUAL, zipCode);
+    public PickupAddressRequest<T> withPostalCodeEndingWith(String postalCode){
+       return withPostalCode(Operator.END_WITH, postalCode);
     }
 
-    public PickupAddressRequest<T> withZipCodeSoundingLike(String zipCode){
-       return withZipCode(Operator.SOUNDS_LIKE, zipCode);
+    public PickupAddressRequest<T> withPostalCodeIs(String postalCode){
+       return withPostalCode(Operator.EQUAL, postalCode);
+    }
+
+    public PickupAddressRequest<T> withPostalCodeSoundingLike(String postalCode){
+       return withPostalCode(Operator.SOUNDS_LIKE, postalCode);
     }
 
 
@@ -817,192 +728,239 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
 
 
 
-    public PickupAddressRequest<T> filterByContactName(String... contactName){
-      if (contactName == null || contactName.length == 0) {
-        throw new IllegalArgumentException("filterByContactName parameter contactName cannot be empty");
+    public PickupAddressRequest<T> filterByLatitude(BigDecimal... latitude){
+      if (latitude == null || latitude.length == 0) {
+        throw new IllegalArgumentException("filterByLatitude parameter latitude cannot be empty");
       }
-      return appendSearchCriteria(createContactNameCriteria(Operator.EQUAL, (Object[])contactName));
+      return appendSearchCriteria(createLatitudeCriteria(Operator.EQUAL, (Object[])latitude));
     }
 
-    public PickupAddressRequest<T> withContactName(Operator operator, Object... values){
-       return appendSearchCriteria(createContactNameCriteria(operator, values));
+    public PickupAddressRequest<T> withLatitude(Operator operator, Object... values){
+       return appendSearchCriteria(createLatitudeCriteria(operator, values));
     }
 
-    public PickupAddressRequest<T> withContactNameIsUnknown(){
-       return withContactName(Operator.IS_NULL);
+    public PickupAddressRequest<T> withLatitudeIsUnknown(){
+       return withLatitude(Operator.IS_NULL);
     }
 
-    public PickupAddressRequest<T> withContactNameIsKnown(){
-       return withContactName(Operator.IS_NOT_NULL);
+    public PickupAddressRequest<T> withLatitudeIsKnown(){
+       return withLatitude(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createContactNameCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(PickupAddress.CONTACT_NAME_PROPERTY, operator, values);
+    public SearchCriteria createLatitudeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PickupAddress.LATITUDE_PROPERTY, operator, values);
     }
 
-    public PickupAddressRequest<T> withContactNameGreaterThan(String contactName){
-       return withContactName(Operator.GREATER_THAN, contactName);
+    public PickupAddressRequest<T> withLatitudeGreaterThan(BigDecimal latitude){
+       return withLatitude(Operator.GREATER_THAN, latitude);
     }
 
-    public PickupAddressRequest<T> withContactNameGreaterThanOrEqualTo(String contactName){
-       return withContactName(Operator.GREATER_THAN_OR_EQUAL, contactName);
+    public PickupAddressRequest<T> withLatitudeGreaterThanOrEqualTo(BigDecimal latitude){
+       return withLatitude(Operator.GREATER_THAN_OR_EQUAL, latitude);
     }
 
-    public PickupAddressRequest<T> withContactNameLessThan(String contactName){
-       return withContactName(Operator.LESS_THAN, contactName);
+    public PickupAddressRequest<T> withLatitudeLessThan(BigDecimal latitude){
+       return withLatitude(Operator.LESS_THAN, latitude);
     }
 
-    public PickupAddressRequest<T> withContactNameLessThanOrEqualTo(String contactName){
-       return withContactName(Operator.LESS_THAN_OR_EQUAL, contactName);
+    public PickupAddressRequest<T> withLatitudeLessThanOrEqualTo(BigDecimal latitude){
+       return withLatitude(Operator.LESS_THAN_OR_EQUAL, latitude);
     }
 
-    public PickupAddressRequest<T> withContactNameBetween(String startOfContactName, String endOfContactName){
-       return withContactName(Operator.BETWEEN, startOfContactName, endOfContactName);
-    }
-    public PickupAddressRequest<T> withContactNameStartingWith(String contactName){
-       return withContactName(Operator.BEGIN_WITH, contactName);
-    }
-    public PickupAddressRequest<T> withContactNameContaining(String contactName){
-       return withContactName(Operator.CONTAIN, contactName);
-    }
-
-    public PickupAddressRequest<T> withContactNameEndingWith(String contactName){
-       return withContactName(Operator.END_WITH, contactName);
-    }
-
-    public PickupAddressRequest<T> withContactNameIs(String contactName){
-       return withContactName(Operator.EQUAL, contactName);
-    }
-
-    public PickupAddressRequest<T> withContactNameSoundingLike(String contactName){
-       return withContactName(Operator.SOUNDS_LIKE, contactName);
+    public PickupAddressRequest<T> withLatitudeBetween(BigDecimal startOfLatitude, BigDecimal endOfLatitude){
+       return withLatitude(Operator.BETWEEN, startOfLatitude, endOfLatitude);
     }
 
 
 
-    public PickupAddressRequest<T> filterByContactPhone(String... contactPhone){
-      if (contactPhone == null || contactPhone.length == 0) {
-        throw new IllegalArgumentException("filterByContactPhone parameter contactPhone cannot be empty");
+    public PickupAddressRequest<T> filterByLongitude(String... longitude){
+      if (longitude == null || longitude.length == 0) {
+        throw new IllegalArgumentException("filterByLongitude parameter longitude cannot be empty");
       }
-      return appendSearchCriteria(createContactPhoneCriteria(Operator.EQUAL, (Object[])contactPhone));
+      return appendSearchCriteria(createLongitudeCriteria(Operator.EQUAL, (Object[])longitude));
     }
 
-    public PickupAddressRequest<T> withContactPhone(Operator operator, Object... values){
-       return appendSearchCriteria(createContactPhoneCriteria(operator, values));
+    public PickupAddressRequest<T> withLongitude(Operator operator, Object... values){
+       return appendSearchCriteria(createLongitudeCriteria(operator, values));
     }
 
-    public PickupAddressRequest<T> withContactPhoneIsUnknown(){
-       return withContactPhone(Operator.IS_NULL);
+    public PickupAddressRequest<T> withLongitudeIsUnknown(){
+       return withLongitude(Operator.IS_NULL);
     }
 
-    public PickupAddressRequest<T> withContactPhoneIsKnown(){
-       return withContactPhone(Operator.IS_NOT_NULL);
+    public PickupAddressRequest<T> withLongitudeIsKnown(){
+       return withLongitude(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createContactPhoneCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(PickupAddress.CONTACT_PHONE_PROPERTY, operator, values);
+    public SearchCriteria createLongitudeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PickupAddress.LONGITUDE_PROPERTY, operator, values);
     }
 
-    public PickupAddressRequest<T> withContactPhoneGreaterThan(String contactPhone){
-       return withContactPhone(Operator.GREATER_THAN, contactPhone);
+    public PickupAddressRequest<T> withLongitudeGreaterThan(String longitude){
+       return withLongitude(Operator.GREATER_THAN, longitude);
     }
 
-    public PickupAddressRequest<T> withContactPhoneGreaterThanOrEqualTo(String contactPhone){
-       return withContactPhone(Operator.GREATER_THAN_OR_EQUAL, contactPhone);
+    public PickupAddressRequest<T> withLongitudeGreaterThanOrEqualTo(String longitude){
+       return withLongitude(Operator.GREATER_THAN_OR_EQUAL, longitude);
     }
 
-    public PickupAddressRequest<T> withContactPhoneLessThan(String contactPhone){
-       return withContactPhone(Operator.LESS_THAN, contactPhone);
+    public PickupAddressRequest<T> withLongitudeLessThan(String longitude){
+       return withLongitude(Operator.LESS_THAN, longitude);
     }
 
-    public PickupAddressRequest<T> withContactPhoneLessThanOrEqualTo(String contactPhone){
-       return withContactPhone(Operator.LESS_THAN_OR_EQUAL, contactPhone);
+    public PickupAddressRequest<T> withLongitudeLessThanOrEqualTo(String longitude){
+       return withLongitude(Operator.LESS_THAN_OR_EQUAL, longitude);
     }
 
-    public PickupAddressRequest<T> withContactPhoneBetween(String startOfContactPhone, String endOfContactPhone){
-       return withContactPhone(Operator.BETWEEN, startOfContactPhone, endOfContactPhone);
+    public PickupAddressRequest<T> withLongitudeBetween(String startOfLongitude, String endOfLongitude){
+       return withLongitude(Operator.BETWEEN, startOfLongitude, endOfLongitude);
     }
-    public PickupAddressRequest<T> withContactPhoneStartingWith(String contactPhone){
-       return withContactPhone(Operator.BEGIN_WITH, contactPhone);
+    public PickupAddressRequest<T> withLongitudeStartingWith(String longitude){
+       return withLongitude(Operator.BEGIN_WITH, longitude);
     }
-    public PickupAddressRequest<T> withContactPhoneContaining(String contactPhone){
-       return withContactPhone(Operator.CONTAIN, contactPhone);
-    }
-
-    public PickupAddressRequest<T> withContactPhoneEndingWith(String contactPhone){
-       return withContactPhone(Operator.END_WITH, contactPhone);
+    public PickupAddressRequest<T> withLongitudeContaining(String longitude){
+       return withLongitude(Operator.CONTAIN, longitude);
     }
 
-    public PickupAddressRequest<T> withContactPhoneIs(String contactPhone){
-       return withContactPhone(Operator.EQUAL, contactPhone);
+    public PickupAddressRequest<T> withLongitudeEndingWith(String longitude){
+       return withLongitude(Operator.END_WITH, longitude);
     }
 
-    public PickupAddressRequest<T> withContactPhoneSoundingLike(String contactPhone){
-       return withContactPhone(Operator.SOUNDS_LIKE, contactPhone);
+    public PickupAddressRequest<T> withLongitudeIs(String longitude){
+       return withLongitude(Operator.EQUAL, longitude);
+    }
+
+    public PickupAddressRequest<T> withLongitudeSoundingLike(String longitude){
+       return withLongitude(Operator.SOUNDS_LIKE, longitude);
     }
 
 
 
-    public PickupAddressRequest<T> filterByCreateTime(LocalDateTime... createTime){
-      if (createTime == null || createTime.length == 0) {
-        throw new IllegalArgumentException("filterByCreateTime parameter createTime cannot be empty");
+    public PickupAddressRequest<T> filterByCreatedTime(LocalDateTime... createdTime){
+      if (createdTime == null || createdTime.length == 0) {
+        throw new IllegalArgumentException("filterByCreatedTime parameter createdTime cannot be empty");
       }
-      return appendSearchCriteria(createCreateTimeCriteria(Operator.EQUAL, (Object[])createTime));
+      return appendSearchCriteria(createCreatedTimeCriteria(Operator.EQUAL, (Object[])createdTime));
     }
 
-    public PickupAddressRequest<T> withCreateTime(Operator operator, Object... values){
-       return appendSearchCriteria(createCreateTimeCriteria(operator, values));
+    public PickupAddressRequest<T> withCreatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createCreatedTimeCriteria(operator, values));
     }
 
-    public PickupAddressRequest<T> withCreateTimeIsUnknown(){
-       return withCreateTime(Operator.IS_NULL);
+    public PickupAddressRequest<T> withCreatedTimeIsUnknown(){
+       return withCreatedTime(Operator.IS_NULL);
     }
 
-    public PickupAddressRequest<T> withCreateTimeIsKnown(){
-       return withCreateTime(Operator.IS_NOT_NULL);
+    public PickupAddressRequest<T> withCreatedTimeIsKnown(){
+       return withCreatedTime(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCreateTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(PickupAddress.CREATE_TIME_PROPERTY, operator, values);
+    public SearchCriteria createCreatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PickupAddress.CREATED_TIME_PROPERTY, operator, values);
     }
 
-    public PickupAddressRequest<T> withCreateTimeGreaterThan(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public PickupAddressRequest<T> withCreatedTimeGreaterThan(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
     }
 
-    public PickupAddressRequest<T> withCreateTimeGreaterThanOrEqualTo(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN_OR_EQUAL, createTime);
+    public PickupAddressRequest<T> withCreatedTimeGreaterThanOrEqualTo(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN_OR_EQUAL, createdTime);
     }
 
-    public PickupAddressRequest<T> withCreateTimeLessThan(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
+    public PickupAddressRequest<T> withCreatedTimeLessThan(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
     }
 
-    public PickupAddressRequest<T> withCreateTimeLessThanOrEqualTo(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN_OR_EQUAL, createTime);
+    public PickupAddressRequest<T> withCreatedTimeLessThanOrEqualTo(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN_OR_EQUAL, createdTime);
     }
 
-    public PickupAddressRequest<T> withCreateTimeBetween(LocalDateTime startOfCreateTime, LocalDateTime endOfCreateTime){
-       return withCreateTime(Operator.BETWEEN, startOfCreateTime, endOfCreateTime);
+    public PickupAddressRequest<T> withCreatedTimeBetween(LocalDateTime startOfCreatedTime, LocalDateTime endOfCreatedTime){
+       return withCreatedTime(Operator.BETWEEN, startOfCreatedTime, endOfCreatedTime);
     }
-    public PickupAddressRequest<T> withCreateTimeBefore(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
-    }
-
-    public PickupAddressRequest<T> withCreateTimeBefore(Date createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
+    public PickupAddressRequest<T> withCreatedTimeBefore(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
     }
 
-    public PickupAddressRequest<T> withCreateTimeAfter(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public PickupAddressRequest<T> withCreatedTimeBefore(Date createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
     }
 
-    public PickupAddressRequest<T> withCreateTimeAfter(Date createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public PickupAddressRequest<T> withCreatedTimeAfter(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
     }
 
-    public PickupAddressRequest<T> withCreateTimeBetween(Date startOfCreateTime, Date endOfCreateTime){
-       return withCreateTime(Operator.BETWEEN, startOfCreateTime, endOfCreateTime);
+    public PickupAddressRequest<T> withCreatedTimeAfter(Date createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
+    }
+
+    public PickupAddressRequest<T> withCreatedTimeBetween(Date startOfCreatedTime, Date endOfCreatedTime){
+       return withCreatedTime(Operator.BETWEEN, startOfCreatedTime, endOfCreatedTime);
+    }
+
+
+
+
+    public PickupAddressRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
+      if (updatedTime == null || updatedTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
+      }
+      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
+    }
+
+    public PickupAddressRequest<T> withUpdatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
+    }
+
+    public PickupAddressRequest<T> withUpdatedTimeIsUnknown(){
+       return withUpdatedTime(Operator.IS_NULL);
+    }
+
+    public PickupAddressRequest<T> withUpdatedTimeIsKnown(){
+       return withUpdatedTime(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(PickupAddress.UPDATED_TIME_PROPERTY, operator, values);
+    }
+
+    public PickupAddressRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public PickupAddressRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
+    }
+
+    public PickupAddressRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    }
+
+    public PickupAddressRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
+    }
+
+    public PickupAddressRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
+    }
+    public PickupAddressRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    }
+
+    public PickupAddressRequest<T> withUpdatedTimeBefore(Date updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    }
+
+    public PickupAddressRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public PickupAddressRequest<T> withUpdatedTimeAfter(Date updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public PickupAddressRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
 
 
@@ -1051,6 +1009,36 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
        return withVersion(Operator.BETWEEN, startOfVersion, endOfVersion);
     }
 
+    public PickupAddressRequest<T> withMovingOrderListAsPickupAddressMatching(MovingOrderRequest movingOrderAsPickupAddressRequest){
+        return appendSearchCriteria(new SubQuerySearchCriteria(PickupAddress.ID_PROPERTY, movingOrderAsPickupAddressRequest, MovingOrder.PICKUP_ADDRESS_PROPERTY));
+    }
+
+    public PickupAddressRequest<T> withoutMovingOrderListAsPickupAddressMatching(MovingOrderRequest movingOrderAsPickupAddressRequest){
+        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(PickupAddress.ID_PROPERTY, movingOrderAsPickupAddressRequest, MovingOrder.PICKUP_ADDRESS_PROPERTY)));
+    }
+
+    public PickupAddressRequest<T> haveMovingOrdersAsPickupAddress(){
+        return withMovingOrderListAsPickupAddressMatching(Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> haveNoMovingOrdersAsPickupAddress(){
+        return withoutMovingOrderListAsPickupAddressMatching(Q.movingOrders().unlimited());
+    }
+    public PickupAddressRequest<T> withMovingOrderListAsDeliveryAddressMatching(MovingOrderRequest movingOrderAsDeliveryAddressRequest){
+        return appendSearchCriteria(new SubQuerySearchCriteria(PickupAddress.ID_PROPERTY, movingOrderAsDeliveryAddressRequest, MovingOrder.DELIVERY_ADDRESS_PROPERTY));
+    }
+
+    public PickupAddressRequest<T> withoutMovingOrderListAsDeliveryAddressMatching(MovingOrderRequest movingOrderAsDeliveryAddressRequest){
+        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(PickupAddress.ID_PROPERTY, movingOrderAsDeliveryAddressRequest, MovingOrder.DELIVERY_ADDRESS_PROPERTY)));
+    }
+
+    public PickupAddressRequest<T> haveMovingOrdersAsDeliveryAddress(){
+        return withMovingOrderListAsDeliveryAddressMatching(Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> haveNoMovingOrdersAsDeliveryAddress(){
+        return withoutMovingOrderListAsDeliveryAddressMatching(Q.movingOrders().unlimited());
+    }
 
     public PickupAddressRequest<T> count(){
         super.count();
@@ -1060,25 +1048,78 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
         super.count(retName);
         return this;
     }
-    public PickupAddressRequest<T> groupByMovingOrderWithDetails(){
-       return groupByMovingOrderWithDetails(Q.movingOrders().unlimited());
+    public PickupAddressRequest minLatitude(){
+        return minLatitudeAs(prefix("minOf",PickupAddress.LATITUDE_PROPERTY));
     }
 
-    public PickupAddressRequest<T> groupByMovingOrderWithDetails(MovingOrderRequest subRequest){
-       aggregate(PickupAddress.MOVING_ORDER_PROPERTY, subRequest);
+    public PickupAddressRequest minLatitudeAs(String retName){
+        super.min(retName, PickupAddress.LATITUDE_PROPERTY);
+        return this;
+    }
+    public PickupAddressRequest maxLatitude(){
+        return maxLatitudeAs(prefix("maxOf",PickupAddress.LATITUDE_PROPERTY));
+    }
+
+    public PickupAddressRequest maxLatitudeAs(String retName){
+        super.max(retName, PickupAddress.LATITUDE_PROPERTY);
+        return this;
+    }
+    public PickupAddressRequest sumLatitude(){
+        return sumLatitudeAs(prefix("sumOf",PickupAddress.LATITUDE_PROPERTY));
+    }
+
+    public PickupAddressRequest sumLatitudeAs(String retName){
+        super.sum(retName, PickupAddress.LATITUDE_PROPERTY);
+        return this;
+    }
+    public PickupAddressRequest avgLatitude(){
+        return avgLatitudeAs(prefix("avgOf",PickupAddress.LATITUDE_PROPERTY));
+    }
+
+    public PickupAddressRequest avgLatitudeAs(String retName){
+        super.avg(retName, PickupAddress.LATITUDE_PROPERTY);
+        return this;
+    }
+    public PickupAddressRequest standardDeviationLatitude(){
+        return standardDeviationLatitudeAs(prefix("standardDeviationOf",PickupAddress.LATITUDE_PROPERTY));
+    }
+
+    public PickupAddressRequest standardDeviationLatitudeAs(String retName){
+        super.standardDeviation(retName, PickupAddress.LATITUDE_PROPERTY);
+        return this;
+    }
+    public PickupAddressRequest squareRootOfPopulationStandardDeviationLatitude(){
+        return squareRootOfPopulationStandardDeviationLatitudeAs(prefix("squareRootOfPopulationStandardDeviationOf",PickupAddress.LATITUDE_PROPERTY));
+    }
+
+    public PickupAddressRequest squareRootOfPopulationStandardDeviationLatitudeAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, PickupAddress.LATITUDE_PROPERTY);
+        return this;
+    }
+    public PickupAddressRequest sampleVarianceLatitude(){
+        return sampleVarianceLatitudeAs(prefix("sampleVarianceOf",PickupAddress.LATITUDE_PROPERTY));
+    }
+
+    public PickupAddressRequest sampleVarianceLatitudeAs(String retName){
+        super.sampleVariance(retName, PickupAddress.LATITUDE_PROPERTY);
+        return this;
+    }
+    public PickupAddressRequest samplePopulationVarianceLatitude(){
+        return samplePopulationVarianceLatitudeAs(prefix("samplePopulationVarianceOf",PickupAddress.LATITUDE_PROPERTY));
+    }
+
+    public PickupAddressRequest samplePopulationVarianceLatitudeAs(String retName){
+        super.samplePopulationVariance(retName, PickupAddress.LATITUDE_PROPERTY);
+        return this;
+    }
+    public PickupAddressRequest<T> groupByMovingOrdersAsPickupAddressWithDetails(MovingOrderRequest subRequest){
+       aggregate(PickupAddress.MOVING_ORDER_LIST_AS_PICKUP_ADDRESS_PROPERTY, subRequest);
        return this;
     }
-
-
-
-
-
-
-
-
-
-
-
+    public PickupAddressRequest<T> groupByMovingOrdersAsDeliveryAddressWithDetails(MovingOrderRequest subRequest){
+       aggregate(PickupAddress.MOVING_ORDER_LIST_AS_DELIVERY_ADDRESS_PROPERTY, subRequest);
+       return this;
+    }
 
     public PickupAddressRequest<T> groupById(){
        groupBy(PickupAddress.ID_PROPERTY);
@@ -1092,39 +1133,6 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
 
     public PickupAddressRequest<T> groupByIdWithFunction(String retName, AggrFunction function){
        groupBy(retName, PickupAddress.ID_PROPERTY, function);
-       return this;
-    }
-
-    public PickupAddressRequest<T> groupByAddressId(){
-       groupBy(PickupAddress.ADDRESS_ID_PROPERTY);
-       return this;
-    }
-
-    public PickupAddressRequest<T> groupByAddressIdAs(String retName){
-       groupBy(retName, PickupAddress.ADDRESS_ID_PROPERTY);
-       return this;
-    }
-
-    public PickupAddressRequest<T> groupByAddressIdWithFunction(String retName, AggrFunction function){
-       groupBy(retName, PickupAddress.ADDRESS_ID_PROPERTY, function);
-       return this;
-    }
-    public PickupAddressRequest<T> groupByMovingOrderWith(MovingOrderRequest subRequest){
-       groupBy(PickupAddress.MOVING_ORDER_PROPERTY, subRequest);
-       return this;
-    }
-    public PickupAddressRequest<T> groupByMovingOrder(){
-       groupBy(PickupAddress.MOVING_ORDER_PROPERTY);
-       return this;
-    }
-
-    public PickupAddressRequest<T> groupByMovingOrderAs(String retName){
-       groupBy(retName, PickupAddress.MOVING_ORDER_PROPERTY);
-       return this;
-    }
-
-    public PickupAddressRequest<T> groupByMovingOrderWithFunction(String retName, AggrFunction function){
-       groupBy(retName, PickupAddress.MOVING_ORDER_PROPERTY, function);
        return this;
     }
 
@@ -1173,33 +1181,33 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
        return this;
     }
 
-    public PickupAddressRequest<T> groupByState(){
-       groupBy(PickupAddress.STATE_PROPERTY);
+    public PickupAddressRequest<T> groupByStateProvince(){
+       groupBy(PickupAddress.STATE_PROVINCE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> groupByStateAs(String retName){
-       groupBy(retName, PickupAddress.STATE_PROPERTY);
+    public PickupAddressRequest<T> groupByStateProvinceAs(String retName){
+       groupBy(retName, PickupAddress.STATE_PROVINCE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> groupByStateWithFunction(String retName, AggrFunction function){
-       groupBy(retName, PickupAddress.STATE_PROPERTY, function);
+    public PickupAddressRequest<T> groupByStateProvinceWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PickupAddress.STATE_PROVINCE_PROPERTY, function);
        return this;
     }
 
-    public PickupAddressRequest<T> groupByZipCode(){
-       groupBy(PickupAddress.ZIP_CODE_PROPERTY);
+    public PickupAddressRequest<T> groupByPostalCode(){
+       groupBy(PickupAddress.POSTAL_CODE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> groupByZipCodeAs(String retName){
-       groupBy(retName, PickupAddress.ZIP_CODE_PROPERTY);
+    public PickupAddressRequest<T> groupByPostalCodeAs(String retName){
+       groupBy(retName, PickupAddress.POSTAL_CODE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> groupByZipCodeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, PickupAddress.ZIP_CODE_PROPERTY, function);
+    public PickupAddressRequest<T> groupByPostalCodeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PickupAddress.POSTAL_CODE_PROPERTY, function);
        return this;
     }
 
@@ -1218,48 +1226,63 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
        return this;
     }
 
-    public PickupAddressRequest<T> groupByContactName(){
-       groupBy(PickupAddress.CONTACT_NAME_PROPERTY);
+    public PickupAddressRequest<T> groupByLatitude(){
+       groupBy(PickupAddress.LATITUDE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> groupByContactNameAs(String retName){
-       groupBy(retName, PickupAddress.CONTACT_NAME_PROPERTY);
+    public PickupAddressRequest<T> groupByLatitudeAs(String retName){
+       groupBy(retName, PickupAddress.LATITUDE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> groupByContactNameWithFunction(String retName, AggrFunction function){
-       groupBy(retName, PickupAddress.CONTACT_NAME_PROPERTY, function);
+    public PickupAddressRequest<T> groupByLatitudeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PickupAddress.LATITUDE_PROPERTY, function);
        return this;
     }
 
-    public PickupAddressRequest<T> groupByContactPhone(){
-       groupBy(PickupAddress.CONTACT_PHONE_PROPERTY);
+    public PickupAddressRequest<T> groupByLongitude(){
+       groupBy(PickupAddress.LONGITUDE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> groupByContactPhoneAs(String retName){
-       groupBy(retName, PickupAddress.CONTACT_PHONE_PROPERTY);
+    public PickupAddressRequest<T> groupByLongitudeAs(String retName){
+       groupBy(retName, PickupAddress.LONGITUDE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> groupByContactPhoneWithFunction(String retName, AggrFunction function){
-       groupBy(retName, PickupAddress.CONTACT_PHONE_PROPERTY, function);
+    public PickupAddressRequest<T> groupByLongitudeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PickupAddress.LONGITUDE_PROPERTY, function);
        return this;
     }
 
-    public PickupAddressRequest<T> groupByCreateTime(){
-       groupBy(PickupAddress.CREATE_TIME_PROPERTY);
+    public PickupAddressRequest<T> groupByCreatedTime(){
+       groupBy(PickupAddress.CREATED_TIME_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> groupByCreateTimeAs(String retName){
-       groupBy(retName, PickupAddress.CREATE_TIME_PROPERTY);
+    public PickupAddressRequest<T> groupByCreatedTimeAs(String retName){
+       groupBy(retName, PickupAddress.CREATED_TIME_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> groupByCreateTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, PickupAddress.CREATE_TIME_PROPERTY, function);
+    public PickupAddressRequest<T> groupByCreatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PickupAddress.CREATED_TIME_PROPERTY, function);
+       return this;
+    }
+
+    public PickupAddressRequest<T> groupByUpdatedTime(){
+       groupBy(PickupAddress.UPDATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public PickupAddressRequest<T> groupByUpdatedTimeAs(String retName){
+       groupBy(retName, PickupAddress.UPDATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public PickupAddressRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, PickupAddress.UPDATED_TIME_PROPERTY, function);
        return this;
     }
 
@@ -1287,34 +1310,6 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
 
     public PickupAddressRequest<T> orderByIdDescending(){
        addOrderByDescending(PickupAddress.ID_PROPERTY);
-       return this;
-    }
-
-    public PickupAddressRequest<T> orderByAddressIdAscending(){
-       addOrderByAscending(PickupAddress.ADDRESS_ID_PROPERTY);
-       return this;
-    }
-
-    public PickupAddressRequest<T> orderByAddressIdDescending(){
-       addOrderByDescending(PickupAddress.ADDRESS_ID_PROPERTY);
-       return this;
-    }
-    public PickupAddressRequest<T> orderByAddressIdAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(PickupAddress.ADDRESS_ID_PROPERTY);
-       return this;
-    }
-
-    public PickupAddressRequest<T> orderByAddressIdDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(PickupAddress.ADDRESS_ID_PROPERTY);
-       return this;
-    }
-    public PickupAddressRequest<T> orderByMovingOrderAscending(){
-       addOrderByAscending(PickupAddress.MOVING_ORDER_PROPERTY);
-       return this;
-    }
-
-    public PickupAddressRequest<T> orderByMovingOrderDescending(){
-       addOrderByDescending(PickupAddress.MOVING_ORDER_PROPERTY);
        return this;
     }
 
@@ -1372,40 +1367,40 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
        addOrderByDescendingUsingGBK(PickupAddress.CITY_PROPERTY);
        return this;
     }
-    public PickupAddressRequest<T> orderByStateAscending(){
-       addOrderByAscending(PickupAddress.STATE_PROPERTY);
+    public PickupAddressRequest<T> orderByStateProvinceAscending(){
+       addOrderByAscending(PickupAddress.STATE_PROVINCE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> orderByStateDescending(){
-       addOrderByDescending(PickupAddress.STATE_PROPERTY);
+    public PickupAddressRequest<T> orderByStateProvinceDescending(){
+       addOrderByDescending(PickupAddress.STATE_PROVINCE_PROPERTY);
        return this;
     }
-    public PickupAddressRequest<T> orderByStateAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(PickupAddress.STATE_PROPERTY);
-       return this;
-    }
-
-    public PickupAddressRequest<T> orderByStateDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(PickupAddress.STATE_PROPERTY);
-       return this;
-    }
-    public PickupAddressRequest<T> orderByZipCodeAscending(){
-       addOrderByAscending(PickupAddress.ZIP_CODE_PROPERTY);
+    public PickupAddressRequest<T> orderByStateProvinceAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(PickupAddress.STATE_PROVINCE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> orderByZipCodeDescending(){
-       addOrderByDescending(PickupAddress.ZIP_CODE_PROPERTY);
+    public PickupAddressRequest<T> orderByStateProvinceDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(PickupAddress.STATE_PROVINCE_PROPERTY);
        return this;
     }
-    public PickupAddressRequest<T> orderByZipCodeAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(PickupAddress.ZIP_CODE_PROPERTY);
+    public PickupAddressRequest<T> orderByPostalCodeAscending(){
+       addOrderByAscending(PickupAddress.POSTAL_CODE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> orderByZipCodeDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(PickupAddress.ZIP_CODE_PROPERTY);
+    public PickupAddressRequest<T> orderByPostalCodeDescending(){
+       addOrderByDescending(PickupAddress.POSTAL_CODE_PROPERTY);
+       return this;
+    }
+    public PickupAddressRequest<T> orderByPostalCodeAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(PickupAddress.POSTAL_CODE_PROPERTY);
+       return this;
+    }
+
+    public PickupAddressRequest<T> orderByPostalCodeDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(PickupAddress.POSTAL_CODE_PROPERTY);
        return this;
     }
     public PickupAddressRequest<T> orderByCountryAscending(){
@@ -1426,49 +1421,51 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
        addOrderByDescendingUsingGBK(PickupAddress.COUNTRY_PROPERTY);
        return this;
     }
-    public PickupAddressRequest<T> orderByContactNameAscending(){
-       addOrderByAscending(PickupAddress.CONTACT_NAME_PROPERTY);
+    public PickupAddressRequest<T> orderByLatitudeAscending(){
+       addOrderByAscending(PickupAddress.LATITUDE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> orderByContactNameDescending(){
-       addOrderByDescending(PickupAddress.CONTACT_NAME_PROPERTY);
-       return this;
-    }
-    public PickupAddressRequest<T> orderByContactNameAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(PickupAddress.CONTACT_NAME_PROPERTY);
+    public PickupAddressRequest<T> orderByLatitudeDescending(){
+       addOrderByDescending(PickupAddress.LATITUDE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> orderByContactNameDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(PickupAddress.CONTACT_NAME_PROPERTY);
-       return this;
-    }
-    public PickupAddressRequest<T> orderByContactPhoneAscending(){
-       addOrderByAscending(PickupAddress.CONTACT_PHONE_PROPERTY);
+    public PickupAddressRequest<T> orderByLongitudeAscending(){
+       addOrderByAscending(PickupAddress.LONGITUDE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> orderByContactPhoneDescending(){
-       addOrderByDescending(PickupAddress.CONTACT_PHONE_PROPERTY);
+    public PickupAddressRequest<T> orderByLongitudeDescending(){
+       addOrderByDescending(PickupAddress.LONGITUDE_PROPERTY);
        return this;
     }
-    public PickupAddressRequest<T> orderByContactPhoneAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(PickupAddress.CONTACT_PHONE_PROPERTY);
-       return this;
-    }
-
-    public PickupAddressRequest<T> orderByContactPhoneDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(PickupAddress.CONTACT_PHONE_PROPERTY);
-       return this;
-    }
-    public PickupAddressRequest<T> orderByCreateTimeAscending(){
-       addOrderByAscending(PickupAddress.CREATE_TIME_PROPERTY);
+    public PickupAddressRequest<T> orderByLongitudeAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(PickupAddress.LONGITUDE_PROPERTY);
        return this;
     }
 
-    public PickupAddressRequest<T> orderByCreateTimeDescending(){
-       addOrderByDescending(PickupAddress.CREATE_TIME_PROPERTY);
+    public PickupAddressRequest<T> orderByLongitudeDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(PickupAddress.LONGITUDE_PROPERTY);
+       return this;
+    }
+    public PickupAddressRequest<T> orderByCreatedTimeAscending(){
+       addOrderByAscending(PickupAddress.CREATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public PickupAddressRequest<T> orderByCreatedTimeDescending(){
+       addOrderByDescending(PickupAddress.CREATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public PickupAddressRequest<T> orderByUpdatedTimeAscending(){
+       addOrderByAscending(PickupAddress.UPDATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public PickupAddressRequest<T> orderByUpdatedTimeDescending(){
+       addOrderByDescending(PickupAddress.UPDATED_TIME_PROPERTY);
        return this;
     }
 
@@ -1483,32 +1480,759 @@ public class PickupAddressRequest<T extends PickupAddress> extends BaseRequest<T
     }
 
 
-    public MovingOrderRequest rollUpToMovingOrder(){
-       MovingOrderRequest movingOrder = Q.movingOrders().unlimited();
-       this.withMovingOrderMatching(movingOrder)
-           .groupByMovingOrderWith(movingOrder);
-       return movingOrder;
+    public PickupAddressRequest<T> statsFromMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+       return statsFromMovingOrdersAsPickupAddressAs(name, subRequest, false);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-   public PickupAddressRequest<T> facetByMovingOrderAs(String facetName, MovingOrderRequest movingOrder){
-       return facetByMovingOrderAs(facetName, movingOrder, true);
-   }
-
-   public PickupAddressRequest<T> facetByMovingOrderAs(String facetName, MovingOrderRequest movingOrder, boolean includeAllFacets){
-       addFacet(facetName, PickupAddress.MOVING_ORDER_PROPERTY, movingOrder, includeAllFacets);
+    public PickupAddressRequest<T> statsFromMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest, boolean singleResult){
+       subRequest.setPartitionProperty(MovingOrder.PICKUP_ADDRESS_PROPERTY);
+       addAggregateDynamicProperty(name, subRequest, singleResult);
        return this;
-   }
+    }
+
+    public PickupAddressRequest<T> statsFromMovingOrdersAsPickupAddress(MovingOrderRequest subRequest){
+       return statsFromMovingOrdersAsPickupAddressAs(REFINEMENTS, subRequest);
+    }
+    public PickupAddressRequest<T> statsFromMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+       return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest, false);
+    }
+
+    public PickupAddressRequest<T> statsFromMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest, boolean singleResult){
+       subRequest.setPartitionProperty(MovingOrder.DELIVERY_ADDRESS_PROPERTY);
+       addAggregateDynamicProperty(name, subRequest, singleResult);
+       return this;
+    }
+
+    public PickupAddressRequest<T> statsFromMovingOrdersAsDeliveryAddress(MovingOrderRequest subRequest){
+       return statsFromMovingOrdersAsDeliveryAddressAs(REFINEMENTS, subRequest);
+    }
+    public PickupAddressRequest<T> countMovingOrdersAsPickupAddress(){
+        return countMovingOrdersAsPickupAddressAs("Count");
+    }
+
+    public PickupAddressRequest<T> countMovingOrdersAsPickupAddressAs(String name){
+        return countMovingOrdersAsPickupAddressWith(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> countMovingOrdersAsPickupAddressWith(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.count(), true);
+    }
+    public PickupAddressRequest<T> countMovingOrdersAsDeliveryAddress(){
+        return countMovingOrdersAsDeliveryAddressAs("Count");
+    }
+
+    public PickupAddressRequest<T> countMovingOrdersAsDeliveryAddressAs(String name){
+        return countMovingOrdersAsDeliveryAddressWith(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> countMovingOrdersAsDeliveryAddressWith(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.count(), true);
+    }
+    public PickupAddressRequest<T> minTotalWeightOfMovingOrdersAsPickupAddress(){
+        return minTotalWeightOfMovingOrdersAsPickupAddressAs("minTotalWeightOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> minTotalWeightOfMovingOrdersAsPickupAddressAs(String name){
+        return minTotalWeightOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> minTotalWeightOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.minTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> maxTotalWeightOfMovingOrdersAsPickupAddress(){
+        return maxTotalWeightOfMovingOrdersAsPickupAddressAs("maxTotalWeightOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> maxTotalWeightOfMovingOrdersAsPickupAddressAs(String name){
+        return maxTotalWeightOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> maxTotalWeightOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.maxTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> sumTotalWeightOfMovingOrdersAsPickupAddress(){
+        return sumTotalWeightOfMovingOrdersAsPickupAddressAs("sumTotalWeightOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> sumTotalWeightOfMovingOrdersAsPickupAddressAs(String name){
+        return sumTotalWeightOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sumTotalWeightOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.sumTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> avgTotalWeightOfMovingOrdersAsPickupAddress(){
+        return avgTotalWeightOfMovingOrdersAsPickupAddressAs("avgTotalWeightOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> avgTotalWeightOfMovingOrdersAsPickupAddressAs(String name){
+        return avgTotalWeightOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> avgTotalWeightOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.avgTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> standardDeviationTotalWeightOfMovingOrdersAsPickupAddress(){
+        return standardDeviationTotalWeightOfMovingOrdersAsPickupAddressAs("stdDevTotalWeightOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> standardDeviationTotalWeightOfMovingOrdersAsPickupAddressAs(String name){
+        return standardDeviationTotalWeightOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> standardDeviationTotalWeightOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.standardDeviationTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationTotalWeightOfMovingOrdersAsPickupAddress(){
+        return squareRootOfPopulationStandardDeviationTotalWeightOfMovingOrdersAsPickupAddressAs("stdDevPopTotalWeightOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationTotalWeightOfMovingOrdersAsPickupAddressAs(String name){
+        return squareRootOfPopulationStandardDeviationTotalWeightOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationTotalWeightOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.squareRootOfPopulationStandardDeviationTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> sampleVarianceTotalWeightOfMovingOrdersAsPickupAddress(){
+        return sampleVarianceTotalWeightOfMovingOrdersAsPickupAddressAs("varSampTotalWeightOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> sampleVarianceTotalWeightOfMovingOrdersAsPickupAddressAs(String name){
+        return sampleVarianceTotalWeightOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sampleVarianceTotalWeightOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.sampleVarianceTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> samplePopulationVarianceTotalWeightOfMovingOrdersAsPickupAddress(){
+        return samplePopulationVarianceTotalWeightOfMovingOrdersAsPickupAddressAs("varPopTotalWeightOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceTotalWeightOfMovingOrdersAsPickupAddressAs(String name){
+        return samplePopulationVarianceTotalWeightOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceTotalWeightOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.samplePopulationVarianceTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> minTotalVolumeOfMovingOrdersAsPickupAddress(){
+        return minTotalVolumeOfMovingOrdersAsPickupAddressAs("minTotalVolumeOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> minTotalVolumeOfMovingOrdersAsPickupAddressAs(String name){
+        return minTotalVolumeOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> minTotalVolumeOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.minTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> maxTotalVolumeOfMovingOrdersAsPickupAddress(){
+        return maxTotalVolumeOfMovingOrdersAsPickupAddressAs("maxTotalVolumeOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> maxTotalVolumeOfMovingOrdersAsPickupAddressAs(String name){
+        return maxTotalVolumeOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> maxTotalVolumeOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.maxTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> sumTotalVolumeOfMovingOrdersAsPickupAddress(){
+        return sumTotalVolumeOfMovingOrdersAsPickupAddressAs("sumTotalVolumeOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> sumTotalVolumeOfMovingOrdersAsPickupAddressAs(String name){
+        return sumTotalVolumeOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sumTotalVolumeOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.sumTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> avgTotalVolumeOfMovingOrdersAsPickupAddress(){
+        return avgTotalVolumeOfMovingOrdersAsPickupAddressAs("avgTotalVolumeOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> avgTotalVolumeOfMovingOrdersAsPickupAddressAs(String name){
+        return avgTotalVolumeOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> avgTotalVolumeOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.avgTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> standardDeviationTotalVolumeOfMovingOrdersAsPickupAddress(){
+        return standardDeviationTotalVolumeOfMovingOrdersAsPickupAddressAs("stdDevTotalVolumeOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> standardDeviationTotalVolumeOfMovingOrdersAsPickupAddressAs(String name){
+        return standardDeviationTotalVolumeOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> standardDeviationTotalVolumeOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.standardDeviationTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationTotalVolumeOfMovingOrdersAsPickupAddress(){
+        return squareRootOfPopulationStandardDeviationTotalVolumeOfMovingOrdersAsPickupAddressAs("stdDevPopTotalVolumeOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationTotalVolumeOfMovingOrdersAsPickupAddressAs(String name){
+        return squareRootOfPopulationStandardDeviationTotalVolumeOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationTotalVolumeOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.squareRootOfPopulationStandardDeviationTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> sampleVarianceTotalVolumeOfMovingOrdersAsPickupAddress(){
+        return sampleVarianceTotalVolumeOfMovingOrdersAsPickupAddressAs("varSampTotalVolumeOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> sampleVarianceTotalVolumeOfMovingOrdersAsPickupAddressAs(String name){
+        return sampleVarianceTotalVolumeOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sampleVarianceTotalVolumeOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.sampleVarianceTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> samplePopulationVarianceTotalVolumeOfMovingOrdersAsPickupAddress(){
+        return samplePopulationVarianceTotalVolumeOfMovingOrdersAsPickupAddressAs("varPopTotalVolumeOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceTotalVolumeOfMovingOrdersAsPickupAddressAs(String name){
+        return samplePopulationVarianceTotalVolumeOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceTotalVolumeOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.samplePopulationVarianceTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> minEstimatedCostOfMovingOrdersAsPickupAddress(){
+        return minEstimatedCostOfMovingOrdersAsPickupAddressAs("minEstimatedCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> minEstimatedCostOfMovingOrdersAsPickupAddressAs(String name){
+        return minEstimatedCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> minEstimatedCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.minEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> maxEstimatedCostOfMovingOrdersAsPickupAddress(){
+        return maxEstimatedCostOfMovingOrdersAsPickupAddressAs("maxEstimatedCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> maxEstimatedCostOfMovingOrdersAsPickupAddressAs(String name){
+        return maxEstimatedCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> maxEstimatedCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.maxEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> sumEstimatedCostOfMovingOrdersAsPickupAddress(){
+        return sumEstimatedCostOfMovingOrdersAsPickupAddressAs("sumEstimatedCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> sumEstimatedCostOfMovingOrdersAsPickupAddressAs(String name){
+        return sumEstimatedCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sumEstimatedCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.sumEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> avgEstimatedCostOfMovingOrdersAsPickupAddress(){
+        return avgEstimatedCostOfMovingOrdersAsPickupAddressAs("avgEstimatedCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> avgEstimatedCostOfMovingOrdersAsPickupAddressAs(String name){
+        return avgEstimatedCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> avgEstimatedCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.avgEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> standardDeviationEstimatedCostOfMovingOrdersAsPickupAddress(){
+        return standardDeviationEstimatedCostOfMovingOrdersAsPickupAddressAs("stdDevEstimatedCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> standardDeviationEstimatedCostOfMovingOrdersAsPickupAddressAs(String name){
+        return standardDeviationEstimatedCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> standardDeviationEstimatedCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.standardDeviationEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationEstimatedCostOfMovingOrdersAsPickupAddress(){
+        return squareRootOfPopulationStandardDeviationEstimatedCostOfMovingOrdersAsPickupAddressAs("stdDevPopEstimatedCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationEstimatedCostOfMovingOrdersAsPickupAddressAs(String name){
+        return squareRootOfPopulationStandardDeviationEstimatedCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationEstimatedCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.squareRootOfPopulationStandardDeviationEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> sampleVarianceEstimatedCostOfMovingOrdersAsPickupAddress(){
+        return sampleVarianceEstimatedCostOfMovingOrdersAsPickupAddressAs("varSampEstimatedCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> sampleVarianceEstimatedCostOfMovingOrdersAsPickupAddressAs(String name){
+        return sampleVarianceEstimatedCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sampleVarianceEstimatedCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.sampleVarianceEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> samplePopulationVarianceEstimatedCostOfMovingOrdersAsPickupAddress(){
+        return samplePopulationVarianceEstimatedCostOfMovingOrdersAsPickupAddressAs("varPopEstimatedCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceEstimatedCostOfMovingOrdersAsPickupAddressAs(String name){
+        return samplePopulationVarianceEstimatedCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceEstimatedCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.samplePopulationVarianceEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> minActualCostOfMovingOrdersAsPickupAddress(){
+        return minActualCostOfMovingOrdersAsPickupAddressAs("minActualCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> minActualCostOfMovingOrdersAsPickupAddressAs(String name){
+        return minActualCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> minActualCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.minActualCost(), true);
+    }
+    public PickupAddressRequest<T> maxActualCostOfMovingOrdersAsPickupAddress(){
+        return maxActualCostOfMovingOrdersAsPickupAddressAs("maxActualCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> maxActualCostOfMovingOrdersAsPickupAddressAs(String name){
+        return maxActualCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> maxActualCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.maxActualCost(), true);
+    }
+    public PickupAddressRequest<T> sumActualCostOfMovingOrdersAsPickupAddress(){
+        return sumActualCostOfMovingOrdersAsPickupAddressAs("sumActualCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> sumActualCostOfMovingOrdersAsPickupAddressAs(String name){
+        return sumActualCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sumActualCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.sumActualCost(), true);
+    }
+    public PickupAddressRequest<T> avgActualCostOfMovingOrdersAsPickupAddress(){
+        return avgActualCostOfMovingOrdersAsPickupAddressAs("avgActualCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> avgActualCostOfMovingOrdersAsPickupAddressAs(String name){
+        return avgActualCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> avgActualCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.avgActualCost(), true);
+    }
+    public PickupAddressRequest<T> standardDeviationActualCostOfMovingOrdersAsPickupAddress(){
+        return standardDeviationActualCostOfMovingOrdersAsPickupAddressAs("stdDevActualCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> standardDeviationActualCostOfMovingOrdersAsPickupAddressAs(String name){
+        return standardDeviationActualCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> standardDeviationActualCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.standardDeviationActualCost(), true);
+    }
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationActualCostOfMovingOrdersAsPickupAddress(){
+        return squareRootOfPopulationStandardDeviationActualCostOfMovingOrdersAsPickupAddressAs("stdDevPopActualCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationActualCostOfMovingOrdersAsPickupAddressAs(String name){
+        return squareRootOfPopulationStandardDeviationActualCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationActualCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.squareRootOfPopulationStandardDeviationActualCost(), true);
+    }
+    public PickupAddressRequest<T> sampleVarianceActualCostOfMovingOrdersAsPickupAddress(){
+        return sampleVarianceActualCostOfMovingOrdersAsPickupAddressAs("varSampActualCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> sampleVarianceActualCostOfMovingOrdersAsPickupAddressAs(String name){
+        return sampleVarianceActualCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sampleVarianceActualCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.sampleVarianceActualCost(), true);
+    }
+    public PickupAddressRequest<T> samplePopulationVarianceActualCostOfMovingOrdersAsPickupAddress(){
+        return samplePopulationVarianceActualCostOfMovingOrdersAsPickupAddressAs("varPopActualCostOfMovingOrdersAsPickupAddress");
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceActualCostOfMovingOrdersAsPickupAddressAs(String name){
+        return samplePopulationVarianceActualCostOfMovingOrdersAsPickupAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceActualCostOfMovingOrdersAsPickupAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsPickupAddressAs(name, subRequest.samplePopulationVarianceActualCost(), true);
+    }
+    public PickupAddressRequest<T> minTotalWeightOfMovingOrdersAsDeliveryAddress(){
+        return minTotalWeightOfMovingOrdersAsDeliveryAddressAs("minTotalWeightOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> minTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name){
+        return minTotalWeightOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> minTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.minTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> maxTotalWeightOfMovingOrdersAsDeliveryAddress(){
+        return maxTotalWeightOfMovingOrdersAsDeliveryAddressAs("maxTotalWeightOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> maxTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name){
+        return maxTotalWeightOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> maxTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.maxTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> sumTotalWeightOfMovingOrdersAsDeliveryAddress(){
+        return sumTotalWeightOfMovingOrdersAsDeliveryAddressAs("sumTotalWeightOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> sumTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name){
+        return sumTotalWeightOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sumTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.sumTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> avgTotalWeightOfMovingOrdersAsDeliveryAddress(){
+        return avgTotalWeightOfMovingOrdersAsDeliveryAddressAs("avgTotalWeightOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> avgTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name){
+        return avgTotalWeightOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> avgTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.avgTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> standardDeviationTotalWeightOfMovingOrdersAsDeliveryAddress(){
+        return standardDeviationTotalWeightOfMovingOrdersAsDeliveryAddressAs("stdDevTotalWeightOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> standardDeviationTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name){
+        return standardDeviationTotalWeightOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> standardDeviationTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.standardDeviationTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationTotalWeightOfMovingOrdersAsDeliveryAddress(){
+        return squareRootOfPopulationStandardDeviationTotalWeightOfMovingOrdersAsDeliveryAddressAs("stdDevPopTotalWeightOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name){
+        return squareRootOfPopulationStandardDeviationTotalWeightOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.squareRootOfPopulationStandardDeviationTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> sampleVarianceTotalWeightOfMovingOrdersAsDeliveryAddress(){
+        return sampleVarianceTotalWeightOfMovingOrdersAsDeliveryAddressAs("varSampTotalWeightOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> sampleVarianceTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name){
+        return sampleVarianceTotalWeightOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sampleVarianceTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.sampleVarianceTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> samplePopulationVarianceTotalWeightOfMovingOrdersAsDeliveryAddress(){
+        return samplePopulationVarianceTotalWeightOfMovingOrdersAsDeliveryAddressAs("varPopTotalWeightOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name){
+        return samplePopulationVarianceTotalWeightOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceTotalWeightOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.samplePopulationVarianceTotalWeight(), true);
+    }
+    public PickupAddressRequest<T> minTotalVolumeOfMovingOrdersAsDeliveryAddress(){
+        return minTotalVolumeOfMovingOrdersAsDeliveryAddressAs("minTotalVolumeOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> minTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name){
+        return minTotalVolumeOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> minTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.minTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> maxTotalVolumeOfMovingOrdersAsDeliveryAddress(){
+        return maxTotalVolumeOfMovingOrdersAsDeliveryAddressAs("maxTotalVolumeOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> maxTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name){
+        return maxTotalVolumeOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> maxTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.maxTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> sumTotalVolumeOfMovingOrdersAsDeliveryAddress(){
+        return sumTotalVolumeOfMovingOrdersAsDeliveryAddressAs("sumTotalVolumeOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> sumTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name){
+        return sumTotalVolumeOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sumTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.sumTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> avgTotalVolumeOfMovingOrdersAsDeliveryAddress(){
+        return avgTotalVolumeOfMovingOrdersAsDeliveryAddressAs("avgTotalVolumeOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> avgTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name){
+        return avgTotalVolumeOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> avgTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.avgTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> standardDeviationTotalVolumeOfMovingOrdersAsDeliveryAddress(){
+        return standardDeviationTotalVolumeOfMovingOrdersAsDeliveryAddressAs("stdDevTotalVolumeOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> standardDeviationTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name){
+        return standardDeviationTotalVolumeOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> standardDeviationTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.standardDeviationTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationTotalVolumeOfMovingOrdersAsDeliveryAddress(){
+        return squareRootOfPopulationStandardDeviationTotalVolumeOfMovingOrdersAsDeliveryAddressAs("stdDevPopTotalVolumeOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name){
+        return squareRootOfPopulationStandardDeviationTotalVolumeOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.squareRootOfPopulationStandardDeviationTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> sampleVarianceTotalVolumeOfMovingOrdersAsDeliveryAddress(){
+        return sampleVarianceTotalVolumeOfMovingOrdersAsDeliveryAddressAs("varSampTotalVolumeOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> sampleVarianceTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name){
+        return sampleVarianceTotalVolumeOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sampleVarianceTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.sampleVarianceTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> samplePopulationVarianceTotalVolumeOfMovingOrdersAsDeliveryAddress(){
+        return samplePopulationVarianceTotalVolumeOfMovingOrdersAsDeliveryAddressAs("varPopTotalVolumeOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name){
+        return samplePopulationVarianceTotalVolumeOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceTotalVolumeOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.samplePopulationVarianceTotalVolume(), true);
+    }
+    public PickupAddressRequest<T> minEstimatedCostOfMovingOrdersAsDeliveryAddress(){
+        return minEstimatedCostOfMovingOrdersAsDeliveryAddressAs("minEstimatedCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> minEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return minEstimatedCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> minEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.minEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> maxEstimatedCostOfMovingOrdersAsDeliveryAddress(){
+        return maxEstimatedCostOfMovingOrdersAsDeliveryAddressAs("maxEstimatedCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> maxEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return maxEstimatedCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> maxEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.maxEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> sumEstimatedCostOfMovingOrdersAsDeliveryAddress(){
+        return sumEstimatedCostOfMovingOrdersAsDeliveryAddressAs("sumEstimatedCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> sumEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return sumEstimatedCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sumEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.sumEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> avgEstimatedCostOfMovingOrdersAsDeliveryAddress(){
+        return avgEstimatedCostOfMovingOrdersAsDeliveryAddressAs("avgEstimatedCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> avgEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return avgEstimatedCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> avgEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.avgEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> standardDeviationEstimatedCostOfMovingOrdersAsDeliveryAddress(){
+        return standardDeviationEstimatedCostOfMovingOrdersAsDeliveryAddressAs("stdDevEstimatedCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> standardDeviationEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return standardDeviationEstimatedCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> standardDeviationEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.standardDeviationEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationEstimatedCostOfMovingOrdersAsDeliveryAddress(){
+        return squareRootOfPopulationStandardDeviationEstimatedCostOfMovingOrdersAsDeliveryAddressAs("stdDevPopEstimatedCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return squareRootOfPopulationStandardDeviationEstimatedCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.squareRootOfPopulationStandardDeviationEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> sampleVarianceEstimatedCostOfMovingOrdersAsDeliveryAddress(){
+        return sampleVarianceEstimatedCostOfMovingOrdersAsDeliveryAddressAs("varSampEstimatedCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> sampleVarianceEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return sampleVarianceEstimatedCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sampleVarianceEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.sampleVarianceEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> samplePopulationVarianceEstimatedCostOfMovingOrdersAsDeliveryAddress(){
+        return samplePopulationVarianceEstimatedCostOfMovingOrdersAsDeliveryAddressAs("varPopEstimatedCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return samplePopulationVarianceEstimatedCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceEstimatedCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.samplePopulationVarianceEstimatedCost(), true);
+    }
+    public PickupAddressRequest<T> minActualCostOfMovingOrdersAsDeliveryAddress(){
+        return minActualCostOfMovingOrdersAsDeliveryAddressAs("minActualCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> minActualCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return minActualCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> minActualCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.minActualCost(), true);
+    }
+    public PickupAddressRequest<T> maxActualCostOfMovingOrdersAsDeliveryAddress(){
+        return maxActualCostOfMovingOrdersAsDeliveryAddressAs("maxActualCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> maxActualCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return maxActualCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> maxActualCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.maxActualCost(), true);
+    }
+    public PickupAddressRequest<T> sumActualCostOfMovingOrdersAsDeliveryAddress(){
+        return sumActualCostOfMovingOrdersAsDeliveryAddressAs("sumActualCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> sumActualCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return sumActualCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sumActualCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.sumActualCost(), true);
+    }
+    public PickupAddressRequest<T> avgActualCostOfMovingOrdersAsDeliveryAddress(){
+        return avgActualCostOfMovingOrdersAsDeliveryAddressAs("avgActualCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> avgActualCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return avgActualCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> avgActualCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.avgActualCost(), true);
+    }
+    public PickupAddressRequest<T> standardDeviationActualCostOfMovingOrdersAsDeliveryAddress(){
+        return standardDeviationActualCostOfMovingOrdersAsDeliveryAddressAs("stdDevActualCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> standardDeviationActualCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return standardDeviationActualCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> standardDeviationActualCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.standardDeviationActualCost(), true);
+    }
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationActualCostOfMovingOrdersAsDeliveryAddress(){
+        return squareRootOfPopulationStandardDeviationActualCostOfMovingOrdersAsDeliveryAddressAs("stdDevPopActualCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationActualCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return squareRootOfPopulationStandardDeviationActualCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> squareRootOfPopulationStandardDeviationActualCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.squareRootOfPopulationStandardDeviationActualCost(), true);
+    }
+    public PickupAddressRequest<T> sampleVarianceActualCostOfMovingOrdersAsDeliveryAddress(){
+        return sampleVarianceActualCostOfMovingOrdersAsDeliveryAddressAs("varSampActualCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> sampleVarianceActualCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return sampleVarianceActualCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> sampleVarianceActualCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.sampleVarianceActualCost(), true);
+    }
+    public PickupAddressRequest<T> samplePopulationVarianceActualCostOfMovingOrdersAsDeliveryAddress(){
+        return samplePopulationVarianceActualCostOfMovingOrdersAsDeliveryAddressAs("varPopActualCostOfMovingOrdersAsDeliveryAddress");
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceActualCostOfMovingOrdersAsDeliveryAddressAs(String name){
+        return samplePopulationVarianceActualCostOfMovingOrdersAsDeliveryAddressAs(name, Q.movingOrders().unlimited());
+    }
+
+    public PickupAddressRequest<T> samplePopulationVarianceActualCostOfMovingOrdersAsDeliveryAddressAs(String name, MovingOrderRequest subRequest){
+        return statsFromMovingOrdersAsDeliveryAddressAs(name, subRequest.samplePopulationVarianceActualCost(), true);
+    }
+
 
 
     /**

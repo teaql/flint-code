@@ -1,10 +1,12 @@
 package com.doublechaintech.enterpriselogisticsservice.saleschannel;
 
+import com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
+import io.teaql.core.SmartList;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -20,35 +22,40 @@ public class SalesChannel extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "SalesChannel";
 
     public static final String NAME_PROPERTY = "name";
+    public static final String DESCRIPTION_PROPERTY = "description";
     public static final String CHANNEL_TYPE_PROPERTY = "channelType";
-    public static final String URL_PROPERTY = "url";
-    public static final String STATUS_PROPERTY = "status";
+    public static final String IS_ACTIVE_PROPERTY = "isActive";
     public static final String CREATED_TIME_PROPERTY = "createdTime";
-    public static final String UPDATE_TIME_PROPERTY = "updateTime";
+    public static final String UPDATED_TIME_PROPERTY = "updatedTime";
+    public static final String MARKETING_ROI_LIST_PROPERTY = "marketingRoiList";
     private String name;
+    private String description;
     private String channelType;
-    private String url;
-    private String status;
+    private Boolean isActive;
     private LocalDateTime createdTime;
-    private LocalDateTime updateTime;
+    private LocalDateTime updatedTime;
+    private SmartList<MarketingRoi> marketingRoiList;
 
     public String getName(){
         return this.name;
     }
+    public String getDescription(){
+        return this.description;
+    }
     public String getChannelType(){
         return this.channelType;
     }
-    public String getUrl(){
-        return this.url;
-    }
-    public String getStatus(){
-        return this.status;
+    public Boolean isIsActive(){
+        return this.isActive;
     }
     public LocalDateTime getCreatedTime(){
         return this.createdTime;
     }
-    public LocalDateTime getUpdateTime(){
-        return this.updateTime;
+    public LocalDateTime getUpdatedTime(){
+        return this.updatedTime;
+    }
+    public SmartList<MarketingRoi> getMarketingRoiList(){
+        return this.marketingRoiList;
     }
     public SalesChannel updateName(String name){
         name = (name == null ? null : name.trim());
@@ -57,6 +64,15 @@ public class SalesChannel extends BaseEntity implements RemoteInput {
         }
         handleUpdate(NAME_PROPERTY, getName(), name);
         this.name = name;
+        return this;
+    }
+    public SalesChannel updateDescription(String description){
+        description = (description == null ? null : description.trim());
+        if(Objects.equals(this.description, description)){
+            return this;
+        }
+        handleUpdate(DESCRIPTION_PROPERTY, getDescription(), description);
+        this.description = description;
         return this;
     }
     public SalesChannel updateChannelType(String channelType){
@@ -68,22 +84,12 @@ public class SalesChannel extends BaseEntity implements RemoteInput {
         this.channelType = channelType;
         return this;
     }
-    public SalesChannel updateUrl(String url){
-        url = (url == null ? null : url.trim());
-        if(Objects.equals(this.url, url)){
+    public SalesChannel updateIsActive(Boolean isActive){
+        if(Objects.equals(this.isActive, isActive)){
             return this;
         }
-        handleUpdate(URL_PROPERTY, getUrl(), url);
-        this.url = url;
-        return this;
-    }
-    public SalesChannel updateStatus(String status){
-        status = (status == null ? null : status.trim());
-        if(Objects.equals(this.status, status)){
-            return this;
-        }
-        handleUpdate(STATUS_PROPERTY, getStatus(), status);
-        this.status = status;
+        handleUpdate(IS_ACTIVE_PROPERTY, isIsActive(), isActive);
+        this.isActive = isActive;
         return this;
     }
     public SalesChannel updateCreatedTime(LocalDateTime createdTime){
@@ -94,12 +100,25 @@ public class SalesChannel extends BaseEntity implements RemoteInput {
         this.createdTime = createdTime;
         return this;
     }
-    public SalesChannel updateUpdateTime(LocalDateTime updateTime){
-        if(Objects.equals(this.updateTime, updateTime)){
+    public SalesChannel updateUpdatedTime(LocalDateTime updatedTime){
+        if(Objects.equals(this.updatedTime, updatedTime)){
             return this;
         }
-        handleUpdate(UPDATE_TIME_PROPERTY, getUpdateTime(), updateTime);
-        this.updateTime = updateTime;
+        handleUpdate(UPDATED_TIME_PROPERTY, getUpdatedTime(), updatedTime);
+        this.updatedTime = updatedTime;
+        return this;
+    }
+    public SalesChannel addMarketingRoi(MarketingRoi marketingRoi){
+        if (marketingRoi == null){
+            return this;
+        }
+
+        if(null == this.marketingRoiList){
+            this.marketingRoiList = new SmartList<>();
+        }
+
+        this.marketingRoiList.add(marketingRoi);
+        marketingRoi.cacheRelation(MarketingRoi.CHANNEL_PROPERTY, this);
         return this;
     }
 
@@ -132,16 +151,17 @@ public class SalesChannel extends BaseEntity implements RemoteInput {
         switch (property) {
             case "name": this.name = (value == null ? null : ((String)value).trim()); break;
 
+            case "description": this.description = (value == null ? null : ((String)value).trim()); break;
+
             case "channelType": this.channelType = (value == null ? null : ((String)value).trim()); break;
 
-            case "url": this.url = (value == null ? null : ((String)value).trim()); break;
-
-            case "status": this.status = (value == null ? null : ((String)value).trim()); break;
+            case "isActive": this.isActive = (Boolean) value; break;
 
             case "createdTime": this.createdTime = (LocalDateTime) value; break;
 
-            case "updateTime": this.updateTime = (LocalDateTime) value; break;
+            case "updatedTime": this.updatedTime = (LocalDateTime) value; break;
 
+            case "marketingRoiList": this.marketingRoiList = (SmartList<MarketingRoi>) value; break;
             default: super.__internalSet(property, value);
         }
     }
@@ -151,11 +171,12 @@ public class SalesChannel extends BaseEntity implements RemoteInput {
     public Object __internalGet(String property) {
         switch (property) {
             case "name": return this.name;
+            case "description": return this.description;
             case "channelType": return this.channelType;
-            case "url": return this.url;
-            case "status": return this.status;
+            case "isActive": return this.isActive;
             case "createdTime": return this.createdTime;
-            case "updateTime": return this.updateTime;
+            case "updatedTime": return this.updatedTime;
+            case "marketingRoiList": return this.marketingRoiList;
             default: return super.__internalGet(property);
         }
     }

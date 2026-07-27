@@ -67,11 +67,11 @@ public class Q  {
   }
 
 
-  public static com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignmentRequest<com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment> driverAssignments(){
-      return new com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignmentRequest(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.class).selectSelf().withVersion(Operator.GREATER_THAN, 0l);
+  public static com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDeviceRequest<com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice> telematicsDevices(){
+      return new com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDeviceRequest(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.class).selectSelf().withVersion(Operator.GREATER_THAN, 0l);
   }
-  public static com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignmentRequest<com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment> driverAssignmentsWithMinimalFields(){
-      return new com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignmentRequest(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.class).withVersion(Operator.GREATER_THAN, 0l);
+  public static com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDeviceRequest<com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice> telematicsDevicesWithMinimalFields(){
+      return new com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDeviceRequest(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.class).withVersion(Operator.GREATER_THAN, 0l);
   }
 
 
@@ -99,11 +99,11 @@ public class Q  {
   }
 
 
-  public static com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDeviceRequest<com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice> telematicsDevices(){
-      return new com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDeviceRequest(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.class).selectSelf().withVersion(Operator.GREATER_THAN, 0l);
+  public static com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignmentRequest<com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment> driverAssignments(){
+      return new com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignmentRequest(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.class).selectSelf().withVersion(Operator.GREATER_THAN, 0l);
   }
-  public static com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDeviceRequest<com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice> telematicsDevicesWithMinimalFields(){
-      return new com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDeviceRequest(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.class).withVersion(Operator.GREATER_THAN, 0l);
+  public static com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignmentRequest<com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment> driverAssignmentsWithMinimalFields(){
+      return new com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignmentRequest(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.class).withVersion(Operator.GREATER_THAN, 0l);
   }
 
 
@@ -323,14 +323,6 @@ public class Q  {
   }
 
 
-  public static com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReportRequest<com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport> financialReports(){
-      return new com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReportRequest(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.class).selectSelf().withVersion(Operator.GREATER_THAN, 0l);
-  }
-  public static com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReportRequest<com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport> financialReportsWithMinimalFields(){
-      return new com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReportRequest(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.class).withVersion(Operator.GREATER_THAN, 0l);
-  }
-
-
   public static com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContractRequest<com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract> serviceContracts(){
       return new com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContractRequest(com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract.class).selectSelf().withVersion(Operator.GREATER_THAN, 0l);
   }
@@ -392,6 +384,22 @@ public class Q  {
   }
   public static com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermissionRequest<com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission> accessPermissionsWithMinimalFields(){
       return new com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermissionRequest(com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission.class).withVersion(Operator.GREATER_THAN, 0l);
+  }
+
+
+  public static com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotificationRequest<com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification> systemNotifications(){
+      return new com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotificationRequest(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.class).selectSelf().withVersion(Operator.GREATER_THAN, 0l);
+  }
+  public static com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotificationRequest<com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification> systemNotificationsWithMinimalFields(){
+      return new com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotificationRequest(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.class).withVersion(Operator.GREATER_THAN, 0l);
+  }
+
+
+  public static com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfigurationRequest<com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration> systemConfigurations(){
+      return new com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfigurationRequest(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.class).selectSelf().withVersion(Operator.GREATER_THAN, 0l);
+  }
+  public static com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfigurationRequest<com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration> systemConfigurationsWithMinimalFields(){
+      return new com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfigurationRequest(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.class).withVersion(Operator.GREATER_THAN, 0l);
   }
 
 

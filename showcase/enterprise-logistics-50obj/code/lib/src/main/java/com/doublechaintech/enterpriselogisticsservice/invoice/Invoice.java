@@ -2,8 +2,6 @@ package com.doublechaintech.enterpriselogisticsservice.invoice;
 
 import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
 import com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord;
-import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee;
 import com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
@@ -12,7 +10,7 @@ import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
 import io.teaql.core.SmartList;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Objects;
 
 /**
@@ -31,11 +29,10 @@ public class Invoice extends BaseEntity implements RemoteInput {
     public static final String AMOUNT_PROPERTY = "amount";
     public static final String CURRENCY_PROPERTY = "currency";
     public static final String STATUS_PROPERTY = "status";
-    public static final String CREATED_AT_PROPERTY = "createdAt";
-    public static final String UPDATED_AT_PROPERTY = "updatedAt";
+    public static final String ISSUE_DATE_PROPERTY = "issueDate";
+    public static final String DUE_DATE_PROPERTY = "dueDate";
     public static final String MOVING_ORDER_PROPERTY = "movingOrder";
     public static final String CUSTOMER_PROPERTY = "customer";
-    public static final String STORAGE_FEE_LIST_PROPERTY = "storageFeeList";
     public static final String PAYMENT_RECORD_LIST_PROPERTY = "paymentRecordList";
     public static final String TAX_RECORD_LIST_PROPERTY = "taxRecordList";
     private String name;
@@ -43,11 +40,10 @@ public class Invoice extends BaseEntity implements RemoteInput {
     private BigDecimal amount;
     private String currency;
     private String status;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDate issueDate;
+    private LocalDate dueDate;
     private MovingOrder movingOrder;
-    private PrivateCustomer customer;
-    private SmartList<StorageFee> storageFeeList;
+    private String customer;
     private SmartList<PaymentRecord> paymentRecordList;
     private SmartList<TaxRecord> taxRecordList;
 
@@ -66,20 +62,17 @@ public class Invoice extends BaseEntity implements RemoteInput {
     public String getStatus(){
         return this.status;
     }
-    public LocalDateTime getCreatedAt(){
-        return this.createdAt;
+    public LocalDate getIssueDate(){
+        return this.issueDate;
     }
-    public LocalDateTime getUpdatedAt(){
-        return this.updatedAt;
+    public LocalDate getDueDate(){
+        return this.dueDate;
     }
     public MovingOrder getMovingOrder(){
         return this.movingOrder;
     }
-    public PrivateCustomer getCustomer(){
+    public String getCustomer(){
         return this.customer;
-    }
-    public SmartList<StorageFee> getStorageFeeList(){
-        return this.storageFeeList;
     }
     public SmartList<PaymentRecord> getPaymentRecordList(){
         return this.paymentRecordList;
@@ -131,20 +124,20 @@ public class Invoice extends BaseEntity implements RemoteInput {
         this.status = status;
         return this;
     }
-    public Invoice updateCreatedAt(LocalDateTime createdAt){
-        if(Objects.equals(this.createdAt, createdAt)){
+    public Invoice updateIssueDate(LocalDate issueDate){
+        if(Objects.equals(this.issueDate, issueDate)){
             return this;
         }
-        handleUpdate(CREATED_AT_PROPERTY, getCreatedAt(), createdAt);
-        this.createdAt = createdAt;
+        handleUpdate(ISSUE_DATE_PROPERTY, getIssueDate(), issueDate);
+        this.issueDate = issueDate;
         return this;
     }
-    public Invoice updateUpdatedAt(LocalDateTime updatedAt){
-        if(Objects.equals(this.updatedAt, updatedAt)){
+    public Invoice updateDueDate(LocalDate dueDate){
+        if(Objects.equals(this.dueDate, dueDate)){
             return this;
         }
-        handleUpdate(UPDATED_AT_PROPERTY, getUpdatedAt(), updatedAt);
-        this.updatedAt = updatedAt;
+        handleUpdate(DUE_DATE_PROPERTY, getDueDate(), dueDate);
+        this.dueDate = dueDate;
         return this;
     }
     public Invoice updateMovingOrder(MovingOrder movingOrder){
@@ -155,25 +148,13 @@ public class Invoice extends BaseEntity implements RemoteInput {
         this.movingOrder = movingOrder;
         return this;
     }
-    public Invoice updateCustomer(PrivateCustomer customer){
+    public Invoice updateCustomer(String customer){
+        customer = (customer == null ? null : customer.trim());
         if(Objects.equals(this.customer, customer)){
             return this;
         }
         handleUpdate(CUSTOMER_PROPERTY, getCustomer(), customer);
         this.customer = customer;
-        return this;
-    }
-    public Invoice addStorageFee(StorageFee storageFee){
-        if (storageFee == null){
-            return this;
-        }
-
-        if(null == this.storageFeeList){
-            this.storageFeeList = new SmartList<>();
-        }
-
-        this.storageFeeList.add(storageFee);
-        storageFee.cacheRelation(StorageFee.INVOICE_PROPERTY, this);
         return this;
     }
     public Invoice addPaymentRecord(PaymentRecord paymentRecord){
@@ -240,15 +221,14 @@ public class Invoice extends BaseEntity implements RemoteInput {
 
             case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
-            case "createdAt": this.createdAt = (LocalDateTime) value; break;
+            case "issueDate": this.issueDate = (LocalDate) value; break;
 
-            case "updatedAt": this.updatedAt = (LocalDateTime) value; break;
+            case "dueDate": this.dueDate = (LocalDate) value; break;
 
             case "movingOrder": this.movingOrder = (MovingOrder) value; break;
 
-            case "customer": this.customer = (PrivateCustomer) value; break;
+            case "customer": this.customer = (value == null ? null : ((String)value).trim()); break;
 
-            case "storageFeeList": this.storageFeeList = (SmartList<StorageFee>) value; break;
             case "paymentRecordList": this.paymentRecordList = (SmartList<PaymentRecord>) value; break;
             case "taxRecordList": this.taxRecordList = (SmartList<TaxRecord>) value; break;
             default: super.__internalSet(property, value);
@@ -264,11 +244,10 @@ public class Invoice extends BaseEntity implements RemoteInput {
             case "amount": return this.amount;
             case "currency": return this.currency;
             case "status": return this.status;
-            case "createdAt": return this.createdAt;
-            case "updatedAt": return this.updatedAt;
+            case "issueDate": return this.issueDate;
+            case "dueDate": return this.dueDate;
             case "movingOrder": return this.movingOrder;
             case "customer": return this.customer;
-            case "storageFeeList": return this.storageFeeList;
             case "paymentRecordList": return this.paymentRecordList;
             case "taxRecordList": return this.taxRecordList;
             default: return super.__internalGet(property);

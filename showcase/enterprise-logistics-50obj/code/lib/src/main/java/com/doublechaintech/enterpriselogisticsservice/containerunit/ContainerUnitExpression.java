@@ -43,18 +43,18 @@ public class ContainerUnitExpression<T, E, U extends ContainerUnit> extends Expr
        return new ContainerUnitExpression(this, $it ->  ((ContainerUnit)$it).updateStorageContainer(storageContainer));
     }
 
-    public Expression<T, String> getUnitType(){
-       return apply(ContainerUnit::getUnitType);
+    public Expression<T, String> getUnitNumber(){
+       return apply(ContainerUnit::getUnitNumber);
     }
-    public ContainerUnitExpression<T, U, U> updateUnitType(String unitType){
-       return new ContainerUnitExpression(this, $it ->  ((ContainerUnit)$it).updateUnitType(unitType));
+    public ContainerUnitExpression<T, U, U> updateUnitNumber(String unitNumber){
+       return new ContainerUnitExpression(this, $it ->  ((ContainerUnit)$it).updateUnitNumber(unitNumber));
     }
 
-    public Expression<T, Integer> getQuantity(){
-       return apply(ContainerUnit::getQuantity);
+    public Expression<T, Integer> getItemCount(){
+       return apply(ContainerUnit::getItemCount);
     }
-    public ContainerUnitExpression<T, U, U> updateQuantity(Integer quantity){
-       return new ContainerUnitExpression(this, $it ->  ((ContainerUnit)$it).updateQuantity(quantity));
+    public ContainerUnitExpression<T, U, U> updateItemCount(Integer itemCount){
+       return new ContainerUnitExpression(this, $it ->  ((ContainerUnit)$it).updateItemCount(itemCount));
     }
 
     public Expression<T, LocalDateTime> getCreateTime(){

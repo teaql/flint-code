@@ -36,19 +36,11 @@ public class CargoItemExpression<T, E, U extends CargoItem> extends ExpressionAd
      }
 
 
-    public Expression<T, String> getItemId(){
-       return apply(CargoItem::getItemId);
+    public Expression<T, String> getItemCode(){
+       return apply(CargoItem::getItemCode);
     }
-    public CargoItemExpression<T, U, U> updateItemId(String itemId){
-       return new CargoItemExpression(this, $it ->  ((CargoItem)$it).updateItemId(itemId));
-    }
-
-    public MovingOrderExpression<T, U, MovingOrder> getMovingOrder(){
-       return new MovingOrderExpression(this, $it ->  ((CargoItem)$it).getMovingOrder());
-    }
-
-    public CargoItemExpression<T, U, U> updateMovingOrder(MovingOrder movingOrder){
-       return new CargoItemExpression(this, $it ->  ((CargoItem)$it).updateMovingOrder(movingOrder));
+    public CargoItemExpression<T, U, U> updateItemCode(String itemCode){
+       return new CargoItemExpression(this, $it ->  ((CargoItem)$it).updateItemCode(itemCode));
     }
 
     public Expression<T, String> getDescription(){
@@ -56,13 +48,6 @@ public class CargoItemExpression<T, E, U extends CargoItem> extends ExpressionAd
     }
     public CargoItemExpression<T, U, U> updateDescription(String description){
        return new CargoItemExpression(this, $it ->  ((CargoItem)$it).updateDescription(description));
-    }
-
-    public Expression<T, String> getCategory(){
-       return apply(CargoItem::getCategory);
-    }
-    public CargoItemExpression<T, U, U> updateCategory(String category){
-       return new CargoItemExpression(this, $it ->  ((CargoItem)$it).updateCategory(category));
     }
 
     public Expression<T, BigDecimal> getWeightKg(){
@@ -79,13 +64,6 @@ public class CargoItemExpression<T, E, U extends CargoItem> extends ExpressionAd
        return new CargoItemExpression(this, $it ->  ((CargoItem)$it).updateVolumeM3(volumeM3));
     }
 
-    public Expression<T, BigDecimal> getValue(){
-       return apply(CargoItem::getValue);
-    }
-    public CargoItemExpression<T, U, U> updateValue(BigDecimal value){
-       return new CargoItemExpression(this, $it ->  ((CargoItem)$it).updateValue(value));
-    }
-
     public Expression<T, Boolean> isFragile(){
        return apply(CargoItem::isFragile);
     }
@@ -93,11 +71,26 @@ public class CargoItemExpression<T, E, U extends CargoItem> extends ExpressionAd
        return new CargoItemExpression(this, $it ->  ((CargoItem)$it).updateFragile(fragile));
     }
 
-    public Expression<T, LocalDateTime> getCreateTime(){
-       return apply(CargoItem::getCreateTime);
+    public MovingOrderExpression<T, U, MovingOrder> getMovingOrder(){
+       return new MovingOrderExpression(this, $it ->  ((CargoItem)$it).getMovingOrder());
     }
-    public CargoItemExpression<T, U, U> updateCreateTime(LocalDateTime createTime){
-       return new CargoItemExpression(this, $it ->  ((CargoItem)$it).updateCreateTime(createTime));
+
+    public CargoItemExpression<T, U, U> updateMovingOrder(MovingOrder movingOrder){
+       return new CargoItemExpression(this, $it ->  ((CargoItem)$it).updateMovingOrder(movingOrder));
+    }
+
+    public Expression<T, LocalDateTime> getCreatedTime(){
+       return apply(CargoItem::getCreatedTime);
+    }
+    public CargoItemExpression<T, U, U> updateCreatedTime(LocalDateTime createdTime){
+       return new CargoItemExpression(this, $it ->  ((CargoItem)$it).updateCreatedTime(createdTime));
+    }
+
+    public Expression<T, LocalDateTime> getUpdatedTime(){
+       return apply(CargoItem::getUpdatedTime);
+    }
+    public CargoItemExpression<T, U, U> updateUpdatedTime(LocalDateTime updatedTime){
+       return new CargoItemExpression(this, $it ->  ((CargoItem)$it).updateUpdatedTime(updatedTime));
     }
 
 }

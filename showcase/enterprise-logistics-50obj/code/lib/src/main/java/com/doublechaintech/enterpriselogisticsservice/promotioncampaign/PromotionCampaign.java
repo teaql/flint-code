@@ -24,26 +24,29 @@ public class PromotionCampaign extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "PromotionCampaign";
 
     public static final String NAME_PROPERTY = "name";
+    public static final String DESCRIPTION_PROPERTY = "description";
     public static final String START_DATE_PROPERTY = "startDate";
     public static final String END_DATE_PROPERTY = "endDate";
     public static final String BUDGET_PROPERTY = "budget";
     public static final String STATUS_PROPERTY = "status";
-    public static final String DESCRIPTION_PROPERTY = "description";
     public static final String CREATED_TIME_PROPERTY = "createdTime";
-    public static final String UPDATE_TIME_PROPERTY = "updateTime";
+    public static final String UPDATED_TIME_PROPERTY = "updatedTime";
     public static final String MARKETING_ROI_LIST_PROPERTY = "marketingRoiList";
     private String name;
+    private String description;
     private LocalDate startDate;
     private LocalDate endDate;
     private BigDecimal budget;
     private String status;
-    private String description;
     private LocalDateTime createdTime;
-    private LocalDateTime updateTime;
+    private LocalDateTime updatedTime;
     private SmartList<MarketingRoi> marketingRoiList;
 
     public String getName(){
         return this.name;
+    }
+    public String getDescription(){
+        return this.description;
     }
     public LocalDate getStartDate(){
         return this.startDate;
@@ -57,14 +60,11 @@ public class PromotionCampaign extends BaseEntity implements RemoteInput {
     public String getStatus(){
         return this.status;
     }
-    public String getDescription(){
-        return this.description;
-    }
     public LocalDateTime getCreatedTime(){
         return this.createdTime;
     }
-    public LocalDateTime getUpdateTime(){
-        return this.updateTime;
+    public LocalDateTime getUpdatedTime(){
+        return this.updatedTime;
     }
     public SmartList<MarketingRoi> getMarketingRoiList(){
         return this.marketingRoiList;
@@ -76,6 +76,15 @@ public class PromotionCampaign extends BaseEntity implements RemoteInput {
         }
         handleUpdate(NAME_PROPERTY, getName(), name);
         this.name = name;
+        return this;
+    }
+    public PromotionCampaign updateDescription(String description){
+        description = (description == null ? null : description.trim());
+        if(Objects.equals(this.description, description)){
+            return this;
+        }
+        handleUpdate(DESCRIPTION_PROPERTY, getDescription(), description);
+        this.description = description;
         return this;
     }
     public PromotionCampaign updateStartDate(LocalDate startDate){
@@ -111,15 +120,6 @@ public class PromotionCampaign extends BaseEntity implements RemoteInput {
         this.status = status;
         return this;
     }
-    public PromotionCampaign updateDescription(String description){
-        description = (description == null ? null : description.trim());
-        if(Objects.equals(this.description, description)){
-            return this;
-        }
-        handleUpdate(DESCRIPTION_PROPERTY, getDescription(), description);
-        this.description = description;
-        return this;
-    }
     public PromotionCampaign updateCreatedTime(LocalDateTime createdTime){
         if(Objects.equals(this.createdTime, createdTime)){
             return this;
@@ -128,12 +128,12 @@ public class PromotionCampaign extends BaseEntity implements RemoteInput {
         this.createdTime = createdTime;
         return this;
     }
-    public PromotionCampaign updateUpdateTime(LocalDateTime updateTime){
-        if(Objects.equals(this.updateTime, updateTime)){
+    public PromotionCampaign updateUpdatedTime(LocalDateTime updatedTime){
+        if(Objects.equals(this.updatedTime, updatedTime)){
             return this;
         }
-        handleUpdate(UPDATE_TIME_PROPERTY, getUpdateTime(), updateTime);
-        this.updateTime = updateTime;
+        handleUpdate(UPDATED_TIME_PROPERTY, getUpdatedTime(), updatedTime);
+        this.updatedTime = updatedTime;
         return this;
     }
     public PromotionCampaign addMarketingRoi(MarketingRoi marketingRoi){
@@ -179,6 +179,8 @@ public class PromotionCampaign extends BaseEntity implements RemoteInput {
         switch (property) {
             case "name": this.name = (value == null ? null : ((String)value).trim()); break;
 
+            case "description": this.description = (value == null ? null : ((String)value).trim()); break;
+
             case "startDate": this.startDate = (LocalDate) value; break;
 
             case "endDate": this.endDate = (LocalDate) value; break;
@@ -187,11 +189,9 @@ public class PromotionCampaign extends BaseEntity implements RemoteInput {
 
             case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
-            case "description": this.description = (value == null ? null : ((String)value).trim()); break;
-
             case "createdTime": this.createdTime = (LocalDateTime) value; break;
 
-            case "updateTime": this.updateTime = (LocalDateTime) value; break;
+            case "updatedTime": this.updatedTime = (LocalDateTime) value; break;
 
             case "marketingRoiList": this.marketingRoiList = (SmartList<MarketingRoi>) value; break;
             default: super.__internalSet(property, value);
@@ -203,13 +203,13 @@ public class PromotionCampaign extends BaseEntity implements RemoteInput {
     public Object __internalGet(String property) {
         switch (property) {
             case "name": return this.name;
+            case "description": return this.description;
             case "startDate": return this.startDate;
             case "endDate": return this.endDate;
             case "budget": return this.budget;
             case "status": return this.status;
-            case "description": return this.description;
             case "createdTime": return this.createdTime;
-            case "updateTime": return this.updateTime;
+            case "updatedTime": return this.updatedTime;
             case "marketingRoiList": return this.marketingRoiList;
             default: return super.__internalGet(property);
         }

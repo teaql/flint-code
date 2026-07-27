@@ -1,12 +1,11 @@
 package com.doublechaintech.enterpriselogisticsservice.customerloyalty;
 
-import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomerChecker;
 import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
 import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomerChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
+import java.time.LocalDateTime;
 
 public class CustomerLoyaltyChecker implements Checker<CustomerLoyalty>{
 
@@ -26,12 +25,19 @@ public class CustomerLoyaltyChecker implements Checker<CustomerLoyalty>{
          return;
       }
       if(customerLoyalty.newItem()){
+        if(customerLoyalty.getCreatedAt() == null){
+           customerLoyalty.updateCreatedAt(java.time.LocalDateTime.now());
+        }if(customerLoyalty.getUpdatedAt() == null){
+           customerLoyalty.updateUpdatedAt(java.time.LocalDateTime.now());
+        }
       }else if(customerLoyalty.updateItem()){
+        customerLoyalty.updateUpdatedAt(java.time.LocalDateTime.now());
       }
       checkPoints(_ctx, customerLoyalty.getProperty(CustomerLoyalty.POINTS_PROPERTY), newLocation(_parentLocation, CustomerLoyalty.POINTS_PROPERTY));
       checkTier(_ctx, customerLoyalty.getProperty(CustomerLoyalty.TIER_PROPERTY), newLocation(_parentLocation, CustomerLoyalty.TIER_PROPERTY));
       checkPrivateCustomer(_ctx, customerLoyalty.getProperty(CustomerLoyalty.PRIVATE_CUSTOMER_PROPERTY), newLocation(_parentLocation, CustomerLoyalty.PRIVATE_CUSTOMER_PROPERTY));
-      checkCorporateCustomer(_ctx, customerLoyalty.getProperty(CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY), newLocation(_parentLocation, CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY));
+      checkCreatedAt(_ctx, customerLoyalty.getProperty(CustomerLoyalty.CREATED_AT_PROPERTY), newLocation(_parentLocation, CustomerLoyalty.CREATED_AT_PROPERTY));
+      checkUpdatedAt(_ctx, customerLoyalty.getProperty(CustomerLoyalty.UPDATED_AT_PROPERTY), newLocation(_parentLocation, CustomerLoyalty.UPDATED_AT_PROPERTY));
     }
 
     public void checkPoints(UserContext _ctx, Integer points, ObjectLocation _parentLocation){
@@ -55,11 +61,16 @@ public class CustomerLoyaltyChecker implements Checker<CustomerLoyalty>{
     }
     new PrivateCustomerChecker().checkAndFix(_ctx, privateCustomer, _parentLocation);
     }
-    public void checkCorporateCustomer(UserContext _ctx, CorporateCustomer corporateCustomer, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, corporateCustomer);
-    if((corporateCustomer == null)){
+    public void checkCreatedAt(UserContext _ctx, LocalDateTime createdAt, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, createdAt);
+    if((createdAt == null)){
         return;
     }
-    new CorporateCustomerChecker().checkAndFix(_ctx, corporateCustomer, _parentLocation);
+    }
+    public void checkUpdatedAt(UserContext _ctx, LocalDateTime updatedAt, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, updatedAt);
+    if((updatedAt == null)){
+        return;
+    }
     }
 }

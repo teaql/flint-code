@@ -9,6 +9,7 @@ import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class ServiceQuoteChecker implements Checker<ServiceQuote>{
 
@@ -28,16 +29,23 @@ public class ServiceQuoteChecker implements Checker<ServiceQuote>{
          return;
       }
       if(serviceQuote.newItem()){
+        if(serviceQuote.getCreatedAt() == null){
+           serviceQuote.updateCreatedAt(java.time.LocalDateTime.now());
+        }if(serviceQuote.getUpdatedAt() == null){
+           serviceQuote.updateUpdatedAt(java.time.LocalDateTime.now());
+        }
       }else if(serviceQuote.updateItem()){
+        serviceQuote.updateUpdatedAt(java.time.LocalDateTime.now());
       }
       checkQuoteNumber(_ctx, serviceQuote.getProperty(ServiceQuote.QUOTE_NUMBER_PROPERTY), newLocation(_parentLocation, ServiceQuote.QUOTE_NUMBER_PROPERTY));
-      checkDescription(_ctx, serviceQuote.getProperty(ServiceQuote.DESCRIPTION_PROPERTY), newLocation(_parentLocation, ServiceQuote.DESCRIPTION_PROPERTY));
       checkEstimatedCost(_ctx, serviceQuote.getProperty(ServiceQuote.ESTIMATED_COST_PROPERTY), newLocation(_parentLocation, ServiceQuote.ESTIMATED_COST_PROPERTY));
       checkCurrency(_ctx, serviceQuote.getProperty(ServiceQuote.CURRENCY_PROPERTY), newLocation(_parentLocation, ServiceQuote.CURRENCY_PROPERTY));
-      checkStatus(_ctx, serviceQuote.getProperty(ServiceQuote.STATUS_PROPERTY), newLocation(_parentLocation, ServiceQuote.STATUS_PROPERTY));
       checkValidUntil(_ctx, serviceQuote.getProperty(ServiceQuote.VALID_UNTIL_PROPERTY), newLocation(_parentLocation, ServiceQuote.VALID_UNTIL_PROPERTY));
+      checkStatus(_ctx, serviceQuote.getProperty(ServiceQuote.STATUS_PROPERTY), newLocation(_parentLocation, ServiceQuote.STATUS_PROPERTY));
       checkPrivateCustomer(_ctx, serviceQuote.getProperty(ServiceQuote.PRIVATE_CUSTOMER_PROPERTY), newLocation(_parentLocation, ServiceQuote.PRIVATE_CUSTOMER_PROPERTY));
       checkCorporateCustomer(_ctx, serviceQuote.getProperty(ServiceQuote.CORPORATE_CUSTOMER_PROPERTY), newLocation(_parentLocation, ServiceQuote.CORPORATE_CUSTOMER_PROPERTY));
+      checkCreatedAt(_ctx, serviceQuote.getProperty(ServiceQuote.CREATED_AT_PROPERTY), newLocation(_parentLocation, ServiceQuote.CREATED_AT_PROPERTY));
+      checkUpdatedAt(_ctx, serviceQuote.getProperty(ServiceQuote.UPDATED_AT_PROPERTY), newLocation(_parentLocation, ServiceQuote.UPDATED_AT_PROPERTY));
     }
 
     public void checkQuoteNumber(UserContext _ctx, String quoteNumber, ObjectLocation _parentLocation){
@@ -46,14 +54,6 @@ public class ServiceQuoteChecker implements Checker<ServiceQuote>{
         return;
     }
     maxStringCheck(_ctx, _parentLocation, 100, quoteNumber);
-
-    }
-    public void checkDescription(UserContext _ctx, String description, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, description);
-    if((description == null)){
-        return;
-    }
-    maxStringCheck(_ctx, _parentLocation, 100, description);
 
     }
     public void checkEstimatedCost(UserContext _ctx, BigDecimal estimatedCost, ObjectLocation _parentLocation){
@@ -70,6 +70,12 @@ public class ServiceQuoteChecker implements Checker<ServiceQuote>{
     maxStringCheck(_ctx, _parentLocation, 100, currency);
 
     }
+    public void checkValidUntil(UserContext _ctx, LocalDate validUntil, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, validUntil);
+    if((validUntil == null)){
+        return;
+    }
+    }
     public void checkStatus(UserContext _ctx, String status, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, status);
     if((status == null)){
@@ -77,12 +83,6 @@ public class ServiceQuoteChecker implements Checker<ServiceQuote>{
     }
     maxStringCheck(_ctx, _parentLocation, 100, status);
 
-    }
-    public void checkValidUntil(UserContext _ctx, LocalDate validUntil, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, validUntil);
-    if((validUntil == null)){
-        return;
-    }
     }
     public void checkPrivateCustomer(UserContext _ctx, PrivateCustomer privateCustomer, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, privateCustomer);
@@ -97,5 +97,17 @@ public class ServiceQuoteChecker implements Checker<ServiceQuote>{
         return;
     }
     new CorporateCustomerChecker().checkAndFix(_ctx, corporateCustomer, _parentLocation);
+    }
+    public void checkCreatedAt(UserContext _ctx, LocalDateTime createdAt, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, createdAt);
+    if((createdAt == null)){
+        return;
+    }
+    }
+    public void checkUpdatedAt(UserContext _ctx, LocalDateTime updatedAt, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, updatedAt);
+    if((updatedAt == null)){
+        return;
+    }
     }
 }

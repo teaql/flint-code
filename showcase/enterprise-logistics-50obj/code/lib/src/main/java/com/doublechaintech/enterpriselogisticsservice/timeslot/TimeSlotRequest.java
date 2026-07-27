@@ -1,13 +1,9 @@
 package com.doublechaintech.enterpriselogisticsservice.timeslot;
 
-import com.doublechaintech.enterpriselogisticsservice.Q;
-import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
-import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
 import io.teaql.core.SearchCriteria;
-import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
 import java.time.LocalDateTime;
@@ -84,7 +80,7 @@ public class TimeSlotRequest<T extends TimeSlot> extends BaseRequest<T> {
 
     public TimeSlotRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectSlotId().selectMovingOrderIdOnly().selectStartTime().selectEndTime().selectStatus().selectCreateTime().selectVersion();
+        return selectId().selectSlotCode().selectStartTime().selectEndTime().selectCapacity().selectAvailableSpots().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public TimeSlotRequest<T> selectSelfFields(){
@@ -93,12 +89,12 @@ public class TimeSlotRequest<T extends TimeSlot> extends BaseRequest<T> {
 
     public TimeSlotRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectSlotId().selectMovingOrder().selectStartTime().selectEndTime().selectStatus().selectCreateTime().selectVersion();
+        return selectId().selectSlotCode().selectStartTime().selectEndTime().selectCapacity().selectAvailableSpots().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
     public TimeSlotRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectSlotId().selectMovingOrder().selectStartTime().selectEndTime().selectStatus().selectCreateTime().selectVersion();
+        return selectId().selectSlotCode().selectStartTime().selectEndTime().selectCapacity().selectAvailableSpots().selectCreatedTime().selectUpdatedTime().selectVersion();
     }
 
 
@@ -119,40 +115,21 @@ public class TimeSlotRequest<T extends TimeSlot> extends BaseRequest<T> {
        unselectProperty(TimeSlot.ID_PROPERTY);
        return this;
     }
-    public TimeSlotRequest<T> selectSlotId(){
-       selectProperty(TimeSlot.SLOT_ID_PROPERTY);
+    public TimeSlotRequest<T> selectSlotCode(){
+       selectProperty(TimeSlot.SLOT_CODE_PROPERTY);
        return this;
     }
 
     /**
-     * fill the slotId with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  slotId) to fetch slotId property.
+     * fill the slotCode with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  slotCode) to fetch slotCode property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public TimeSlotRequest<T> unselectSlotId(){
-       unselectProperty(TimeSlot.SLOT_ID_PROPERTY);
-       return this;
-    }
-    public TimeSlotRequest<T> selectMovingOrderIdOnly(){
-       selectProperty(TimeSlot.MOVING_ORDER_PROPERTY);
-       return this;
-    }
-
-    public TimeSlotRequest<T> selectMovingOrder(){
-        return selectMovingOrderWith(Q.movingOrders().unlimited().selectSelf());
-    }
-
-    public TimeSlotRequest<T> selectMovingOrderWith(MovingOrderRequest movingOrder){
-       selectProperty(TimeSlot.MOVING_ORDER_PROPERTY);
-       enhanceRelation(TimeSlot.MOVING_ORDER_PROPERTY, movingOrder);
-       return this;
-    }
-
-    public TimeSlotRequest<T> unselectMovingOrder(){
-       unselectProperty(TimeSlot.MOVING_ORDER_PROPERTY);
+    public TimeSlotRequest<T> unselectSlotCode(){
+       unselectProperty(TimeSlot.SLOT_CODE_PROPERTY);
        return this;
     }
     public TimeSlotRequest<T> selectStartTime(){
@@ -189,38 +166,88 @@ public class TimeSlotRequest<T extends TimeSlot> extends BaseRequest<T> {
        unselectProperty(TimeSlot.END_TIME_PROPERTY);
        return this;
     }
-    public TimeSlotRequest<T> selectStatus(){
-       selectProperty(TimeSlot.STATUS_PROPERTY);
+    public TimeSlotRequest<T> selectCapacity(){
+       selectProperty(TimeSlot.CAPACITY_PROPERTY);
        return this;
     }
 
     /**
-     * fill the status with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  status) to fetch status property.
+     * fill the capacity with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  capacity) to fetch capacity property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+    /**
+     * fill the capacity with customized aggrFunction, TEAQL uses ({aggrFunction}(capacity) AS capacity to fetch capacity property.
+     * @param aggrFunction  aggrFunction
+     */
+    public TimeSlotRequest<T> selectCapacity(AggrFunction aggrFunction){
+       selectProperty(TimeSlot.CAPACITY_PROPERTY, aggrFunction);
+       return this;
+    }
+
+
+    public TimeSlotRequest<T> unselectCapacity(){
+       unselectProperty(TimeSlot.CAPACITY_PROPERTY);
+       return this;
+    }
+    public TimeSlotRequest<T> selectAvailableSpots(){
+       selectProperty(TimeSlot.AVAILABLE_SPOTS_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the availableSpots with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  availableSpots) to fetch availableSpots property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+    /**
+     * fill the availableSpots with customized aggrFunction, TEAQL uses ({aggrFunction}(availableSpots) AS availableSpots to fetch availableSpots property.
+     * @param aggrFunction  aggrFunction
+     */
+    public TimeSlotRequest<T> selectAvailableSpots(AggrFunction aggrFunction){
+       selectProperty(TimeSlot.AVAILABLE_SPOTS_PROPERTY, aggrFunction);
+       return this;
+    }
+
+
+    public TimeSlotRequest<T> unselectAvailableSpots(){
+       unselectProperty(TimeSlot.AVAILABLE_SPOTS_PROPERTY);
+       return this;
+    }
+    public TimeSlotRequest<T> selectCreatedTime(){
+       selectProperty(TimeSlot.CREATED_TIME_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the createdTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdTime) to fetch createdTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public TimeSlotRequest<T> unselectStatus(){
-       unselectProperty(TimeSlot.STATUS_PROPERTY);
+    public TimeSlotRequest<T> unselectCreatedTime(){
+       unselectProperty(TimeSlot.CREATED_TIME_PROPERTY);
        return this;
     }
-    public TimeSlotRequest<T> selectCreateTime(){
-       selectProperty(TimeSlot.CREATE_TIME_PROPERTY);
+    public TimeSlotRequest<T> selectUpdatedTime(){
+       selectProperty(TimeSlot.UPDATED_TIME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the createTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createTime) to fetch createTime property.
+     * fill the updatedTime with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedTime) to fetch updatedTime property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public TimeSlotRequest<T> unselectCreateTime(){
-       unselectProperty(TimeSlot.CREATE_TIME_PROPERTY);
+    public TimeSlotRequest<T> unselectUpdatedTime(){
+       unselectProperty(TimeSlot.UPDATED_TIME_PROPERTY);
        return this;
     }
     public TimeSlotRequest<T> selectVersion(){
@@ -258,103 +285,70 @@ public class TimeSlotRequest<T extends TimeSlot> extends BaseRequest<T> {
 
 
 
-    public TimeSlotRequest<T> filterBySlotId(String... slotId){
-      if (slotId == null || slotId.length == 0) {
-        throw new IllegalArgumentException("filterBySlotId parameter slotId cannot be empty");
+    public TimeSlotRequest<T> filterBySlotCode(String... slotCode){
+      if (slotCode == null || slotCode.length == 0) {
+        throw new IllegalArgumentException("filterBySlotCode parameter slotCode cannot be empty");
       }
-      return appendSearchCriteria(createSlotIdCriteria(Operator.EQUAL, (Object[])slotId));
+      return appendSearchCriteria(createSlotCodeCriteria(Operator.EQUAL, (Object[])slotCode));
     }
 
-    public TimeSlotRequest<T> withSlotId(Operator operator, Object... values){
-       return appendSearchCriteria(createSlotIdCriteria(operator, values));
+    public TimeSlotRequest<T> withSlotCode(Operator operator, Object... values){
+       return appendSearchCriteria(createSlotCodeCriteria(operator, values));
     }
 
-    public TimeSlotRequest<T> withSlotIdIsUnknown(){
-       return withSlotId(Operator.IS_NULL);
+    public TimeSlotRequest<T> withSlotCodeIsUnknown(){
+       return withSlotCode(Operator.IS_NULL);
     }
 
-    public TimeSlotRequest<T> withSlotIdIsKnown(){
-       return withSlotId(Operator.IS_NOT_NULL);
+    public TimeSlotRequest<T> withSlotCodeIsKnown(){
+       return withSlotCode(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createSlotIdCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TimeSlot.SLOT_ID_PROPERTY, operator, values);
+    public SearchCriteria createSlotCodeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(TimeSlot.SLOT_CODE_PROPERTY, operator, values);
     }
 
-    public TimeSlotRequest<T> withSlotIdGreaterThan(String slotId){
-       return withSlotId(Operator.GREATER_THAN, slotId);
+    public TimeSlotRequest<T> withSlotCodeGreaterThan(String slotCode){
+       return withSlotCode(Operator.GREATER_THAN, slotCode);
     }
 
-    public TimeSlotRequest<T> withSlotIdGreaterThanOrEqualTo(String slotId){
-       return withSlotId(Operator.GREATER_THAN_OR_EQUAL, slotId);
+    public TimeSlotRequest<T> withSlotCodeGreaterThanOrEqualTo(String slotCode){
+       return withSlotCode(Operator.GREATER_THAN_OR_EQUAL, slotCode);
     }
 
-    public TimeSlotRequest<T> withSlotIdLessThan(String slotId){
-       return withSlotId(Operator.LESS_THAN, slotId);
+    public TimeSlotRequest<T> withSlotCodeLessThan(String slotCode){
+       return withSlotCode(Operator.LESS_THAN, slotCode);
     }
 
-    public TimeSlotRequest<T> withSlotIdLessThanOrEqualTo(String slotId){
-       return withSlotId(Operator.LESS_THAN_OR_EQUAL, slotId);
+    public TimeSlotRequest<T> withSlotCodeLessThanOrEqualTo(String slotCode){
+       return withSlotCode(Operator.LESS_THAN_OR_EQUAL, slotCode);
     }
 
-    public TimeSlotRequest<T> withSlotIdBetween(String startOfSlotId, String endOfSlotId){
-       return withSlotId(Operator.BETWEEN, startOfSlotId, endOfSlotId);
+    public TimeSlotRequest<T> withSlotCodeBetween(String startOfSlotCode, String endOfSlotCode){
+       return withSlotCode(Operator.BETWEEN, startOfSlotCode, endOfSlotCode);
     }
-    public TimeSlotRequest<T> withSlotIdStartingWith(String slotId){
-       return withSlotId(Operator.BEGIN_WITH, slotId);
+    public TimeSlotRequest<T> withSlotCodeStartingWith(String slotCode){
+       return withSlotCode(Operator.BEGIN_WITH, slotCode);
     }
-    public TimeSlotRequest<T> withSlotIdContaining(String slotId){
-       return withSlotId(Operator.CONTAIN, slotId);
-    }
-
-    public TimeSlotRequest<T> withSlotIdEndingWith(String slotId){
-       return withSlotId(Operator.END_WITH, slotId);
+    public TimeSlotRequest<T> withSlotCodeContaining(String slotCode){
+       return withSlotCode(Operator.CONTAIN, slotCode);
     }
 
-    public TimeSlotRequest<T> withSlotIdIs(String slotId){
-       return withSlotId(Operator.EQUAL, slotId);
+    public TimeSlotRequest<T> withSlotCodeEndingWith(String slotCode){
+       return withSlotCode(Operator.END_WITH, slotCode);
     }
 
-    public TimeSlotRequest<T> withSlotIdSoundingLike(String slotId){
-       return withSlotId(Operator.SOUNDS_LIKE, slotId);
+    public TimeSlotRequest<T> withSlotCodeIs(String slotCode){
+       return withSlotCode(Operator.EQUAL, slotCode);
+    }
+
+    public TimeSlotRequest<T> withSlotCodeSoundingLike(String slotCode){
+       return withSlotCode(Operator.SOUNDS_LIKE, slotCode);
     }
 
 
 
-    public TimeSlotRequest<T> filterByMovingOrder(MovingOrder... movingOrder){
-      if (movingOrder == null || movingOrder.length == 0) {
-        throw new IllegalArgumentException("filterByMovingOrder parameter movingOrder cannot be empty");
-      }
-      return appendSearchCriteria(createMovingOrderCriteria(Operator.EQUAL, (Object[])movingOrder));
-    }
-
-    public TimeSlotRequest<T> withMovingOrder(Operator operator, Object... values){
-       return appendSearchCriteria(createMovingOrderCriteria(operator, values));
-    }
-
-    public TimeSlotRequest<T> withMovingOrderIsUnknown(){
-       return withMovingOrder(Operator.IS_NULL);
-    }
-
-    public TimeSlotRequest<T> withMovingOrderIsKnown(){
-       return withMovingOrder(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createMovingOrderCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TimeSlot.MOVING_ORDER_PROPERTY, operator, values);
-    }
-
-    public TimeSlotRequest<T> filterByMovingOrder(Long movingOrder){
-      if(movingOrder == null){
-         return this;
-      }
-      return withMovingOrder(Operator.EQUAL, movingOrder);
-    }
-    public TimeSlotRequest<T> withMovingOrderMatching(MovingOrderRequest movingOrder){
-       return appendSearchCriteria(new SubQuerySearchCriteria(TimeSlot.MOVING_ORDER_PROPERTY, movingOrder, MovingOrder.ID_PROPERTY));
-    }
-
-    public TimeSlotRequest<T> filterByStartTime(String... startTime){
+    public TimeSlotRequest<T> filterByStartTime(LocalDateTime... startTime){
       if (startTime == null || startTime.length == 0) {
         throw new IllegalArgumentException("filterByStartTime parameter startTime cannot be empty");
       }
@@ -377,47 +371,49 @@ public class TimeSlotRequest<T extends TimeSlot> extends BaseRequest<T> {
         return createBasicSearchCriteria(TimeSlot.START_TIME_PROPERTY, operator, values);
     }
 
-    public TimeSlotRequest<T> withStartTimeGreaterThan(String startTime){
+    public TimeSlotRequest<T> withStartTimeGreaterThan(LocalDateTime startTime){
        return withStartTime(Operator.GREATER_THAN, startTime);
     }
 
-    public TimeSlotRequest<T> withStartTimeGreaterThanOrEqualTo(String startTime){
+    public TimeSlotRequest<T> withStartTimeGreaterThanOrEqualTo(LocalDateTime startTime){
        return withStartTime(Operator.GREATER_THAN_OR_EQUAL, startTime);
     }
 
-    public TimeSlotRequest<T> withStartTimeLessThan(String startTime){
+    public TimeSlotRequest<T> withStartTimeLessThan(LocalDateTime startTime){
        return withStartTime(Operator.LESS_THAN, startTime);
     }
 
-    public TimeSlotRequest<T> withStartTimeLessThanOrEqualTo(String startTime){
+    public TimeSlotRequest<T> withStartTimeLessThanOrEqualTo(LocalDateTime startTime){
        return withStartTime(Operator.LESS_THAN_OR_EQUAL, startTime);
     }
 
-    public TimeSlotRequest<T> withStartTimeBetween(String startOfStartTime, String endOfStartTime){
+    public TimeSlotRequest<T> withStartTimeBetween(LocalDateTime startOfStartTime, LocalDateTime endOfStartTime){
        return withStartTime(Operator.BETWEEN, startOfStartTime, endOfStartTime);
     }
-    public TimeSlotRequest<T> withStartTimeStartingWith(String startTime){
-       return withStartTime(Operator.BEGIN_WITH, startTime);
-    }
-    public TimeSlotRequest<T> withStartTimeContaining(String startTime){
-       return withStartTime(Operator.CONTAIN, startTime);
+    public TimeSlotRequest<T> withStartTimeBefore(LocalDateTime startTime){
+       return withStartTime(Operator.LESS_THAN, startTime);
     }
 
-    public TimeSlotRequest<T> withStartTimeEndingWith(String startTime){
-       return withStartTime(Operator.END_WITH, startTime);
+    public TimeSlotRequest<T> withStartTimeBefore(Date startTime){
+       return withStartTime(Operator.LESS_THAN, startTime);
     }
 
-    public TimeSlotRequest<T> withStartTimeIs(String startTime){
-       return withStartTime(Operator.EQUAL, startTime);
+    public TimeSlotRequest<T> withStartTimeAfter(LocalDateTime startTime){
+       return withStartTime(Operator.GREATER_THAN, startTime);
     }
 
-    public TimeSlotRequest<T> withStartTimeSoundingLike(String startTime){
-       return withStartTime(Operator.SOUNDS_LIKE, startTime);
+    public TimeSlotRequest<T> withStartTimeAfter(Date startTime){
+       return withStartTime(Operator.GREATER_THAN, startTime);
+    }
+
+    public TimeSlotRequest<T> withStartTimeBetween(Date startOfStartTime, Date endOfStartTime){
+       return withStartTime(Operator.BETWEEN, startOfStartTime, endOfStartTime);
     }
 
 
 
-    public TimeSlotRequest<T> filterByEndTime(String... endTime){
+
+    public TimeSlotRequest<T> filterByEndTime(LocalDateTime... endTime){
       if (endTime == null || endTime.length == 0) {
         throw new IllegalArgumentException("filterByEndTime parameter endTime cannot be empty");
       }
@@ -440,169 +436,263 @@ public class TimeSlotRequest<T extends TimeSlot> extends BaseRequest<T> {
         return createBasicSearchCriteria(TimeSlot.END_TIME_PROPERTY, operator, values);
     }
 
-    public TimeSlotRequest<T> withEndTimeGreaterThan(String endTime){
+    public TimeSlotRequest<T> withEndTimeGreaterThan(LocalDateTime endTime){
        return withEndTime(Operator.GREATER_THAN, endTime);
     }
 
-    public TimeSlotRequest<T> withEndTimeGreaterThanOrEqualTo(String endTime){
+    public TimeSlotRequest<T> withEndTimeGreaterThanOrEqualTo(LocalDateTime endTime){
        return withEndTime(Operator.GREATER_THAN_OR_EQUAL, endTime);
     }
 
-    public TimeSlotRequest<T> withEndTimeLessThan(String endTime){
+    public TimeSlotRequest<T> withEndTimeLessThan(LocalDateTime endTime){
        return withEndTime(Operator.LESS_THAN, endTime);
     }
 
-    public TimeSlotRequest<T> withEndTimeLessThanOrEqualTo(String endTime){
+    public TimeSlotRequest<T> withEndTimeLessThanOrEqualTo(LocalDateTime endTime){
        return withEndTime(Operator.LESS_THAN_OR_EQUAL, endTime);
     }
 
-    public TimeSlotRequest<T> withEndTimeBetween(String startOfEndTime, String endOfEndTime){
+    public TimeSlotRequest<T> withEndTimeBetween(LocalDateTime startOfEndTime, LocalDateTime endOfEndTime){
        return withEndTime(Operator.BETWEEN, startOfEndTime, endOfEndTime);
     }
-    public TimeSlotRequest<T> withEndTimeStartingWith(String endTime){
-       return withEndTime(Operator.BEGIN_WITH, endTime);
-    }
-    public TimeSlotRequest<T> withEndTimeContaining(String endTime){
-       return withEndTime(Operator.CONTAIN, endTime);
+    public TimeSlotRequest<T> withEndTimeBefore(LocalDateTime endTime){
+       return withEndTime(Operator.LESS_THAN, endTime);
     }
 
-    public TimeSlotRequest<T> withEndTimeEndingWith(String endTime){
-       return withEndTime(Operator.END_WITH, endTime);
+    public TimeSlotRequest<T> withEndTimeBefore(Date endTime){
+       return withEndTime(Operator.LESS_THAN, endTime);
     }
 
-    public TimeSlotRequest<T> withEndTimeIs(String endTime){
-       return withEndTime(Operator.EQUAL, endTime);
+    public TimeSlotRequest<T> withEndTimeAfter(LocalDateTime endTime){
+       return withEndTime(Operator.GREATER_THAN, endTime);
     }
 
-    public TimeSlotRequest<T> withEndTimeSoundingLike(String endTime){
-       return withEndTime(Operator.SOUNDS_LIKE, endTime);
+    public TimeSlotRequest<T> withEndTimeAfter(Date endTime){
+       return withEndTime(Operator.GREATER_THAN, endTime);
+    }
+
+    public TimeSlotRequest<T> withEndTimeBetween(Date startOfEndTime, Date endOfEndTime){
+       return withEndTime(Operator.BETWEEN, startOfEndTime, endOfEndTime);
     }
 
 
 
-    public TimeSlotRequest<T> filterByStatus(String... status){
-      if (status == null || status.length == 0) {
-        throw new IllegalArgumentException("filterByStatus parameter status cannot be empty");
+
+    public TimeSlotRequest<T> filterByCapacity(Integer... capacity){
+      if (capacity == null || capacity.length == 0) {
+        throw new IllegalArgumentException("filterByCapacity parameter capacity cannot be empty");
       }
-      return appendSearchCriteria(createStatusCriteria(Operator.EQUAL, (Object[])status));
+      return appendSearchCriteria(createCapacityCriteria(Operator.EQUAL, (Object[])capacity));
     }
 
-    public TimeSlotRequest<T> withStatus(Operator operator, Object... values){
-       return appendSearchCriteria(createStatusCriteria(operator, values));
+    public TimeSlotRequest<T> withCapacity(Operator operator, Object... values){
+       return appendSearchCriteria(createCapacityCriteria(operator, values));
     }
 
-    public TimeSlotRequest<T> withStatusIsUnknown(){
-       return withStatus(Operator.IS_NULL);
+    public TimeSlotRequest<T> withCapacityIsUnknown(){
+       return withCapacity(Operator.IS_NULL);
     }
 
-    public TimeSlotRequest<T> withStatusIsKnown(){
-       return withStatus(Operator.IS_NOT_NULL);
+    public TimeSlotRequest<T> withCapacityIsKnown(){
+       return withCapacity(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createStatusCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TimeSlot.STATUS_PROPERTY, operator, values);
+    public SearchCriteria createCapacityCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(TimeSlot.CAPACITY_PROPERTY, operator, values);
     }
 
-    public TimeSlotRequest<T> withStatusGreaterThan(String status){
-       return withStatus(Operator.GREATER_THAN, status);
+    public TimeSlotRequest<T> withCapacityGreaterThan(Integer capacity){
+       return withCapacity(Operator.GREATER_THAN, capacity);
     }
 
-    public TimeSlotRequest<T> withStatusGreaterThanOrEqualTo(String status){
-       return withStatus(Operator.GREATER_THAN_OR_EQUAL, status);
+    public TimeSlotRequest<T> withCapacityGreaterThanOrEqualTo(Integer capacity){
+       return withCapacity(Operator.GREATER_THAN_OR_EQUAL, capacity);
     }
 
-    public TimeSlotRequest<T> withStatusLessThan(String status){
-       return withStatus(Operator.LESS_THAN, status);
+    public TimeSlotRequest<T> withCapacityLessThan(Integer capacity){
+       return withCapacity(Operator.LESS_THAN, capacity);
     }
 
-    public TimeSlotRequest<T> withStatusLessThanOrEqualTo(String status){
-       return withStatus(Operator.LESS_THAN_OR_EQUAL, status);
+    public TimeSlotRequest<T> withCapacityLessThanOrEqualTo(Integer capacity){
+       return withCapacity(Operator.LESS_THAN_OR_EQUAL, capacity);
     }
 
-    public TimeSlotRequest<T> withStatusBetween(String startOfStatus, String endOfStatus){
-       return withStatus(Operator.BETWEEN, startOfStatus, endOfStatus);
-    }
-    public TimeSlotRequest<T> withStatusStartingWith(String status){
-       return withStatus(Operator.BEGIN_WITH, status);
-    }
-    public TimeSlotRequest<T> withStatusContaining(String status){
-       return withStatus(Operator.CONTAIN, status);
-    }
-
-    public TimeSlotRequest<T> withStatusEndingWith(String status){
-       return withStatus(Operator.END_WITH, status);
-    }
-
-    public TimeSlotRequest<T> withStatusIs(String status){
-       return withStatus(Operator.EQUAL, status);
-    }
-
-    public TimeSlotRequest<T> withStatusSoundingLike(String status){
-       return withStatus(Operator.SOUNDS_LIKE, status);
+    public TimeSlotRequest<T> withCapacityBetween(Integer startOfCapacity, Integer endOfCapacity){
+       return withCapacity(Operator.BETWEEN, startOfCapacity, endOfCapacity);
     }
 
 
 
-    public TimeSlotRequest<T> filterByCreateTime(LocalDateTime... createTime){
-      if (createTime == null || createTime.length == 0) {
-        throw new IllegalArgumentException("filterByCreateTime parameter createTime cannot be empty");
+    public TimeSlotRequest<T> filterByAvailableSpots(Integer... availableSpots){
+      if (availableSpots == null || availableSpots.length == 0) {
+        throw new IllegalArgumentException("filterByAvailableSpots parameter availableSpots cannot be empty");
       }
-      return appendSearchCriteria(createCreateTimeCriteria(Operator.EQUAL, (Object[])createTime));
+      return appendSearchCriteria(createAvailableSpotsCriteria(Operator.EQUAL, (Object[])availableSpots));
     }
 
-    public TimeSlotRequest<T> withCreateTime(Operator operator, Object... values){
-       return appendSearchCriteria(createCreateTimeCriteria(operator, values));
+    public TimeSlotRequest<T> withAvailableSpots(Operator operator, Object... values){
+       return appendSearchCriteria(createAvailableSpotsCriteria(operator, values));
     }
 
-    public TimeSlotRequest<T> withCreateTimeIsUnknown(){
-       return withCreateTime(Operator.IS_NULL);
+    public TimeSlotRequest<T> withAvailableSpotsIsUnknown(){
+       return withAvailableSpots(Operator.IS_NULL);
     }
 
-    public TimeSlotRequest<T> withCreateTimeIsKnown(){
-       return withCreateTime(Operator.IS_NOT_NULL);
+    public TimeSlotRequest<T> withAvailableSpotsIsKnown(){
+       return withAvailableSpots(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCreateTimeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(TimeSlot.CREATE_TIME_PROPERTY, operator, values);
+    public SearchCriteria createAvailableSpotsCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(TimeSlot.AVAILABLE_SPOTS_PROPERTY, operator, values);
     }
 
-    public TimeSlotRequest<T> withCreateTimeGreaterThan(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public TimeSlotRequest<T> withAvailableSpotsGreaterThan(Integer availableSpots){
+       return withAvailableSpots(Operator.GREATER_THAN, availableSpots);
     }
 
-    public TimeSlotRequest<T> withCreateTimeGreaterThanOrEqualTo(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN_OR_EQUAL, createTime);
+    public TimeSlotRequest<T> withAvailableSpotsGreaterThanOrEqualTo(Integer availableSpots){
+       return withAvailableSpots(Operator.GREATER_THAN_OR_EQUAL, availableSpots);
     }
 
-    public TimeSlotRequest<T> withCreateTimeLessThan(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
+    public TimeSlotRequest<T> withAvailableSpotsLessThan(Integer availableSpots){
+       return withAvailableSpots(Operator.LESS_THAN, availableSpots);
     }
 
-    public TimeSlotRequest<T> withCreateTimeLessThanOrEqualTo(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN_OR_EQUAL, createTime);
+    public TimeSlotRequest<T> withAvailableSpotsLessThanOrEqualTo(Integer availableSpots){
+       return withAvailableSpots(Operator.LESS_THAN_OR_EQUAL, availableSpots);
     }
 
-    public TimeSlotRequest<T> withCreateTimeBetween(LocalDateTime startOfCreateTime, LocalDateTime endOfCreateTime){
-       return withCreateTime(Operator.BETWEEN, startOfCreateTime, endOfCreateTime);
-    }
-    public TimeSlotRequest<T> withCreateTimeBefore(LocalDateTime createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
+    public TimeSlotRequest<T> withAvailableSpotsBetween(Integer startOfAvailableSpots, Integer endOfAvailableSpots){
+       return withAvailableSpots(Operator.BETWEEN, startOfAvailableSpots, endOfAvailableSpots);
     }
 
-    public TimeSlotRequest<T> withCreateTimeBefore(Date createTime){
-       return withCreateTime(Operator.LESS_THAN, createTime);
+
+
+    public TimeSlotRequest<T> filterByCreatedTime(LocalDateTime... createdTime){
+      if (createdTime == null || createdTime.length == 0) {
+        throw new IllegalArgumentException("filterByCreatedTime parameter createdTime cannot be empty");
+      }
+      return appendSearchCriteria(createCreatedTimeCriteria(Operator.EQUAL, (Object[])createdTime));
     }
 
-    public TimeSlotRequest<T> withCreateTimeAfter(LocalDateTime createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public TimeSlotRequest<T> withCreatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createCreatedTimeCriteria(operator, values));
     }
 
-    public TimeSlotRequest<T> withCreateTimeAfter(Date createTime){
-       return withCreateTime(Operator.GREATER_THAN, createTime);
+    public TimeSlotRequest<T> withCreatedTimeIsUnknown(){
+       return withCreatedTime(Operator.IS_NULL);
     }
 
-    public TimeSlotRequest<T> withCreateTimeBetween(Date startOfCreateTime, Date endOfCreateTime){
-       return withCreateTime(Operator.BETWEEN, startOfCreateTime, endOfCreateTime);
+    public TimeSlotRequest<T> withCreatedTimeIsKnown(){
+       return withCreatedTime(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createCreatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(TimeSlot.CREATED_TIME_PROPERTY, operator, values);
+    }
+
+    public TimeSlotRequest<T> withCreatedTimeGreaterThan(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
+    }
+
+    public TimeSlotRequest<T> withCreatedTimeGreaterThanOrEqualTo(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN_OR_EQUAL, createdTime);
+    }
+
+    public TimeSlotRequest<T> withCreatedTimeLessThan(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
+    }
+
+    public TimeSlotRequest<T> withCreatedTimeLessThanOrEqualTo(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN_OR_EQUAL, createdTime);
+    }
+
+    public TimeSlotRequest<T> withCreatedTimeBetween(LocalDateTime startOfCreatedTime, LocalDateTime endOfCreatedTime){
+       return withCreatedTime(Operator.BETWEEN, startOfCreatedTime, endOfCreatedTime);
+    }
+    public TimeSlotRequest<T> withCreatedTimeBefore(LocalDateTime createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
+    }
+
+    public TimeSlotRequest<T> withCreatedTimeBefore(Date createdTime){
+       return withCreatedTime(Operator.LESS_THAN, createdTime);
+    }
+
+    public TimeSlotRequest<T> withCreatedTimeAfter(LocalDateTime createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
+    }
+
+    public TimeSlotRequest<T> withCreatedTimeAfter(Date createdTime){
+       return withCreatedTime(Operator.GREATER_THAN, createdTime);
+    }
+
+    public TimeSlotRequest<T> withCreatedTimeBetween(Date startOfCreatedTime, Date endOfCreatedTime){
+       return withCreatedTime(Operator.BETWEEN, startOfCreatedTime, endOfCreatedTime);
+    }
+
+
+
+
+    public TimeSlotRequest<T> filterByUpdatedTime(LocalDateTime... updatedTime){
+      if (updatedTime == null || updatedTime.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedTime parameter updatedTime cannot be empty");
+      }
+      return appendSearchCriteria(createUpdatedTimeCriteria(Operator.EQUAL, (Object[])updatedTime));
+    }
+
+    public TimeSlotRequest<T> withUpdatedTime(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedTimeCriteria(operator, values));
+    }
+
+    public TimeSlotRequest<T> withUpdatedTimeIsUnknown(){
+       return withUpdatedTime(Operator.IS_NULL);
+    }
+
+    public TimeSlotRequest<T> withUpdatedTimeIsKnown(){
+       return withUpdatedTime(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createUpdatedTimeCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(TimeSlot.UPDATED_TIME_PROPERTY, operator, values);
+    }
+
+    public TimeSlotRequest<T> withUpdatedTimeGreaterThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public TimeSlotRequest<T> withUpdatedTimeGreaterThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN_OR_EQUAL, updatedTime);
+    }
+
+    public TimeSlotRequest<T> withUpdatedTimeLessThan(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    }
+
+    public TimeSlotRequest<T> withUpdatedTimeLessThanOrEqualTo(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN_OR_EQUAL, updatedTime);
+    }
+
+    public TimeSlotRequest<T> withUpdatedTimeBetween(LocalDateTime startOfUpdatedTime, LocalDateTime endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
+    }
+    public TimeSlotRequest<T> withUpdatedTimeBefore(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    }
+
+    public TimeSlotRequest<T> withUpdatedTimeBefore(Date updatedTime){
+       return withUpdatedTime(Operator.LESS_THAN, updatedTime);
+    }
+
+    public TimeSlotRequest<T> withUpdatedTimeAfter(LocalDateTime updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public TimeSlotRequest<T> withUpdatedTimeAfter(Date updatedTime){
+       return withUpdatedTime(Operator.GREATER_THAN, updatedTime);
+    }
+
+    public TimeSlotRequest<T> withUpdatedTimeBetween(Date startOfUpdatedTime, Date endOfUpdatedTime){
+       return withUpdatedTime(Operator.BETWEEN, startOfUpdatedTime, endOfUpdatedTime);
     }
 
 
@@ -660,20 +750,134 @@ public class TimeSlotRequest<T extends TimeSlot> extends BaseRequest<T> {
         super.count(retName);
         return this;
     }
-    public TimeSlotRequest<T> groupByMovingOrderWithDetails(){
-       return groupByMovingOrderWithDetails(Q.movingOrders().unlimited());
+    public TimeSlotRequest minCapacity(){
+        return minCapacityAs(prefix("minOf",TimeSlot.CAPACITY_PROPERTY));
     }
 
-    public TimeSlotRequest<T> groupByMovingOrderWithDetails(MovingOrderRequest subRequest){
-       aggregate(TimeSlot.MOVING_ORDER_PROPERTY, subRequest);
-       return this;
+    public TimeSlotRequest minCapacityAs(String retName){
+        super.min(retName, TimeSlot.CAPACITY_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest maxCapacity(){
+        return maxCapacityAs(prefix("maxOf",TimeSlot.CAPACITY_PROPERTY));
     }
 
+    public TimeSlotRequest maxCapacityAs(String retName){
+        super.max(retName, TimeSlot.CAPACITY_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest sumCapacity(){
+        return sumCapacityAs(prefix("sumOf",TimeSlot.CAPACITY_PROPERTY));
+    }
 
+    public TimeSlotRequest sumCapacityAs(String retName){
+        super.sum(retName, TimeSlot.CAPACITY_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest avgCapacity(){
+        return avgCapacityAs(prefix("avgOf",TimeSlot.CAPACITY_PROPERTY));
+    }
 
+    public TimeSlotRequest avgCapacityAs(String retName){
+        super.avg(retName, TimeSlot.CAPACITY_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest standardDeviationCapacity(){
+        return standardDeviationCapacityAs(prefix("standardDeviationOf",TimeSlot.CAPACITY_PROPERTY));
+    }
 
+    public TimeSlotRequest standardDeviationCapacityAs(String retName){
+        super.standardDeviation(retName, TimeSlot.CAPACITY_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest squareRootOfPopulationStandardDeviationCapacity(){
+        return squareRootOfPopulationStandardDeviationCapacityAs(prefix("squareRootOfPopulationStandardDeviationOf",TimeSlot.CAPACITY_PROPERTY));
+    }
 
+    public TimeSlotRequest squareRootOfPopulationStandardDeviationCapacityAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, TimeSlot.CAPACITY_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest sampleVarianceCapacity(){
+        return sampleVarianceCapacityAs(prefix("sampleVarianceOf",TimeSlot.CAPACITY_PROPERTY));
+    }
 
+    public TimeSlotRequest sampleVarianceCapacityAs(String retName){
+        super.sampleVariance(retName, TimeSlot.CAPACITY_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest samplePopulationVarianceCapacity(){
+        return samplePopulationVarianceCapacityAs(prefix("samplePopulationVarianceOf",TimeSlot.CAPACITY_PROPERTY));
+    }
+
+    public TimeSlotRequest samplePopulationVarianceCapacityAs(String retName){
+        super.samplePopulationVariance(retName, TimeSlot.CAPACITY_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest minAvailableSpots(){
+        return minAvailableSpotsAs(prefix("minOf",TimeSlot.AVAILABLE_SPOTS_PROPERTY));
+    }
+
+    public TimeSlotRequest minAvailableSpotsAs(String retName){
+        super.min(retName, TimeSlot.AVAILABLE_SPOTS_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest maxAvailableSpots(){
+        return maxAvailableSpotsAs(prefix("maxOf",TimeSlot.AVAILABLE_SPOTS_PROPERTY));
+    }
+
+    public TimeSlotRequest maxAvailableSpotsAs(String retName){
+        super.max(retName, TimeSlot.AVAILABLE_SPOTS_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest sumAvailableSpots(){
+        return sumAvailableSpotsAs(prefix("sumOf",TimeSlot.AVAILABLE_SPOTS_PROPERTY));
+    }
+
+    public TimeSlotRequest sumAvailableSpotsAs(String retName){
+        super.sum(retName, TimeSlot.AVAILABLE_SPOTS_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest avgAvailableSpots(){
+        return avgAvailableSpotsAs(prefix("avgOf",TimeSlot.AVAILABLE_SPOTS_PROPERTY));
+    }
+
+    public TimeSlotRequest avgAvailableSpotsAs(String retName){
+        super.avg(retName, TimeSlot.AVAILABLE_SPOTS_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest standardDeviationAvailableSpots(){
+        return standardDeviationAvailableSpotsAs(prefix("standardDeviationOf",TimeSlot.AVAILABLE_SPOTS_PROPERTY));
+    }
+
+    public TimeSlotRequest standardDeviationAvailableSpotsAs(String retName){
+        super.standardDeviation(retName, TimeSlot.AVAILABLE_SPOTS_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest squareRootOfPopulationStandardDeviationAvailableSpots(){
+        return squareRootOfPopulationStandardDeviationAvailableSpotsAs(prefix("squareRootOfPopulationStandardDeviationOf",TimeSlot.AVAILABLE_SPOTS_PROPERTY));
+    }
+
+    public TimeSlotRequest squareRootOfPopulationStandardDeviationAvailableSpotsAs(String retName){
+        super.squareRootOfPopulationStandardDeviation(retName, TimeSlot.AVAILABLE_SPOTS_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest sampleVarianceAvailableSpots(){
+        return sampleVarianceAvailableSpotsAs(prefix("sampleVarianceOf",TimeSlot.AVAILABLE_SPOTS_PROPERTY));
+    }
+
+    public TimeSlotRequest sampleVarianceAvailableSpotsAs(String retName){
+        super.sampleVariance(retName, TimeSlot.AVAILABLE_SPOTS_PROPERTY);
+        return this;
+    }
+    public TimeSlotRequest samplePopulationVarianceAvailableSpots(){
+        return samplePopulationVarianceAvailableSpotsAs(prefix("samplePopulationVarianceOf",TimeSlot.AVAILABLE_SPOTS_PROPERTY));
+    }
+
+    public TimeSlotRequest samplePopulationVarianceAvailableSpotsAs(String retName){
+        super.samplePopulationVariance(retName, TimeSlot.AVAILABLE_SPOTS_PROPERTY);
+        return this;
+    }
 
     public TimeSlotRequest<T> groupById(){
        groupBy(TimeSlot.ID_PROPERTY);
@@ -690,36 +894,18 @@ public class TimeSlotRequest<T extends TimeSlot> extends BaseRequest<T> {
        return this;
     }
 
-    public TimeSlotRequest<T> groupBySlotId(){
-       groupBy(TimeSlot.SLOT_ID_PROPERTY);
+    public TimeSlotRequest<T> groupBySlotCode(){
+       groupBy(TimeSlot.SLOT_CODE_PROPERTY);
        return this;
     }
 
-    public TimeSlotRequest<T> groupBySlotIdAs(String retName){
-       groupBy(retName, TimeSlot.SLOT_ID_PROPERTY);
+    public TimeSlotRequest<T> groupBySlotCodeAs(String retName){
+       groupBy(retName, TimeSlot.SLOT_CODE_PROPERTY);
        return this;
     }
 
-    public TimeSlotRequest<T> groupBySlotIdWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TimeSlot.SLOT_ID_PROPERTY, function);
-       return this;
-    }
-    public TimeSlotRequest<T> groupByMovingOrderWith(MovingOrderRequest subRequest){
-       groupBy(TimeSlot.MOVING_ORDER_PROPERTY, subRequest);
-       return this;
-    }
-    public TimeSlotRequest<T> groupByMovingOrder(){
-       groupBy(TimeSlot.MOVING_ORDER_PROPERTY);
-       return this;
-    }
-
-    public TimeSlotRequest<T> groupByMovingOrderAs(String retName){
-       groupBy(retName, TimeSlot.MOVING_ORDER_PROPERTY);
-       return this;
-    }
-
-    public TimeSlotRequest<T> groupByMovingOrderWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TimeSlot.MOVING_ORDER_PROPERTY, function);
+    public TimeSlotRequest<T> groupBySlotCodeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, TimeSlot.SLOT_CODE_PROPERTY, function);
        return this;
     }
 
@@ -753,33 +939,63 @@ public class TimeSlotRequest<T extends TimeSlot> extends BaseRequest<T> {
        return this;
     }
 
-    public TimeSlotRequest<T> groupByStatus(){
-       groupBy(TimeSlot.STATUS_PROPERTY);
+    public TimeSlotRequest<T> groupByCapacity(){
+       groupBy(TimeSlot.CAPACITY_PROPERTY);
        return this;
     }
 
-    public TimeSlotRequest<T> groupByStatusAs(String retName){
-       groupBy(retName, TimeSlot.STATUS_PROPERTY);
+    public TimeSlotRequest<T> groupByCapacityAs(String retName){
+       groupBy(retName, TimeSlot.CAPACITY_PROPERTY);
        return this;
     }
 
-    public TimeSlotRequest<T> groupByStatusWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TimeSlot.STATUS_PROPERTY, function);
+    public TimeSlotRequest<T> groupByCapacityWithFunction(String retName, AggrFunction function){
+       groupBy(retName, TimeSlot.CAPACITY_PROPERTY, function);
        return this;
     }
 
-    public TimeSlotRequest<T> groupByCreateTime(){
-       groupBy(TimeSlot.CREATE_TIME_PROPERTY);
+    public TimeSlotRequest<T> groupByAvailableSpots(){
+       groupBy(TimeSlot.AVAILABLE_SPOTS_PROPERTY);
        return this;
     }
 
-    public TimeSlotRequest<T> groupByCreateTimeAs(String retName){
-       groupBy(retName, TimeSlot.CREATE_TIME_PROPERTY);
+    public TimeSlotRequest<T> groupByAvailableSpotsAs(String retName){
+       groupBy(retName, TimeSlot.AVAILABLE_SPOTS_PROPERTY);
        return this;
     }
 
-    public TimeSlotRequest<T> groupByCreateTimeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, TimeSlot.CREATE_TIME_PROPERTY, function);
+    public TimeSlotRequest<T> groupByAvailableSpotsWithFunction(String retName, AggrFunction function){
+       groupBy(retName, TimeSlot.AVAILABLE_SPOTS_PROPERTY, function);
+       return this;
+    }
+
+    public TimeSlotRequest<T> groupByCreatedTime(){
+       groupBy(TimeSlot.CREATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public TimeSlotRequest<T> groupByCreatedTimeAs(String retName){
+       groupBy(retName, TimeSlot.CREATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public TimeSlotRequest<T> groupByCreatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, TimeSlot.CREATED_TIME_PROPERTY, function);
+       return this;
+    }
+
+    public TimeSlotRequest<T> groupByUpdatedTime(){
+       groupBy(TimeSlot.UPDATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public TimeSlotRequest<T> groupByUpdatedTimeAs(String retName){
+       groupBy(retName, TimeSlot.UPDATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public TimeSlotRequest<T> groupByUpdatedTimeWithFunction(String retName, AggrFunction function){
+       groupBy(retName, TimeSlot.UPDATED_TIME_PROPERTY, function);
        return this;
     }
 
@@ -810,34 +1026,24 @@ public class TimeSlotRequest<T extends TimeSlot> extends BaseRequest<T> {
        return this;
     }
 
-    public TimeSlotRequest<T> orderBySlotIdAscending(){
-       addOrderByAscending(TimeSlot.SLOT_ID_PROPERTY);
+    public TimeSlotRequest<T> orderBySlotCodeAscending(){
+       addOrderByAscending(TimeSlot.SLOT_CODE_PROPERTY);
        return this;
     }
 
-    public TimeSlotRequest<T> orderBySlotIdDescending(){
-       addOrderByDescending(TimeSlot.SLOT_ID_PROPERTY);
+    public TimeSlotRequest<T> orderBySlotCodeDescending(){
+       addOrderByDescending(TimeSlot.SLOT_CODE_PROPERTY);
        return this;
     }
-    public TimeSlotRequest<T> orderBySlotIdAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(TimeSlot.SLOT_ID_PROPERTY);
-       return this;
-    }
-
-    public TimeSlotRequest<T> orderBySlotIdDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(TimeSlot.SLOT_ID_PROPERTY);
-       return this;
-    }
-    public TimeSlotRequest<T> orderByMovingOrderAscending(){
-       addOrderByAscending(TimeSlot.MOVING_ORDER_PROPERTY);
+    public TimeSlotRequest<T> orderBySlotCodeAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(TimeSlot.SLOT_CODE_PROPERTY);
        return this;
     }
 
-    public TimeSlotRequest<T> orderByMovingOrderDescending(){
-       addOrderByDescending(TimeSlot.MOVING_ORDER_PROPERTY);
+    public TimeSlotRequest<T> orderBySlotCodeDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(TimeSlot.SLOT_CODE_PROPERTY);
        return this;
     }
-
     public TimeSlotRequest<T> orderByStartTimeAscending(){
        addOrderByAscending(TimeSlot.START_TIME_PROPERTY);
        return this;
@@ -847,15 +1053,7 @@ public class TimeSlotRequest<T extends TimeSlot> extends BaseRequest<T> {
        addOrderByDescending(TimeSlot.START_TIME_PROPERTY);
        return this;
     }
-    public TimeSlotRequest<T> orderByStartTimeAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(TimeSlot.START_TIME_PROPERTY);
-       return this;
-    }
 
-    public TimeSlotRequest<T> orderByStartTimeDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(TimeSlot.START_TIME_PROPERTY);
-       return this;
-    }
     public TimeSlotRequest<T> orderByEndTimeAscending(){
        addOrderByAscending(TimeSlot.END_TIME_PROPERTY);
        return this;
@@ -865,40 +1063,44 @@ public class TimeSlotRequest<T extends TimeSlot> extends BaseRequest<T> {
        addOrderByDescending(TimeSlot.END_TIME_PROPERTY);
        return this;
     }
-    public TimeSlotRequest<T> orderByEndTimeAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(TimeSlot.END_TIME_PROPERTY);
+
+    public TimeSlotRequest<T> orderByCapacityAscending(){
+       addOrderByAscending(TimeSlot.CAPACITY_PROPERTY);
        return this;
     }
 
-    public TimeSlotRequest<T> orderByEndTimeDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(TimeSlot.END_TIME_PROPERTY);
-       return this;
-    }
-    public TimeSlotRequest<T> orderByStatusAscending(){
-       addOrderByAscending(TimeSlot.STATUS_PROPERTY);
+    public TimeSlotRequest<T> orderByCapacityDescending(){
+       addOrderByDescending(TimeSlot.CAPACITY_PROPERTY);
        return this;
     }
 
-    public TimeSlotRequest<T> orderByStatusDescending(){
-       addOrderByDescending(TimeSlot.STATUS_PROPERTY);
-       return this;
-    }
-    public TimeSlotRequest<T> orderByStatusAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(TimeSlot.STATUS_PROPERTY);
+    public TimeSlotRequest<T> orderByAvailableSpotsAscending(){
+       addOrderByAscending(TimeSlot.AVAILABLE_SPOTS_PROPERTY);
        return this;
     }
 
-    public TimeSlotRequest<T> orderByStatusDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(TimeSlot.STATUS_PROPERTY);
-       return this;
-    }
-    public TimeSlotRequest<T> orderByCreateTimeAscending(){
-       addOrderByAscending(TimeSlot.CREATE_TIME_PROPERTY);
+    public TimeSlotRequest<T> orderByAvailableSpotsDescending(){
+       addOrderByDescending(TimeSlot.AVAILABLE_SPOTS_PROPERTY);
        return this;
     }
 
-    public TimeSlotRequest<T> orderByCreateTimeDescending(){
-       addOrderByDescending(TimeSlot.CREATE_TIME_PROPERTY);
+    public TimeSlotRequest<T> orderByCreatedTimeAscending(){
+       addOrderByAscending(TimeSlot.CREATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public TimeSlotRequest<T> orderByCreatedTimeDescending(){
+       addOrderByDescending(TimeSlot.CREATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public TimeSlotRequest<T> orderByUpdatedTimeAscending(){
+       addOrderByAscending(TimeSlot.UPDATED_TIME_PROPERTY);
+       return this;
+    }
+
+    public TimeSlotRequest<T> orderByUpdatedTimeDescending(){
+       addOrderByDescending(TimeSlot.UPDATED_TIME_PROPERTY);
        return this;
     }
 
@@ -913,27 +1115,7 @@ public class TimeSlotRequest<T extends TimeSlot> extends BaseRequest<T> {
     }
 
 
-    public MovingOrderRequest rollUpToMovingOrder(){
-       MovingOrderRequest movingOrder = Q.movingOrders().unlimited();
-       this.withMovingOrderMatching(movingOrder)
-           .groupByMovingOrderWith(movingOrder);
-       return movingOrder;
-    }
 
-
-
-
-
-
-
-   public TimeSlotRequest<T> facetByMovingOrderAs(String facetName, MovingOrderRequest movingOrder){
-       return facetByMovingOrderAs(facetName, movingOrder, true);
-   }
-
-   public TimeSlotRequest<T> facetByMovingOrderAs(String facetName, MovingOrderRequest movingOrder, boolean includeAllFacets){
-       addFacet(facetName, TimeSlot.MOVING_ORDER_PROPERTY, movingOrder, includeAllFacets);
-       return this;
-   }
 
 
     /**

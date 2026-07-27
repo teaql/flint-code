@@ -2,6 +2,8 @@ package com.doublechaintech.enterpriselogisticsservice.storagecontainer;
 
 import com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit;
 import com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnitListExpression;
+import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee;
+import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFeeListExpression;
 import com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse;
 import com.doublechaintech.enterpriselogisticsservice.warehouse.WarehouseExpression;
 import io.teaql.core.UserContext;
@@ -76,7 +78,13 @@ public class StorageContainerExpression<T, E, U extends StorageContainer> extend
     public ContainerUnitListExpression<T, U, ContainerUnit> getContainerUnitList(){
         return new ContainerUnitListExpression(this, $it ->  ((StorageContainer)$it).getContainerUnitList());
     }
+    public StorageFeeListExpression<T, U, StorageFee> getStorageFeeList(){
+        return new StorageFeeListExpression(this, $it ->  ((StorageContainer)$it).getStorageFeeList());
+    }
     public StorageContainerExpression<T, U, U> addContainerUnit(ContainerUnit containerUnit){
        return new StorageContainerExpression(this, $it ->  ((StorageContainer)$it).addContainerUnit(containerUnit));
+    }
+    public StorageContainerExpression<T, U, U> addStorageFee(StorageFee storageFee){
+       return new StorageContainerExpression(this, $it ->  ((StorageContainer)$it).addStorageFee(storageFee));
     }
 }

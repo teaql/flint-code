@@ -1,5 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.servicecontract;
 
+import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer;
+import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomerChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
@@ -27,11 +29,11 @@ public class ServiceContractChecker implements Checker<ServiceContract>{
       if(serviceContract.newItem()){
         if(serviceContract.getCreatedTime() == null){
            serviceContract.updateCreatedTime(java.time.LocalDateTime.now());
-        }if(serviceContract.getUpdatedTime() == null){
-           serviceContract.updateUpdatedTime(java.time.LocalDateTime.now());
+        }if(serviceContract.getUpdateTime() == null){
+           serviceContract.updateUpdateTime(java.time.LocalDateTime.now());
         }
       }else if(serviceContract.updateItem()){
-        serviceContract.updateUpdatedTime(java.time.LocalDateTime.now());
+        serviceContract.updateUpdateTime(java.time.LocalDateTime.now());
       }
       checkContractNumber(_ctx, serviceContract.getProperty(ServiceContract.CONTRACT_NUMBER_PROPERTY), newLocation(_parentLocation, ServiceContract.CONTRACT_NUMBER_PROPERTY));
       checkTitle(_ctx, serviceContract.getProperty(ServiceContract.TITLE_PROPERTY), newLocation(_parentLocation, ServiceContract.TITLE_PROPERTY));
@@ -39,8 +41,10 @@ public class ServiceContractChecker implements Checker<ServiceContract>{
       checkEndDate(_ctx, serviceContract.getProperty(ServiceContract.END_DATE_PROPERTY), newLocation(_parentLocation, ServiceContract.END_DATE_PROPERTY));
       checkStatus(_ctx, serviceContract.getProperty(ServiceContract.STATUS_PROPERTY), newLocation(_parentLocation, ServiceContract.STATUS_PROPERTY));
       checkTotalValue(_ctx, serviceContract.getProperty(ServiceContract.TOTAL_VALUE_PROPERTY), newLocation(_parentLocation, ServiceContract.TOTAL_VALUE_PROPERTY));
+      checkCurrency(_ctx, serviceContract.getProperty(ServiceContract.CURRENCY_PROPERTY), newLocation(_parentLocation, ServiceContract.CURRENCY_PROPERTY));
+      checkCorporateCustomer(_ctx, serviceContract.getProperty(ServiceContract.CORPORATE_CUSTOMER_PROPERTY), newLocation(_parentLocation, ServiceContract.CORPORATE_CUSTOMER_PROPERTY));
       checkCreatedTime(_ctx, serviceContract.getProperty(ServiceContract.CREATED_TIME_PROPERTY), newLocation(_parentLocation, ServiceContract.CREATED_TIME_PROPERTY));
-      checkUpdatedTime(_ctx, serviceContract.getProperty(ServiceContract.UPDATED_TIME_PROPERTY), newLocation(_parentLocation, ServiceContract.UPDATED_TIME_PROPERTY));
+      checkUpdateTime(_ctx, serviceContract.getProperty(ServiceContract.UPDATE_TIME_PROPERTY), newLocation(_parentLocation, ServiceContract.UPDATE_TIME_PROPERTY));
     }
 
     public void checkContractNumber(UserContext _ctx, String contractNumber, ObjectLocation _parentLocation){
@@ -85,15 +89,30 @@ public class ServiceContractChecker implements Checker<ServiceContract>{
         return;
     }
     }
+    public void checkCurrency(UserContext _ctx, String currency, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, currency);
+    if((currency == null)){
+        return;
+    }
+    maxStringCheck(_ctx, _parentLocation, 100, currency);
+
+    }
+    public void checkCorporateCustomer(UserContext _ctx, CorporateCustomer corporateCustomer, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, corporateCustomer);
+    if((corporateCustomer == null)){
+        return;
+    }
+    new CorporateCustomerChecker().checkAndFix(_ctx, corporateCustomer, _parentLocation);
+    }
     public void checkCreatedTime(UserContext _ctx, LocalDateTime createdTime, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, createdTime);
     if((createdTime == null)){
         return;
     }
     }
-    public void checkUpdatedTime(UserContext _ctx, LocalDateTime updatedTime, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, updatedTime);
-    if((updatedTime == null)){
+    public void checkUpdateTime(UserContext _ctx, LocalDateTime updateTime, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, updateTime);
+    if((updateTime == null)){
         return;
     }
     }

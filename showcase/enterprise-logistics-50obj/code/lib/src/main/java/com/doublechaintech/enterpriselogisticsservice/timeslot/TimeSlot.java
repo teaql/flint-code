@@ -1,6 +1,5 @@
 package com.doublechaintech.enterpriselogisticsservice.timeslot;
 
-import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
@@ -20,56 +19,52 @@ import java.util.Objects;
 public class TimeSlot extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "TimeSlot";
 
-    public static final String SLOT_ID_PROPERTY = "slotId";
-    public static final String MOVING_ORDER_PROPERTY = "movingOrder";
+    public static final String SLOT_CODE_PROPERTY = "slotCode";
     public static final String START_TIME_PROPERTY = "startTime";
     public static final String END_TIME_PROPERTY = "endTime";
-    public static final String STATUS_PROPERTY = "status";
-    public static final String CREATE_TIME_PROPERTY = "createTime";
-    private String slotId;
-    private MovingOrder movingOrder;
-    private String startTime;
-    private String endTime;
-    private String status;
-    private LocalDateTime createTime;
+    public static final String CAPACITY_PROPERTY = "capacity";
+    public static final String AVAILABLE_SPOTS_PROPERTY = "availableSpots";
+    public static final String CREATED_TIME_PROPERTY = "createdTime";
+    public static final String UPDATED_TIME_PROPERTY = "updatedTime";
+    private String slotCode;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private Integer capacity;
+    private Integer availableSpots;
+    private LocalDateTime createdTime;
+    private LocalDateTime updatedTime;
 
-    public String getSlotId(){
-        return this.slotId;
+    public String getSlotCode(){
+        return this.slotCode;
     }
-    public MovingOrder getMovingOrder(){
-        return this.movingOrder;
-    }
-    public String getStartTime(){
+    public LocalDateTime getStartTime(){
         return this.startTime;
     }
-    public String getEndTime(){
+    public LocalDateTime getEndTime(){
         return this.endTime;
     }
-    public String getStatus(){
-        return this.status;
+    public Integer getCapacity(){
+        return this.capacity;
     }
-    public LocalDateTime getCreateTime(){
-        return this.createTime;
+    public Integer getAvailableSpots(){
+        return this.availableSpots;
     }
-    public TimeSlot updateSlotId(String slotId){
-        slotId = (slotId == null ? null : slotId.trim());
-        if(Objects.equals(this.slotId, slotId)){
+    public LocalDateTime getCreatedTime(){
+        return this.createdTime;
+    }
+    public LocalDateTime getUpdatedTime(){
+        return this.updatedTime;
+    }
+    public TimeSlot updateSlotCode(String slotCode){
+        slotCode = (slotCode == null ? null : slotCode.trim());
+        if(Objects.equals(this.slotCode, slotCode)){
             return this;
         }
-        handleUpdate(SLOT_ID_PROPERTY, getSlotId(), slotId);
-        this.slotId = slotId;
+        handleUpdate(SLOT_CODE_PROPERTY, getSlotCode(), slotCode);
+        this.slotCode = slotCode;
         return this;
     }
-    public TimeSlot updateMovingOrder(MovingOrder movingOrder){
-        if(Objects.equals(this.movingOrder, movingOrder)){
-            return this;
-        }
-        handleUpdate(MOVING_ORDER_PROPERTY, getMovingOrder(), movingOrder);
-        this.movingOrder = movingOrder;
-        return this;
-    }
-    public TimeSlot updateStartTime(String startTime){
-        startTime = (startTime == null ? null : startTime.trim());
+    public TimeSlot updateStartTime(LocalDateTime startTime){
         if(Objects.equals(this.startTime, startTime)){
             return this;
         }
@@ -77,8 +72,7 @@ public class TimeSlot extends BaseEntity implements RemoteInput {
         this.startTime = startTime;
         return this;
     }
-    public TimeSlot updateEndTime(String endTime){
-        endTime = (endTime == null ? null : endTime.trim());
+    public TimeSlot updateEndTime(LocalDateTime endTime){
         if(Objects.equals(this.endTime, endTime)){
             return this;
         }
@@ -86,21 +80,36 @@ public class TimeSlot extends BaseEntity implements RemoteInput {
         this.endTime = endTime;
         return this;
     }
-    public TimeSlot updateStatus(String status){
-        status = (status == null ? null : status.trim());
-        if(Objects.equals(this.status, status)){
+    public TimeSlot updateCapacity(Integer capacity){
+        if(Objects.equals(this.capacity, capacity)){
             return this;
         }
-        handleUpdate(STATUS_PROPERTY, getStatus(), status);
-        this.status = status;
+        handleUpdate(CAPACITY_PROPERTY, getCapacity(), capacity);
+        this.capacity = capacity;
         return this;
     }
-    public TimeSlot updateCreateTime(LocalDateTime createTime){
-        if(Objects.equals(this.createTime, createTime)){
+    public TimeSlot updateAvailableSpots(Integer availableSpots){
+        if(Objects.equals(this.availableSpots, availableSpots)){
             return this;
         }
-        handleUpdate(CREATE_TIME_PROPERTY, getCreateTime(), createTime);
-        this.createTime = createTime;
+        handleUpdate(AVAILABLE_SPOTS_PROPERTY, getAvailableSpots(), availableSpots);
+        this.availableSpots = availableSpots;
+        return this;
+    }
+    public TimeSlot updateCreatedTime(LocalDateTime createdTime){
+        if(Objects.equals(this.createdTime, createdTime)){
+            return this;
+        }
+        handleUpdate(CREATED_TIME_PROPERTY, getCreatedTime(), createdTime);
+        this.createdTime = createdTime;
+        return this;
+    }
+    public TimeSlot updateUpdatedTime(LocalDateTime updatedTime){
+        if(Objects.equals(this.updatedTime, updatedTime)){
+            return this;
+        }
+        handleUpdate(UPDATED_TIME_PROPERTY, getUpdatedTime(), updatedTime);
+        this.updatedTime = updatedTime;
         return this;
     }
 
@@ -131,17 +140,19 @@ public class TimeSlot extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public void __internalSet(String property, Object value) {
         switch (property) {
-            case "slotId": this.slotId = (value == null ? null : ((String)value).trim()); break;
+            case "slotCode": this.slotCode = (value == null ? null : ((String)value).trim()); break;
 
-            case "movingOrder": this.movingOrder = (MovingOrder) value; break;
+            case "startTime": this.startTime = (LocalDateTime) value; break;
 
-            case "startTime": this.startTime = (value == null ? null : ((String)value).trim()); break;
+            case "endTime": this.endTime = (LocalDateTime) value; break;
 
-            case "endTime": this.endTime = (value == null ? null : ((String)value).trim()); break;
+            case "capacity": this.capacity = (Integer) value; break;
 
-            case "status": this.status = (value == null ? null : ((String)value).trim()); break;
+            case "availableSpots": this.availableSpots = (Integer) value; break;
 
-            case "createTime": this.createTime = (LocalDateTime) value; break;
+            case "createdTime": this.createdTime = (LocalDateTime) value; break;
+
+            case "updatedTime": this.updatedTime = (LocalDateTime) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -151,12 +162,13 @@ public class TimeSlot extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public Object __internalGet(String property) {
         switch (property) {
-            case "slotId": return this.slotId;
-            case "movingOrder": return this.movingOrder;
+            case "slotCode": return this.slotCode;
             case "startTime": return this.startTime;
             case "endTime": return this.endTime;
-            case "status": return this.status;
-            case "createTime": return this.createTime;
+            case "capacity": return this.capacity;
+            case "availableSpots": return this.availableSpots;
+            case "createdTime": return this.createdTime;
+            case "updatedTime": return this.updatedTime;
             default: return super.__internalGet(property);
         }
     }

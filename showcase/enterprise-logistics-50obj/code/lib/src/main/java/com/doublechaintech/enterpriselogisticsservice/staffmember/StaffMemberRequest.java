@@ -3,14 +3,12 @@ package com.doublechaintech.enterpriselogisticsservice.staffmember;
 import com.doublechaintech.enterpriselogisticsservice.Q;
 import com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan;
 import com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlanRequest;
-import com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem;
-import com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItemRequest;
 import com.doublechaintech.enterpriselogisticsservice.performancereview.PerformanceReview;
 import com.doublechaintech.enterpriselogisticsservice.performancereview.PerformanceReviewRequest;
-import com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining;
-import com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTrainingRequest;
 import com.doublechaintech.enterpriselogisticsservice.salaryslip.SalarySlip;
 import com.doublechaintech.enterpriselogisticsservice.salaryslip.SalarySlipRequest;
+import com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead;
+import com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLeadRequest;
 import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember;
 import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMemberRequest;
 import com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHours;
@@ -111,7 +109,7 @@ public class StaffMemberRequest<T extends StaffMember> extends BaseRequest<T> {
 
     public StaffMemberRequest<T> selectChildren(){
         super.selectAny();
-        selectDispatchPlanList().selectStaffMemberList().selectWorkedHoursList().selectSalarySlipList().selectPerformanceReviewListAsStaff().selectPerformanceReviewListAsReviewer().selectSafetyTrainingList().selectExpenseItemList();
+        selectDispatchPlanList().selectStaffMemberList().selectWorkedHoursList().selectSalarySlipList().selectPerformanceReviewListAsStaff().selectPerformanceReviewListAsReviewer().selectSalesLeadList();
         return selectId().selectName().selectEmail().selectPhone().selectHireDate().selectStatus().selectDepartment().selectJobTitle().selectManager().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
@@ -370,20 +368,12 @@ public class StaffMemberRequest<T extends StaffMember> extends BaseRequest<T> {
        enhanceRelation(StaffMember.PERFORMANCE_REVIEW_LIST_AS_REVIEWER_PROPERTY, performanceReviewListAsReviewer);
        return this;
     }
-    public StaffMemberRequest<T> selectSafetyTrainingList(){
-       return selectSafetyTrainingListWith(Q.safetyTrainings().selectSelf());
+    public StaffMemberRequest<T> selectSalesLeadList(){
+       return selectSalesLeadListWith(Q.salesLeads().selectSelf());
     }
 
-    public StaffMemberRequest<T> selectSafetyTrainingListWith(SafetyTrainingRequest safetyTrainingList){
-       enhanceRelation(StaffMember.SAFETY_TRAINING_LIST_PROPERTY, safetyTrainingList);
-       return this;
-    }
-    public StaffMemberRequest<T> selectExpenseItemList(){
-       return selectExpenseItemListWith(Q.expenseItems().selectSelf());
-    }
-
-    public StaffMemberRequest<T> selectExpenseItemListWith(ExpenseItemRequest expenseItemList){
-       enhanceRelation(StaffMember.EXPENSE_ITEM_LIST_PROPERTY, expenseItemList);
+    public StaffMemberRequest<T> selectSalesLeadListWith(SalesLeadRequest salesLeadList){
+       enhanceRelation(StaffMember.SALES_LEAD_LIST_PROPERTY, salesLeadList);
        return this;
     }
 
@@ -1143,35 +1133,20 @@ public class StaffMemberRequest<T extends StaffMember> extends BaseRequest<T> {
     public StaffMemberRequest<T> haveNoPerformanceReviewsAsReviewer(){
         return withoutPerformanceReviewListAsReviewerMatching(Q.performanceReviews().unlimited());
     }
-    public StaffMemberRequest<T> withSafetyTrainingListMatching(SafetyTrainingRequest safetyTrainingRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(StaffMember.ID_PROPERTY, safetyTrainingRequest, SafetyTraining.STAFF_PROPERTY));
+    public StaffMemberRequest<T> withSalesLeadListMatching(SalesLeadRequest salesLeadRequest){
+        return appendSearchCriteria(new SubQuerySearchCriteria(StaffMember.ID_PROPERTY, salesLeadRequest, SalesLead.ASSIGNED_TO_PROPERTY));
     }
 
-    public StaffMemberRequest<T> withoutSafetyTrainingListMatching(SafetyTrainingRequest safetyTrainingRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(StaffMember.ID_PROPERTY, safetyTrainingRequest, SafetyTraining.STAFF_PROPERTY)));
+    public StaffMemberRequest<T> withoutSalesLeadListMatching(SalesLeadRequest salesLeadRequest){
+        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(StaffMember.ID_PROPERTY, salesLeadRequest, SalesLead.ASSIGNED_TO_PROPERTY)));
     }
 
-    public StaffMemberRequest<T> haveSafetyTrainings(){
-        return withSafetyTrainingListMatching(Q.safetyTrainings().unlimited());
+    public StaffMemberRequest<T> haveSalesLeads(){
+        return withSalesLeadListMatching(Q.salesLeads().unlimited());
     }
 
-    public StaffMemberRequest<T> haveNoSafetyTrainings(){
-        return withoutSafetyTrainingListMatching(Q.safetyTrainings().unlimited());
-    }
-    public StaffMemberRequest<T> withExpenseItemListMatching(ExpenseItemRequest expenseItemRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(StaffMember.ID_PROPERTY, expenseItemRequest, ExpenseItem.STAFF_MEMBER_PROPERTY));
-    }
-
-    public StaffMemberRequest<T> withoutExpenseItemListMatching(ExpenseItemRequest expenseItemRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(StaffMember.ID_PROPERTY, expenseItemRequest, ExpenseItem.STAFF_MEMBER_PROPERTY)));
-    }
-
-    public StaffMemberRequest<T> haveExpenseItems(){
-        return withExpenseItemListMatching(Q.expenseItems().unlimited());
-    }
-
-    public StaffMemberRequest<T> haveNoExpenseItems(){
-        return withoutExpenseItemListMatching(Q.expenseItems().unlimited());
+    public StaffMemberRequest<T> haveNoSalesLeads(){
+        return withoutSalesLeadListMatching(Q.salesLeads().unlimited());
     }
 
     public StaffMemberRequest<T> count(){
@@ -1218,12 +1193,8 @@ public class StaffMemberRequest<T extends StaffMember> extends BaseRequest<T> {
        aggregate(StaffMember.PERFORMANCE_REVIEW_LIST_AS_REVIEWER_PROPERTY, subRequest);
        return this;
     }
-    public StaffMemberRequest<T> groupBySafetyTrainingsWithDetails(SafetyTrainingRequest subRequest){
-       aggregate(StaffMember.SAFETY_TRAINING_LIST_PROPERTY, subRequest);
-       return this;
-    }
-    public StaffMemberRequest<T> groupByExpenseItemsWithDetails(ExpenseItemRequest subRequest){
-       aggregate(StaffMember.EXPENSE_ITEM_LIST_PROPERTY, subRequest);
+    public StaffMemberRequest<T> groupBySalesLeadsWithDetails(SalesLeadRequest subRequest){
+       aggregate(StaffMember.SALES_LEAD_LIST_PROPERTY, subRequest);
        return this;
     }
 
@@ -1659,31 +1630,18 @@ public class StaffMemberRequest<T extends StaffMember> extends BaseRequest<T> {
     public StaffMemberRequest<T> statsFromPerformanceReviewsAsReviewer(PerformanceReviewRequest subRequest){
        return statsFromPerformanceReviewsAsReviewerAs(REFINEMENTS, subRequest);
     }
-    public StaffMemberRequest<T> statsFromSafetyTrainingsAs(String name, SafetyTrainingRequest subRequest){
-       return statsFromSafetyTrainingsAs(name, subRequest, false);
+    public StaffMemberRequest<T> statsFromSalesLeadsAs(String name, SalesLeadRequest subRequest){
+       return statsFromSalesLeadsAs(name, subRequest, false);
     }
 
-    public StaffMemberRequest<T> statsFromSafetyTrainingsAs(String name, SafetyTrainingRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(SafetyTraining.STAFF_PROPERTY);
+    public StaffMemberRequest<T> statsFromSalesLeadsAs(String name, SalesLeadRequest subRequest, boolean singleResult){
+       subRequest.setPartitionProperty(SalesLead.ASSIGNED_TO_PROPERTY);
        addAggregateDynamicProperty(name, subRequest, singleResult);
        return this;
     }
 
-    public StaffMemberRequest<T> statsFromSafetyTrainings(SafetyTrainingRequest subRequest){
-       return statsFromSafetyTrainingsAs(REFINEMENTS, subRequest);
-    }
-    public StaffMemberRequest<T> statsFromExpenseItemsAs(String name, ExpenseItemRequest subRequest){
-       return statsFromExpenseItemsAs(name, subRequest, false);
-    }
-
-    public StaffMemberRequest<T> statsFromExpenseItemsAs(String name, ExpenseItemRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(ExpenseItem.STAFF_MEMBER_PROPERTY);
-       addAggregateDynamicProperty(name, subRequest, singleResult);
-       return this;
-    }
-
-    public StaffMemberRequest<T> statsFromExpenseItems(ExpenseItemRequest subRequest){
-       return statsFromExpenseItemsAs(REFINEMENTS, subRequest);
+    public StaffMemberRequest<T> statsFromSalesLeads(SalesLeadRequest subRequest){
+       return statsFromSalesLeadsAs(REFINEMENTS, subRequest);
     }
     public StaffMemberRequest rollUpToManager(){
        StaffMemberRequest manager = Q.staffMembers().unlimited();
@@ -1761,115 +1719,16 @@ public class StaffMemberRequest<T extends StaffMember> extends BaseRequest<T> {
     public StaffMemberRequest<T> countPerformanceReviewsAsReviewerWith(String name, PerformanceReviewRequest subRequest){
         return statsFromPerformanceReviewsAsReviewerAs(name, subRequest.count(), true);
     }
-    public StaffMemberRequest<T> countSafetyTrainings(){
-        return countSafetyTrainingsAs("Count");
+    public StaffMemberRequest<T> countSalesLeads(){
+        return countSalesLeadsAs("Count");
     }
 
-    public StaffMemberRequest<T> countSafetyTrainingsAs(String name){
-        return countSafetyTrainingsWith(name, Q.safetyTrainings().unlimited());
+    public StaffMemberRequest<T> countSalesLeadsAs(String name){
+        return countSalesLeadsWith(name, Q.salesLeads().unlimited());
     }
 
-    public StaffMemberRequest<T> countSafetyTrainingsWith(String name, SafetyTrainingRequest subRequest){
-        return statsFromSafetyTrainingsAs(name, subRequest.count(), true);
-    }
-    public StaffMemberRequest<T> countExpenseItems(){
-        return countExpenseItemsAs("Count");
-    }
-
-    public StaffMemberRequest<T> countExpenseItemsAs(String name){
-        return countExpenseItemsWith(name, Q.expenseItems().unlimited());
-    }
-
-    public StaffMemberRequest<T> countExpenseItemsWith(String name, ExpenseItemRequest subRequest){
-        return statsFromExpenseItemsAs(name, subRequest.count(), true);
-    }
-    public StaffMemberRequest<T> minAmountOfExpenseItems(){
-        return minAmountOfExpenseItemsAs("minAmountOfExpenseItems");
-    }
-
-    public StaffMemberRequest<T> minAmountOfExpenseItemsAs(String name){
-        return minAmountOfExpenseItemsAs(name, Q.expenseItems().unlimited());
-    }
-
-    public StaffMemberRequest<T> minAmountOfExpenseItemsAs(String name, ExpenseItemRequest subRequest){
-        return statsFromExpenseItemsAs(name, subRequest.minAmount(), true);
-    }
-    public StaffMemberRequest<T> maxAmountOfExpenseItems(){
-        return maxAmountOfExpenseItemsAs("maxAmountOfExpenseItems");
-    }
-
-    public StaffMemberRequest<T> maxAmountOfExpenseItemsAs(String name){
-        return maxAmountOfExpenseItemsAs(name, Q.expenseItems().unlimited());
-    }
-
-    public StaffMemberRequest<T> maxAmountOfExpenseItemsAs(String name, ExpenseItemRequest subRequest){
-        return statsFromExpenseItemsAs(name, subRequest.maxAmount(), true);
-    }
-    public StaffMemberRequest<T> sumAmountOfExpenseItems(){
-        return sumAmountOfExpenseItemsAs("sumAmountOfExpenseItems");
-    }
-
-    public StaffMemberRequest<T> sumAmountOfExpenseItemsAs(String name){
-        return sumAmountOfExpenseItemsAs(name, Q.expenseItems().unlimited());
-    }
-
-    public StaffMemberRequest<T> sumAmountOfExpenseItemsAs(String name, ExpenseItemRequest subRequest){
-        return statsFromExpenseItemsAs(name, subRequest.sumAmount(), true);
-    }
-    public StaffMemberRequest<T> avgAmountOfExpenseItems(){
-        return avgAmountOfExpenseItemsAs("avgAmountOfExpenseItems");
-    }
-
-    public StaffMemberRequest<T> avgAmountOfExpenseItemsAs(String name){
-        return avgAmountOfExpenseItemsAs(name, Q.expenseItems().unlimited());
-    }
-
-    public StaffMemberRequest<T> avgAmountOfExpenseItemsAs(String name, ExpenseItemRequest subRequest){
-        return statsFromExpenseItemsAs(name, subRequest.avgAmount(), true);
-    }
-    public StaffMemberRequest<T> standardDeviationAmountOfExpenseItems(){
-        return standardDeviationAmountOfExpenseItemsAs("stdDevAmountOfExpenseItems");
-    }
-
-    public StaffMemberRequest<T> standardDeviationAmountOfExpenseItemsAs(String name){
-        return standardDeviationAmountOfExpenseItemsAs(name, Q.expenseItems().unlimited());
-    }
-
-    public StaffMemberRequest<T> standardDeviationAmountOfExpenseItemsAs(String name, ExpenseItemRequest subRequest){
-        return statsFromExpenseItemsAs(name, subRequest.standardDeviationAmount(), true);
-    }
-    public StaffMemberRequest<T> squareRootOfPopulationStandardDeviationAmountOfExpenseItems(){
-        return squareRootOfPopulationStandardDeviationAmountOfExpenseItemsAs("stdDevPopAmountOfExpenseItems");
-    }
-
-    public StaffMemberRequest<T> squareRootOfPopulationStandardDeviationAmountOfExpenseItemsAs(String name){
-        return squareRootOfPopulationStandardDeviationAmountOfExpenseItemsAs(name, Q.expenseItems().unlimited());
-    }
-
-    public StaffMemberRequest<T> squareRootOfPopulationStandardDeviationAmountOfExpenseItemsAs(String name, ExpenseItemRequest subRequest){
-        return statsFromExpenseItemsAs(name, subRequest.squareRootOfPopulationStandardDeviationAmount(), true);
-    }
-    public StaffMemberRequest<T> sampleVarianceAmountOfExpenseItems(){
-        return sampleVarianceAmountOfExpenseItemsAs("varSampAmountOfExpenseItems");
-    }
-
-    public StaffMemberRequest<T> sampleVarianceAmountOfExpenseItemsAs(String name){
-        return sampleVarianceAmountOfExpenseItemsAs(name, Q.expenseItems().unlimited());
-    }
-
-    public StaffMemberRequest<T> sampleVarianceAmountOfExpenseItemsAs(String name, ExpenseItemRequest subRequest){
-        return statsFromExpenseItemsAs(name, subRequest.sampleVarianceAmount(), true);
-    }
-    public StaffMemberRequest<T> samplePopulationVarianceAmountOfExpenseItems(){
-        return samplePopulationVarianceAmountOfExpenseItemsAs("varPopAmountOfExpenseItems");
-    }
-
-    public StaffMemberRequest<T> samplePopulationVarianceAmountOfExpenseItemsAs(String name){
-        return samplePopulationVarianceAmountOfExpenseItemsAs(name, Q.expenseItems().unlimited());
-    }
-
-    public StaffMemberRequest<T> samplePopulationVarianceAmountOfExpenseItemsAs(String name, ExpenseItemRequest subRequest){
-        return statsFromExpenseItemsAs(name, subRequest.samplePopulationVarianceAmount(), true);
+    public StaffMemberRequest<T> countSalesLeadsWith(String name, SalesLeadRequest subRequest){
+        return statsFromSalesLeadsAs(name, subRequest.count(), true);
     }
 
    public StaffMemberRequest<T> facetByManagerAs(String facetName, StaffMemberRequest manager){

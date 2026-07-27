@@ -8,6 +8,7 @@ import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
+import java.time.LocalDateTime;
 import java.util.function.Function;
 
 public class CustomerContactExpression<T, E, U extends CustomerContact> extends ExpressionAdaptor<T, E, U> implements BaseEntityExpression<T, U> {
@@ -36,18 +37,18 @@ public class CustomerContactExpression<T, E, U extends CustomerContact> extends 
      }
 
 
-    public Expression<T, String> getName(){
-       return apply(CustomerContact::getName);
+    public Expression<T, String> getFirstName(){
+       return apply(CustomerContact::getFirstName);
     }
-    public CustomerContactExpression<T, U, U> updateName(String name){
-       return new CustomerContactExpression(this, $it ->  ((CustomerContact)$it).updateName(name));
+    public CustomerContactExpression<T, U, U> updateFirstName(String firstName){
+       return new CustomerContactExpression(this, $it ->  ((CustomerContact)$it).updateFirstName(firstName));
     }
 
-    public Expression<T, String> getPhone(){
-       return apply(CustomerContact::getPhone);
+    public Expression<T, String> getLastName(){
+       return apply(CustomerContact::getLastName);
     }
-    public CustomerContactExpression<T, U, U> updatePhone(String phone){
-       return new CustomerContactExpression(this, $it ->  ((CustomerContact)$it).updatePhone(phone));
+    public CustomerContactExpression<T, U, U> updateLastName(String lastName){
+       return new CustomerContactExpression(this, $it ->  ((CustomerContact)$it).updateLastName(lastName));
     }
 
     public Expression<T, String> getEmail(){
@@ -57,11 +58,18 @@ public class CustomerContactExpression<T, E, U extends CustomerContact> extends 
        return new CustomerContactExpression(this, $it ->  ((CustomerContact)$it).updateEmail(email));
     }
 
-    public Expression<T, String> getRelationship(){
-       return apply(CustomerContact::getRelationship);
+    public Expression<T, String> getPhone(){
+       return apply(CustomerContact::getPhone);
     }
-    public CustomerContactExpression<T, U, U> updateRelationship(String relationship){
-       return new CustomerContactExpression(this, $it ->  ((CustomerContact)$it).updateRelationship(relationship));
+    public CustomerContactExpression<T, U, U> updatePhone(String phone){
+       return new CustomerContactExpression(this, $it ->  ((CustomerContact)$it).updatePhone(phone));
+    }
+
+    public Expression<T, Boolean> isIsPrimary(){
+       return apply(CustomerContact::isIsPrimary);
+    }
+    public CustomerContactExpression<T, U, U> updateIsPrimary(Boolean isPrimary){
+       return new CustomerContactExpression(this, $it ->  ((CustomerContact)$it).updateIsPrimary(isPrimary));
     }
 
     public PrivateCustomerExpression<T, U, PrivateCustomer> getPrivateCustomer(){
@@ -78,6 +86,20 @@ public class CustomerContactExpression<T, E, U extends CustomerContact> extends 
 
     public CustomerContactExpression<T, U, U> updateCorporateCustomer(CorporateCustomer corporateCustomer){
        return new CustomerContactExpression(this, $it ->  ((CustomerContact)$it).updateCorporateCustomer(corporateCustomer));
+    }
+
+    public Expression<T, LocalDateTime> getCreatedAt(){
+       return apply(CustomerContact::getCreatedAt);
+    }
+    public CustomerContactExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
+       return new CustomerContactExpression(this, $it ->  ((CustomerContact)$it).updateCreatedAt(createdAt));
+    }
+
+    public Expression<T, LocalDateTime> getUpdatedAt(){
+       return apply(CustomerContact::getUpdatedAt);
+    }
+    public CustomerContactExpression<T, U, U> updateUpdatedAt(LocalDateTime updatedAt){
+       return new CustomerContactExpression(this, $it ->  ((CustomerContact)$it).updateUpdatedAt(updatedAt));
     }
 
 }

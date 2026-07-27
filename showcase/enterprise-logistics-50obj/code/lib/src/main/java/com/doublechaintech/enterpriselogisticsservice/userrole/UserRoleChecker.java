@@ -1,10 +1,9 @@
 package com.doublechaintech.enterpriselogisticsservice.userrole;
 
-import com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission;
-import com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermissionChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
+import java.time.LocalDateTime;
 
 public class UserRoleChecker implements Checker<UserRole>{
 
@@ -24,31 +23,23 @@ public class UserRoleChecker implements Checker<UserRole>{
          return;
       }
       if(userRole.newItem()){
+        if(userRole.getCreatedAt() == null){
+           userRole.updateCreatedAt(java.time.LocalDateTime.now());
+        }
       }else if(userRole.updateItem()){
       }
-      checkName(_ctx, userRole.getProperty(UserRole.NAME_PROPERTY), newLocation(_parentLocation, UserRole.NAME_PROPERTY));
-      checkCode(_ctx, userRole.getProperty(UserRole.CODE_PROPERTY), newLocation(_parentLocation, UserRole.CODE_PROPERTY));
+      checkRoleName(_ctx, userRole.getProperty(UserRole.ROLE_NAME_PROPERTY), newLocation(_parentLocation, UserRole.ROLE_NAME_PROPERTY));
       checkDescription(_ctx, userRole.getProperty(UserRole.DESCRIPTION_PROPERTY), newLocation(_parentLocation, UserRole.DESCRIPTION_PROPERTY));
-      for(int i = 0; userRole.getAccessPermissionList() != null && i < userRole.getAccessPermissionList().size(); i++){
-         AccessPermission accessPermission = userRole.getAccessPermissionList().get(i);
-         new AccessPermissionChecker().checkAndFix(_ctx, accessPermission, newLocation(_parentLocation, UserRole.ACCESS_PERMISSION_LIST_PROPERTY, i));
-      }
+      checkIsSystem(_ctx, userRole.getProperty(UserRole.IS_SYSTEM_PROPERTY), newLocation(_parentLocation, UserRole.IS_SYSTEM_PROPERTY));
+      checkCreatedAt(_ctx, userRole.getProperty(UserRole.CREATED_AT_PROPERTY), newLocation(_parentLocation, UserRole.CREATED_AT_PROPERTY));
     }
 
-    public void checkName(UserContext _ctx, String name, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, name);
-    if((name == null)){
+    public void checkRoleName(UserContext _ctx, String roleName, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, roleName);
+    if((roleName == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, name);
-
-    }
-    public void checkCode(UserContext _ctx, String code, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, code);
-    if((code == null)){
-        return;
-    }
-    maxStringCheck(_ctx, _parentLocation, 100, code);
+    maxStringCheck(_ctx, _parentLocation, 100, roleName);
 
     }
     public void checkDescription(UserContext _ctx, String description, ObjectLocation _parentLocation){
@@ -58,5 +49,19 @@ public class UserRoleChecker implements Checker<UserRole>{
     }
     maxStringCheck(_ctx, _parentLocation, 100, description);
 
+    }
+    public void checkIsSystem(UserContext _ctx, String isSystem, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, isSystem);
+    if((isSystem == null)){
+        return;
+    }
+    maxStringCheck(_ctx, _parentLocation, 100, isSystem);
+
+    }
+    public void checkCreatedAt(UserContext _ctx, LocalDateTime createdAt, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, createdAt);
+    if((createdAt == null)){
+        return;
+    }
     }
 }

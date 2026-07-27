@@ -1,0 +1,678 @@
+{
+    "year": {
+        "en": "Year"
+    },
+    "shift": {
+        "en": "Shift"
+    },
+    "deviceId": {
+        "en": "Device Id"
+    },
+    "score": {
+        "en": "Score"
+    },
+    "reportDate": {
+        "en": "Report Date"
+    },
+    "gpsLog": {
+        "en": "Gps Log"
+    },
+    "originCity": {
+        "en": "Origin City"
+    },
+    "vin": {
+        "en": "Vin"
+    },
+    "state": {
+        "en": "State"
+    },
+    "permissionCode": {
+        "en": "Permission Code"
+    },
+    "workedHours": {
+        "en": "Worked Hours"
+    },
+    "routeCode": {
+        "en": "Route Code"
+    },
+    "updatedTime": {
+        "en": "Updated Time"
+    },
+    "entityType": {
+        "en": "Entity Type"
+    },
+    "estimatedCost": {
+        "en": "Estimated Cost"
+    },
+    "warehouse": {
+        "en": "Warehouse"
+    },
+    "version": {
+        "en": "Version"
+    },
+    "quoteNumber": {
+        "en": "Quote Number"
+    },
+    "planNumber": {
+        "en": "Plan Number"
+    },
+    "userAccount": {
+        "en": "User Account"
+    },
+    "roleName": {
+        "en": "Role Name"
+    },
+    "device": {
+        "en": "Device"
+    },
+    "startDate": {
+        "en": "Start Date"
+    },
+    "slotCode": {
+        "en": "Slot Code"
+    },
+    "_instructions": "This is a translation dictionary sample for the TeaQL domain package 'enterprise-logistics-service'. To translate this file, you can copy its content and paste it into any modern AI tool (like ChatGPT, Claude, Gemini, etc.) with the following prompt: 'Translate this JSON file containing TeaQL domain vocabulary keys into 15 languages: Arabic (ar), Simplified Chinese (zh_CN), Traditional Chinese (zh_TW), Spanish (es), French (fr), German (de), Japanese (ja), Korean (ko), Portuguese (pt), Thai (th), Ukrainian (uk), Filipino (fil), Indonesian (id), English (en) under each key. Return only the valid JSON result.' Save the translated JSON externally, and configure the JVM parameter -Dteaql.i18n.path pointing to the translated JSON file path at runtime.",
+    "accessPermission": {
+        "en": "Access Permission"
+    },
+    "timeSlot": {
+        "en": "Time Slot"
+    },
+    "latitude": {
+        "en": "Latitude"
+    },
+    "isRead": {
+        "en": "Is Read"
+    },
+    "industry": {
+        "en": "Industry"
+    },
+    "currency": {
+        "en": "Currency"
+    },
+    "email": {
+        "en": "Email"
+    },
+    "timestamp": {
+        "en": "Timestamp"
+    },
+    "address": {
+        "en": "Address"
+    },
+    "manager": {
+        "en": "Manager"
+    },
+    "promotionCampaign": {
+        "en": "Promotion Campaign"
+    },
+    "shiftDate": {
+        "en": "Shift Date"
+    },
+    "claimAmount": {
+        "en": "Claim Amount"
+    },
+    "staff": {
+        "en": "Staff"
+    },
+    "reviewer": {
+        "en": "Reviewer"
+    },
+    "plateNumber": {
+        "en": "Plate Number"
+    },
+    "destinationCity": {
+        "en": "Destination City"
+    },
+    "createTime": {
+        "en": "Create Time"
+    },
+    "registrationNumber": {
+        "en": "Registration Number"
+    },
+    "serviceQuote": {
+        "en": "Service Quote"
+    },
+    "odometerKm": {
+        "en": "Odometer Km"
+    },
+    "validUntil": {
+        "en": "Valid Until"
+    },
+    "endTime": {
+        "en": "End Time"
+    },
+    "contactPhone": {
+        "en": "Contact Phone"
+    },
+    "weightKg": {
+        "en": "Weight Kg"
+    },
+    "serviceType": {
+        "en": "Service Type"
+    },
+    "availableSpots": {
+        "en": "Available Spots"
+    },
+    "country": {
+        "en": "Country"
+    },
+    "orderNumber": {
+        "en": "Order Number"
+    },
+    "dueDate": {
+        "en": "Due Date"
+    },
+    "postalCode": {
+        "en": "Postal Code"
+    },
+    "channelType": {
+        "en": "Channel Type"
+    },
+    "fuelLog": {
+        "en": "Fuel Log"
+    },
+    "insurancePolicy": {
+        "en": "Insurance Policy"
+    },
+    "source": {
+        "en": "Source"
+    },
+    "salesChannel": {
+        "en": "Sales Channel"
+    },
+    "employeeCount": {
+        "en": "Employee Count"
+    },
+    "createdAt": {
+        "en": "Created At"
+    },
+    "minOrderAmount": {
+        "en": "Min Order Amount"
+    },
+    "containerUnit": {
+        "en": "Container Unit"
+    },
+    "budget": {
+        "en": "Budget"
+    },
+    "contractNumber": {
+        "en": "Contract Number"
+    },
+    "salarySlip": {
+        "en": "Salary Slip"
+    },
+    "taxCode": {
+        "en": "Tax Code"
+    },
+    "destinationCountry": {
+        "en": "Destination Country"
+    },
+    "volumeM3": {
+        "en": "Volume M3"
+    },
+    "isSystem": {
+        "en": "Is System"
+    },
+    "firstName": {
+        "en": "First Name"
+    },
+    "netPay": {
+        "en": "Net Pay"
+    },
+    "capacityKg": {
+        "en": "Capacity Kg"
+    },
+    "name": {
+        "en": "Name"
+    },
+    "campaign": {
+        "en": "Campaign"
+    },
+    "paymentMethod": {
+        "en": "Payment Method"
+    },
+    "customsDeclaration": {
+        "en": "Customs Declaration"
+    },
+    "referenceCode": {
+        "en": "Reference Code"
+    },
+    "discountCoupon": {
+        "en": "Discount Coupon"
+    },
+    "durationHours": {
+        "en": "Duration Hours"
+    },
+    "expenseItem": {
+        "en": "Expense Item"
+    },
+    "taxPeriod": {
+        "en": "Tax Period"
+    },
+    "resolutionDate": {
+        "en": "Resolution Date"
+    },
+    "description": {
+        "en": "Description"
+    },
+    "distanceKm": {
+        "en": "Distance Km"
+    },
+    "notificationType": {
+        "en": "Notification Type"
+    },
+    "deductions": {
+        "en": "Deductions"
+    },
+    "title": {
+        "en": "Title"
+    },
+    "content": {
+        "en": "Content"
+    },
+    "provider": {
+        "en": "Provider"
+    },
+    "company": {
+        "en": "Company"
+    },
+    "issueDate": {
+        "en": "Issue Date"
+    },
+    "claimNumber": {
+        "en": "Claim Number"
+    },
+    "corporateCustomer": {
+        "en": "Corporate Customer"
+    },
+    "driverAssignment": {
+        "en": "Driver Assignment"
+    },
+    "expenseType": {
+        "en": "Expense Type"
+    },
+    "hireDate": {
+        "en": "Hire Date"
+    },
+    "claimsRecord": {
+        "en": "Claims Record"
+    },
+    "transitRoute": {
+        "en": "Transit Route"
+    },
+    "entityId": {
+        "en": "Entity Id"
+    },
+    "palletId": {
+        "en": "Pallet Id"
+    },
+    "totalWeight": {
+        "en": "Total Weight"
+    },
+    "imei": {
+        "en": "Imei"
+    },
+    "comment": {
+        "en": "Comment"
+    },
+    "billingAddress": {
+        "en": "Billing Address"
+    },
+    "paymentDate": {
+        "en": "Payment Date"
+    },
+    "userRole": {
+        "en": "User Role"
+    },
+    "movingOrder": {
+        "en": "Moving Order"
+    },
+    "username": {
+        "en": "Username"
+    },
+    "container": {
+        "en": "Container"
+    },
+    "declarationNumber": {
+        "en": "Declaration Number"
+    },
+    "endDate": {
+        "en": "End Date"
+    },
+    "channel": {
+        "en": "Channel"
+    },
+    "pallet": {
+        "en": "Pallet"
+    },
+    "deliveryAddress": {
+        "en": "Delivery Address"
+    },
+    "staffMember": {
+        "en": "Staff Member"
+    },
+    "action": {
+        "en": "Action"
+    },
+    "createdTime": {
+        "en": "Created Time"
+    },
+    "model": {
+        "en": "Model"
+    },
+    "id": {
+        "en": "Id"
+    },
+    "containerId": {
+        "en": "Container Id"
+    },
+    "safetyTraining": {
+        "en": "Safety Training"
+    },
+    "period": {
+        "en": "Period"
+    },
+    "liters": {
+        "en": "Liters"
+    },
+    "driver": {
+        "en": "Driver"
+    },
+    "field": {
+        "en": "Field"
+    },
+    "phone": {
+        "en": "Phone"
+    },
+    "pickupAddress": {
+        "en": "Pickup Address"
+    },
+    "taxRecord": {
+        "en": "Tax Record"
+    },
+    "status": {
+        "en": "Status"
+    },
+    "lastName": {
+        "en": "Last Name"
+    },
+    "auditLog": {
+        "en": "Audit Log"
+    },
+    "city": {
+        "en": "City"
+    },
+    "paymentRecord": {
+        "en": "Payment Record"
+    },
+    "capacity": {
+        "en": "Capacity"
+    },
+    "vehicle": {
+        "en": "Vehicle"
+    },
+    "discountPercentage": {
+        "en": "Discount Percentage"
+    },
+    "premium": {
+        "en": "Premium"
+    },
+    "customerContact": {
+        "en": "Customer Contact"
+    },
+    "dispatchPlan": {
+        "en": "Dispatch Plan"
+    },
+    "recipientId": {
+        "en": "Recipient Id"
+    },
+    "startTime": {
+        "en": "Start Time"
+    },
+    "actualCost": {
+        "en": "Actual Cost"
+    },
+    "heading": {
+        "en": "Heading"
+    },
+    "usageLimit": {
+        "en": "Usage Limit"
+    },
+    "customerLoyalty": {
+        "en": "Customer Loyalty"
+    },
+    "serviceContract": {
+        "en": "Service Contract"
+    },
+    "updateTime": {
+        "en": "Update Time"
+    },
+    "checkDate": {
+        "en": "Check Date"
+    },
+    "expenseDate": {
+        "en": "Expense Date"
+    },
+    "itemCount": {
+        "en": "Item Count"
+    },
+    "telematicsDevice": {
+        "en": "Telematics Device"
+    },
+    "inventoryCheck": {
+        "en": "Inventory Check"
+    },
+    "date": {
+        "en": "Date"
+    },
+    "totalVolume": {
+        "en": "Total Volume"
+    },
+    "coverageAmount": {
+        "en": "Coverage Amount"
+    },
+    "zipCode": {
+        "en": "Zip Code"
+    },
+    "storageFee": {
+        "en": "Storage Fee"
+    },
+    "bonus": {
+        "en": "Bonus"
+    },
+    "itemCode": {
+        "en": "Item Code"
+    },
+    "jobTitle": {
+        "en": "Job Title"
+    },
+    "speedKmh": {
+        "en": "Speed Kmh"
+    },
+    "policyNumber": {
+        "en": "Policy Number"
+    },
+    "rating": {
+        "en": "Rating"
+    },
+    "unitNumber": {
+        "en": "Unit Number"
+    },
+    "roiPercentage": {
+        "en": "Roi Percentage"
+    },
+    "salesLead": {
+        "en": "Sales Lead"
+    },
+    "checker": {
+        "en": "Checker"
+    },
+    "employee": {
+        "en": "Employee"
+    },
+    "isActive": {
+        "en": "Is Active"
+    },
+    "passwordHash": {
+        "en": "Password Hash"
+    },
+    "points": {
+        "en": "Points"
+    },
+    "customerType": {
+        "en": "Customer Type"
+    },
+    "revenue": {
+        "en": "Revenue"
+    },
+    "addressLine1": {
+        "en": "Address Line1"
+    },
+    "addressLine2": {
+        "en": "Address Line2"
+    },
+    "usedCount": {
+        "en": "Used Count"
+    },
+    "longitude": {
+        "en": "Longitude"
+    },
+    "updatedAt": {
+        "en": "Updated At"
+    },
+    "workShift": {
+        "en": "Work Shift"
+    },
+    "resource": {
+        "en": "Resource"
+    },
+    "ipAddress": {
+        "en": "Ip Address"
+    },
+    "stateProvince": {
+        "en": "State Province"
+    },
+    "completedDate": {
+        "en": "Completed Date"
+    },
+    "systemConfiguration": {
+        "en": "System Configuration"
+    },
+    "configKey": {
+        "en": "Config Key"
+    },
+    "taxRate": {
+        "en": "Tax Rate"
+    },
+    "filingStatus": {
+        "en": "Filing Status"
+    },
+    "feedbackReview": {
+        "en": "Feedback Review"
+    },
+    "vehicleMaintenance": {
+        "en": "Vehicle Maintenance"
+    },
+    "fragile": {
+        "en": "Fragile"
+    },
+    "taxAmount": {
+        "en": "Tax Amount"
+    },
+    "cargoItem": {
+        "en": "Cargo Item"
+    },
+    "performanceReview": {
+        "en": "Performance Review"
+    },
+    "code": {
+        "en": "Code"
+    },
+    "baseSalary": {
+        "en": "Base Salary"
+    },
+    "scheduledDate": {
+        "en": "Scheduled Date"
+    },
+    "configValue": {
+        "en": "Config Value"
+    },
+    "privateCustomer": {
+        "en": "Private Customer"
+    },
+    "assignedTo": {
+        "en": "Assigned To"
+    },
+    "estimatedDurationHours": {
+        "en": "Estimated Duration Hours"
+    },
+    "tier": {
+        "en": "Tier"
+    },
+    "reviewDate": {
+        "en": "Review Date"
+    },
+    "isPrimary": {
+        "en": "Is Primary"
+    },
+    "maxDiscountAmount": {
+        "en": "Max Discount Amount"
+    },
+    "spend": {
+        "en": "Spend"
+    },
+    "stationName": {
+        "en": "Station Name"
+    },
+    "department": {
+        "en": "Department"
+    },
+    "make": {
+        "en": "Make"
+    },
+    "hoursWorked": {
+        "en": "Hours Worked"
+    },
+    "totalValue": {
+        "en": "Total Value"
+    },
+    "amount": {
+        "en": "Amount"
+    },
+    "comments": {
+        "en": "Comments"
+    },
+    "cost": {
+        "en": "Cost"
+    },
+    "contactEmail": {
+        "en": "Contact Email"
+    },
+    "marketingRoi": {
+        "en": "Marketing Roi"
+    },
+    "scheduledDeparture": {
+        "en": "Scheduled Departure"
+    },
+    "systemNotification": {
+        "en": "System Notification"
+    },
+    "storageContainer": {
+        "en": "Storage Container"
+    },
+    "scheduledArrival": {
+        "en": "Scheduled Arrival"
+    },
+    "originCountry": {
+        "en": "Origin Country"
+    },
+    "completionDate": {
+        "en": "Completion Date"
+    },
+    "invoice": {
+        "en": "Invoice"
+    },
+    "customer": {
+        "en": "Customer"
+    }
+}

@@ -7,7 +7,7 @@ import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
 import io.teaql.core.value.ExpressionAdaptor;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.function.Function;
 
 public class PaymentRecordExpression<T, E, U extends PaymentRecord> extends ExpressionAdaptor<T, E, U> implements BaseEntityExpression<T, U> {
@@ -43,11 +43,11 @@ public class PaymentRecordExpression<T, E, U extends PaymentRecord> extends Expr
        return new PaymentRecordExpression(this, $it ->  ((PaymentRecord)$it).updateName(name));
     }
 
-    public Expression<T, String> getCode(){
-       return apply(PaymentRecord::getCode);
+    public Expression<T, String> getReferenceCode(){
+       return apply(PaymentRecord::getReferenceCode);
     }
-    public PaymentRecordExpression<T, U, U> updateCode(String code){
-       return new PaymentRecordExpression(this, $it ->  ((PaymentRecord)$it).updateCode(code));
+    public PaymentRecordExpression<T, U, U> updateReferenceCode(String referenceCode){
+       return new PaymentRecordExpression(this, $it ->  ((PaymentRecord)$it).updateReferenceCode(referenceCode));
     }
 
     public Expression<T, BigDecimal> getAmount(){
@@ -64,25 +64,25 @@ public class PaymentRecordExpression<T, E, U extends PaymentRecord> extends Expr
        return new PaymentRecordExpression(this, $it ->  ((PaymentRecord)$it).updateCurrency(currency));
     }
 
+    public Expression<T, String> getPaymentMethod(){
+       return apply(PaymentRecord::getPaymentMethod);
+    }
+    public PaymentRecordExpression<T, U, U> updatePaymentMethod(String paymentMethod){
+       return new PaymentRecordExpression(this, $it ->  ((PaymentRecord)$it).updatePaymentMethod(paymentMethod));
+    }
+
+    public Expression<T, LocalDate> getPaymentDate(){
+       return apply(PaymentRecord::getPaymentDate);
+    }
+    public PaymentRecordExpression<T, U, U> updatePaymentDate(LocalDate paymentDate){
+       return new PaymentRecordExpression(this, $it ->  ((PaymentRecord)$it).updatePaymentDate(paymentDate));
+    }
+
     public Expression<T, String> getStatus(){
        return apply(PaymentRecord::getStatus);
     }
     public PaymentRecordExpression<T, U, U> updateStatus(String status){
        return new PaymentRecordExpression(this, $it ->  ((PaymentRecord)$it).updateStatus(status));
-    }
-
-    public Expression<T, LocalDateTime> getCreatedAt(){
-       return apply(PaymentRecord::getCreatedAt);
-    }
-    public PaymentRecordExpression<T, U, U> updateCreatedAt(LocalDateTime createdAt){
-       return new PaymentRecordExpression(this, $it ->  ((PaymentRecord)$it).updateCreatedAt(createdAt));
-    }
-
-    public Expression<T, LocalDateTime> getUpdatedAt(){
-       return apply(PaymentRecord::getUpdatedAt);
-    }
-    public PaymentRecordExpression<T, U, U> updateUpdatedAt(LocalDateTime updatedAt){
-       return new PaymentRecordExpression(this, $it ->  ((PaymentRecord)$it).updateUpdatedAt(updatedAt));
     }
 
     public InvoiceExpression<T, U, Invoice> getInvoice(){

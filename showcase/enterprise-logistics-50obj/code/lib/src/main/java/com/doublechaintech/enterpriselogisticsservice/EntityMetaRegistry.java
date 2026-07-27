@@ -28,14 +28,20 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor orderId = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.ORDER_ID_PROPERTY, String.class)
+      PropertyDescriptor orderNumber = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.ORDER_NUMBER_PROPERTY, String.class)
+      ;
+      PropertyDescriptor status = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.STATUS_PROPERTY, String.class)
       ;
       PropertyDescriptor customer = 
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.CUSTOMER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.MOVING_ORDER_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.class)
       ;
-      PropertyDescriptor status = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.STATUS_PROPERTY, String.class)
+      PropertyDescriptor pickupAddress = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.PICKUP_ADDRESS_PROPERTY, com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.MOVING_ORDER_LIST_AS_PICKUP_ADDRESS_PROPERTY, com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.class)
+      ;
+      PropertyDescriptor deliveryAddress = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.DELIVERY_ADDRESS_PROPERTY, com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.MOVING_ORDER_LIST_AS_DELIVERY_ADDRESS_PROPERTY, com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.class)
       ;
       PropertyDescriptor totalWeight = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.TOTAL_WEIGHT_PROPERTY, BigDecimal.class)
@@ -49,20 +55,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor actualCost = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.ACTUAL_COST_PROPERTY, BigDecimal.class)
       ;
-      PropertyDescriptor pickupDate = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.PICKUP_DATE_PROPERTY, LocalDate.class)
+      PropertyDescriptor createdTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.CREATED_TIME_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor deliveryDate = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.DELIVERY_DATE_PROPERTY, LocalDate.class)
-      ;
-      PropertyDescriptor specialInstructions = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.SPECIAL_INSTRUCTIONS_PROPERTY, String.class)
-      ;
-      PropertyDescriptor createTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.CREATE_TIME_PROPERTY, LocalDateTime.class)
-      ;
-      PropertyDescriptor updateTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.UPDATE_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor updatedTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.UPDATED_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.VERSION_PROPERTY, Long.class)
@@ -83,7 +80,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.ORDER_ID_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.ORDER_NUMBER_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
@@ -97,7 +94,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("graphqlType", "String")
       .with("isTime", "false")
       .with("isText", "false");
-
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.STATUS_PROPERTY).with("isPassword", "false")
       .with("max", "100")
@@ -113,6 +109,9 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("graphqlType", "String")
       .with("isTime", "false")
       .with("isText", "false");
+
+
+
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.TOTAL_WEIGHT_PROPERTY).with("isPassword", "false")
       .with("db2_sqlType", "decimal(19,7)")
@@ -178,50 +177,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.PICKUP_DATE_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDate")
-      .with("sqlType", "DATE")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "Date")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.DELIVERY_DATE_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDate")
-      .with("sqlType", "DATE")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "Date")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.SPECIAL_INSTRUCTIONS_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.CREATE_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.CREATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDateTime")
       .with("sqlType", "TIMESTAMP")
@@ -238,7 +194,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.UPDATE_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.UPDATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
@@ -308,7 +264,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "client_signature_data")
+      .with("candidates", "phone")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -350,8 +306,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor planId = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.PLAN_ID_PROPERTY, String.class)
+      PropertyDescriptor planNumber = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.PLAN_NUMBER_PROPERTY, String.class)
+      ;
+      PropertyDescriptor status = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.STATUS_PROPERTY, String.class)
       ;
       PropertyDescriptor movingOrder = 
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.MOVING_ORDER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.DISPATCH_PLAN_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.class)
@@ -362,20 +321,17 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor driver = 
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.DRIVER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember.DISPATCH_PLAN_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember.class)
       ;
-      PropertyDescriptor status = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.STATUS_PROPERTY, String.class)
-      ;
       PropertyDescriptor scheduledDeparture = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.SCHEDULED_DEPARTURE_PROPERTY, String.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.SCHEDULED_DEPARTURE_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor scheduledArrival = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.SCHEDULED_ARRIVAL_PROPERTY, String.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.SCHEDULED_ARRIVAL_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor createTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.CREATE_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor createdTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.CREATED_TIME_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor updateTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.UPDATE_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor updatedTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.UPDATED_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.VERSION_PROPERTY, Long.class)
@@ -396,7 +352,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.PLAN_ID_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.PLAN_NUMBER_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
@@ -410,9 +366,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("graphqlType", "String")
       .with("isTime", "false")
       .with("isText", "false");
-
-
-
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.STATUS_PROPERTY).with("isPassword", "false")
       .with("max", "100")
@@ -429,39 +382,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
+
+
+
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.SCHEDULED_DEPARTURE_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("zh_CN", "2023-10-01T08")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.SCHEDULED_ARRIVAL_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("zh_CN", "2023-10-01T18")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.CREATE_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDateTime")
       .with("sqlType", "TIMESTAMP")
@@ -478,7 +402,41 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.UPDATE_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.SCHEDULED_ARRIVAL_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.CREATED_TIME_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan.UPDATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
@@ -526,17 +484,14 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor routeId = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.ROUTE_ID_PROPERTY, String.class)
+      PropertyDescriptor routeCode = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.ROUTE_CODE_PROPERTY, String.class)
       ;
-      PropertyDescriptor name = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.NAME_PROPERTY, String.class)
+      PropertyDescriptor originCity = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.ORIGIN_CITY_PROPERTY, String.class)
       ;
-      PropertyDescriptor originWarehouse = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.ORIGIN_WAREHOUSE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse.TRANSIT_ROUTE_LIST_AS_ORIGIN_WAREHOUSE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse.class)
-      ;
-      PropertyDescriptor destinationWarehouse = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.DESTINATION_WAREHOUSE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse.TRANSIT_ROUTE_LIST_AS_DESTINATION_WAREHOUSE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse.class)
+      PropertyDescriptor destinationCity = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.DESTINATION_CITY_PROPERTY, String.class)
       ;
       PropertyDescriptor distanceKm = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.DISTANCE_KM_PROPERTY, BigDecimal.class)
@@ -544,11 +499,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor estimatedDurationHours = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.ESTIMATED_DURATION_HOURS_PROPERTY, BigDecimal.class)
       ;
-      PropertyDescriptor status = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.STATUS_PROPERTY, String.class)
+      PropertyDescriptor createdTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.CREATED_TIME_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor createTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.CREATE_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor updatedTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.UPDATED_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.VERSION_PROPERTY, Long.class)
@@ -569,10 +524,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.ROUTE_ID_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.ROUTE_CODE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -584,10 +540,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.NAME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.ORIGIN_CITY_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -599,13 +556,28 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.DESTINATION_CITY_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.DISTANCE_KM_PROPERTY).with("isPassword", "false")
       .with("db2_sqlType", "decimal(19,7)")
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.math.BigDecimal")
+      .with("candidates", "1200.00")
       .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -622,6 +594,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.math.BigDecimal")
+      .with("candidates", "14.00")
       .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -633,24 +606,29 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.STATUS_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.CREATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("sqlType", "VARCHAR(<max>)")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "createTime()")
+      .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
       .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.CREATE_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute.UPDATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
+      .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "updateTime()")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
@@ -695,23 +673,26 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor slotId = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.SLOT_ID_PROPERTY, String.class)
-      ;
-      PropertyDescriptor movingOrder = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.MOVING_ORDER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.TIME_SLOT_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.class)
+      PropertyDescriptor slotCode = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.SLOT_CODE_PROPERTY, String.class)
       ;
       PropertyDescriptor startTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.START_TIME_PROPERTY, String.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.START_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor endTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.END_TIME_PROPERTY, String.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.END_TIME_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor status = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.STATUS_PROPERTY, String.class)
+      PropertyDescriptor capacity = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.CAPACITY_PROPERTY, Integer.class)
       ;
-      PropertyDescriptor createTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.CREATE_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor availableSpots = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.AVAILABLE_SPOTS_PROPERTY, Integer.class)
+      ;
+      PropertyDescriptor createdTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.CREATED_TIME_PROPERTY, LocalDateTime.class)
+      ;
+      PropertyDescriptor updatedTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.UPDATED_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.VERSION_PROPERTY, Long.class)
@@ -732,10 +713,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.SLOT_ID_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.SLOT_CODE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -747,57 +729,101 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.START_TIME_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
       .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("sqlType", "VARCHAR(<max>)")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "createTime()")
+      .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
       .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("zh_CN", "2023-10-01T09")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
       .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.END_TIME_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("zh_CN", "2023-10-01T10")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.STATUS_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.CREATE_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "createTime()")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.CAPACITY_PROPERTY).with("isPassword", "false")
+      .with("db2_sqlType", "decimal(19,7)")
+      .with("isVersion", "false")
+      .with("oracle_sqlType", "number(19,7)")
+      .with("javaType", "java.lang.Integer")
+      .with("candidates", "10")
+      .with("sqlType", "INTEGER")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "true")
+      .with("isInt", "true")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("graphqlType", "Int")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.AVAILABLE_SPOTS_PROPERTY).with("isPassword", "false")
+      .with("db2_sqlType", "decimal(19,7)")
+      .with("isVersion", "false")
+      .with("oracle_sqlType", "number(19,7)")
+      .with("javaType", "java.lang.Integer")
+      .with("candidates", "5")
+      .with("sqlType", "INTEGER")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "true")
+      .with("isInt", "true")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("graphqlType", "Int")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.CREATED_TIME_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "createTime()")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot.UPDATED_TIME_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("updateFunction", "now")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "updateTime()")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
@@ -842,17 +868,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor itemId = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.ITEM_ID_PROPERTY, String.class)
-      ;
-      PropertyDescriptor movingOrder = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.MOVING_ORDER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.CARGO_ITEM_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.class)
+      PropertyDescriptor itemCode = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.ITEM_CODE_PROPERTY, String.class)
       ;
       PropertyDescriptor description = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.DESCRIPTION_PROPERTY, String.class)
-      ;
-      PropertyDescriptor category = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.CATEGORY_PROPERTY, String.class)
       ;
       PropertyDescriptor weightKg = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.WEIGHT_KG_PROPERTY, BigDecimal.class)
@@ -860,14 +880,17 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor volumeM3 = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.VOLUME_M3_PROPERTY, BigDecimal.class)
       ;
-      PropertyDescriptor value = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.VALUE_PROPERTY, BigDecimal.class)
-      ;
       PropertyDescriptor fragile = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.FRAGILE_PROPERTY, Boolean.class)
       ;
-      PropertyDescriptor createTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.CREATE_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor movingOrder = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.MOVING_ORDER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.CARGO_ITEM_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.class)
+      ;
+      PropertyDescriptor createdTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.CREATED_TIME_PROPERTY, LocalDateTime.class)
+      ;
+      PropertyDescriptor updatedTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.UPDATED_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.VERSION_PROPERTY, Long.class)
@@ -888,7 +911,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.ITEM_ID_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.ITEM_CODE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
@@ -902,24 +925,8 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("graphqlType", "String")
       .with("isTime", "false")
       .with("isText", "false");
-
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.DESCRIPTION_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.CATEGORY_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
@@ -966,22 +973,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.VALUE_PROPERTY).with("isPassword", "false")
-      .with("db2_sqlType", "decimal(19,7)")
-      .with("isVersion", "false")
-      .with("oracle_sqlType", "number(19,7)")
-      .with("javaType", "java.math.BigDecimal")
-      .with("sqlType", "NUMERIC(19,7)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "true")
-      .with("isString", "false")
-      .with("isDate", "false")
-      .with("graphqlType", "BigDecimal")
-      .with("isTime", "false")
-      .with("isText", "false");
-
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.FRAGILE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(1)")
@@ -998,8 +989,27 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.CREATE_TIME_PROPERTY).with("isPassword", "false")
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.CREATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem.UPDATED_TIME_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
@@ -1045,12 +1055,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor addressId = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.ADDRESS_ID_PROPERTY, String.class)
-      ;
-      PropertyDescriptor movingOrder = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.MOVING_ORDER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.PICKUP_ADDRESS_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.class)
-      ;
       PropertyDescriptor addressLine1 = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.ADDRESS_LINE1_PROPERTY, String.class)
       ;
@@ -1060,23 +1064,26 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor city = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.CITY_PROPERTY, String.class)
       ;
-      PropertyDescriptor state = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.STATE_PROPERTY, String.class)
+      PropertyDescriptor stateProvince = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.STATE_PROVINCE_PROPERTY, String.class)
       ;
-      PropertyDescriptor zipCode = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.ZIP_CODE_PROPERTY, String.class)
+      PropertyDescriptor postalCode = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.POSTAL_CODE_PROPERTY, String.class)
       ;
       PropertyDescriptor country = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.COUNTRY_PROPERTY, String.class)
       ;
-      PropertyDescriptor contactName = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.CONTACT_NAME_PROPERTY, String.class)
+      PropertyDescriptor latitude = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.LATITUDE_PROPERTY, BigDecimal.class)
       ;
-      PropertyDescriptor contactPhone = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.CONTACT_PHONE_PROPERTY, String.class)
+      PropertyDescriptor longitude = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.LONGITUDE_PROPERTY, String.class)
       ;
-      PropertyDescriptor createTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.CREATE_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor createdTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.CREATED_TIME_PROPERTY, LocalDateTime.class)
+      ;
+      PropertyDescriptor updatedTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.UPDATED_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.VERSION_PROPERTY, Long.class)
@@ -1097,26 +1104,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.ADDRESS_ID_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.ADDRESS_LINE1_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1132,6 +1124,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1147,6 +1140,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1158,10 +1152,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.STATE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.STATE_PROVINCE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1173,10 +1168,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.ZIP_CODE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.POSTAL_CODE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1192,6 +1188,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1203,10 +1200,28 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.CONTACT_NAME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.LATITUDE_PROPERTY).with("isPassword", "false")
+      .with("db2_sqlType", "decimal(19,7)")
+      .with("isVersion", "false")
+      .with("oracle_sqlType", "number(19,7)")
+      .with("javaType", "java.math.BigDecimal")
+      .with("candidates", "40.7128")
+      .with("sqlType", "NUMERIC(19,7)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "true")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("graphqlType", "BigDecimal")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.LONGITUDE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
+      .with("candidates", "-74.0060")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1218,24 +1233,29 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.CONTACT_PHONE_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.CREATE_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.CREATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "createTime()")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress.UPDATED_TIME_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("updateFunction", "now")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "updateTime()")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1280,11 +1300,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor name = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.NAME_PROPERTY, String.class)
+      PropertyDescriptor plateNumber = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.PLATE_NUMBER_PROPERTY, String.class)
       ;
-      PropertyDescriptor licensePlate = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.LICENSE_PLATE_PROPERTY, String.class)
+      PropertyDescriptor vin = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.VIN_PROPERTY, String.class)
       ;
       PropertyDescriptor make = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.MAKE_PROPERTY, String.class)
@@ -1296,7 +1316,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.YEAR_PROPERTY, Integer.class)
       ;
       PropertyDescriptor capacityKg = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.CAPACITY_KG_PROPERTY, BigDecimal.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.CAPACITY_KG_PROPERTY, Integer.class)
       ;
       PropertyDescriptor status = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.STATUS_PROPERTY, String.class)
@@ -1314,7 +1334,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "1,2")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -1327,11 +1346,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.NAME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.PLATE_NUMBER_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Truck Alpha,Van Beta")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1343,11 +1362,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.LICENSE_PLATE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.VIN_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "TRK-001,VAN-002")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1363,7 +1382,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Volvo,Mercedes")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1379,7 +1398,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "FH16,Sprinter")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1396,7 +1415,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.lang.Integer")
-      .with("candidates", "2023,2022")
+      .with("candidates", "2023")
       .with("sqlType", "INTEGER")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1413,16 +1432,17 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("db2_sqlType", "decimal(19,7)")
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
-      .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "5000.00,2000.00")
-      .with("sqlType", "NUMERIC(19,7)")
+      .with("javaType", "java.lang.Integer")
+      .with("candidates", "5000")
+      .with("sqlType", "INTEGER")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
       .with("isNumber", "true")
+      .with("isInt", "true")
       .with("isString", "false")
       .with("isDate", "false")
-      .with("graphqlType", "BigDecimal")
+      .with("graphqlType", "Int")
       .with("isTime", "false")
       .with("isText", "false");
 
@@ -1430,7 +1450,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Active,Active")
+      .with("candidates", "active")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1497,44 +1517,43 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
 
       $factory.register(entityDescriptor);
   }
-  private void registerDriverAssignment() {
+  private void registerTelematicsDevice() {
       EntityDescriptor entityDescriptor = new EntityDescriptor();
-      entityDescriptor.setType(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.INTERNAL_TYPE);
-      entityDescriptor.setTargetType(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.class);
-      entityDescriptor.setEntitySupplier(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment::new);
-      entityDescriptor.with("name", "Driver Assignment")
+      entityDescriptor.setType(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.INTERNAL_TYPE);
+      entityDescriptor.setTargetType(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.class);
+      entityDescriptor.setEntitySupplier(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice::new);
+      entityDescriptor.with("name", "Telematics Device")
       .with("module", "Fleet")
       .with("module_key", "fleet");
 
       PropertyDescriptor id = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.ID_PROPERTY, Long.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor vehicle = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.VEHICLE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.DRIVER_ASSIGNMENT_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.class)
+      PropertyDescriptor deviceId = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.DEVICE_ID_PROPERTY, String.class)
       ;
-      PropertyDescriptor driver = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.DRIVER_PROPERTY, String.class)
-      ;
-      PropertyDescriptor startDate = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.START_DATE_PROPERTY, LocalDate.class)
-      ;
-      PropertyDescriptor endDate = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.END_DATE_PROPERTY, LocalDate.class)
+      PropertyDescriptor imei = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.IMEI_PROPERTY, String.class)
       ;
       PropertyDescriptor status = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.STATUS_PROPERTY, String.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.STATUS_PROPERTY, String.class)
+      ;
+      PropertyDescriptor vehicle = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.VEHICLE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.TELEMATICS_DEVICE_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.class)
       ;
       PropertyDescriptor createdAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.CREATED_AT_PROPERTY, LocalDateTime.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.CREATED_AT_PROPERTY, LocalDateTime.class)
+      ;
+      PropertyDescriptor updatedAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.UPDATED_AT_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.VERSION_PROPERTY, Long.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.VERSION_PROPERTY, Long.class)
       ;
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.ID_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.ID_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "1")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -1547,13 +1566,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.VEHICLE_PROPERTY).with("candidates", "");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.DRIVER_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.DEVICE_ID_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "employee()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1565,41 +1581,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.START_DATE_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2023-01-01")
-      .with("sqlType", "DATE")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "Date")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.END_DATE_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2023-12-31")
-      .with("sqlType", "DATE")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "Date")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.STATUS_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.IMEI_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Active")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1611,7 +1596,23 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.CREATED_AT_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.STATUS_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.CREATED_AT_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDateTime")
       .with("sqlType", "TIMESTAMP")
@@ -1628,7 +1629,25 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.VERSION_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.UPDATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("updateFunction", "now")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
@@ -1658,23 +1677,23 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor vehicle = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.VEHICLE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.GPS_LOG_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.class)
-      ;
       PropertyDescriptor latitude = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.LATITUDE_PROPERTY, String.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.LATITUDE_PROPERTY, BigDecimal.class)
       ;
       PropertyDescriptor longitude = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.LONGITUDE_PROPERTY, String.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.LONGITUDE_PROPERTY, BigDecimal.class)
+      ;
+      PropertyDescriptor speedKmh = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.SPEED_KMH_PROPERTY, Integer.class)
+      ;
+      PropertyDescriptor heading = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.HEADING_PROPERTY, Integer.class)
       ;
       PropertyDescriptor timestamp = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.TIMESTAMP_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor speedKmh = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.SPEED_KMH_PROPERTY, String.class)
-      ;
-      PropertyDescriptor createdAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.CREATED_AT_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor device = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.DEVICE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.GPS_LOG_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.VERSION_PROPERTY, Long.class)
@@ -1683,7 +1702,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "1")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -1696,74 +1714,73 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.VEHICLE_PROPERTY).with("candidates", "");
-
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.LATITUDE_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
+      .with("db2_sqlType", "decimal(19,7)")
       .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "40.7128")
-      .with("sqlType", "VARCHAR(<max>)")
+      .with("oracle_sqlType", "number(19,7)")
+      .with("javaType", "java.math.BigDecimal")
+      .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
+      .with("isNumber", "true")
+      .with("isString", "false")
       .with("isDate", "false")
-      .with("graphqlType", "String")
+      .with("graphqlType", "BigDecimal")
       .with("isTime", "false")
       .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.LONGITUDE_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
+      .with("db2_sqlType", "decimal(19,7)")
       .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "-74.0060")
-      .with("sqlType", "VARCHAR(<max>)")
+      .with("oracle_sqlType", "number(19,7)")
+      .with("javaType", "java.math.BigDecimal")
+      .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
+      .with("isNumber", "true")
+      .with("isString", "false")
       .with("isDate", "false")
-      .with("graphqlType", "String")
+      .with("graphqlType", "BigDecimal")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.SPEED_KMH_PROPERTY).with("isPassword", "false")
+      .with("db2_sqlType", "decimal(19,7)")
+      .with("isVersion", "false")
+      .with("oracle_sqlType", "number(19,7)")
+      .with("javaType", "java.lang.Integer")
+      .with("sqlType", "INTEGER")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "true")
+      .with("isInt", "true")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("graphqlType", "Int")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.HEADING_PROPERTY).with("isPassword", "false")
+      .with("db2_sqlType", "decimal(19,7)")
+      .with("isVersion", "false")
+      .with("oracle_sqlType", "number(19,7)")
+      .with("javaType", "java.lang.Integer")
+      .with("sqlType", "INTEGER")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "true")
+      .with("isInt", "true")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("graphqlType", "Int")
       .with("isTime", "false")
       .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.TIMESTAMP_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "2023-10-01T10:00:00")
-      .with("sqlType", "TIMESTAMP")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("mssql_sqlType", "dateTime")
-      .with("isDateTime", "true")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "LocalTime")
-      .with("isTime", "true")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.SPEED_KMH_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "60.5")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.CREATED_AT_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDateTime")
       .with("sqlType", "TIMESTAMP")
@@ -1779,6 +1796,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("graphqlType", "LocalTime")
       .with("isTime", "true")
       .with("isText", "false");
+
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
@@ -1810,20 +1828,23 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor vehicle = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.VEHICLE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.FUEL_LOG_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.class)
-      ;
-      PropertyDescriptor fuelAmountLiters = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.FUEL_AMOUNT_LITERS_PROPERTY, String.class)
+      PropertyDescriptor liters = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.LITERS_PROPERTY, BigDecimal.class)
       ;
       PropertyDescriptor cost = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.COST_PROPERTY, String.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.COST_PROPERTY, BigDecimal.class)
+      ;
+      PropertyDescriptor odometerKm = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.ODOMETER_KM_PROPERTY, Integer.class)
+      ;
+      PropertyDescriptor stationName = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.STATION_NAME_PROPERTY, String.class)
       ;
       PropertyDescriptor date = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.DATE_PROPERTY, LocalDate.class)
       ;
-      PropertyDescriptor createdAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.CREATED_AT_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor vehicle = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.VEHICLE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.FUEL_LOG_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.VERSION_PROPERTY, Long.class)
@@ -1832,7 +1853,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "1")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -1845,29 +1865,59 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.VEHICLE_PROPERTY).with("candidates", "");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.FUEL_AMOUNT_LITERS_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.LITERS_PROPERTY).with("isPassword", "false")
+      .with("db2_sqlType", "decimal(19,7)")
       .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "50.0")
-      .with("sqlType", "VARCHAR(<max>)")
+      .with("oracle_sqlType", "number(19,7)")
+      .with("javaType", "java.math.BigDecimal")
+      .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
+      .with("isNumber", "true")
+      .with("isString", "false")
       .with("isDate", "false")
-      .with("graphqlType", "String")
+      .with("graphqlType", "BigDecimal")
       .with("isTime", "false")
       .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.COST_PROPERTY).with("isPassword", "false")
+      .with("db2_sqlType", "decimal(19,7)")
+      .with("isVersion", "false")
+      .with("oracle_sqlType", "number(19,7)")
+      .with("javaType", "java.math.BigDecimal")
+      .with("sqlType", "NUMERIC(19,7)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "true")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("graphqlType", "BigDecimal")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.ODOMETER_KM_PROPERTY).with("isPassword", "false")
+      .with("db2_sqlType", "decimal(19,7)")
+      .with("isVersion", "false")
+      .with("oracle_sqlType", "number(19,7)")
+      .with("javaType", "java.lang.Integer")
+      .with("sqlType", "INTEGER")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "true")
+      .with("isInt", "true")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("graphqlType", "Int")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.STATION_NAME_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "75.00")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1882,7 +1932,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.DATE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2023-10-01")
       .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1894,22 +1943,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.CREATED_AT_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDateTime")
-      .with("sqlType", "TIMESTAMP")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("mssql_sqlType", "dateTime")
-      .with("isDateTime", "true")
-      .with("createFunction", "now")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "LocalTime")
-      .with("isTime", "true")
-      .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
@@ -1941,23 +1974,26 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor vehicle = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.VEHICLE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.VEHICLE_MAINTENANCE_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.class)
-      ;
       PropertyDescriptor serviceType = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.SERVICE_TYPE_PROPERTY, String.class)
       ;
-      PropertyDescriptor serviceDate = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.SERVICE_DATE_PROPERTY, LocalDate.class)
+      PropertyDescriptor description = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.DESCRIPTION_PROPERTY, String.class)
       ;
       PropertyDescriptor cost = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.COST_PROPERTY, String.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.COST_PROPERTY, BigDecimal.class)
+      ;
+      PropertyDescriptor scheduledDate = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.SCHEDULED_DATE_PROPERTY, LocalDate.class)
+      ;
+      PropertyDescriptor completedDate = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.COMPLETED_DATE_PROPERTY, LocalDate.class)
       ;
       PropertyDescriptor status = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.STATUS_PROPERTY, String.class)
       ;
-      PropertyDescriptor createdAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.CREATED_AT_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor vehicle = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.VEHICLE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.VEHICLE_MAINTENANCE_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.VERSION_PROPERTY, Long.class)
@@ -1966,7 +2002,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "1")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -1979,13 +2014,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.VEHICLE_PROPERTY).with("candidates", "");
-
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.SERVICE_TYPE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Oil Change")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -1997,10 +2029,40 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.SERVICE_DATE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.DESCRIPTION_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.COST_PROPERTY).with("isPassword", "false")
+      .with("db2_sqlType", "decimal(19,7)")
+      .with("isVersion", "false")
+      .with("oracle_sqlType", "number(19,7)")
+      .with("javaType", "java.math.BigDecimal")
+      .with("sqlType", "NUMERIC(19,7)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "true")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("graphqlType", "BigDecimal")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.SCHEDULED_DATE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2023-09-15")
       .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
@@ -2012,19 +2074,17 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.COST_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.COMPLETED_DATE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "150.00")
-      .with("sqlType", "VARCHAR(<max>)")
+      .with("javaType", "java.time.LocalDate")
+      .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
       .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "Date")
       .with("isTime", "false")
       .with("isText", "false");
 
@@ -2032,7 +2092,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Completed")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -2044,22 +2103,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.CREATED_AT_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDateTime")
-      .with("sqlType", "TIMESTAMP")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("mssql_sqlType", "dateTime")
-      .with("isDateTime", "true")
-      .with("createFunction", "now")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "LocalTime")
-      .with("isTime", "true")
-      .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
@@ -2079,41 +2122,40 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
 
       $factory.register(entityDescriptor);
   }
-  private void registerTelematicsDevice() {
+  private void registerDriverAssignment() {
       EntityDescriptor entityDescriptor = new EntityDescriptor();
-      entityDescriptor.setType(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.INTERNAL_TYPE);
-      entityDescriptor.setTargetType(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.class);
-      entityDescriptor.setEntitySupplier(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice::new);
-      entityDescriptor.with("name", "Telematics Device")
+      entityDescriptor.setType(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.INTERNAL_TYPE);
+      entityDescriptor.setTargetType(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.class);
+      entityDescriptor.setEntitySupplier(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment::new);
+      entityDescriptor.with("name", "Driver Assignment")
       .with("module", "Fleet")
       .with("module_key", "fleet");
 
       PropertyDescriptor id = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.ID_PROPERTY, Long.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor deviceId = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.DEVICE_ID_PROPERTY, String.class)
+      PropertyDescriptor startTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.START_TIME_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor vehicle = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.VEHICLE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.TELEMATICS_DEVICE_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.class)
-      ;
-      PropertyDescriptor firmwareVersion = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.FIRMWARE_VERSION_PROPERTY, String.class)
+      PropertyDescriptor endTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.END_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor status = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.STATUS_PROPERTY, String.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.STATUS_PROPERTY, String.class)
       ;
-      PropertyDescriptor createdAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.CREATED_AT_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor vehicle = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.VEHICLE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.DRIVER_ASSIGNMENT_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.vehicle.Vehicle.class)
+      ;
+      PropertyDescriptor driver = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.DRIVER_PROPERTY, String.class)
       ;
       PropertyDescriptor version = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.VERSION_PROPERTY, Long.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.VERSION_PROPERTY, Long.class)
       ;
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.ID_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.ID_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "1")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -2126,57 +2168,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.DEVICE_ID_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "TEL-001")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.VEHICLE_PROPERTY).with("candidates", "");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.FIRMWARE_VERSION_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "1.2.0")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.STATUS_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "Active")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.CREATED_AT_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.START_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDateTime")
       .with("sqlType", "TIMESTAMP")
@@ -2193,7 +2185,56 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice.VERSION_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.END_TIME_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("updateFunction", "now")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.STATUS_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.DRIVER_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
@@ -2290,7 +2331,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "MAIN_HUB,WC_DEPOT")
+      .with("candidates", "MAIN_HUB,WEST_DEPOT")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -2587,11 +2628,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor storageContainer = 
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit.STORAGE_CONTAINER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainer.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainer.CONTAINER_UNIT_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainer.class)
       ;
-      PropertyDescriptor unitType = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit.UNIT_TYPE_PROPERTY, String.class)
+      PropertyDescriptor unitNumber = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit.UNIT_NUMBER_PROPERTY, String.class)
       ;
-      PropertyDescriptor quantity = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit.QUANTITY_PROPERTY, Integer.class)
+      PropertyDescriptor itemCount = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit.ITEM_COUNT_PROPERTY, Integer.class)
       ;
       PropertyDescriptor createTime = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit.CREATE_TIME_PROPERTY, LocalDateTime.class)
@@ -2621,11 +2662,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit.STORAGE_CONTAINER_PROPERTY).with("candidates", "");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit.UNIT_TYPE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit.UNIT_NUMBER_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "BOX,CRATE")
+      .with("candidates", "UNIT-A1,UNIT-A2")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -2637,12 +2678,12 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit.QUANTITY_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit.ITEM_COUNT_PROPERTY).with("isPassword", "false")
       .with("db2_sqlType", "decimal(19,7)")
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.lang.Integer")
-      .with("candidates", "50,50")
+      .with("candidates", "5,15")
       .with("sqlType", "INTEGER")
       .with("isId", "false")
       .with("isBool", "false")
@@ -2724,13 +2765,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.inventorycheck.InventoryCheck.WAREHOUSE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse.INVENTORY_CHECK_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse.class)
       ;
       PropertyDescriptor checkDate = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.inventorycheck.InventoryCheck.CHECK_DATE_PROPERTY, String.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.inventorycheck.InventoryCheck.CHECK_DATE_PROPERTY, LocalDate.class)
       ;
-      PropertyDescriptor totalItems = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.inventorycheck.InventoryCheck.TOTAL_ITEMS_PROPERTY, Integer.class)
-      ;
-      PropertyDescriptor discrepancies = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.inventorycheck.InventoryCheck.DISCREPANCIES_PROPERTY, Integer.class)
+      PropertyDescriptor checker = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.inventorycheck.InventoryCheck.CHECKER_PROPERTY, String.class)
       ;
       PropertyDescriptor status = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.inventorycheck.InventoryCheck.STATUS_PROPERTY, String.class)
@@ -2764,10 +2802,25 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.inventorycheck.InventoryCheck.WAREHOUSE_PROPERTY).with("candidates", "");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.inventorycheck.InventoryCheck.CHECK_DATE_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDate")
+      .with("candidates", "2023-10-01,2023-10-02")
+      .with("sqlType", "DATE")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "Date")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.inventorycheck.InventoryCheck.CHECKER_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "2023-10-01,2023-10-15")
+      .with("candidates", "John Doe,Jane Smith")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -2776,42 +2829,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isString", "true")
       .with("isDate", "false")
       .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.inventorycheck.InventoryCheck.TOTAL_ITEMS_PROPERTY).with("isPassword", "false")
-      .with("db2_sqlType", "decimal(19,7)")
-      .with("isVersion", "false")
-      .with("oracle_sqlType", "number(19,7)")
-      .with("javaType", "java.lang.Integer")
-      .with("candidates", "1000,1000")
-      .with("sqlType", "INTEGER")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "true")
-      .with("isInt", "true")
-      .with("isString", "false")
-      .with("isDate", "false")
-      .with("graphqlType", "Int")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.inventorycheck.InventoryCheck.DISCREPANCIES_PROPERTY).with("isPassword", "false")
-      .with("db2_sqlType", "decimal(19,7)")
-      .with("isVersion", "false")
-      .with("oracle_sqlType", "number(19,7)")
-      .with("javaType", "java.lang.Integer")
-      .with("candidates", "0,2")
-      .with("sqlType", "INTEGER")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "true")
-      .with("isInt", "true")
-      .with("isString", "false")
-      .with("isDate", "false")
-      .with("graphqlType", "Int")
       .with("isTime", "false")
       .with("isText", "false");
 
@@ -2902,9 +2919,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor palletId = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pallet.Pallet.PALLET_ID_PROPERTY, String.class)
       ;
-      PropertyDescriptor loadWeight = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pallet.Pallet.LOAD_WEIGHT_PROPERTY, BigDecimal.class)
-      ;
       PropertyDescriptor status = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.pallet.Pallet.STATUS_PROPERTY, String.class)
       ;
@@ -2952,28 +2966,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pallet.Pallet.LOAD_WEIGHT_PROPERTY).with("isPassword", "false")
-      .with("db2_sqlType", "decimal(19,7)")
-      .with("isVersion", "false")
-      .with("oracle_sqlType", "number(19,7)")
-      .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "500.00,0.00")
-      .with("sqlType", "NUMERIC(19,7)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "true")
-      .with("isString", "false")
-      .with("isDate", "false")
-      .with("graphqlType", "BigDecimal")
-      .with("isTime", "false")
-      .with("isText", "false");
-
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.pallet.Pallet.STATUS_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "LOADED,EMPTY")
+      .with("candidates", "AVAILABLE,IN_USE")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -3050,23 +3047,20 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor invoice = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.INVOICE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.STORAGE_FEE_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.class)
+      PropertyDescriptor warehouse = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.WAREHOUSE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse.STORAGE_FEE_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse.class)
       ;
-      PropertyDescriptor feeAmount = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.FEE_AMOUNT_PROPERTY, BigDecimal.class)
+      PropertyDescriptor container = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.CONTAINER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainer.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainer.STORAGE_FEE_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainer.class)
+      ;
+      PropertyDescriptor amount = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.AMOUNT_PROPERTY, BigDecimal.class)
       ;
       PropertyDescriptor currency = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.CURRENCY_PROPERTY, String.class)
       ;
-      PropertyDescriptor periodStart = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.PERIOD_START_PROPERTY, String.class)
-      ;
-      PropertyDescriptor periodEnd = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.PERIOD_END_PROPERTY, String.class)
-      ;
-      PropertyDescriptor status = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.STATUS_PROPERTY, String.class)
+      PropertyDescriptor period = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.PERIOD_PROPERTY, String.class)
       ;
       PropertyDescriptor createTime = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.CREATE_TIME_PROPERTY, LocalDateTime.class)
@@ -3094,14 +3088,16 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.INVOICE_PROPERTY).with("candidates", "");
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.WAREHOUSE_PROPERTY).with("candidates", "");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.FEE_AMOUNT_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.CONTAINER_PROPERTY).with("candidates", "");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.AMOUNT_PROPERTY).with("isPassword", "false")
       .with("db2_sqlType", "decimal(19,7)")
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "100.00,150.00")
+      .with("candidates", "50.00,75.00")
       .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -3129,43 +3125,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.PERIOD_START_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.PERIOD_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "2023-10-01,2023-11-01")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.PERIOD_END_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "2023-10-31,2023-11-30")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee.STATUS_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "PAID,UNPAID")
+      .with("candidates", "MONTHLY,MONTHLY")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -3470,8 +3434,8 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor endTime = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.workshift.WorkShift.END_TIME_PROPERTY, LocalTime.class)
       ;
-      PropertyDescriptor shiftType = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.workshift.WorkShift.SHIFT_TYPE_PROPERTY, String.class)
+      PropertyDescriptor shiftDate = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.workshift.WorkShift.SHIFT_DATE_PROPERTY, LocalDate.class)
       ;
       PropertyDescriptor createdAt = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.workshift.WorkShift.CREATED_AT_PROPERTY, LocalDateTime.class)
@@ -3545,19 +3509,18 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.workshift.WorkShift.SHIFT_TYPE_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.workshift.WorkShift.SHIFT_DATE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
-      .with("sqlType", "VARCHAR(<max>)")
+      .with("javaType", "java.time.LocalDate")
+      .with("candidates", "date()")
+      .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
       .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "Date")
       .with("isTime", "false")
       .with("isText", "false");
 
@@ -3634,11 +3597,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor shift = 
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHours.SHIFT_PROPERTY, com.doublechaintech.enterpriselogisticsservice.workshift.WorkShift.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.workshift.WorkShift.WORKED_HOURS_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.workshift.WorkShift.class)
       ;
-      PropertyDescriptor date = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHours.DATE_PROPERTY, LocalDate.class)
-      ;
       PropertyDescriptor hoursWorked = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHours.HOURS_WORKED_PROPERTY, String.class)
+      ;
+      PropertyDescriptor date = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHours.DATE_PROPERTY, LocalDate.class)
       ;
       PropertyDescriptor createdAt = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHours.CREATED_AT_PROPERTY, LocalDateTime.class)
@@ -3667,20 +3630,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
 
 
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHours.DATE_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDate")
-      .with("sqlType", "DATE")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "Date")
-      .with("isTime", "false")
-      .with("isText", "false");
-
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHours.HOURS_WORKED_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
@@ -3693,6 +3642,20 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isString", "true")
       .with("isDate", "false")
       .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHours.DATE_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDate")
+      .with("sqlType", "DATE")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "Date")
       .with("isTime", "false")
       .with("isText", "false");
 
@@ -4132,17 +4095,17 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor staff = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.STAFF_PROPERTY, com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember.SAFETY_TRAINING_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember.class)
+      PropertyDescriptor title = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.TITLE_PROPERTY, String.class)
       ;
-      PropertyDescriptor courseName = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.COURSE_NAME_PROPERTY, String.class)
+      PropertyDescriptor description = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.DESCRIPTION_PROPERTY, String.class)
+      ;
+      PropertyDescriptor durationHours = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.DURATION_HOURS_PROPERTY, String.class)
       ;
       PropertyDescriptor completionDate = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.COMPLETION_DATE_PROPERTY, LocalDate.class)
-      ;
-      PropertyDescriptor certificateNumber = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.CERTIFICATE_NUMBER_PROPERTY, String.class)
       ;
       PropertyDescriptor status = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.STATUS_PROPERTY, String.class)
@@ -4160,6 +4123,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
+      .with("candidates", "id()")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -4172,11 +4136,43 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.COURSE_NAME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.TITLE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.DESCRIPTION_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.DURATION_HOURS_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "double()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4191,6 +4187,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.COMPLETION_DATE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDate")
+      .with("candidates", "date()")
       .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4202,25 +4199,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.CERTIFICATE_NUMBER_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.STATUS_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4235,6 +4218,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining.CREATED_AT_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "createTime()")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4253,6 +4237,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "updateTime()")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4292,8 +4277,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.setEntitySupplier(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer::new);
       entityDescriptor.with("name", "Private Customer")
       .with("module", "CRM")
-      .with("module_key", "crm")
-      .with("constant", "false");
+      .with("module_key", "crm");
 
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.ID_PROPERTY, Long.class)
@@ -4307,17 +4291,32 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor email = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.EMAIL_PROPERTY, String.class)
       ;
-      PropertyDescriptor address = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.ADDRESS_PROPERTY, String.class)
+      PropertyDescriptor addressLine1 = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.ADDRESS_LINE1_PROPERTY, String.class)
+      ;
+      PropertyDescriptor addressLine2 = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.ADDRESS_LINE2_PROPERTY, String.class)
       ;
       PropertyDescriptor city = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.CITY_PROPERTY, String.class)
+      ;
+      PropertyDescriptor state = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.STATE_PROPERTY, String.class)
+      ;
+      PropertyDescriptor zipCode = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.ZIP_CODE_PROPERTY, String.class)
       ;
       PropertyDescriptor country = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.COUNTRY_PROPERTY, String.class)
       ;
       PropertyDescriptor customerType = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.CUSTOMER_TYPE_PROPERTY, String.class)
+      ;
+      PropertyDescriptor createdAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.CREATED_AT_PROPERTY, LocalDateTime.class)
+      ;
+      PropertyDescriptor updatedAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.UPDATED_AT_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.VERSION_PROPERTY, Long.class)
@@ -4326,7 +4325,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "1001,1002")
+      .with("candidates", "id()")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -4343,7 +4342,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "John Smith,Jane Doe")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4359,7 +4358,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "13800138001,13800138002")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4375,7 +4374,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "john@example.com,jane@example.com")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4387,11 +4386,27 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.ADDRESS_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.ADDRESS_LINE1_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "123 Main St,456 Oak Ave")
+      .with("candidates", "string()")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.ADDRESS_LINE2_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4407,7 +4422,39 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "New York,London")
+      .with("candidates", "string()")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.STATE_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.ZIP_CODE_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4423,7 +4470,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "USA,UK")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4451,6 +4498,43 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.CREATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "createTime()")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.UPDATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("updateFunction", "now")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "updateTime()")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
       .with("oracle_sqlType", "number(11)")
@@ -4476,8 +4560,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.setEntitySupplier(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer::new);
       entityDescriptor.with("name", "Corporate Customer")
       .with("module", "CRM")
-      .with("module_key", "crm")
-      .with("constant", "false");
+      .with("module_key", "crm");
 
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.ID_PROPERTY, Long.class)
@@ -4485,29 +4568,32 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor name = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.NAME_PROPERTY, String.class)
       ;
-      PropertyDescriptor contactPerson = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.CONTACT_PERSON_PROPERTY, String.class)
+      PropertyDescriptor registrationNumber = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.REGISTRATION_NUMBER_PROPERTY, String.class)
       ;
-      PropertyDescriptor phone = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.PHONE_PROPERTY, String.class)
+      PropertyDescriptor industry = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.INDUSTRY_PROPERTY, String.class)
       ;
-      PropertyDescriptor email = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.EMAIL_PROPERTY, String.class)
+      PropertyDescriptor employeeCount = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.EMPLOYEE_COUNT_PROPERTY, Integer.class)
       ;
-      PropertyDescriptor address = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.ADDRESS_PROPERTY, String.class)
+      PropertyDescriptor billingAddress = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.BILLING_ADDRESS_PROPERTY, String.class)
       ;
-      PropertyDescriptor city = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.CITY_PROPERTY, String.class)
+      PropertyDescriptor contactEmail = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.CONTACT_EMAIL_PROPERTY, String.class)
       ;
-      PropertyDescriptor country = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.COUNTRY_PROPERTY, String.class)
-      ;
-      PropertyDescriptor taxId = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.TAX_ID_PROPERTY, String.class)
+      PropertyDescriptor contactPhone = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.CONTACT_PHONE_PROPERTY, String.class)
       ;
       PropertyDescriptor customerType = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.CUSTOMER_TYPE_PROPERTY, String.class)
+      ;
+      PropertyDescriptor createdAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.CREATED_AT_PROPERTY, LocalDateTime.class)
+      ;
+      PropertyDescriptor updatedAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.UPDATED_AT_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.VERSION_PROPERTY, Long.class)
@@ -4516,7 +4602,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "2001,2002")
+      .with("candidates", "id()")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -4533,7 +4619,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Acme Corp,Global Tech")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4545,11 +4631,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.CONTACT_PERSON_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.REGISTRATION_NUMBER_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Bob Brown,Alice White")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4561,11 +4647,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.PHONE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.INDUSTRY_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "13800138003,13800138004")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4577,11 +4663,29 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.EMAIL_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.EMPLOYEE_COUNT_PROPERTY).with("isPassword", "false")
+      .with("db2_sqlType", "decimal(19,7)")
+      .with("isVersion", "false")
+      .with("oracle_sqlType", "number(19,7)")
+      .with("javaType", "java.lang.Integer")
+      .with("candidates", "100")
+      .with("sqlType", "INTEGER")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "true")
+      .with("isInt", "true")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("graphqlType", "Int")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.BILLING_ADDRESS_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "info@acme.com,contact@globaltech.com")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4593,11 +4697,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.ADDRESS_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.CONTACT_EMAIL_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "789 Business Park,321 Tech Blvd")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4609,43 +4713,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.CITY_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.CONTACT_PHONE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Chicago,Berlin")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.COUNTRY_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "USA,Germany")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.TAX_ID_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "US123456,DE987654")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4671,6 +4743,43 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isDate", "false")
       .with("graphqlType", "String")
       .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.CREATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "createTime()")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.UPDATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("updateFunction", "now")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "updateTime()")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
       .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.VERSION_PROPERTY).with("isPassword", "false")
@@ -4703,23 +4812,32 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor name = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.NAME_PROPERTY, String.class)
+      PropertyDescriptor firstName = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.FIRST_NAME_PROPERTY, String.class)
       ;
-      PropertyDescriptor phone = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.PHONE_PROPERTY, String.class)
+      PropertyDescriptor lastName = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.LAST_NAME_PROPERTY, String.class)
       ;
       PropertyDescriptor email = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.EMAIL_PROPERTY, String.class)
       ;
-      PropertyDescriptor relationship = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.RELATIONSHIP_PROPERTY, String.class)
+      PropertyDescriptor phone = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.PHONE_PROPERTY, String.class)
+      ;
+      PropertyDescriptor isPrimary = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.IS_PRIMARY_PROPERTY, Boolean.class)
       ;
       PropertyDescriptor privateCustomer = 
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.PRIVATE_CUSTOMER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.CUSTOMER_CONTACT_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.class)
       ;
       PropertyDescriptor corporateCustomer = 
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.CORPORATE_CUSTOMER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.CUSTOMER_CONTACT_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.class)
+      ;
+      PropertyDescriptor createdAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.CREATED_AT_PROPERTY, LocalDateTime.class)
+      ;
+      PropertyDescriptor updatedAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.UPDATED_AT_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.VERSION_PROPERTY, Long.class)
@@ -4728,7 +4846,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "3001,3002")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -4741,11 +4858,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.NAME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.FIRST_NAME_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "John Smith Jr,Acme Assistant")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4757,11 +4873,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.PHONE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.LAST_NAME_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "13800138005,13800138006")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4777,7 +4892,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "johnjr@example.com,assistant@acme.com")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4789,11 +4903,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.RELATIONSHIP_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.PHONE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Son,Admin")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4805,9 +4918,58 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.PRIVATE_CUSTOMER_PROPERTY).with("candidates", "");
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.IS_PRIMARY_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("oracle_sqlType", "number(1)")
+      .with("javaType", "java.lang.Boolean")
+      .with("sqlType", "BOOLEAN")
+      .with("isId", "false")
+      .with("isBool", "true")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "bit")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("graphqlType", "Boolean")
+      .with("isTime", "false")
+      .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.CORPORATE_CUSTOMER_PROPERTY).with("candidates", "");
+
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.CREATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.UPDATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("updateFunction", "now")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customercontact.CustomerContact.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
@@ -4842,26 +5004,29 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor quoteNumber = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.QUOTE_NUMBER_PROPERTY, String.class)
       ;
-      PropertyDescriptor description = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.DESCRIPTION_PROPERTY, String.class)
-      ;
       PropertyDescriptor estimatedCost = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.ESTIMATED_COST_PROPERTY, BigDecimal.class)
       ;
       PropertyDescriptor currency = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.CURRENCY_PROPERTY, String.class)
       ;
-      PropertyDescriptor status = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.STATUS_PROPERTY, String.class)
-      ;
       PropertyDescriptor validUntil = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.VALID_UNTIL_PROPERTY, LocalDate.class)
+      ;
+      PropertyDescriptor status = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.STATUS_PROPERTY, String.class)
       ;
       PropertyDescriptor privateCustomer = 
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.PRIVATE_CUSTOMER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.SERVICE_QUOTE_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.class)
       ;
       PropertyDescriptor corporateCustomer = 
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.CORPORATE_CUSTOMER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.SERVICE_QUOTE_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.class)
+      ;
+      PropertyDescriptor createdAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.CREATED_AT_PROPERTY, LocalDateTime.class)
+      ;
+      PropertyDescriptor updatedAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.UPDATED_AT_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.VERSION_PROPERTY, Long.class)
@@ -4870,7 +5035,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "4001,4002")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -4887,23 +5051,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Q-2023-001,Q-2023-002")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.DESCRIPTION_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "Local Move,International Shipment")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4920,7 +5067,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "1500.00,12000.00")
       .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4936,23 +5082,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "USD,USD")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.STATUS_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "accepted,pending")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4967,7 +5096,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.VALID_UNTIL_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2023-12-31,2024-06-30")
       .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
@@ -4979,9 +5107,57 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.PRIVATE_CUSTOMER_PROPERTY).with("candidates", "");
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.STATUS_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.CORPORATE_CUSTOMER_PROPERTY).with("candidates", "");
+
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.CREATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.UPDATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("updateFunction", "now")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicequote.ServiceQuote.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
@@ -5016,17 +5192,20 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor rating = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.RATING_PROPERTY, Integer.class)
       ;
+      PropertyDescriptor title = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.TITLE_PROPERTY, String.class)
+      ;
       PropertyDescriptor comment = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.COMMENT_PROPERTY, String.class)
       ;
-      PropertyDescriptor reviewDate = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.REVIEW_DATE_PROPERTY, LocalDate.class)
+      PropertyDescriptor movingOrder = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.MOVING_ORDER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.FEEDBACK_REVIEW_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.class)
       ;
-      PropertyDescriptor privateCustomer = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.PRIVATE_CUSTOMER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.FEEDBACK_REVIEW_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.class)
+      PropertyDescriptor createdAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.CREATED_AT_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor corporateCustomer = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.CORPORATE_CUSTOMER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.FEEDBACK_REVIEW_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.class)
+      PropertyDescriptor updatedAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.UPDATED_AT_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.VERSION_PROPERTY, Long.class)
@@ -5035,7 +5214,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "5001,5002")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -5053,7 +5231,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.lang.Integer")
-      .with("candidates", "5,4")
       .with("sqlType", "INTEGER")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5066,11 +5243,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.COMMENT_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.TITLE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Excellent service!,Good,but slightly delayed.")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5082,24 +5258,56 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.REVIEW_DATE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.COMMENT_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
       .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2023-10-01,2023-10-15")
-      .with("sqlType", "DATE")
+      .with("javaType", "java.lang.String")
+      .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
       .with("isNumber", "false")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "Date")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.PRIVATE_CUSTOMER_PROPERTY).with("candidates", "");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.CORPORATE_CUSTOMER_PROPERTY).with("candidates", "");
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.CREATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.UPDATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("updateFunction", "now")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
@@ -5140,8 +5348,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor privateCustomer = 
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyalty.PRIVATE_CUSTOMER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.CUSTOMER_LOYALTY_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.class)
       ;
-      PropertyDescriptor corporateCustomer = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.CUSTOMER_LOYALTY_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.class)
+      PropertyDescriptor createdAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyalty.CREATED_AT_PROPERTY, LocalDateTime.class)
+      ;
+      PropertyDescriptor updatedAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyalty.UPDATED_AT_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyalty.VERSION_PROPERTY, Long.class)
@@ -5150,7 +5361,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "6001,6002")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -5168,7 +5378,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.lang.Integer")
-      .with("candidates", "1500,500")
       .with("sqlType", "INTEGER")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5185,7 +5394,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "platinum,silver")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5197,9 +5405,41 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyalty.PRIVATE_CUSTOMER_PROPERTY).with("candidates", "");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY).with("candidates", "");
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyalty.CREATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyalty.UPDATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("updateFunction", "now")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customerloyalty.CustomerLoyalty.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
@@ -5234,6 +5474,9 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor name = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.NAME_PROPERTY, String.class)
       ;
+      PropertyDescriptor description = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.DESCRIPTION_PROPERTY, String.class)
+      ;
       PropertyDescriptor startDate = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.START_DATE_PROPERTY, LocalDate.class)
       ;
@@ -5246,14 +5489,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor status = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.STATUS_PROPERTY, String.class)
       ;
-      PropertyDescriptor description = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.DESCRIPTION_PROPERTY, String.class)
-      ;
       PropertyDescriptor createdTime = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.CREATED_TIME_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor updateTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.UPDATE_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor updatedTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.UPDATED_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.VERSION_PROPERTY, Long.class)
@@ -5278,7 +5518,23 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Summer Move Sale")
+      .with("candidates", "string()")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.DESCRIPTION_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5293,7 +5549,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.START_DATE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2023-06-01")
+      .with("candidates", "2023-01-01")
       .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5308,7 +5564,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.END_DATE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2023-08-31")
+      .with("candidates", "2023-12-31")
       .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5341,23 +5597,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "active")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.DESCRIPTION_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "Discounts for summer relocations")
+      .with("candidates", "ACTIVE")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5387,7 +5627,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.UPDATE_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.UPDATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
@@ -5439,17 +5679,29 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor code = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.CODE_PROPERTY, String.class)
       ;
+      PropertyDescriptor description = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.DESCRIPTION_PROPERTY, String.class)
+      ;
       PropertyDescriptor discountPercentage = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.DISCOUNT_PERCENTAGE_PROPERTY, BigDecimal.class)
       ;
-      PropertyDescriptor maxUses = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.MAX_USES_PROPERTY, Integer.class)
+      PropertyDescriptor minOrderAmount = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY, BigDecimal.class)
       ;
-      PropertyDescriptor currentUses = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.CURRENT_USES_PROPERTY, Integer.class)
+      PropertyDescriptor maxDiscountAmount = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY, BigDecimal.class)
       ;
-      PropertyDescriptor expiryDate = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.EXPIRY_DATE_PROPERTY, LocalDate.class)
+      PropertyDescriptor usageLimit = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.USAGE_LIMIT_PROPERTY, Integer.class)
+      ;
+      PropertyDescriptor usedCount = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.USED_COUNT_PROPERTY, Integer.class)
+      ;
+      PropertyDescriptor startDate = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.START_DATE_PROPERTY, LocalDate.class)
+      ;
+      PropertyDescriptor endDate = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.END_DATE_PROPERTY, LocalDate.class)
       ;
       PropertyDescriptor status = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.STATUS_PROPERTY, String.class)
@@ -5457,8 +5709,8 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor createdTime = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.CREATED_TIME_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor updateTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.UPDATE_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor updatedTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.UPDATED_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.VERSION_PROPERTY, Long.class)
@@ -5483,7 +5735,23 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "SUMMER2023")
+      .with("candidates", "string()")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.DESCRIPTION_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5500,7 +5768,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "15.00")
+      .with("candidates", "10.00")
       .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5512,12 +5780,46 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.MAX_USES_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY).with("isPassword", "false")
+      .with("db2_sqlType", "decimal(19,7)")
+      .with("isVersion", "false")
+      .with("oracle_sqlType", "number(19,7)")
+      .with("javaType", "java.math.BigDecimal")
+      .with("candidates", "100.00")
+      .with("sqlType", "NUMERIC(19,7)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "true")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("graphqlType", "BigDecimal")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY).with("isPassword", "false")
+      .with("db2_sqlType", "decimal(19,7)")
+      .with("isVersion", "false")
+      .with("oracle_sqlType", "number(19,7)")
+      .with("javaType", "java.math.BigDecimal")
+      .with("candidates", "50.00")
+      .with("sqlType", "NUMERIC(19,7)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "true")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("graphqlType", "BigDecimal")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.USAGE_LIMIT_PROPERTY).with("isPassword", "false")
       .with("db2_sqlType", "decimal(19,7)")
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.lang.Integer")
-      .with("candidates", "1000")
+      .with("candidates", "100")
       .with("sqlType", "INTEGER")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5530,12 +5832,12 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.CURRENT_USES_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.USED_COUNT_PROPERTY).with("isPassword", "false")
       .with("db2_sqlType", "decimal(19,7)")
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.lang.Integer")
-      .with("candidates", "450")
+      .with("candidates", "0")
       .with("sqlType", "INTEGER")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5548,10 +5850,25 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.EXPIRY_DATE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.START_DATE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2023-08-31")
+      .with("candidates", "2023-01-01")
+      .with("sqlType", "DATE")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "Date")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.END_DATE_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDate")
+      .with("candidates", "2023-12-31")
       .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5567,7 +5884,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "active")
+      .with("candidates", "ACTIVE")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5597,7 +5914,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.UPDATE_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.discountcoupon.DiscountCoupon.UPDATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
@@ -5649,11 +5966,14 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor name = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.NAME_PROPERTY, String.class)
       ;
+      PropertyDescriptor company = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.COMPANY_PROPERTY, String.class)
+      ;
       PropertyDescriptor email = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.EMAIL_PROPERTY, String.class)
       ;
       PropertyDescriptor phone = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.PHONE_PROPERTY, Integer.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.PHONE_PROPERTY, String.class)
       ;
       PropertyDescriptor source = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.SOURCE_PROPERTY, String.class)
@@ -5661,14 +5981,14 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor status = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.STATUS_PROPERTY, String.class)
       ;
-      PropertyDescriptor estimatedValue = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.ESTIMATED_VALUE_PROPERTY, BigDecimal.class)
+      PropertyDescriptor assignedTo = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.ASSIGNED_TO_PROPERTY, com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember.SALES_LEAD_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember.class)
       ;
       PropertyDescriptor createdTime = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.CREATED_TIME_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor updateTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.UPDATE_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor updatedTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.UPDATED_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.VERSION_PROPERTY, Long.class)
@@ -5693,7 +6013,21 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "John Doe Inquiry")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.COMPANY_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5709,7 +6043,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "john.doe@example.com")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5722,20 +6055,17 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.PHONE_PROPERTY).with("isPassword", "false")
-      .with("db2_sqlType", "decimal(19,7)")
+      .with("max", "100")
       .with("isVersion", "false")
-      .with("oracle_sqlType", "number(19,7)")
-      .with("javaType", "java.lang.Integer")
-      .with("candidates", "13800138000")
-      .with("sqlType", "INTEGER")
+      .with("javaType", "java.lang.String")
+      .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
-      .with("isNumber", "true")
-      .with("isInt", "true")
-      .with("isString", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
       .with("isDate", "false")
-      .with("graphqlType", "Int")
+      .with("graphqlType", "String")
       .with("isTime", "false")
       .with("isText", "false");
 
@@ -5743,7 +6073,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "website")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5759,7 +6088,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "new")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5771,27 +6099,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.ESTIMATED_VALUE_PROPERTY).with("isPassword", "false")
-      .with("db2_sqlType", "decimal(19,7)")
-      .with("isVersion", "false")
-      .with("oracle_sqlType", "number(19,7)")
-      .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "5000.00")
-      .with("sqlType", "NUMERIC(19,7)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "true")
-      .with("isString", "false")
-      .with("isDate", "false")
-      .with("graphqlType", "BigDecimal")
-      .with("isTime", "false")
-      .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.CREATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "createTime()")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5806,11 +6117,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.UPDATE_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead.UPDATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "updateTime()")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5858,20 +6168,20 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor name = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.NAME_PROPERTY, String.class)
       ;
+      PropertyDescriptor description = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.DESCRIPTION_PROPERTY, String.class)
+      ;
       PropertyDescriptor channelType = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.CHANNEL_TYPE_PROPERTY, String.class)
       ;
-      PropertyDescriptor url = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.URL_PROPERTY, String.class)
-      ;
-      PropertyDescriptor status = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.STATUS_PROPERTY, String.class)
+      PropertyDescriptor isActive = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.IS_ACTIVE_PROPERTY, Boolean.class)
       ;
       PropertyDescriptor createdTime = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.CREATED_TIME_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor updateTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.UPDATE_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor updatedTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.UPDATED_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.VERSION_PROPERTY, Long.class)
@@ -5896,7 +6206,23 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Online Portal")
+      .with("candidates", "string()")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.DESCRIPTION_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5912,7 +6238,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "digital")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -5924,36 +6250,20 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.URL_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.IS_ACTIVE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "//logistics.example.com")
-      .with("sqlType", "VARCHAR(<max>)")
+      .with("oracle_sqlType", "number(1)")
+      .with("javaType", "java.lang.Boolean")
+      .with("candidates", "true")
+      .with("sqlType", "BOOLEAN")
       .with("isId", "false")
-      .with("isBool", "false")
+      .with("isBool", "true")
       .with("isBaseEntityField", "false")
       .with("isNumber", "false")
-      .with("isString", "true")
+      .with("mssql_sqlType", "bit")
+      .with("isString", "false")
       .with("isDate", "false")
-      .with("zh_CN", "https")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.STATUS_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "active")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
+      .with("graphqlType", "Boolean")
       .with("isTime", "false")
       .with("isText", "false");
 
@@ -5975,7 +6285,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.UPDATE_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.UPDATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
@@ -6027,11 +6337,14 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor campaign = 
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.CAMPAIGN_PROPERTY, com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.MARKETING_ROI_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign.class)
       ;
-      PropertyDescriptor totalSpend = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.TOTAL_SPEND_PROPERTY, BigDecimal.class)
+      PropertyDescriptor channel = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.CHANNEL_PROPERTY, com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.MARKETING_ROI_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel.class)
       ;
-      PropertyDescriptor totalRevenue = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.TOTAL_REVENUE_PROPERTY, BigDecimal.class)
+      PropertyDescriptor spend = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.SPEND_PROPERTY, BigDecimal.class)
+      ;
+      PropertyDescriptor revenue = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.REVENUE_PROPERTY, BigDecimal.class)
       ;
       PropertyDescriptor roiPercentage = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.ROI_PERCENTAGE_PROPERTY, BigDecimal.class)
@@ -6042,8 +6355,8 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor createdTime = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.CREATED_TIME_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor updateTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.UPDATE_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor updatedTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.UPDATED_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.VERSION_PROPERTY, Long.class)
@@ -6065,7 +6378,8 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isText", "false");
 
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.TOTAL_SPEND_PROPERTY).with("isPassword", "false")
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.SPEND_PROPERTY).with("isPassword", "false")
       .with("db2_sqlType", "decimal(19,7)")
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
@@ -6081,7 +6395,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.TOTAL_REVENUE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.REVENUE_PROPERTY).with("isPassword", "false")
       .with("db2_sqlType", "decimal(19,7)")
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
@@ -6144,7 +6458,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.UPDATE_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.marketingroi.MarketingRoi.UPDATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
@@ -6187,8 +6501,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.setEntitySupplier(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice::new);
       entityDescriptor.with("name", "Invoice")
       .with("module", "Finance")
-      .with("module_key", "finance")
-      .with("audit_mask_fields", "id");
+      .with("module_key", "finance");
 
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.ID_PROPERTY, Long.class)
@@ -6208,17 +6521,17 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor status = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.STATUS_PROPERTY, String.class)
       ;
-      PropertyDescriptor createdAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.CREATED_AT_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor issueDate = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.ISSUE_DATE_PROPERTY, LocalDate.class)
       ;
-      PropertyDescriptor updatedAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.UPDATED_AT_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor dueDate = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.DUE_DATE_PROPERTY, LocalDate.class)
       ;
       PropertyDescriptor movingOrder = 
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.MOVING_ORDER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.INVOICE_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.class)
       ;
       PropertyDescriptor customer = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.CUSTOMER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.INVOICE_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer.class)
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.CUSTOMER_PROPERTY, String.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.VERSION_PROPERTY, Long.class)
@@ -6227,7 +6540,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "1001,1002")
+      .with("candidates", "1,2,3,4")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -6244,7 +6557,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Outstanding Invoice,Paid Invoice")
+      .with("candidates", "Draft,Issued,Paid,Overdue")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6260,7 +6573,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "INV-2023-001,INV-2023-002")
+      .with("candidates", "DRAFT,ISSUED,PAID,OVERDUE")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6277,7 +6590,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "1500.00,2500.00")
       .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6293,7 +6605,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "USD,EUR")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6309,7 +6620,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "OUTSTANDING,PAID")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6321,46 +6631,49 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.CREATED_AT_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.ISSUE_DATE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "")
-      .with("sqlType", "TIMESTAMP")
+      .with("javaType", "java.time.LocalDate")
+      .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
       .with("isNumber", "false")
-      .with("mssql_sqlType", "dateTime")
-      .with("isDateTime", "true")
-      .with("createFunction", "now")
       .with("isDate", "true")
       .with("isString", "false")
-      .with("graphqlType", "LocalTime")
-      .with("isTime", "true")
+      .with("graphqlType", "Date")
+      .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.UPDATED_AT_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.DUE_DATE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
-      .with("updateFunction", "now")
-      .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "")
-      .with("sqlType", "TIMESTAMP")
+      .with("javaType", "java.time.LocalDate")
+      .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
       .with("isNumber", "false")
-      .with("mssql_sqlType", "dateTime")
-      .with("isDateTime", "true")
-      .with("createFunction", "now")
       .with("isDate", "true")
       .with("isString", "false")
-      .with("graphqlType", "LocalTime")
-      .with("isTime", "true")
+      .with("graphqlType", "Date")
+      .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.MOVING_ORDER_PROPERTY).with("candidates", "");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.CUSTOMER_PROPERTY).with("candidates", "corporate_customer()");
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.CUSTOMER_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
@@ -6387,8 +6700,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.setEntitySupplier(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord::new);
       entityDescriptor.with("name", "Payment Record")
       .with("module", "Finance")
-      .with("module_key", "finance")
-      .with("audit_mask_fields", "id");
+      .with("module_key", "finance");
 
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.ID_PROPERTY, Long.class)
@@ -6396,8 +6708,8 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor name = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.NAME_PROPERTY, String.class)
       ;
-      PropertyDescriptor code = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.CODE_PROPERTY, String.class)
+      PropertyDescriptor referenceCode = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.REFERENCE_CODE_PROPERTY, String.class)
       ;
       PropertyDescriptor amount = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.AMOUNT_PROPERTY, BigDecimal.class)
@@ -6405,14 +6717,14 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor currency = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.CURRENCY_PROPERTY, String.class)
       ;
+      PropertyDescriptor paymentMethod = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.PAYMENT_METHOD_PROPERTY, String.class)
+      ;
+      PropertyDescriptor paymentDate = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.PAYMENT_DATE_PROPERTY, LocalDate.class)
+      ;
       PropertyDescriptor status = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.STATUS_PROPERTY, String.class)
-      ;
-      PropertyDescriptor createdAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.CREATED_AT_PROPERTY, LocalDateTime.class)
-      ;
-      PropertyDescriptor updatedAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.UPDATED_AT_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor invoice = 
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.INVOICE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.PAYMENT_RECORD_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.class)
@@ -6424,7 +6736,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "2001,2002")
+      .with("candidates", "1,2,3")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -6441,7 +6753,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Wire Transfer,Credit Card")
+      .with("candidates", "Pending,Completed,Failed")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6453,11 +6765,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.CODE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.REFERENCE_CODE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "PAY-2023-001,PAY-2023-002")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6474,7 +6785,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "1500.00,2500.00")
       .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6490,7 +6800,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "USD,EUR")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6499,6 +6808,35 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isString", "true")
       .with("isDate", "false")
       .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.PAYMENT_METHOD_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.PAYMENT_DATE_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDate")
+      .with("sqlType", "DATE")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "Date")
       .with("isTime", "false")
       .with("isText", "false");
 
@@ -6506,7 +6844,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "COMPLETED,PENDING")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6518,44 +6855,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.CREATED_AT_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "")
-      .with("sqlType", "TIMESTAMP")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("mssql_sqlType", "dateTime")
-      .with("isDateTime", "true")
-      .with("createFunction", "now")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "LocalTime")
-      .with("isTime", "true")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.UPDATED_AT_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("updateFunction", "now")
-      .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "")
-      .with("sqlType", "TIMESTAMP")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("mssql_sqlType", "dateTime")
-      .with("isDateTime", "true")
-      .with("createFunction", "now")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "LocalTime")
-      .with("isTime", "true")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.INVOICE_PROPERTY).with("candidates", "");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.paymentrecord.PaymentRecord.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
@@ -6582,8 +6881,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.setEntitySupplier(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem::new);
       entityDescriptor.with("name", "Expense Item")
       .with("module", "Finance")
-      .with("module_key", "finance")
-      .with("audit_mask_fields", "id");
+      .with("module_key", "finance");
 
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.ID_PROPERTY, Long.class)
@@ -6591,8 +6889,8 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor name = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.NAME_PROPERTY, String.class)
       ;
-      PropertyDescriptor code = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.CODE_PROPERTY, String.class)
+      PropertyDescriptor description = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.DESCRIPTION_PROPERTY, String.class)
       ;
       PropertyDescriptor amount = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.AMOUNT_PROPERTY, BigDecimal.class)
@@ -6600,17 +6898,17 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor currency = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.CURRENCY_PROPERTY, String.class)
       ;
-      PropertyDescriptor category = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.CATEGORY_PROPERTY, String.class)
+      PropertyDescriptor expenseType = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.EXPENSE_TYPE_PROPERTY, String.class)
       ;
-      PropertyDescriptor createdAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.CREATED_AT_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor expenseDate = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.EXPENSE_DATE_PROPERTY, LocalDate.class)
       ;
-      PropertyDescriptor updatedAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.UPDATED_AT_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor employee = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.EMPLOYEE_PROPERTY, String.class)
       ;
-      PropertyDescriptor staffMember = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.STAFF_MEMBER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember.EXPENSE_ITEM_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember.class)
+      PropertyDescriptor status = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.STATUS_PROPERTY, String.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.VERSION_PROPERTY, Long.class)
@@ -6619,7 +6917,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "3001,3002")
+      .with("candidates", "1,2,3,4")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -6636,7 +6934,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Fuel Expense,Toll Fee")
+      .with("candidates", "Travel,Fuel,Maintenance,Office Supplies")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6648,11 +6946,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.CODE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.DESCRIPTION_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "EXP-2023-001,EXP-2023-002")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6669,7 +6967,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "150.00,50.00")
+      .with("candidates", "150.00")
       .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6685,7 +6983,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "USD,USD")
+      .with("candidates", "USD")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6697,11 +6995,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.CATEGORY_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.EXPENSE_TYPE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "FUEL,TOLL")
+      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6713,44 +7011,52 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.CREATED_AT_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.EXPENSE_DATE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "")
-      .with("sqlType", "TIMESTAMP")
+      .with("javaType", "java.time.LocalDate")
+      .with("candidates", "2023-10-05")
+      .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
       .with("isNumber", "false")
-      .with("mssql_sqlType", "dateTime")
-      .with("isDateTime", "true")
-      .with("createFunction", "now")
       .with("isDate", "true")
       .with("isString", "false")
-      .with("graphqlType", "LocalTime")
-      .with("isTime", "true")
+      .with("graphqlType", "Date")
+      .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.UPDATED_AT_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.EMPLOYEE_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
       .with("isVersion", "false")
-      .with("updateFunction", "now")
-      .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "")
-      .with("sqlType", "TIMESTAMP")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "employee()")
+      .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
       .with("isNumber", "false")
-      .with("mssql_sqlType", "dateTime")
-      .with("isDateTime", "true")
-      .with("createFunction", "now")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "LocalTime")
-      .with("isTime", "true")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.STAFF_MEMBER_PROPERTY).with("candidates", "");
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.STATUS_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "status()")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
@@ -6777,8 +7083,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.setEntitySupplier(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord::new);
       entityDescriptor.with("name", "Tax Record")
       .with("module", "Finance")
-      .with("module_key", "finance")
-      .with("audit_mask_fields", "id");
+      .with("module_key", "finance");
 
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.ID_PROPERTY, Long.class)
@@ -6786,11 +7091,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor name = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.NAME_PROPERTY, String.class)
       ;
-      PropertyDescriptor code = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.CODE_PROPERTY, String.class)
+      PropertyDescriptor taxCode = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.TAX_CODE_PROPERTY, String.class)
       ;
-      PropertyDescriptor amount = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.AMOUNT_PROPERTY, BigDecimal.class)
+      PropertyDescriptor taxAmount = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.TAX_AMOUNT_PROPERTY, BigDecimal.class)
       ;
       PropertyDescriptor currency = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.CURRENCY_PROPERTY, String.class)
@@ -6798,14 +7103,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor taxRate = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.TAX_RATE_PROPERTY, BigDecimal.class)
       ;
-      PropertyDescriptor taxType = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.TAX_TYPE_PROPERTY, String.class)
+      PropertyDescriptor taxPeriod = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.TAX_PERIOD_PROPERTY, String.class)
       ;
-      PropertyDescriptor createdAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.CREATED_AT_PROPERTY, LocalDateTime.class)
-      ;
-      PropertyDescriptor updatedAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.UPDATED_AT_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor filingStatus = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.FILING_STATUS_PROPERTY, String.class)
       ;
       PropertyDescriptor invoice = 
       entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.INVOICE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.TAX_RECORD_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.invoice.Invoice.class)
@@ -6817,7 +7119,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "4001,4002")
+      .with("candidates", "1,2,3")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -6834,7 +7136,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "VAT Record,Sales Tax")
+      .with("candidates", "VAT,Income Tax,Sales Tax")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6846,11 +7148,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.CODE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.TAX_CODE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "TAX-2023-001,TAX-2023-002")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6862,12 +7163,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.AMOUNT_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.TAX_AMOUNT_PROPERTY).with("isPassword", "false")
       .with("db2_sqlType", "decimal(19,7)")
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "150.00,50.00")
       .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6883,7 +7183,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "USD,USD")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6900,7 +7199,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "10.00,5.00")
       .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6912,11 +7210,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.TAX_TYPE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.TAX_PERIOD_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "VAT,SALES")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -6928,254 +7225,23 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.CREATED_AT_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.FILING_STATUS_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
       .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "")
-      .with("sqlType", "TIMESTAMP")
+      .with("javaType", "java.lang.String")
+      .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
       .with("isBaseEntityField", "false")
       .with("isNumber", "false")
-      .with("mssql_sqlType", "dateTime")
-      .with("isDateTime", "true")
-      .with("createFunction", "now")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "LocalTime")
-      .with("isTime", "true")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.UPDATED_AT_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("updateFunction", "now")
-      .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "")
-      .with("sqlType", "TIMESTAMP")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("mssql_sqlType", "dateTime")
-      .with("isDateTime", "true")
-      .with("createFunction", "now")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "LocalTime")
-      .with("isTime", "true")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.INVOICE_PROPERTY).with("candidates", "");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.taxrecord.TaxRecord.VERSION_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "true")
-      .with("oracle_sqlType", "number(11)")
-      .with("javaType", "java.lang.Long")
-      .with("sqlType", "BIGINT")
-      .with("isId", "false")
-      .with("isBaseEntityField", "true")
-      .with("isBool", "false")
-      .with("isNumber", "false")
-      .with("isString", "false")
-      .with("isDate", "false")
-      .with("snowflake_sqlType", "number")
-      .with("graphqlType", "Long")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      $factory.register(entityDescriptor);
-  }
-  private void registerFinancialReport() {
-      EntityDescriptor entityDescriptor = new EntityDescriptor();
-      entityDescriptor.setType(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.INTERNAL_TYPE);
-      entityDescriptor.setTargetType(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.class);
-      entityDescriptor.setEntitySupplier(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport::new);
-      entityDescriptor.with("name", "Financial Report")
-      .with("module", "Finance")
-      .with("module_key", "finance")
-      .with("audit_mask_fields", "id");
-
-      PropertyDescriptor id = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.ID_PROPERTY, Long.class)
-      ;
-      PropertyDescriptor name = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.NAME_PROPERTY, String.class)
-      ;
-      PropertyDescriptor code = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.CODE_PROPERTY, String.class)
-      ;
-      PropertyDescriptor totalRevenue = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.TOTAL_REVENUE_PROPERTY, BigDecimal.class)
-      ;
-      PropertyDescriptor totalExpenses = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.TOTAL_EXPENSES_PROPERTY, BigDecimal.class)
-      ;
-      PropertyDescriptor periodStart = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.PERIOD_START_PROPERTY, LocalDate.class)
-      ;
-      PropertyDescriptor periodEnd = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.PERIOD_END_PROPERTY, LocalDate.class)
-      ;
-      PropertyDescriptor createdAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.CREATED_AT_PROPERTY, LocalDateTime.class)
-      ;
-      PropertyDescriptor updatedAt = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.UPDATED_AT_PROPERTY, LocalDateTime.class)
-      ;
-      PropertyDescriptor version = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.VERSION_PROPERTY, Long.class)
-      ;
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.ID_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("oracle_sqlType", "number(11)")
-      .with("javaType", "java.lang.Long")
-      .with("candidates", "id()")
-      .with("sqlType", "BIGINT")
-      .with("isId", "true")
-      .with("isBaseEntityField", "true")
-      .with("isBool", "false")
-      .with("isNumber", "false")
-      .with("isString", "false")
-      .with("isDate", "false")
-      .with("snowflake_sqlType", "number")
-      .with("graphqlType", "Long")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.NAME_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.CODE_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.TOTAL_REVENUE_PROPERTY).with("isPassword", "false")
-      .with("db2_sqlType", "decimal(19,7)")
-      .with("isVersion", "false")
-      .with("oracle_sqlType", "number(19,7)")
-      .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "50000.00")
-      .with("sqlType", "NUMERIC(19,7)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "true")
-      .with("isString", "false")
-      .with("isDate", "false")
-      .with("graphqlType", "BigDecimal")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.TOTAL_EXPENSES_PROPERTY).with("isPassword", "false")
-      .with("db2_sqlType", "decimal(19,7)")
-      .with("isVersion", "false")
-      .with("oracle_sqlType", "number(19,7)")
-      .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "30000.00")
-      .with("sqlType", "NUMERIC(19,7)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "true")
-      .with("isString", "false")
-      .with("isDate", "false")
-      .with("graphqlType", "BigDecimal")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.PERIOD_START_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2023-01-01")
-      .with("sqlType", "DATE")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "Date")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.PERIOD_END_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2023-01-31")
-      .with("sqlType", "DATE")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "Date")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.CREATED_AT_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "createTime()")
-      .with("sqlType", "TIMESTAMP")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("mssql_sqlType", "dateTime")
-      .with("isDateTime", "true")
-      .with("createFunction", "now")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "LocalTime")
-      .with("isTime", "true")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.UPDATED_AT_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("updateFunction", "now")
-      .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "updateTime()")
-      .with("sqlType", "TIMESTAMP")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("mssql_sqlType", "dateTime")
-      .with("isDateTime", "true")
-      .with("createFunction", "now")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "LocalTime")
-      .with("isTime", "true")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.financialreport.FinancialReport.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
@@ -7223,11 +7289,17 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor totalValue = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract.TOTAL_VALUE_PROPERTY, BigDecimal.class)
       ;
+      PropertyDescriptor currency = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract.CURRENCY_PROPERTY, String.class)
+      ;
+      PropertyDescriptor corporateCustomer = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract.CORPORATE_CUSTOMER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.SERVICE_CONTRACT_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer.class)
+      ;
       PropertyDescriptor createdTime = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract.CREATED_TIME_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor updatedTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract.UPDATED_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor updateTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract.UPDATE_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract.VERSION_PROPERTY, Long.class)
@@ -7252,7 +7324,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7268,7 +7339,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7283,7 +7353,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract.START_DATE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2023-01-01")
       .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7298,7 +7367,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract.END_DATE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2024-01-01")
       .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7314,7 +7382,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7331,7 +7398,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "10000.00")
       .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7343,10 +7409,25 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract.CURRENCY_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract.CREATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "createTime()")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7361,11 +7442,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract.UPDATED_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.servicecontract.ServiceContract.UPDATE_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "updateTime()")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7434,8 +7514,8 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor createdTime = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.insurancepolicy.InsurancePolicy.CREATED_TIME_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor updatedTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.insurancepolicy.InsurancePolicy.UPDATED_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor updateTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.insurancepolicy.InsurancePolicy.UPDATE_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.insurancepolicy.InsurancePolicy.VERSION_PROPERTY, Long.class)
@@ -7556,7 +7636,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
+      .with("candidates", "active")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7586,7 +7666,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.insurancepolicy.InsurancePolicy.UPDATED_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.insurancepolicy.InsurancePolicy.UPDATE_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
@@ -7638,23 +7718,29 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor claimNumber = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.CLAIM_NUMBER_PROPERTY, String.class)
       ;
+      PropertyDescriptor description = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.DESCRIPTION_PROPERTY, String.class)
+      ;
       PropertyDescriptor claimAmount = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.CLAIM_AMOUNT_PROPERTY, BigDecimal.class)
       ;
       PropertyDescriptor status = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.STATUS_PROPERTY, String.class)
       ;
-      PropertyDescriptor description = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.DESCRIPTION_PROPERTY, String.class)
-      ;
       PropertyDescriptor resolutionDate = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.RESOLUTION_DATE_PROPERTY, LocalDate.class)
+      ;
+      PropertyDescriptor movingOrder = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.MOVING_ORDER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.CLAIMS_RECORD_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.class)
+      ;
+      PropertyDescriptor insurancePolicy = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.INSURANCE_POLICY_PROPERTY, com.doublechaintech.enterpriselogisticsservice.insurancepolicy.InsurancePolicy.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.insurancepolicy.InsurancePolicy.CLAIMS_RECORD_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.insurancepolicy.InsurancePolicy.class)
       ;
       PropertyDescriptor createdTime = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.CREATED_TIME_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor updatedTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.UPDATED_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor updateTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.UPDATE_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.VERSION_PROPERTY, Long.class)
@@ -7679,7 +7765,21 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.DESCRIPTION_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7696,7 +7796,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "5000.00")
       .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7712,23 +7811,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.DESCRIPTION_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7743,7 +7825,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.RESOLUTION_DATE_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2023-06-15")
       .with("sqlType", "DATE")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7755,10 +7836,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
+
+
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.CREATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "createTime()")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7773,11 +7855,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.UPDATED_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord.UPDATE_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "updateTime()")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7825,26 +7906,26 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor declarationNumber = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.DECLARATION_NUMBER_PROPERTY, String.class)
       ;
-      PropertyDescriptor portOfEntry = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.PORT_OF_ENTRY_PROPERTY, String.class)
+      PropertyDescriptor originCountry = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.ORIGIN_COUNTRY_PROPERTY, String.class)
       ;
-      PropertyDescriptor countryOfOrigin = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.COUNTRY_OF_ORIGIN_PROPERTY, String.class)
+      PropertyDescriptor destinationCountry = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.DESTINATION_COUNTRY_PROPERTY, String.class)
       ;
-      PropertyDescriptor declaredValue = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.DECLARED_VALUE_PROPERTY, BigDecimal.class)
+      PropertyDescriptor totalValue = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.TOTAL_VALUE_PROPERTY, BigDecimal.class)
       ;
       PropertyDescriptor status = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.STATUS_PROPERTY, String.class)
       ;
-      PropertyDescriptor clearanceDate = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.CLEARANCE_DATE_PROPERTY, LocalDate.class)
+      PropertyDescriptor movingOrder = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.MOVING_ORDER_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.CUSTOMS_DECLARATION_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder.class)
       ;
       PropertyDescriptor createdTime = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.CREATED_TIME_PROPERTY, LocalDateTime.class)
       ;
-      PropertyDescriptor updatedTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.UPDATED_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor updateTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.UPDATE_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.VERSION_PROPERTY, Long.class)
@@ -7869,7 +7950,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7881,11 +7961,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.PORT_OF_ENTRY_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.ORIGIN_COUNTRY_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7897,11 +7976,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.COUNTRY_OF_ORIGIN_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.DESTINATION_COUNTRY_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7913,12 +7991,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.DECLARED_VALUE_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.TOTAL_VALUE_PROPERTY).with("isPassword", "false")
       .with("db2_sqlType", "decimal(19,7)")
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(19,7)")
       .with("javaType", "java.math.BigDecimal")
-      .with("candidates", "15000.00")
       .with("sqlType", "NUMERIC(19,7)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7934,7 +8011,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7946,25 +8022,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.CLEARANCE_DATE_PROPERTY).with("isPassword", "false")
-      .with("isVersion", "false")
-      .with("javaType", "java.time.LocalDate")
-      .with("candidates", "2023-05-20")
-      .with("sqlType", "DATE")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isDate", "true")
-      .with("isString", "false")
-      .with("graphqlType", "Date")
-      .with("isTime", "false")
-      .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.CREATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "createTime()")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
@@ -7979,11 +8040,10 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.UPDATED_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration.UPDATE_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "updateTime()")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8037,17 +8097,17 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor entityId = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog.ENTITY_ID_PROPERTY, String.class)
       ;
-      PropertyDescriptor userId = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog.USER_ID_PROPERTY, String.class)
+      PropertyDescriptor userAccount = 
+      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog.USER_ACCOUNT_PROPERTY, com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.AUDIT_LOG_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.class)
       ;
       PropertyDescriptor ipAddress = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog.IP_ADDRESS_PROPERTY, String.class)
       ;
-      PropertyDescriptor details = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog.DETAILS_PROPERTY, String.class)
-      ;
       PropertyDescriptor createdTime = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog.CREATED_TIME_PROPERTY, LocalDateTime.class)
+      ;
+      PropertyDescriptor updateTime = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog.UPDATE_TIME_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog.VERSION_PROPERTY, Long.class)
@@ -8072,7 +8132,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8088,7 +8147,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8104,7 +8162,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8116,43 +8173,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog.USER_ID_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog.IP_ADDRESS_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog.DETAILS_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "string()")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8167,7 +8192,24 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog.CREATED_TIME_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDateTime")
-      .with("candidates", "createTime()")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog.UPDATE_TIME_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("updateFunction", "now")
+      .with("javaType", "java.time.LocalDateTime")
       .with("sqlType", "TIMESTAMP")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8213,8 +8255,8 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor name = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.NAME_PROPERTY, String.class)
+      PropertyDescriptor username = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.USERNAME_PROPERTY, String.class)
       ;
       PropertyDescriptor email = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.EMAIL_PROPERTY, String.class)
@@ -8222,17 +8264,17 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor phone = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.PHONE_PROPERTY, String.class)
       ;
-      PropertyDescriptor passwordHash = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.PASSWORD_HASH_PROPERTY, String.class)
-      ;
       PropertyDescriptor status = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.STATUS_PROPERTY, String.class)
       ;
-      PropertyDescriptor createTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.CREATE_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor passwordHash = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.PASSWORD_HASH_PROPERTY, String.class)
       ;
-      PropertyDescriptor updateTime = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.UPDATE_TIME_PROPERTY, LocalDateTime.class)
+      PropertyDescriptor createdAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.CREATED_AT_PROPERTY, LocalDateTime.class)
+      ;
+      PropertyDescriptor updatedAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.UPDATED_AT_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.VERSION_PROPERTY, Long.class)
@@ -8241,7 +8283,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "1,2,3")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -8254,11 +8295,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.NAME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.USERNAME_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Admin User,Dispatcher,Driver")
+      .with("candidates", "admin")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8274,7 +8315,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "admin@logistics.com,dispatch@logistics.com,driver@logistics.com")
+      .with("candidates", "admin@logistics.com")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8290,23 +8331,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "13800000001,13800000002,13800000003")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.PASSWORD_HASH_PROPERTY).with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "hashed_secret_123,hashed_secret_456,hashed_secret_789")
+      .with("candidates", "13800000000")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8322,7 +8347,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "ACTIVE,ACTIVE,ACTIVE")
+      .with("candidates", "ACTIVE")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8334,7 +8359,23 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.CREATE_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.PASSWORD_HASH_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "hashed_secret_123")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.CREATED_AT_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("javaType", "java.time.LocalDateTime")
       .with("candidates", "createTime()")
@@ -8352,7 +8393,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "true")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.UPDATE_TIME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount.UPDATED_AT_PROPERTY).with("isPassword", "false")
       .with("isVersion", "false")
       .with("updateFunction", "now")
       .with("javaType", "java.time.LocalDateTime")
@@ -8396,21 +8437,22 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       entityDescriptor.setEntitySupplier(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole::new);
       entityDescriptor.with("name", "User Role")
       .with("module", "Platform")
-      .with("module_key", "platform")
-      .with("constant", "true")
-      .with("identifier", "code");
+      .with("module_key", "platform");
 
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor name = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.NAME_PROPERTY, String.class)
-      ;
-      PropertyDescriptor code = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.CODE_PROPERTY, String.class)
+      PropertyDescriptor roleName = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.ROLE_NAME_PROPERTY, String.class)
       ;
       PropertyDescriptor description = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.DESCRIPTION_PROPERTY, String.class)
+      ;
+      PropertyDescriptor isSystem = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.IS_SYSTEM_PROPERTY, String.class)
+      ;
+      PropertyDescriptor createdAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.CREATED_AT_PROPERTY, LocalDateTime.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.VERSION_PROPERTY, Long.class)
@@ -8419,7 +8461,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "1001,1002,1003,1004")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -8432,28 +8473,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.NAME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.ROLE_NAME_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Administrator,Dispatcher,Driver,Customer Service")
-      .with("sqlType", "VARCHAR(<max>)")
-      .with("isId", "false")
-      .with("isBool", "false")
-      .with("isBaseEntityField", "false")
-      .with("isNumber", "false")
-      .with("isString", "true")
-      .with("isDate", "false")
-      .with("graphqlType", "String")
-      .with("isTime", "false")
-      .with("isText", "false");
-
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.CODE_PROPERTY).with("identifier", "true")
-      .with("isPassword", "false")
-      .with("max", "100")
-      .with("isVersion", "false")
-      .with("javaType", "java.lang.String")
-      .with("candidates", "ADMIN,DISPATCHER,DRIVER,CS")
+      .with("candidates", "Administrator,Dispatcher,Driver")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8469,7 +8493,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Full system access,Manage orders and fleet,View assignments and logs,Handle inquiries")
+      .with("candidates", "Full system access,Manage dispatch plans,View assigned routes")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8479,6 +8503,40 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isDate", "false")
       .with("graphqlType", "String")
       .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.IS_SYSTEM_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "true,false,false")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.CREATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "createTime()")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
       .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.VERSION_PROPERTY).with("isPassword", "false")
@@ -8511,8 +8569,8 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor id = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission.ID_PROPERTY, Long.class)
       ;
-      PropertyDescriptor name = 
-      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission.NAME_PROPERTY, String.class)
+      PropertyDescriptor permissionCode = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission.PERMISSION_CODE_PROPERTY, String.class)
       ;
       PropertyDescriptor resource = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission.RESOURCE_PROPERTY, String.class)
@@ -8520,8 +8578,8 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       PropertyDescriptor action = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission.ACTION_PROPERTY, String.class)
       ;
-      PropertyDescriptor role = 
-      entityDescriptor.addObjectProperty($factory, com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission.ROLE_PROPERTY, com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.INTERNAL_TYPE, com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.ACCESS_PERMISSION_LIST_PROPERTY, com.doublechaintech.enterpriselogisticsservice.userrole.UserRole.class)
+      PropertyDescriptor description = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission.DESCRIPTION_PROPERTY, String.class)
       ;
       PropertyDescriptor version = 
       entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission.VERSION_PROPERTY, Long.class)
@@ -8530,7 +8588,6 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isVersion", "false")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")
-      .with("candidates", "2001,2002,2003,2004")
       .with("sqlType", "BIGINT")
       .with("isId", "true")
       .with("isBaseEntityField", "true")
@@ -8543,11 +8600,11 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission.NAME_PROPERTY).with("isPassword", "false")
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission.PERMISSION_CODE_PROPERTY).with("isPassword", "false")
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "Read Orders,Write Orders,View Fleet,Manage Users")
+      .with("candidates", "VIEW_ORDERS,EDIT_FLEET")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8563,7 +8620,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "orders,orders,fleet,users")
+      .with("candidates", "orders,fleet")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8579,7 +8636,7 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("max", "100")
       .with("isVersion", "false")
       .with("javaType", "java.lang.String")
-      .with("candidates", "read,write,read,manage")
+      .with("candidates", "read,write")
       .with("sqlType", "VARCHAR(<max>)")
       .with("isId", "false")
       .with("isBool", "false")
@@ -8591,9 +8648,316 @@ public class EntityMetaRegistry implements EntityMetaAssembler {
       .with("isTime", "false")
       .with("isText", "false");
 
-      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission.ROLE_PROPERTY).with("candidates", "");
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission.DESCRIPTION_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "View moving orders,Edit vehicle details")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
 
       entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission.VERSION_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "true")
+      .with("oracle_sqlType", "number(11)")
+      .with("javaType", "java.lang.Long")
+      .with("sqlType", "BIGINT")
+      .with("isId", "false")
+      .with("isBaseEntityField", "true")
+      .with("isBool", "false")
+      .with("isNumber", "false")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("snowflake_sqlType", "number")
+      .with("graphqlType", "Long")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      $factory.register(entityDescriptor);
+  }
+  private void registerSystemNotification() {
+      EntityDescriptor entityDescriptor = new EntityDescriptor();
+      entityDescriptor.setType(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.INTERNAL_TYPE);
+      entityDescriptor.setTargetType(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.class);
+      entityDescriptor.setEntitySupplier(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification::new);
+      entityDescriptor.with("name", "System Notification")
+      .with("module", "Platform")
+      .with("module_key", "platform");
+
+      PropertyDescriptor id = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.ID_PROPERTY, Long.class)
+      ;
+      PropertyDescriptor notificationType = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.NOTIFICATION_TYPE_PROPERTY, String.class)
+      ;
+      PropertyDescriptor title = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.TITLE_PROPERTY, String.class)
+      ;
+      PropertyDescriptor content = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.CONTENT_PROPERTY, String.class)
+      ;
+      PropertyDescriptor isRead = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.IS_READ_PROPERTY, String.class)
+      ;
+      PropertyDescriptor recipientId = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.RECIPIENT_ID_PROPERTY, String.class)
+      ;
+      PropertyDescriptor createdAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.CREATED_AT_PROPERTY, LocalDateTime.class)
+      ;
+      PropertyDescriptor version = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.VERSION_PROPERTY, Long.class)
+      ;
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.ID_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("oracle_sqlType", "number(11)")
+      .with("javaType", "java.lang.Long")
+      .with("sqlType", "BIGINT")
+      .with("isId", "true")
+      .with("isBaseEntityField", "true")
+      .with("isBool", "false")
+      .with("isNumber", "false")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("snowflake_sqlType", "number")
+      .with("graphqlType", "Long")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.NOTIFICATION_TYPE_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "ALERT,INFO")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.TITLE_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "Vehicle Maintenance Due,New Order Assigned")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.CONTENT_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "Truck #101 needs oil change.,Order #5005 assigned to you.")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.IS_READ_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "false,true")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.RECIPIENT_ID_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "driver_1,driver_1")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.CREATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "createTime()")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.systemnotification.SystemNotification.VERSION_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "true")
+      .with("oracle_sqlType", "number(11)")
+      .with("javaType", "java.lang.Long")
+      .with("sqlType", "BIGINT")
+      .with("isId", "false")
+      .with("isBaseEntityField", "true")
+      .with("isBool", "false")
+      .with("isNumber", "false")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("snowflake_sqlType", "number")
+      .with("graphqlType", "Long")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      $factory.register(entityDescriptor);
+  }
+  private void registerSystemConfiguration() {
+      EntityDescriptor entityDescriptor = new EntityDescriptor();
+      entityDescriptor.setType(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.INTERNAL_TYPE);
+      entityDescriptor.setTargetType(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.class);
+      entityDescriptor.setEntitySupplier(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration::new);
+      entityDescriptor.with("name", "System Configuration")
+      .with("module", "Platform")
+      .with("module_key", "platform");
+
+      PropertyDescriptor id = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.ID_PROPERTY, Long.class)
+      ;
+      PropertyDescriptor configKey = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.CONFIG_KEY_PROPERTY, String.class)
+      ;
+      PropertyDescriptor configValue = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.CONFIG_VALUE_PROPERTY, String.class)
+      ;
+      PropertyDescriptor description = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.DESCRIPTION_PROPERTY, String.class)
+      ;
+      PropertyDescriptor updatedAt = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.UPDATED_AT_PROPERTY, LocalDateTime.class)
+      ;
+      PropertyDescriptor version = 
+      entityDescriptor.addSimpleProperty(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.VERSION_PROPERTY, Long.class)
+      ;
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.ID_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("oracle_sqlType", "number(11)")
+      .with("javaType", "java.lang.Long")
+      .with("sqlType", "BIGINT")
+      .with("isId", "true")
+      .with("isBaseEntityField", "true")
+      .with("isBool", "false")
+      .with("isNumber", "false")
+      .with("isString", "false")
+      .with("isDate", "false")
+      .with("snowflake_sqlType", "number")
+      .with("graphqlType", "Long")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.CONFIG_KEY_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "max_load_kg,tax_rate")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.CONFIG_VALUE_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "20000,0.08")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.DESCRIPTION_PROPERTY).with("isPassword", "false")
+      .with("max", "100")
+      .with("isVersion", "false")
+      .with("javaType", "java.lang.String")
+      .with("candidates", "Maximum load per truck in kg,Default sales tax rate")
+      .with("sqlType", "VARCHAR(<max>)")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("isString", "true")
+      .with("isDate", "false")
+      .with("graphqlType", "String")
+      .with("isTime", "false")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.UPDATED_AT_PROPERTY).with("isPassword", "false")
+      .with("isVersion", "false")
+      .with("updateFunction", "now")
+      .with("javaType", "java.time.LocalDateTime")
+      .with("candidates", "updateTime()")
+      .with("sqlType", "TIMESTAMP")
+      .with("isId", "false")
+      .with("isBool", "false")
+      .with("isBaseEntityField", "false")
+      .with("isNumber", "false")
+      .with("mssql_sqlType", "dateTime")
+      .with("isDateTime", "true")
+      .with("createFunction", "now")
+      .with("isDate", "true")
+      .with("isString", "false")
+      .with("graphqlType", "LocalTime")
+      .with("isTime", "true")
+      .with("isText", "false");
+
+      entityDescriptor.findProperty(com.doublechaintech.enterpriselogisticsservice.systemconfiguration.SystemConfiguration.VERSION_PROPERTY).with("isPassword", "false")
       .with("isVersion", "true")
       .with("oracle_sqlType", "number(11)")
       .with("javaType", "java.lang.Long")

@@ -1,15 +1,13 @@
 package com.doublechaintech.enterpriselogisticsservice.userrole;
 
-import com.doublechaintech.enterpriselogisticsservice.Q;
-import com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermission;
-import com.doublechaintech.enterpriselogisticsservice.accesspermission.AccessPermissionRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
 import io.teaql.core.SearchCriteria;
-import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
 
@@ -82,7 +80,7 @@ public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
 
     public UserRoleRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectName().selectCode().selectDescription().selectVersion();
+        return selectId().selectRoleName().selectDescription().selectIsSystem().selectCreatedAt().selectVersion();
     }
 
     public UserRoleRequest<T> selectSelfFields(){
@@ -91,13 +89,12 @@ public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
 
     public UserRoleRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectName().selectCode().selectDescription().selectVersion();
+        return selectId().selectRoleName().selectDescription().selectIsSystem().selectCreatedAt().selectVersion();
     }
 
     public UserRoleRequest<T> selectChildren(){
         super.selectAny();
-        selectAccessPermissionList();
-        return selectId().selectName().selectCode().selectDescription().selectVersion();
+        return selectId().selectRoleName().selectDescription().selectIsSystem().selectCreatedAt().selectVersion();
     }
 
 
@@ -118,38 +115,21 @@ public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
        unselectProperty(UserRole.ID_PROPERTY);
        return this;
     }
-    public UserRoleRequest<T> selectName(){
-       selectProperty(UserRole.NAME_PROPERTY);
+    public UserRoleRequest<T> selectRoleName(){
+       selectProperty(UserRole.ROLE_NAME_PROPERTY);
        return this;
     }
 
     /**
-     * fill the name with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  name) to fetch name property.
+     * fill the roleName with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  roleName) to fetch roleName property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public UserRoleRequest<T> unselectName(){
-       unselectProperty(UserRole.NAME_PROPERTY);
-       return this;
-    }
-    public UserRoleRequest<T> selectCode(){
-       selectProperty(UserRole.CODE_PROPERTY);
-       return this;
-    }
-
-    /**
-     * fill the code with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  code) to fetch code property.
-     * @param rawSqlSegment  customized rawSqlSegment
-     */
-
-
-
-
-    public UserRoleRequest<T> unselectCode(){
-       unselectProperty(UserRole.CODE_PROPERTY);
+    public UserRoleRequest<T> unselectRoleName(){
+       unselectProperty(UserRole.ROLE_NAME_PROPERTY);
        return this;
     }
     public UserRoleRequest<T> selectDescription(){
@@ -169,6 +149,40 @@ public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
        unselectProperty(UserRole.DESCRIPTION_PROPERTY);
        return this;
     }
+    public UserRoleRequest<T> selectIsSystem(){
+       selectProperty(UserRole.IS_SYSTEM_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the isSystem with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  isSystem) to fetch isSystem property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public UserRoleRequest<T> unselectIsSystem(){
+       unselectProperty(UserRole.IS_SYSTEM_PROPERTY);
+       return this;
+    }
+    public UserRoleRequest<T> selectCreatedAt(){
+       selectProperty(UserRole.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the createdAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdAt) to fetch createdAt property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public UserRoleRequest<T> unselectCreatedAt(){
+       unselectProperty(UserRole.CREATED_AT_PROPERTY);
+       return this;
+    }
     public UserRoleRequest<T> selectVersion(){
        selectProperty(UserRole.VERSION_PROPERTY);
        return this;
@@ -184,14 +198,6 @@ public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
 
     public UserRoleRequest<T> unselectVersion(){
        unselectProperty(UserRole.VERSION_PROPERTY);
-       return this;
-    }
-    public UserRoleRequest<T> selectAccessPermissionList(){
-       return selectAccessPermissionListWith(Q.accessPermissions().selectSelf());
-    }
-
-    public UserRoleRequest<T> selectAccessPermissionListWith(AccessPermissionRequest accessPermissionList){
-       enhanceRelation(UserRole.ACCESS_PERMISSION_LIST_PROPERTY, accessPermissionList);
        return this;
     }
 
@@ -212,128 +218,65 @@ public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
 
 
 
-    public UserRoleRequest<T> filterByName(String... name){
-      if (name == null || name.length == 0) {
-        throw new IllegalArgumentException("filterByName parameter name cannot be empty");
+    public UserRoleRequest<T> filterByRoleName(String... roleName){
+      if (roleName == null || roleName.length == 0) {
+        throw new IllegalArgumentException("filterByRoleName parameter roleName cannot be empty");
       }
-      return appendSearchCriteria(createNameCriteria(Operator.EQUAL, (Object[])name));
+      return appendSearchCriteria(createRoleNameCriteria(Operator.EQUAL, (Object[])roleName));
     }
 
-    public UserRoleRequest<T> withName(Operator operator, Object... values){
-       return appendSearchCriteria(createNameCriteria(operator, values));
+    public UserRoleRequest<T> withRoleName(Operator operator, Object... values){
+       return appendSearchCriteria(createRoleNameCriteria(operator, values));
     }
 
-    public UserRoleRequest<T> withNameIsUnknown(){
-       return withName(Operator.IS_NULL);
+    public UserRoleRequest<T> withRoleNameIsUnknown(){
+       return withRoleName(Operator.IS_NULL);
     }
 
-    public UserRoleRequest<T> withNameIsKnown(){
-       return withName(Operator.IS_NOT_NULL);
+    public UserRoleRequest<T> withRoleNameIsKnown(){
+       return withRoleName(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createNameCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(UserRole.NAME_PROPERTY, operator, values);
+    public SearchCriteria createRoleNameCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(UserRole.ROLE_NAME_PROPERTY, operator, values);
     }
 
-    public UserRoleRequest<T> withNameGreaterThan(String name){
-       return withName(Operator.GREATER_THAN, name);
+    public UserRoleRequest<T> withRoleNameGreaterThan(String roleName){
+       return withRoleName(Operator.GREATER_THAN, roleName);
     }
 
-    public UserRoleRequest<T> withNameGreaterThanOrEqualTo(String name){
-       return withName(Operator.GREATER_THAN_OR_EQUAL, name);
+    public UserRoleRequest<T> withRoleNameGreaterThanOrEqualTo(String roleName){
+       return withRoleName(Operator.GREATER_THAN_OR_EQUAL, roleName);
     }
 
-    public UserRoleRequest<T> withNameLessThan(String name){
-       return withName(Operator.LESS_THAN, name);
+    public UserRoleRequest<T> withRoleNameLessThan(String roleName){
+       return withRoleName(Operator.LESS_THAN, roleName);
     }
 
-    public UserRoleRequest<T> withNameLessThanOrEqualTo(String name){
-       return withName(Operator.LESS_THAN_OR_EQUAL, name);
+    public UserRoleRequest<T> withRoleNameLessThanOrEqualTo(String roleName){
+       return withRoleName(Operator.LESS_THAN_OR_EQUAL, roleName);
     }
 
-    public UserRoleRequest<T> withNameBetween(String startOfName, String endOfName){
-       return withName(Operator.BETWEEN, startOfName, endOfName);
+    public UserRoleRequest<T> withRoleNameBetween(String startOfRoleName, String endOfRoleName){
+       return withRoleName(Operator.BETWEEN, startOfRoleName, endOfRoleName);
     }
-    public UserRoleRequest<T> withNameStartingWith(String name){
-       return withName(Operator.BEGIN_WITH, name);
+    public UserRoleRequest<T> withRoleNameStartingWith(String roleName){
+       return withRoleName(Operator.BEGIN_WITH, roleName);
     }
-    public UserRoleRequest<T> withNameContaining(String name){
-       return withName(Operator.CONTAIN, name);
-    }
-
-    public UserRoleRequest<T> withNameEndingWith(String name){
-       return withName(Operator.END_WITH, name);
+    public UserRoleRequest<T> withRoleNameContaining(String roleName){
+       return withRoleName(Operator.CONTAIN, roleName);
     }
 
-    public UserRoleRequest<T> withNameIs(String name){
-       return withName(Operator.EQUAL, name);
+    public UserRoleRequest<T> withRoleNameEndingWith(String roleName){
+       return withRoleName(Operator.END_WITH, roleName);
     }
 
-    public UserRoleRequest<T> withNameSoundingLike(String name){
-       return withName(Operator.SOUNDS_LIKE, name);
+    public UserRoleRequest<T> withRoleNameIs(String roleName){
+       return withRoleName(Operator.EQUAL, roleName);
     }
 
-
-
-    public UserRoleRequest<T> filterByCode(String... code){
-      if (code == null || code.length == 0) {
-        throw new IllegalArgumentException("filterByCode parameter code cannot be empty");
-      }
-      return appendSearchCriteria(createCodeCriteria(Operator.EQUAL, (Object[])code));
-    }
-
-    public UserRoleRequest<T> withCode(Operator operator, Object... values){
-       return appendSearchCriteria(createCodeCriteria(operator, values));
-    }
-
-    public UserRoleRequest<T> withCodeIsUnknown(){
-       return withCode(Operator.IS_NULL);
-    }
-
-    public UserRoleRequest<T> withCodeIsKnown(){
-       return withCode(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createCodeCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(UserRole.CODE_PROPERTY, operator, values);
-    }
-
-    public UserRoleRequest<T> withCodeGreaterThan(String code){
-       return withCode(Operator.GREATER_THAN, code);
-    }
-
-    public UserRoleRequest<T> withCodeGreaterThanOrEqualTo(String code){
-       return withCode(Operator.GREATER_THAN_OR_EQUAL, code);
-    }
-
-    public UserRoleRequest<T> withCodeLessThan(String code){
-       return withCode(Operator.LESS_THAN, code);
-    }
-
-    public UserRoleRequest<T> withCodeLessThanOrEqualTo(String code){
-       return withCode(Operator.LESS_THAN_OR_EQUAL, code);
-    }
-
-    public UserRoleRequest<T> withCodeBetween(String startOfCode, String endOfCode){
-       return withCode(Operator.BETWEEN, startOfCode, endOfCode);
-    }
-    public UserRoleRequest<T> withCodeStartingWith(String code){
-       return withCode(Operator.BEGIN_WITH, code);
-    }
-    public UserRoleRequest<T> withCodeContaining(String code){
-       return withCode(Operator.CONTAIN, code);
-    }
-
-    public UserRoleRequest<T> withCodeEndingWith(String code){
-       return withCode(Operator.END_WITH, code);
-    }
-
-    public UserRoleRequest<T> withCodeIs(String code){
-       return withCode(Operator.EQUAL, code);
-    }
-
-    public UserRoleRequest<T> withCodeSoundingLike(String code){
-       return withCode(Operator.SOUNDS_LIKE, code);
+    public UserRoleRequest<T> withRoleNameSoundingLike(String roleName){
+       return withRoleName(Operator.SOUNDS_LIKE, roleName);
     }
 
 
@@ -401,6 +344,134 @@ public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
 
 
 
+    public UserRoleRequest<T> filterByIsSystem(String... isSystem){
+      if (isSystem == null || isSystem.length == 0) {
+        throw new IllegalArgumentException("filterByIsSystem parameter isSystem cannot be empty");
+      }
+      return appendSearchCriteria(createIsSystemCriteria(Operator.EQUAL, (Object[])isSystem));
+    }
+
+    public UserRoleRequest<T> withIsSystem(Operator operator, Object... values){
+       return appendSearchCriteria(createIsSystemCriteria(operator, values));
+    }
+
+    public UserRoleRequest<T> withIsSystemIsUnknown(){
+       return withIsSystem(Operator.IS_NULL);
+    }
+
+    public UserRoleRequest<T> withIsSystemIsKnown(){
+       return withIsSystem(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createIsSystemCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(UserRole.IS_SYSTEM_PROPERTY, operator, values);
+    }
+
+    public UserRoleRequest<T> withIsSystemGreaterThan(String isSystem){
+       return withIsSystem(Operator.GREATER_THAN, isSystem);
+    }
+
+    public UserRoleRequest<T> withIsSystemGreaterThanOrEqualTo(String isSystem){
+       return withIsSystem(Operator.GREATER_THAN_OR_EQUAL, isSystem);
+    }
+
+    public UserRoleRequest<T> withIsSystemLessThan(String isSystem){
+       return withIsSystem(Operator.LESS_THAN, isSystem);
+    }
+
+    public UserRoleRequest<T> withIsSystemLessThanOrEqualTo(String isSystem){
+       return withIsSystem(Operator.LESS_THAN_OR_EQUAL, isSystem);
+    }
+
+    public UserRoleRequest<T> withIsSystemBetween(String startOfIsSystem, String endOfIsSystem){
+       return withIsSystem(Operator.BETWEEN, startOfIsSystem, endOfIsSystem);
+    }
+    public UserRoleRequest<T> withIsSystemStartingWith(String isSystem){
+       return withIsSystem(Operator.BEGIN_WITH, isSystem);
+    }
+    public UserRoleRequest<T> withIsSystemContaining(String isSystem){
+       return withIsSystem(Operator.CONTAIN, isSystem);
+    }
+
+    public UserRoleRequest<T> withIsSystemEndingWith(String isSystem){
+       return withIsSystem(Operator.END_WITH, isSystem);
+    }
+
+    public UserRoleRequest<T> withIsSystemIs(String isSystem){
+       return withIsSystem(Operator.EQUAL, isSystem);
+    }
+
+    public UserRoleRequest<T> withIsSystemSoundingLike(String isSystem){
+       return withIsSystem(Operator.SOUNDS_LIKE, isSystem);
+    }
+
+
+
+    public UserRoleRequest<T> filterByCreatedAt(LocalDateTime... createdAt){
+      if (createdAt == null || createdAt.length == 0) {
+        throw new IllegalArgumentException("filterByCreatedAt parameter createdAt cannot be empty");
+      }
+      return appendSearchCriteria(createCreatedAtCriteria(Operator.EQUAL, (Object[])createdAt));
+    }
+
+    public UserRoleRequest<T> withCreatedAt(Operator operator, Object... values){
+       return appendSearchCriteria(createCreatedAtCriteria(operator, values));
+    }
+
+    public UserRoleRequest<T> withCreatedAtIsUnknown(){
+       return withCreatedAt(Operator.IS_NULL);
+    }
+
+    public UserRoleRequest<T> withCreatedAtIsKnown(){
+       return withCreatedAt(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createCreatedAtCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(UserRole.CREATED_AT_PROPERTY, operator, values);
+    }
+
+    public UserRoleRequest<T> withCreatedAtGreaterThan(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public UserRoleRequest<T> withCreatedAtGreaterThanOrEqualTo(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN_OR_EQUAL, createdAt);
+    }
+
+    public UserRoleRequest<T> withCreatedAtLessThan(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public UserRoleRequest<T> withCreatedAtLessThanOrEqualTo(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN_OR_EQUAL, createdAt);
+    }
+
+    public UserRoleRequest<T> withCreatedAtBetween(LocalDateTime startOfCreatedAt, LocalDateTime endOfCreatedAt){
+       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    }
+    public UserRoleRequest<T> withCreatedAtBefore(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public UserRoleRequest<T> withCreatedAtBefore(Date createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public UserRoleRequest<T> withCreatedAtAfter(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public UserRoleRequest<T> withCreatedAtAfter(Date createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public UserRoleRequest<T> withCreatedAtBetween(Date startOfCreatedAt, Date endOfCreatedAt){
+       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    }
+
+
+
+
     public UserRoleRequest<T> filterByVersion(Long... version){
       if (version == null || version.length == 0) {
         throw new IllegalArgumentException("filterByVersion parameter version cannot be empty");
@@ -444,21 +515,6 @@ public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
        return withVersion(Operator.BETWEEN, startOfVersion, endOfVersion);
     }
 
-    public UserRoleRequest<T> withAccessPermissionListMatching(AccessPermissionRequest accessPermissionRequest){
-        return appendSearchCriteria(new SubQuerySearchCriteria(UserRole.ID_PROPERTY, accessPermissionRequest, AccessPermission.ROLE_PROPERTY));
-    }
-
-    public UserRoleRequest<T> withoutAccessPermissionListMatching(AccessPermissionRequest accessPermissionRequest){
-        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(UserRole.ID_PROPERTY, accessPermissionRequest, AccessPermission.ROLE_PROPERTY)));
-    }
-
-    public UserRoleRequest<T> haveAccessPermissions(){
-        return withAccessPermissionListMatching(Q.accessPermissions().unlimited());
-    }
-
-    public UserRoleRequest<T> haveNoAccessPermissions(){
-        return withoutAccessPermissionListMatching(Q.accessPermissions().unlimited());
-    }
 
     public UserRoleRequest<T> count(){
         super.count();
@@ -467,10 +523,6 @@ public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
     public UserRoleRequest<T> countAs(String retName){
         super.count(retName);
         return this;
-    }
-    public UserRoleRequest<T> groupByAccessPermissionsWithDetails(AccessPermissionRequest subRequest){
-       aggregate(UserRole.ACCESS_PERMISSION_LIST_PROPERTY, subRequest);
-       return this;
     }
 
     public UserRoleRequest<T> groupById(){
@@ -488,33 +540,18 @@ public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
        return this;
     }
 
-    public UserRoleRequest<T> groupByName(){
-       groupBy(UserRole.NAME_PROPERTY);
+    public UserRoleRequest<T> groupByRoleName(){
+       groupBy(UserRole.ROLE_NAME_PROPERTY);
        return this;
     }
 
-    public UserRoleRequest<T> groupByNameAs(String retName){
-       groupBy(retName, UserRole.NAME_PROPERTY);
+    public UserRoleRequest<T> groupByRoleNameAs(String retName){
+       groupBy(retName, UserRole.ROLE_NAME_PROPERTY);
        return this;
     }
 
-    public UserRoleRequest<T> groupByNameWithFunction(String retName, AggrFunction function){
-       groupBy(retName, UserRole.NAME_PROPERTY, function);
-       return this;
-    }
-
-    public UserRoleRequest<T> groupByCode(){
-       groupBy(UserRole.CODE_PROPERTY);
-       return this;
-    }
-
-    public UserRoleRequest<T> groupByCodeAs(String retName){
-       groupBy(retName, UserRole.CODE_PROPERTY);
-       return this;
-    }
-
-    public UserRoleRequest<T> groupByCodeWithFunction(String retName, AggrFunction function){
-       groupBy(retName, UserRole.CODE_PROPERTY, function);
+    public UserRoleRequest<T> groupByRoleNameWithFunction(String retName, AggrFunction function){
+       groupBy(retName, UserRole.ROLE_NAME_PROPERTY, function);
        return this;
     }
 
@@ -530,6 +567,36 @@ public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
 
     public UserRoleRequest<T> groupByDescriptionWithFunction(String retName, AggrFunction function){
        groupBy(retName, UserRole.DESCRIPTION_PROPERTY, function);
+       return this;
+    }
+
+    public UserRoleRequest<T> groupByIsSystem(){
+       groupBy(UserRole.IS_SYSTEM_PROPERTY);
+       return this;
+    }
+
+    public UserRoleRequest<T> groupByIsSystemAs(String retName){
+       groupBy(retName, UserRole.IS_SYSTEM_PROPERTY);
+       return this;
+    }
+
+    public UserRoleRequest<T> groupByIsSystemWithFunction(String retName, AggrFunction function){
+       groupBy(retName, UserRole.IS_SYSTEM_PROPERTY, function);
+       return this;
+    }
+
+    public UserRoleRequest<T> groupByCreatedAt(){
+       groupBy(UserRole.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public UserRoleRequest<T> groupByCreatedAtAs(String retName){
+       groupBy(retName, UserRole.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public UserRoleRequest<T> groupByCreatedAtWithFunction(String retName, AggrFunction function){
+       groupBy(retName, UserRole.CREATED_AT_PROPERTY, function);
        return this;
     }
 
@@ -560,40 +627,22 @@ public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
        return this;
     }
 
-    public UserRoleRequest<T> orderByNameAscending(){
-       addOrderByAscending(UserRole.NAME_PROPERTY);
+    public UserRoleRequest<T> orderByRoleNameAscending(){
+       addOrderByAscending(UserRole.ROLE_NAME_PROPERTY);
        return this;
     }
 
-    public UserRoleRequest<T> orderByNameDescending(){
-       addOrderByDescending(UserRole.NAME_PROPERTY);
+    public UserRoleRequest<T> orderByRoleNameDescending(){
+       addOrderByDescending(UserRole.ROLE_NAME_PROPERTY);
        return this;
     }
-    public UserRoleRequest<T> orderByNameAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(UserRole.NAME_PROPERTY);
-       return this;
-    }
-
-    public UserRoleRequest<T> orderByNameDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(UserRole.NAME_PROPERTY);
-       return this;
-    }
-    public UserRoleRequest<T> orderByCodeAscending(){
-       addOrderByAscending(UserRole.CODE_PROPERTY);
+    public UserRoleRequest<T> orderByRoleNameAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(UserRole.ROLE_NAME_PROPERTY);
        return this;
     }
 
-    public UserRoleRequest<T> orderByCodeDescending(){
-       addOrderByDescending(UserRole.CODE_PROPERTY);
-       return this;
-    }
-    public UserRoleRequest<T> orderByCodeAscendingUsingGBK(){
-       addOrderByAscendingUsingGBK(UserRole.CODE_PROPERTY);
-       return this;
-    }
-
-    public UserRoleRequest<T> orderByCodeDescendingUsingGBK(){
-       addOrderByDescendingUsingGBK(UserRole.CODE_PROPERTY);
+    public UserRoleRequest<T> orderByRoleNameDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(UserRole.ROLE_NAME_PROPERTY);
        return this;
     }
     public UserRoleRequest<T> orderByDescriptionAscending(){
@@ -614,6 +663,34 @@ public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
        addOrderByDescendingUsingGBK(UserRole.DESCRIPTION_PROPERTY);
        return this;
     }
+    public UserRoleRequest<T> orderByIsSystemAscending(){
+       addOrderByAscending(UserRole.IS_SYSTEM_PROPERTY);
+       return this;
+    }
+
+    public UserRoleRequest<T> orderByIsSystemDescending(){
+       addOrderByDescending(UserRole.IS_SYSTEM_PROPERTY);
+       return this;
+    }
+    public UserRoleRequest<T> orderByIsSystemAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(UserRole.IS_SYSTEM_PROPERTY);
+       return this;
+    }
+
+    public UserRoleRequest<T> orderByIsSystemDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(UserRole.IS_SYSTEM_PROPERTY);
+       return this;
+    }
+    public UserRoleRequest<T> orderByCreatedAtAscending(){
+       addOrderByAscending(UserRole.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public UserRoleRequest<T> orderByCreatedAtDescending(){
+       addOrderByDescending(UserRole.CREATED_AT_PROPERTY);
+       return this;
+    }
+
     public UserRoleRequest<T> orderByVersionAscending(){
        addOrderByAscending(UserRole.VERSION_PROPERTY);
        return this;
@@ -625,30 +702,6 @@ public class UserRoleRequest<T extends UserRole> extends BaseRequest<T> {
     }
 
 
-    public UserRoleRequest<T> statsFromAccessPermissionsAs(String name, AccessPermissionRequest subRequest){
-       return statsFromAccessPermissionsAs(name, subRequest, false);
-    }
-
-    public UserRoleRequest<T> statsFromAccessPermissionsAs(String name, AccessPermissionRequest subRequest, boolean singleResult){
-       subRequest.setPartitionProperty(AccessPermission.ROLE_PROPERTY);
-       addAggregateDynamicProperty(name, subRequest, singleResult);
-       return this;
-    }
-
-    public UserRoleRequest<T> statsFromAccessPermissions(AccessPermissionRequest subRequest){
-       return statsFromAccessPermissionsAs(REFINEMENTS, subRequest);
-    }
-    public UserRoleRequest<T> countAccessPermissions(){
-        return countAccessPermissionsAs("Count");
-    }
-
-    public UserRoleRequest<T> countAccessPermissionsAs(String name){
-        return countAccessPermissionsWith(name, Q.accessPermissions().unlimited());
-    }
-
-    public UserRoleRequest<T> countAccessPermissionsWith(String name, AccessPermissionRequest subRequest){
-        return statsFromAccessPermissionsAs(name, subRequest.count(), true);
-    }
 
 
 

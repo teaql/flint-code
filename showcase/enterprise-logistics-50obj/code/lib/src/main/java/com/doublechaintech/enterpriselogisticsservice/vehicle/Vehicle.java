@@ -3,7 +3,6 @@ package com.doublechaintech.enterpriselogisticsservice.vehicle;
 import com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan;
 import com.doublechaintech.enterpriselogisticsservice.driverassignment.DriverAssignment;
 import com.doublechaintech.enterpriselogisticsservice.fuellog.FuelLog;
-import com.doublechaintech.enterpriselogisticsservice.gpslog.GpsLog;
 import com.doublechaintech.enterpriselogisticsservice.telematicsdevice.TelematicsDevice;
 import com.doublechaintech.enterpriselogisticsservice.vehiclemaintenance.VehicleMaintenance;
 import io.teaql.core.Audited;
@@ -12,7 +11,6 @@ import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
 import io.teaql.core.SmartList;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -27,8 +25,8 @@ import java.util.Objects;
 public class Vehicle extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "Vehicle";
 
-    public static final String NAME_PROPERTY = "name";
-    public static final String LICENSE_PLATE_PROPERTY = "licensePlate";
+    public static final String PLATE_NUMBER_PROPERTY = "plateNumber";
+    public static final String VIN_PROPERTY = "vin";
     public static final String MAKE_PROPERTY = "make";
     public static final String MODEL_PROPERTY = "model";
     public static final String YEAR_PROPERTY = "year";
@@ -37,32 +35,30 @@ public class Vehicle extends BaseEntity implements RemoteInput {
     public static final String CREATED_AT_PROPERTY = "createdAt";
     public static final String UPDATED_AT_PROPERTY = "updatedAt";
     public static final String DISPATCH_PLAN_LIST_PROPERTY = "dispatchPlanList";
-    public static final String DRIVER_ASSIGNMENT_LIST_PROPERTY = "driverAssignmentList";
-    public static final String GPS_LOG_LIST_PROPERTY = "gpsLogList";
+    public static final String TELEMATICS_DEVICE_LIST_PROPERTY = "telematicsDeviceList";
     public static final String FUEL_LOG_LIST_PROPERTY = "fuelLogList";
     public static final String VEHICLE_MAINTENANCE_LIST_PROPERTY = "vehicleMaintenanceList";
-    public static final String TELEMATICS_DEVICE_LIST_PROPERTY = "telematicsDeviceList";
-    private String name;
-    private String licensePlate;
+    public static final String DRIVER_ASSIGNMENT_LIST_PROPERTY = "driverAssignmentList";
+    private String plateNumber;
+    private String vin;
     private String make;
     private String model;
     private Integer year;
-    private BigDecimal capacityKg;
+    private Integer capacityKg;
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private SmartList<DispatchPlan> dispatchPlanList;
-    private SmartList<DriverAssignment> driverAssignmentList;
-    private SmartList<GpsLog> gpsLogList;
+    private SmartList<TelematicsDevice> telematicsDeviceList;
     private SmartList<FuelLog> fuelLogList;
     private SmartList<VehicleMaintenance> vehicleMaintenanceList;
-    private SmartList<TelematicsDevice> telematicsDeviceList;
+    private SmartList<DriverAssignment> driverAssignmentList;
 
-    public String getName(){
-        return this.name;
+    public String getPlateNumber(){
+        return this.plateNumber;
     }
-    public String getLicensePlate(){
-        return this.licensePlate;
+    public String getVin(){
+        return this.vin;
     }
     public String getMake(){
         return this.make;
@@ -73,7 +69,7 @@ public class Vehicle extends BaseEntity implements RemoteInput {
     public Integer getYear(){
         return this.year;
     }
-    public BigDecimal getCapacityKg(){
+    public Integer getCapacityKg(){
         return this.capacityKg;
     }
     public String getStatus(){
@@ -88,11 +84,8 @@ public class Vehicle extends BaseEntity implements RemoteInput {
     public SmartList<DispatchPlan> getDispatchPlanList(){
         return this.dispatchPlanList;
     }
-    public SmartList<DriverAssignment> getDriverAssignmentList(){
-        return this.driverAssignmentList;
-    }
-    public SmartList<GpsLog> getGpsLogList(){
-        return this.gpsLogList;
+    public SmartList<TelematicsDevice> getTelematicsDeviceList(){
+        return this.telematicsDeviceList;
     }
     public SmartList<FuelLog> getFuelLogList(){
         return this.fuelLogList;
@@ -100,25 +93,25 @@ public class Vehicle extends BaseEntity implements RemoteInput {
     public SmartList<VehicleMaintenance> getVehicleMaintenanceList(){
         return this.vehicleMaintenanceList;
     }
-    public SmartList<TelematicsDevice> getTelematicsDeviceList(){
-        return this.telematicsDeviceList;
+    public SmartList<DriverAssignment> getDriverAssignmentList(){
+        return this.driverAssignmentList;
     }
-    public Vehicle updateName(String name){
-        name = (name == null ? null : name.trim());
-        if(Objects.equals(this.name, name)){
+    public Vehicle updatePlateNumber(String plateNumber){
+        plateNumber = (plateNumber == null ? null : plateNumber.trim());
+        if(Objects.equals(this.plateNumber, plateNumber)){
             return this;
         }
-        handleUpdate(NAME_PROPERTY, getName(), name);
-        this.name = name;
+        handleUpdate(PLATE_NUMBER_PROPERTY, getPlateNumber(), plateNumber);
+        this.plateNumber = plateNumber;
         return this;
     }
-    public Vehicle updateLicensePlate(String licensePlate){
-        licensePlate = (licensePlate == null ? null : licensePlate.trim());
-        if(Objects.equals(this.licensePlate, licensePlate)){
+    public Vehicle updateVin(String vin){
+        vin = (vin == null ? null : vin.trim());
+        if(Objects.equals(this.vin, vin)){
             return this;
         }
-        handleUpdate(LICENSE_PLATE_PROPERTY, getLicensePlate(), licensePlate);
-        this.licensePlate = licensePlate;
+        handleUpdate(VIN_PROPERTY, getVin(), vin);
+        this.vin = vin;
         return this;
     }
     public Vehicle updateMake(String make){
@@ -147,7 +140,7 @@ public class Vehicle extends BaseEntity implements RemoteInput {
         this.year = year;
         return this;
     }
-    public Vehicle updateCapacityKg(BigDecimal capacityKg){
+    public Vehicle updateCapacityKg(Integer capacityKg){
         if(Objects.equals(this.capacityKg, capacityKg)){
             return this;
         }
@@ -193,30 +186,17 @@ public class Vehicle extends BaseEntity implements RemoteInput {
         dispatchPlan.cacheRelation(DispatchPlan.VEHICLE_PROPERTY, this);
         return this;
     }
-    public Vehicle addDriverAssignment(DriverAssignment driverAssignment){
-        if (driverAssignment == null){
+    public Vehicle addTelematicsDevice(TelematicsDevice telematicsDevice){
+        if (telematicsDevice == null){
             return this;
         }
 
-        if(null == this.driverAssignmentList){
-            this.driverAssignmentList = new SmartList<>();
+        if(null == this.telematicsDeviceList){
+            this.telematicsDeviceList = new SmartList<>();
         }
 
-        this.driverAssignmentList.add(driverAssignment);
-        driverAssignment.cacheRelation(DriverAssignment.VEHICLE_PROPERTY, this);
-        return this;
-    }
-    public Vehicle addGpsLog(GpsLog gpsLog){
-        if (gpsLog == null){
-            return this;
-        }
-
-        if(null == this.gpsLogList){
-            this.gpsLogList = new SmartList<>();
-        }
-
-        this.gpsLogList.add(gpsLog);
-        gpsLog.cacheRelation(GpsLog.VEHICLE_PROPERTY, this);
+        this.telematicsDeviceList.add(telematicsDevice);
+        telematicsDevice.cacheRelation(TelematicsDevice.VEHICLE_PROPERTY, this);
         return this;
     }
     public Vehicle addFuelLog(FuelLog fuelLog){
@@ -245,17 +225,17 @@ public class Vehicle extends BaseEntity implements RemoteInput {
         vehicleMaintenance.cacheRelation(VehicleMaintenance.VEHICLE_PROPERTY, this);
         return this;
     }
-    public Vehicle addTelematicsDevice(TelematicsDevice telematicsDevice){
-        if (telematicsDevice == null){
+    public Vehicle addDriverAssignment(DriverAssignment driverAssignment){
+        if (driverAssignment == null){
             return this;
         }
 
-        if(null == this.telematicsDeviceList){
-            this.telematicsDeviceList = new SmartList<>();
+        if(null == this.driverAssignmentList){
+            this.driverAssignmentList = new SmartList<>();
         }
 
-        this.telematicsDeviceList.add(telematicsDevice);
-        telematicsDevice.cacheRelation(TelematicsDevice.VEHICLE_PROPERTY, this);
+        this.driverAssignmentList.add(driverAssignment);
+        driverAssignment.cacheRelation(DriverAssignment.VEHICLE_PROPERTY, this);
         return this;
     }
 
@@ -286,9 +266,9 @@ public class Vehicle extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public void __internalSet(String property, Object value) {
         switch (property) {
-            case "name": this.name = (value == null ? null : ((String)value).trim()); break;
+            case "plateNumber": this.plateNumber = (value == null ? null : ((String)value).trim()); break;
 
-            case "licensePlate": this.licensePlate = (value == null ? null : ((String)value).trim()); break;
+            case "vin": this.vin = (value == null ? null : ((String)value).trim()); break;
 
             case "make": this.make = (value == null ? null : ((String)value).trim()); break;
 
@@ -296,7 +276,7 @@ public class Vehicle extends BaseEntity implements RemoteInput {
 
             case "year": this.year = (Integer) value; break;
 
-            case "capacityKg": this.capacityKg = (BigDecimal) value; break;
+            case "capacityKg": this.capacityKg = (Integer) value; break;
 
             case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
@@ -305,11 +285,10 @@ public class Vehicle extends BaseEntity implements RemoteInput {
             case "updatedAt": this.updatedAt = (LocalDateTime) value; break;
 
             case "dispatchPlanList": this.dispatchPlanList = (SmartList<DispatchPlan>) value; break;
-            case "driverAssignmentList": this.driverAssignmentList = (SmartList<DriverAssignment>) value; break;
-            case "gpsLogList": this.gpsLogList = (SmartList<GpsLog>) value; break;
+            case "telematicsDeviceList": this.telematicsDeviceList = (SmartList<TelematicsDevice>) value; break;
             case "fuelLogList": this.fuelLogList = (SmartList<FuelLog>) value; break;
             case "vehicleMaintenanceList": this.vehicleMaintenanceList = (SmartList<VehicleMaintenance>) value; break;
-            case "telematicsDeviceList": this.telematicsDeviceList = (SmartList<TelematicsDevice>) value; break;
+            case "driverAssignmentList": this.driverAssignmentList = (SmartList<DriverAssignment>) value; break;
             default: super.__internalSet(property, value);
         }
     }
@@ -318,8 +297,8 @@ public class Vehicle extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public Object __internalGet(String property) {
         switch (property) {
-            case "name": return this.name;
-            case "licensePlate": return this.licensePlate;
+            case "plateNumber": return this.plateNumber;
+            case "vin": return this.vin;
             case "make": return this.make;
             case "model": return this.model;
             case "year": return this.year;
@@ -328,11 +307,10 @@ public class Vehicle extends BaseEntity implements RemoteInput {
             case "createdAt": return this.createdAt;
             case "updatedAt": return this.updatedAt;
             case "dispatchPlanList": return this.dispatchPlanList;
-            case "driverAssignmentList": return this.driverAssignmentList;
-            case "gpsLogList": return this.gpsLogList;
+            case "telematicsDeviceList": return this.telematicsDeviceList;
             case "fuelLogList": return this.fuelLogList;
             case "vehicleMaintenanceList": return this.vehicleMaintenanceList;
-            case "telematicsDeviceList": return this.telematicsDeviceList;
+            case "driverAssignmentList": return this.driverAssignmentList;
             default: return super.__internalGet(property);
         }
     }

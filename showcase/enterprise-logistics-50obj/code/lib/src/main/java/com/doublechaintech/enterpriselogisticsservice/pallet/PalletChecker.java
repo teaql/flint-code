@@ -5,7 +5,6 @@ import com.doublechaintech.enterpriselogisticsservice.warehouse.WarehouseChecker
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class PalletChecker implements Checker<Pallet>{
@@ -36,7 +35,6 @@ public class PalletChecker implements Checker<Pallet>{
       }
       checkWarehouse(_ctx, pallet.getProperty(Pallet.WAREHOUSE_PROPERTY), newLocation(_parentLocation, Pallet.WAREHOUSE_PROPERTY));
       checkPalletId(_ctx, pallet.getProperty(Pallet.PALLET_ID_PROPERTY), newLocation(_parentLocation, Pallet.PALLET_ID_PROPERTY));
-      checkLoadWeight(_ctx, pallet.getProperty(Pallet.LOAD_WEIGHT_PROPERTY), newLocation(_parentLocation, Pallet.LOAD_WEIGHT_PROPERTY));
       checkStatus(_ctx, pallet.getProperty(Pallet.STATUS_PROPERTY), newLocation(_parentLocation, Pallet.STATUS_PROPERTY));
       checkCreateTime(_ctx, pallet.getProperty(Pallet.CREATE_TIME_PROPERTY), newLocation(_parentLocation, Pallet.CREATE_TIME_PROPERTY));
       checkUpdateTime(_ctx, pallet.getProperty(Pallet.UPDATE_TIME_PROPERTY), newLocation(_parentLocation, Pallet.UPDATE_TIME_PROPERTY));
@@ -56,12 +54,6 @@ public class PalletChecker implements Checker<Pallet>{
     }
     maxStringCheck(_ctx, _parentLocation, 100, palletId);
 
-    }
-    public void checkLoadWeight(UserContext _ctx, BigDecimal loadWeight, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, loadWeight);
-    if((loadWeight == null)){
-        return;
-    }
     }
     public void checkStatus(UserContext _ctx, String status, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, status);

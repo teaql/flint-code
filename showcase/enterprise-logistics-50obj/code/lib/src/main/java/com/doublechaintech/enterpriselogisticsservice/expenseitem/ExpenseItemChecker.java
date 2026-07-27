@@ -1,12 +1,10 @@
 package com.doublechaintech.enterpriselogisticsservice.expenseitem;
 
-import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember;
-import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMemberChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class ExpenseItemChecker implements Checker<ExpenseItem>{
 
@@ -26,22 +24,16 @@ public class ExpenseItemChecker implements Checker<ExpenseItem>{
          return;
       }
       if(expenseItem.newItem()){
-        if(expenseItem.getCreatedAt() == null){
-           expenseItem.updateCreatedAt(java.time.LocalDateTime.now());
-        }if(expenseItem.getUpdatedAt() == null){
-           expenseItem.updateUpdatedAt(java.time.LocalDateTime.now());
-        }
       }else if(expenseItem.updateItem()){
-        expenseItem.updateUpdatedAt(java.time.LocalDateTime.now());
       }
       checkName(_ctx, expenseItem.getProperty(ExpenseItem.NAME_PROPERTY), newLocation(_parentLocation, ExpenseItem.NAME_PROPERTY));
-      checkCode(_ctx, expenseItem.getProperty(ExpenseItem.CODE_PROPERTY), newLocation(_parentLocation, ExpenseItem.CODE_PROPERTY));
+      checkDescription(_ctx, expenseItem.getProperty(ExpenseItem.DESCRIPTION_PROPERTY), newLocation(_parentLocation, ExpenseItem.DESCRIPTION_PROPERTY));
       checkAmount(_ctx, expenseItem.getProperty(ExpenseItem.AMOUNT_PROPERTY), newLocation(_parentLocation, ExpenseItem.AMOUNT_PROPERTY));
       checkCurrency(_ctx, expenseItem.getProperty(ExpenseItem.CURRENCY_PROPERTY), newLocation(_parentLocation, ExpenseItem.CURRENCY_PROPERTY));
-      checkCategory(_ctx, expenseItem.getProperty(ExpenseItem.CATEGORY_PROPERTY), newLocation(_parentLocation, ExpenseItem.CATEGORY_PROPERTY));
-      checkCreatedAt(_ctx, expenseItem.getProperty(ExpenseItem.CREATED_AT_PROPERTY), newLocation(_parentLocation, ExpenseItem.CREATED_AT_PROPERTY));
-      checkUpdatedAt(_ctx, expenseItem.getProperty(ExpenseItem.UPDATED_AT_PROPERTY), newLocation(_parentLocation, ExpenseItem.UPDATED_AT_PROPERTY));
-      checkStaffMember(_ctx, expenseItem.getProperty(ExpenseItem.STAFF_MEMBER_PROPERTY), newLocation(_parentLocation, ExpenseItem.STAFF_MEMBER_PROPERTY));
+      checkExpenseType(_ctx, expenseItem.getProperty(ExpenseItem.EXPENSE_TYPE_PROPERTY), newLocation(_parentLocation, ExpenseItem.EXPENSE_TYPE_PROPERTY));
+      checkExpenseDate(_ctx, expenseItem.getProperty(ExpenseItem.EXPENSE_DATE_PROPERTY), newLocation(_parentLocation, ExpenseItem.EXPENSE_DATE_PROPERTY));
+      checkEmployee(_ctx, expenseItem.getProperty(ExpenseItem.EMPLOYEE_PROPERTY), newLocation(_parentLocation, ExpenseItem.EMPLOYEE_PROPERTY));
+      checkStatus(_ctx, expenseItem.getProperty(ExpenseItem.STATUS_PROPERTY), newLocation(_parentLocation, ExpenseItem.STATUS_PROPERTY));
     }
 
     public void checkName(UserContext _ctx, String name, ObjectLocation _parentLocation){
@@ -52,12 +44,12 @@ public class ExpenseItemChecker implements Checker<ExpenseItem>{
     maxStringCheck(_ctx, _parentLocation, 100, name);
 
     }
-    public void checkCode(UserContext _ctx, String code, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, code);
-    if((code == null)){
+    public void checkDescription(UserContext _ctx, String description, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, description);
+    if((description == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, code);
+    maxStringCheck(_ctx, _parentLocation, 100, description);
 
     }
     public void checkAmount(UserContext _ctx, BigDecimal amount, ObjectLocation _parentLocation){
@@ -74,31 +66,34 @@ public class ExpenseItemChecker implements Checker<ExpenseItem>{
     maxStringCheck(_ctx, _parentLocation, 100, currency);
 
     }
-    public void checkCategory(UserContext _ctx, String category, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, category);
-    if((category == null)){
+    public void checkExpenseType(UserContext _ctx, String expenseType, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, expenseType);
+    if((expenseType == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, category);
+    maxStringCheck(_ctx, _parentLocation, 100, expenseType);
 
     }
-    public void checkCreatedAt(UserContext _ctx, LocalDateTime createdAt, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, createdAt);
-    if((createdAt == null)){
+    public void checkExpenseDate(UserContext _ctx, LocalDate expenseDate, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, expenseDate);
+    if((expenseDate == null)){
         return;
     }
     }
-    public void checkUpdatedAt(UserContext _ctx, LocalDateTime updatedAt, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, updatedAt);
-    if((updatedAt == null)){
+    public void checkEmployee(UserContext _ctx, String employee, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, employee);
+    if((employee == null)){
         return;
     }
+    maxStringCheck(_ctx, _parentLocation, 100, employee);
+
     }
-    public void checkStaffMember(UserContext _ctx, StaffMember staffMember, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, staffMember);
-    if((staffMember == null)){
+    public void checkStatus(UserContext _ctx, String status, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, status);
+    if((status == null)){
         return;
     }
-    new StaffMemberChecker().checkAndFix(_ctx, staffMember, _parentLocation);
+    maxStringCheck(_ctx, _parentLocation, 100, status);
+
     }
 }

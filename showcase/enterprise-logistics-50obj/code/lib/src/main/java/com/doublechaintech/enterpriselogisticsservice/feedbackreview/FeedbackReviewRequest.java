@@ -1,10 +1,8 @@
 package com.doublechaintech.enterpriselogisticsservice.feedbackreview;
 
 import com.doublechaintech.enterpriselogisticsservice.Q;
-import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomerRequest;
-import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomerRequest;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderRequest;
 import io.teaql.core.AggrFunction;
 import io.teaql.core.BaseRequest;
 import io.teaql.core.PropertyReference;
@@ -12,7 +10,7 @@ import io.teaql.core.SearchCriteria;
 import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public class FeedbackReviewRequest<T extends FeedbackReview> extends BaseRequest<T> {
@@ -86,7 +84,7 @@ public class FeedbackReviewRequest<T extends FeedbackReview> extends BaseRequest
 
     public FeedbackReviewRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectRating().selectComment().selectReviewDate().selectPrivateCustomerIdOnly().selectCorporateCustomerIdOnly().selectVersion();
+        return selectId().selectRating().selectTitle().selectComment().selectMovingOrderIdOnly().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public FeedbackReviewRequest<T> selectSelfFields(){
@@ -95,12 +93,12 @@ public class FeedbackReviewRequest<T extends FeedbackReview> extends BaseRequest
 
     public FeedbackReviewRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectRating().selectComment().selectReviewDate().selectPrivateCustomer().selectCorporateCustomer().selectVersion();
+        return selectId().selectRating().selectTitle().selectComment().selectMovingOrder().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public FeedbackReviewRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectRating().selectComment().selectReviewDate().selectPrivateCustomer().selectCorporateCustomer().selectVersion();
+        return selectId().selectRating().selectTitle().selectComment().selectMovingOrder().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
 
@@ -146,6 +144,23 @@ public class FeedbackReviewRequest<T extends FeedbackReview> extends BaseRequest
        unselectProperty(FeedbackReview.RATING_PROPERTY);
        return this;
     }
+    public FeedbackReviewRequest<T> selectTitle(){
+       selectProperty(FeedbackReview.TITLE_PROPERTY);
+       return this;
+    }
+
+    /**
+     * fill the title with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  title) to fetch title property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public FeedbackReviewRequest<T> unselectTitle(){
+       unselectProperty(FeedbackReview.TITLE_PROPERTY);
+       return this;
+    }
     public FeedbackReviewRequest<T> selectComment(){
        selectProperty(FeedbackReview.COMMENT_PROPERTY);
        return this;
@@ -163,59 +178,57 @@ public class FeedbackReviewRequest<T extends FeedbackReview> extends BaseRequest
        unselectProperty(FeedbackReview.COMMENT_PROPERTY);
        return this;
     }
-    public FeedbackReviewRequest<T> selectReviewDate(){
-       selectProperty(FeedbackReview.REVIEW_DATE_PROPERTY);
+    public FeedbackReviewRequest<T> selectMovingOrderIdOnly(){
+       selectProperty(FeedbackReview.MOVING_ORDER_PROPERTY);
+       return this;
+    }
+
+    public FeedbackReviewRequest<T> selectMovingOrder(){
+        return selectMovingOrderWith(Q.movingOrders().unlimited().selectSelf());
+    }
+
+    public FeedbackReviewRequest<T> selectMovingOrderWith(MovingOrderRequest movingOrder){
+       selectProperty(FeedbackReview.MOVING_ORDER_PROPERTY);
+       enhanceRelation(FeedbackReview.MOVING_ORDER_PROPERTY, movingOrder);
+       return this;
+    }
+
+    public FeedbackReviewRequest<T> unselectMovingOrder(){
+       unselectProperty(FeedbackReview.MOVING_ORDER_PROPERTY);
+       return this;
+    }
+    public FeedbackReviewRequest<T> selectCreatedAt(){
+       selectProperty(FeedbackReview.CREATED_AT_PROPERTY);
        return this;
     }
 
     /**
-     * fill the reviewDate with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  reviewDate) to fetch reviewDate property.
+     * fill the createdAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdAt) to fetch createdAt property.
      * @param rawSqlSegment  customized rawSqlSegment
      */
 
 
 
 
-    public FeedbackReviewRequest<T> unselectReviewDate(){
-       unselectProperty(FeedbackReview.REVIEW_DATE_PROPERTY);
+    public FeedbackReviewRequest<T> unselectCreatedAt(){
+       unselectProperty(FeedbackReview.CREATED_AT_PROPERTY);
        return this;
     }
-    public FeedbackReviewRequest<T> selectPrivateCustomerIdOnly(){
-       selectProperty(FeedbackReview.PRIVATE_CUSTOMER_PROPERTY);
-       return this;
-    }
-
-    public FeedbackReviewRequest<T> selectPrivateCustomer(){
-        return selectPrivateCustomerWith(Q.privateCustomers().unlimited().selectSelf());
-    }
-
-    public FeedbackReviewRequest<T> selectPrivateCustomerWith(PrivateCustomerRequest privateCustomer){
-       selectProperty(FeedbackReview.PRIVATE_CUSTOMER_PROPERTY);
-       enhanceRelation(FeedbackReview.PRIVATE_CUSTOMER_PROPERTY, privateCustomer);
+    public FeedbackReviewRequest<T> selectUpdatedAt(){
+       selectProperty(FeedbackReview.UPDATED_AT_PROPERTY);
        return this;
     }
 
-    public FeedbackReviewRequest<T> unselectPrivateCustomer(){
-       unselectProperty(FeedbackReview.PRIVATE_CUSTOMER_PROPERTY);
-       return this;
-    }
-    public FeedbackReviewRequest<T> selectCorporateCustomerIdOnly(){
-       selectProperty(FeedbackReview.CORPORATE_CUSTOMER_PROPERTY);
-       return this;
-    }
+    /**
+     * fill the updatedAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedAt) to fetch updatedAt property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
 
-    public FeedbackReviewRequest<T> selectCorporateCustomer(){
-        return selectCorporateCustomerWith(Q.corporateCustomers().unlimited().selectSelf());
-    }
 
-    public FeedbackReviewRequest<T> selectCorporateCustomerWith(CorporateCustomerRequest corporateCustomer){
-       selectProperty(FeedbackReview.CORPORATE_CUSTOMER_PROPERTY);
-       enhanceRelation(FeedbackReview.CORPORATE_CUSTOMER_PROPERTY, corporateCustomer);
-       return this;
-    }
 
-    public FeedbackReviewRequest<T> unselectCorporateCustomer(){
-       unselectProperty(FeedbackReview.CORPORATE_CUSTOMER_PROPERTY);
+
+    public FeedbackReviewRequest<T> unselectUpdatedAt(){
+       unselectProperty(FeedbackReview.UPDATED_AT_PROPERTY);
        return this;
     }
     public FeedbackReviewRequest<T> selectVersion(){
@@ -298,6 +311,69 @@ public class FeedbackReviewRequest<T extends FeedbackReview> extends BaseRequest
 
 
 
+    public FeedbackReviewRequest<T> filterByTitle(String... title){
+      if (title == null || title.length == 0) {
+        throw new IllegalArgumentException("filterByTitle parameter title cannot be empty");
+      }
+      return appendSearchCriteria(createTitleCriteria(Operator.EQUAL, (Object[])title));
+    }
+
+    public FeedbackReviewRequest<T> withTitle(Operator operator, Object... values){
+       return appendSearchCriteria(createTitleCriteria(operator, values));
+    }
+
+    public FeedbackReviewRequest<T> withTitleIsUnknown(){
+       return withTitle(Operator.IS_NULL);
+    }
+
+    public FeedbackReviewRequest<T> withTitleIsKnown(){
+       return withTitle(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createTitleCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(FeedbackReview.TITLE_PROPERTY, operator, values);
+    }
+
+    public FeedbackReviewRequest<T> withTitleGreaterThan(String title){
+       return withTitle(Operator.GREATER_THAN, title);
+    }
+
+    public FeedbackReviewRequest<T> withTitleGreaterThanOrEqualTo(String title){
+       return withTitle(Operator.GREATER_THAN_OR_EQUAL, title);
+    }
+
+    public FeedbackReviewRequest<T> withTitleLessThan(String title){
+       return withTitle(Operator.LESS_THAN, title);
+    }
+
+    public FeedbackReviewRequest<T> withTitleLessThanOrEqualTo(String title){
+       return withTitle(Operator.LESS_THAN_OR_EQUAL, title);
+    }
+
+    public FeedbackReviewRequest<T> withTitleBetween(String startOfTitle, String endOfTitle){
+       return withTitle(Operator.BETWEEN, startOfTitle, endOfTitle);
+    }
+    public FeedbackReviewRequest<T> withTitleStartingWith(String title){
+       return withTitle(Operator.BEGIN_WITH, title);
+    }
+    public FeedbackReviewRequest<T> withTitleContaining(String title){
+       return withTitle(Operator.CONTAIN, title);
+    }
+
+    public FeedbackReviewRequest<T> withTitleEndingWith(String title){
+       return withTitle(Operator.END_WITH, title);
+    }
+
+    public FeedbackReviewRequest<T> withTitleIs(String title){
+       return withTitle(Operator.EQUAL, title);
+    }
+
+    public FeedbackReviewRequest<T> withTitleSoundingLike(String title){
+       return withTitle(Operator.SOUNDS_LIKE, title);
+    }
+
+
+
     public FeedbackReviewRequest<T> filterByComment(String... comment){
       if (comment == null || comment.length == 0) {
         throw new IllegalArgumentException("filterByComment parameter comment cannot be empty");
@@ -361,136 +437,168 @@ public class FeedbackReviewRequest<T extends FeedbackReview> extends BaseRequest
 
 
 
-    public FeedbackReviewRequest<T> filterByReviewDate(LocalDate... reviewDate){
-      if (reviewDate == null || reviewDate.length == 0) {
-        throw new IllegalArgumentException("filterByReviewDate parameter reviewDate cannot be empty");
+    public FeedbackReviewRequest<T> filterByMovingOrder(MovingOrder... movingOrder){
+      if (movingOrder == null || movingOrder.length == 0) {
+        throw new IllegalArgumentException("filterByMovingOrder parameter movingOrder cannot be empty");
       }
-      return appendSearchCriteria(createReviewDateCriteria(Operator.EQUAL, (Object[])reviewDate));
+      return appendSearchCriteria(createMovingOrderCriteria(Operator.EQUAL, (Object[])movingOrder));
     }
 
-    public FeedbackReviewRequest<T> withReviewDate(Operator operator, Object... values){
-       return appendSearchCriteria(createReviewDateCriteria(operator, values));
+    public FeedbackReviewRequest<T> withMovingOrder(Operator operator, Object... values){
+       return appendSearchCriteria(createMovingOrderCriteria(operator, values));
     }
 
-    public FeedbackReviewRequest<T> withReviewDateIsUnknown(){
-       return withReviewDate(Operator.IS_NULL);
+    public FeedbackReviewRequest<T> withMovingOrderIsUnknown(){
+       return withMovingOrder(Operator.IS_NULL);
     }
 
-    public FeedbackReviewRequest<T> withReviewDateIsKnown(){
-       return withReviewDate(Operator.IS_NOT_NULL);
+    public FeedbackReviewRequest<T> withMovingOrderIsKnown(){
+       return withMovingOrder(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createReviewDateCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(FeedbackReview.REVIEW_DATE_PROPERTY, operator, values);
+    public SearchCriteria createMovingOrderCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(FeedbackReview.MOVING_ORDER_PROPERTY, operator, values);
     }
 
-    public FeedbackReviewRequest<T> withReviewDateGreaterThan(LocalDate reviewDate){
-       return withReviewDate(Operator.GREATER_THAN, reviewDate);
-    }
-
-    public FeedbackReviewRequest<T> withReviewDateGreaterThanOrEqualTo(LocalDate reviewDate){
-       return withReviewDate(Operator.GREATER_THAN_OR_EQUAL, reviewDate);
-    }
-
-    public FeedbackReviewRequest<T> withReviewDateLessThan(LocalDate reviewDate){
-       return withReviewDate(Operator.LESS_THAN, reviewDate);
-    }
-
-    public FeedbackReviewRequest<T> withReviewDateLessThanOrEqualTo(LocalDate reviewDate){
-       return withReviewDate(Operator.LESS_THAN_OR_EQUAL, reviewDate);
-    }
-
-    public FeedbackReviewRequest<T> withReviewDateBetween(LocalDate startOfReviewDate, LocalDate endOfReviewDate){
-       return withReviewDate(Operator.BETWEEN, startOfReviewDate, endOfReviewDate);
-    }
-    public FeedbackReviewRequest<T> withReviewDateBefore(LocalDate reviewDate){
-       return withReviewDate(Operator.LESS_THAN, reviewDate);
-    }
-
-    public FeedbackReviewRequest<T> withReviewDateBefore(Date reviewDate){
-       return withReviewDate(Operator.LESS_THAN, reviewDate);
-    }
-
-    public FeedbackReviewRequest<T> withReviewDateAfter(LocalDate reviewDate){
-       return withReviewDate(Operator.GREATER_THAN, reviewDate);
-    }
-
-    public FeedbackReviewRequest<T> withReviewDateAfter(Date reviewDate){
-       return withReviewDate(Operator.GREATER_THAN, reviewDate);
-    }
-
-    public FeedbackReviewRequest<T> withReviewDateBetween(Date startOfReviewDate, Date endOfReviewDate){
-       return withReviewDate(Operator.BETWEEN, startOfReviewDate, endOfReviewDate);
-    }
-
-
-
-
-    public FeedbackReviewRequest<T> filterByPrivateCustomer(PrivateCustomer... privateCustomer){
-      if (privateCustomer == null || privateCustomer.length == 0) {
-        throw new IllegalArgumentException("filterByPrivateCustomer parameter privateCustomer cannot be empty");
-      }
-      return appendSearchCriteria(createPrivateCustomerCriteria(Operator.EQUAL, (Object[])privateCustomer));
-    }
-
-    public FeedbackReviewRequest<T> withPrivateCustomer(Operator operator, Object... values){
-       return appendSearchCriteria(createPrivateCustomerCriteria(operator, values));
-    }
-
-    public FeedbackReviewRequest<T> withPrivateCustomerIsUnknown(){
-       return withPrivateCustomer(Operator.IS_NULL);
-    }
-
-    public FeedbackReviewRequest<T> withPrivateCustomerIsKnown(){
-       return withPrivateCustomer(Operator.IS_NOT_NULL);
-    }
-
-    public SearchCriteria createPrivateCustomerCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(FeedbackReview.PRIVATE_CUSTOMER_PROPERTY, operator, values);
-    }
-
-    public FeedbackReviewRequest<T> filterByPrivateCustomer(Long privateCustomer){
-      if(privateCustomer == null){
+    public FeedbackReviewRequest<T> filterByMovingOrder(Long movingOrder){
+      if(movingOrder == null){
          return this;
       }
-      return withPrivateCustomer(Operator.EQUAL, privateCustomer);
+      return withMovingOrder(Operator.EQUAL, movingOrder);
     }
-    public FeedbackReviewRequest<T> withPrivateCustomerMatching(PrivateCustomerRequest privateCustomer){
-       return appendSearchCriteria(new SubQuerySearchCriteria(FeedbackReview.PRIVATE_CUSTOMER_PROPERTY, privateCustomer, PrivateCustomer.ID_PROPERTY));
+    public FeedbackReviewRequest<T> withMovingOrderMatching(MovingOrderRequest movingOrder){
+       return appendSearchCriteria(new SubQuerySearchCriteria(FeedbackReview.MOVING_ORDER_PROPERTY, movingOrder, MovingOrder.ID_PROPERTY));
     }
 
-    public FeedbackReviewRequest<T> filterByCorporateCustomer(CorporateCustomer... corporateCustomer){
-      if (corporateCustomer == null || corporateCustomer.length == 0) {
-        throw new IllegalArgumentException("filterByCorporateCustomer parameter corporateCustomer cannot be empty");
+    public FeedbackReviewRequest<T> filterByCreatedAt(LocalDateTime... createdAt){
+      if (createdAt == null || createdAt.length == 0) {
+        throw new IllegalArgumentException("filterByCreatedAt parameter createdAt cannot be empty");
       }
-      return appendSearchCriteria(createCorporateCustomerCriteria(Operator.EQUAL, (Object[])corporateCustomer));
+      return appendSearchCriteria(createCreatedAtCriteria(Operator.EQUAL, (Object[])createdAt));
     }
 
-    public FeedbackReviewRequest<T> withCorporateCustomer(Operator operator, Object... values){
-       return appendSearchCriteria(createCorporateCustomerCriteria(operator, values));
+    public FeedbackReviewRequest<T> withCreatedAt(Operator operator, Object... values){
+       return appendSearchCriteria(createCreatedAtCriteria(operator, values));
     }
 
-    public FeedbackReviewRequest<T> withCorporateCustomerIsUnknown(){
-       return withCorporateCustomer(Operator.IS_NULL);
+    public FeedbackReviewRequest<T> withCreatedAtIsUnknown(){
+       return withCreatedAt(Operator.IS_NULL);
     }
 
-    public FeedbackReviewRequest<T> withCorporateCustomerIsKnown(){
-       return withCorporateCustomer(Operator.IS_NOT_NULL);
+    public FeedbackReviewRequest<T> withCreatedAtIsKnown(){
+       return withCreatedAt(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCorporateCustomerCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(FeedbackReview.CORPORATE_CUSTOMER_PROPERTY, operator, values);
+    public SearchCriteria createCreatedAtCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(FeedbackReview.CREATED_AT_PROPERTY, operator, values);
     }
 
-    public FeedbackReviewRequest<T> filterByCorporateCustomer(Long corporateCustomer){
-      if(corporateCustomer == null){
-         return this;
+    public FeedbackReviewRequest<T> withCreatedAtGreaterThan(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public FeedbackReviewRequest<T> withCreatedAtGreaterThanOrEqualTo(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN_OR_EQUAL, createdAt);
+    }
+
+    public FeedbackReviewRequest<T> withCreatedAtLessThan(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public FeedbackReviewRequest<T> withCreatedAtLessThanOrEqualTo(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN_OR_EQUAL, createdAt);
+    }
+
+    public FeedbackReviewRequest<T> withCreatedAtBetween(LocalDateTime startOfCreatedAt, LocalDateTime endOfCreatedAt){
+       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    }
+    public FeedbackReviewRequest<T> withCreatedAtBefore(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public FeedbackReviewRequest<T> withCreatedAtBefore(Date createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public FeedbackReviewRequest<T> withCreatedAtAfter(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public FeedbackReviewRequest<T> withCreatedAtAfter(Date createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public FeedbackReviewRequest<T> withCreatedAtBetween(Date startOfCreatedAt, Date endOfCreatedAt){
+       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    }
+
+
+
+
+    public FeedbackReviewRequest<T> filterByUpdatedAt(LocalDateTime... updatedAt){
+      if (updatedAt == null || updatedAt.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedAt parameter updatedAt cannot be empty");
       }
-      return withCorporateCustomer(Operator.EQUAL, corporateCustomer);
+      return appendSearchCriteria(createUpdatedAtCriteria(Operator.EQUAL, (Object[])updatedAt));
     }
-    public FeedbackReviewRequest<T> withCorporateCustomerMatching(CorporateCustomerRequest corporateCustomer){
-       return appendSearchCriteria(new SubQuerySearchCriteria(FeedbackReview.CORPORATE_CUSTOMER_PROPERTY, corporateCustomer, CorporateCustomer.ID_PROPERTY));
+
+    public FeedbackReviewRequest<T> withUpdatedAt(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedAtCriteria(operator, values));
     }
+
+    public FeedbackReviewRequest<T> withUpdatedAtIsUnknown(){
+       return withUpdatedAt(Operator.IS_NULL);
+    }
+
+    public FeedbackReviewRequest<T> withUpdatedAtIsKnown(){
+       return withUpdatedAt(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createUpdatedAtCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(FeedbackReview.UPDATED_AT_PROPERTY, operator, values);
+    }
+
+    public FeedbackReviewRequest<T> withUpdatedAtGreaterThan(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public FeedbackReviewRequest<T> withUpdatedAtGreaterThanOrEqualTo(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN_OR_EQUAL, updatedAt);
+    }
+
+    public FeedbackReviewRequest<T> withUpdatedAtLessThan(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public FeedbackReviewRequest<T> withUpdatedAtLessThanOrEqualTo(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN_OR_EQUAL, updatedAt);
+    }
+
+    public FeedbackReviewRequest<T> withUpdatedAtBetween(LocalDateTime startOfUpdatedAt, LocalDateTime endOfUpdatedAt){
+       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    }
+    public FeedbackReviewRequest<T> withUpdatedAtBefore(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public FeedbackReviewRequest<T> withUpdatedAtBefore(Date updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public FeedbackReviewRequest<T> withUpdatedAtAfter(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public FeedbackReviewRequest<T> withUpdatedAtAfter(Date updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public FeedbackReviewRequest<T> withUpdatedAtBetween(Date startOfUpdatedAt, Date endOfUpdatedAt){
+       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    }
+
+
+
 
     public FeedbackReviewRequest<T> filterByVersion(Long... version){
       if (version == null || version.length == 0) {
@@ -608,23 +716,16 @@ public class FeedbackReviewRequest<T extends FeedbackReview> extends BaseRequest
         super.samplePopulationVariance(retName, FeedbackReview.RATING_PROPERTY);
         return this;
     }
-    public FeedbackReviewRequest<T> groupByPrivateCustomerWithDetails(){
-       return groupByPrivateCustomerWithDetails(Q.privateCustomers().unlimited());
+    public FeedbackReviewRequest<T> groupByMovingOrderWithDetails(){
+       return groupByMovingOrderWithDetails(Q.movingOrders().unlimited());
     }
 
-    public FeedbackReviewRequest<T> groupByPrivateCustomerWithDetails(PrivateCustomerRequest subRequest){
-       aggregate(FeedbackReview.PRIVATE_CUSTOMER_PROPERTY, subRequest);
+    public FeedbackReviewRequest<T> groupByMovingOrderWithDetails(MovingOrderRequest subRequest){
+       aggregate(FeedbackReview.MOVING_ORDER_PROPERTY, subRequest);
        return this;
     }
 
-    public FeedbackReviewRequest<T> groupByCorporateCustomerWithDetails(){
-       return groupByCorporateCustomerWithDetails(Q.corporateCustomers().unlimited());
-    }
 
-    public FeedbackReviewRequest<T> groupByCorporateCustomerWithDetails(CorporateCustomerRequest subRequest){
-       aggregate(FeedbackReview.CORPORATE_CUSTOMER_PROPERTY, subRequest);
-       return this;
-    }
 
 
 
@@ -658,6 +759,21 @@ public class FeedbackReviewRequest<T extends FeedbackReview> extends BaseRequest
        return this;
     }
 
+    public FeedbackReviewRequest<T> groupByTitle(){
+       groupBy(FeedbackReview.TITLE_PROPERTY);
+       return this;
+    }
+
+    public FeedbackReviewRequest<T> groupByTitleAs(String retName){
+       groupBy(retName, FeedbackReview.TITLE_PROPERTY);
+       return this;
+    }
+
+    public FeedbackReviewRequest<T> groupByTitleWithFunction(String retName, AggrFunction function){
+       groupBy(retName, FeedbackReview.TITLE_PROPERTY, function);
+       return this;
+    }
+
     public FeedbackReviewRequest<T> groupByComment(){
        groupBy(FeedbackReview.COMMENT_PROPERTY);
        return this;
@@ -672,55 +788,52 @@ public class FeedbackReviewRequest<T extends FeedbackReview> extends BaseRequest
        groupBy(retName, FeedbackReview.COMMENT_PROPERTY, function);
        return this;
     }
-
-    public FeedbackReviewRequest<T> groupByReviewDate(){
-       groupBy(FeedbackReview.REVIEW_DATE_PROPERTY);
+    public FeedbackReviewRequest<T> groupByMovingOrderWith(MovingOrderRequest subRequest){
+       groupBy(FeedbackReview.MOVING_ORDER_PROPERTY, subRequest);
+       return this;
+    }
+    public FeedbackReviewRequest<T> groupByMovingOrder(){
+       groupBy(FeedbackReview.MOVING_ORDER_PROPERTY);
        return this;
     }
 
-    public FeedbackReviewRequest<T> groupByReviewDateAs(String retName){
-       groupBy(retName, FeedbackReview.REVIEW_DATE_PROPERTY);
+    public FeedbackReviewRequest<T> groupByMovingOrderAs(String retName){
+       groupBy(retName, FeedbackReview.MOVING_ORDER_PROPERTY);
        return this;
     }
 
-    public FeedbackReviewRequest<T> groupByReviewDateWithFunction(String retName, AggrFunction function){
-       groupBy(retName, FeedbackReview.REVIEW_DATE_PROPERTY, function);
-       return this;
-    }
-    public FeedbackReviewRequest<T> groupByPrivateCustomerWith(PrivateCustomerRequest subRequest){
-       groupBy(FeedbackReview.PRIVATE_CUSTOMER_PROPERTY, subRequest);
-       return this;
-    }
-    public FeedbackReviewRequest<T> groupByPrivateCustomer(){
-       groupBy(FeedbackReview.PRIVATE_CUSTOMER_PROPERTY);
+    public FeedbackReviewRequest<T> groupByMovingOrderWithFunction(String retName, AggrFunction function){
+       groupBy(retName, FeedbackReview.MOVING_ORDER_PROPERTY, function);
        return this;
     }
 
-    public FeedbackReviewRequest<T> groupByPrivateCustomerAs(String retName){
-       groupBy(retName, FeedbackReview.PRIVATE_CUSTOMER_PROPERTY);
+    public FeedbackReviewRequest<T> groupByCreatedAt(){
+       groupBy(FeedbackReview.CREATED_AT_PROPERTY);
        return this;
     }
 
-    public FeedbackReviewRequest<T> groupByPrivateCustomerWithFunction(String retName, AggrFunction function){
-       groupBy(retName, FeedbackReview.PRIVATE_CUSTOMER_PROPERTY, function);
-       return this;
-    }
-    public FeedbackReviewRequest<T> groupByCorporateCustomerWith(CorporateCustomerRequest subRequest){
-       groupBy(FeedbackReview.CORPORATE_CUSTOMER_PROPERTY, subRequest);
-       return this;
-    }
-    public FeedbackReviewRequest<T> groupByCorporateCustomer(){
-       groupBy(FeedbackReview.CORPORATE_CUSTOMER_PROPERTY);
+    public FeedbackReviewRequest<T> groupByCreatedAtAs(String retName){
+       groupBy(retName, FeedbackReview.CREATED_AT_PROPERTY);
        return this;
     }
 
-    public FeedbackReviewRequest<T> groupByCorporateCustomerAs(String retName){
-       groupBy(retName, FeedbackReview.CORPORATE_CUSTOMER_PROPERTY);
+    public FeedbackReviewRequest<T> groupByCreatedAtWithFunction(String retName, AggrFunction function){
+       groupBy(retName, FeedbackReview.CREATED_AT_PROPERTY, function);
        return this;
     }
 
-    public FeedbackReviewRequest<T> groupByCorporateCustomerWithFunction(String retName, AggrFunction function){
-       groupBy(retName, FeedbackReview.CORPORATE_CUSTOMER_PROPERTY, function);
+    public FeedbackReviewRequest<T> groupByUpdatedAt(){
+       groupBy(FeedbackReview.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public FeedbackReviewRequest<T> groupByUpdatedAtAs(String retName){
+       groupBy(retName, FeedbackReview.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public FeedbackReviewRequest<T> groupByUpdatedAtWithFunction(String retName, AggrFunction function){
+       groupBy(retName, FeedbackReview.UPDATED_AT_PROPERTY, function);
        return this;
     }
 
@@ -761,6 +874,24 @@ public class FeedbackReviewRequest<T extends FeedbackReview> extends BaseRequest
        return this;
     }
 
+    public FeedbackReviewRequest<T> orderByTitleAscending(){
+       addOrderByAscending(FeedbackReview.TITLE_PROPERTY);
+       return this;
+    }
+
+    public FeedbackReviewRequest<T> orderByTitleDescending(){
+       addOrderByDescending(FeedbackReview.TITLE_PROPERTY);
+       return this;
+    }
+    public FeedbackReviewRequest<T> orderByTitleAscendingUsingGBK(){
+       addOrderByAscendingUsingGBK(FeedbackReview.TITLE_PROPERTY);
+       return this;
+    }
+
+    public FeedbackReviewRequest<T> orderByTitleDescendingUsingGBK(){
+       addOrderByDescendingUsingGBK(FeedbackReview.TITLE_PROPERTY);
+       return this;
+    }
     public FeedbackReviewRequest<T> orderByCommentAscending(){
        addOrderByAscending(FeedbackReview.COMMENT_PROPERTY);
        return this;
@@ -779,33 +910,33 @@ public class FeedbackReviewRequest<T extends FeedbackReview> extends BaseRequest
        addOrderByDescendingUsingGBK(FeedbackReview.COMMENT_PROPERTY);
        return this;
     }
-    public FeedbackReviewRequest<T> orderByReviewDateAscending(){
-       addOrderByAscending(FeedbackReview.REVIEW_DATE_PROPERTY);
+    public FeedbackReviewRequest<T> orderByMovingOrderAscending(){
+       addOrderByAscending(FeedbackReview.MOVING_ORDER_PROPERTY);
        return this;
     }
 
-    public FeedbackReviewRequest<T> orderByReviewDateDescending(){
-       addOrderByDescending(FeedbackReview.REVIEW_DATE_PROPERTY);
+    public FeedbackReviewRequest<T> orderByMovingOrderDescending(){
+       addOrderByDescending(FeedbackReview.MOVING_ORDER_PROPERTY);
        return this;
     }
 
-    public FeedbackReviewRequest<T> orderByPrivateCustomerAscending(){
-       addOrderByAscending(FeedbackReview.PRIVATE_CUSTOMER_PROPERTY);
+    public FeedbackReviewRequest<T> orderByCreatedAtAscending(){
+       addOrderByAscending(FeedbackReview.CREATED_AT_PROPERTY);
        return this;
     }
 
-    public FeedbackReviewRequest<T> orderByPrivateCustomerDescending(){
-       addOrderByDescending(FeedbackReview.PRIVATE_CUSTOMER_PROPERTY);
+    public FeedbackReviewRequest<T> orderByCreatedAtDescending(){
+       addOrderByDescending(FeedbackReview.CREATED_AT_PROPERTY);
        return this;
     }
 
-    public FeedbackReviewRequest<T> orderByCorporateCustomerAscending(){
-       addOrderByAscending(FeedbackReview.CORPORATE_CUSTOMER_PROPERTY);
+    public FeedbackReviewRequest<T> orderByUpdatedAtAscending(){
+       addOrderByAscending(FeedbackReview.UPDATED_AT_PROPERTY);
        return this;
     }
 
-    public FeedbackReviewRequest<T> orderByCorporateCustomerDescending(){
-       addOrderByDescending(FeedbackReview.CORPORATE_CUSTOMER_PROPERTY);
+    public FeedbackReviewRequest<T> orderByUpdatedAtDescending(){
+       addOrderByDescending(FeedbackReview.UPDATED_AT_PROPERTY);
        return this;
     }
 
@@ -820,36 +951,23 @@ public class FeedbackReviewRequest<T extends FeedbackReview> extends BaseRequest
     }
 
 
-    public PrivateCustomerRequest rollUpToPrivateCustomer(){
-       PrivateCustomerRequest privateCustomer = Q.privateCustomers().unlimited();
-       this.withPrivateCustomerMatching(privateCustomer)
-           .groupByPrivateCustomerWith(privateCustomer);
-       return privateCustomer;
-    }
-
-    public CorporateCustomerRequest rollUpToCorporateCustomer(){
-       CorporateCustomerRequest corporateCustomer = Q.corporateCustomers().unlimited();
-       this.withCorporateCustomerMatching(corporateCustomer)
-           .groupByCorporateCustomerWith(corporateCustomer);
-       return corporateCustomer;
+    public MovingOrderRequest rollUpToMovingOrder(){
+       MovingOrderRequest movingOrder = Q.movingOrders().unlimited();
+       this.withMovingOrderMatching(movingOrder)
+           .groupByMovingOrderWith(movingOrder);
+       return movingOrder;
     }
 
 
 
-   public FeedbackReviewRequest<T> facetByPrivateCustomerAs(String facetName, PrivateCustomerRequest privateCustomer){
-       return facetByPrivateCustomerAs(facetName, privateCustomer, true);
+
+
+   public FeedbackReviewRequest<T> facetByMovingOrderAs(String facetName, MovingOrderRequest movingOrder){
+       return facetByMovingOrderAs(facetName, movingOrder, true);
    }
 
-   public FeedbackReviewRequest<T> facetByPrivateCustomerAs(String facetName, PrivateCustomerRequest privateCustomer, boolean includeAllFacets){
-       addFacet(facetName, FeedbackReview.PRIVATE_CUSTOMER_PROPERTY, privateCustomer, includeAllFacets);
-       return this;
-   }
-   public FeedbackReviewRequest<T> facetByCorporateCustomerAs(String facetName, CorporateCustomerRequest corporateCustomer){
-       return facetByCorporateCustomerAs(facetName, corporateCustomer, true);
-   }
-
-   public FeedbackReviewRequest<T> facetByCorporateCustomerAs(String facetName, CorporateCustomerRequest corporateCustomer, boolean includeAllFacets){
-       addFacet(facetName, FeedbackReview.CORPORATE_CUSTOMER_PROPERTY, corporateCustomer, includeAllFacets);
+   public FeedbackReviewRequest<T> facetByMovingOrderAs(String facetName, MovingOrderRequest movingOrder, boolean includeAllFacets){
+       addFacet(facetName, FeedbackReview.MOVING_ORDER_PROPERTY, movingOrder, includeAllFacets);
        return this;
    }
 

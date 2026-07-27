@@ -3,7 +3,7 @@ package com.doublechaintech.enterpriselogisticsservice.warehouse;
 import com.doublechaintech.enterpriselogisticsservice.inventorycheck.InventoryCheck;
 import com.doublechaintech.enterpriselogisticsservice.pallet.Pallet;
 import com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainer;
-import com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute;
+import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
@@ -34,11 +34,10 @@ public class Warehouse extends BaseEntity implements RemoteInput {
     public static final String STATUS_PROPERTY = "status";
     public static final String CREATE_TIME_PROPERTY = "createTime";
     public static final String UPDATE_TIME_PROPERTY = "updateTime";
-    public static final String TRANSIT_ROUTE_LIST_AS_ORIGIN_WAREHOUSE_PROPERTY = "transitRouteListAsOriginWarehouse";
-    public static final String TRANSIT_ROUTE_LIST_AS_DESTINATION_WAREHOUSE_PROPERTY = "transitRouteListAsDestinationWarehouse";
     public static final String STORAGE_CONTAINER_LIST_PROPERTY = "storageContainerList";
     public static final String INVENTORY_CHECK_LIST_PROPERTY = "inventoryCheckList";
     public static final String PALLET_LIST_PROPERTY = "palletList";
+    public static final String STORAGE_FEE_LIST_PROPERTY = "storageFeeList";
     private String name;
     private String code;
     private String address;
@@ -48,11 +47,10 @@ public class Warehouse extends BaseEntity implements RemoteInput {
     private String status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
-    private SmartList<TransitRoute> transitRouteListAsOriginWarehouse;
-    private SmartList<TransitRoute> transitRouteListAsDestinationWarehouse;
     private SmartList<StorageContainer> storageContainerList;
     private SmartList<InventoryCheck> inventoryCheckList;
     private SmartList<Pallet> palletList;
+    private SmartList<StorageFee> storageFeeList;
 
     public String getName(){
         return this.name;
@@ -81,12 +79,6 @@ public class Warehouse extends BaseEntity implements RemoteInput {
     public LocalDateTime getUpdateTime(){
         return this.updateTime;
     }
-    public SmartList<TransitRoute> getTransitRouteListAsOriginWarehouse(){
-        return this.transitRouteListAsOriginWarehouse;
-    }
-    public SmartList<TransitRoute> getTransitRouteListAsDestinationWarehouse(){
-        return this.transitRouteListAsDestinationWarehouse;
-    }
     public SmartList<StorageContainer> getStorageContainerList(){
         return this.storageContainerList;
     }
@@ -95,6 +87,9 @@ public class Warehouse extends BaseEntity implements RemoteInput {
     }
     public SmartList<Pallet> getPalletList(){
         return this.palletList;
+    }
+    public SmartList<StorageFee> getStorageFeeList(){
+        return this.storageFeeList;
     }
     public Warehouse updateName(String name){
         name = (name == null ? null : name.trim());
@@ -174,32 +169,6 @@ public class Warehouse extends BaseEntity implements RemoteInput {
         this.updateTime = updateTime;
         return this;
     }
-    public Warehouse addTransitRouteAsOriginWarehouse(TransitRoute transitRoute){
-        if (transitRoute == null){
-            return this;
-        }
-
-        if(null == this.transitRouteListAsOriginWarehouse){
-            this.transitRouteListAsOriginWarehouse = new SmartList<>();
-        }
-
-        this.transitRouteListAsOriginWarehouse.add(transitRoute);
-        transitRoute.cacheRelation(TransitRoute.ORIGIN_WAREHOUSE_PROPERTY, this);
-        return this;
-    }
-    public Warehouse addTransitRouteAsDestinationWarehouse(TransitRoute transitRoute){
-        if (transitRoute == null){
-            return this;
-        }
-
-        if(null == this.transitRouteListAsDestinationWarehouse){
-            this.transitRouteListAsDestinationWarehouse = new SmartList<>();
-        }
-
-        this.transitRouteListAsDestinationWarehouse.add(transitRoute);
-        transitRoute.cacheRelation(TransitRoute.DESTINATION_WAREHOUSE_PROPERTY, this);
-        return this;
-    }
     public Warehouse addStorageContainer(StorageContainer storageContainer){
         if (storageContainer == null){
             return this;
@@ -237,6 +206,19 @@ public class Warehouse extends BaseEntity implements RemoteInput {
 
         this.palletList.add(pallet);
         pallet.cacheRelation(Pallet.WAREHOUSE_PROPERTY, this);
+        return this;
+    }
+    public Warehouse addStorageFee(StorageFee storageFee){
+        if (storageFee == null){
+            return this;
+        }
+
+        if(null == this.storageFeeList){
+            this.storageFeeList = new SmartList<>();
+        }
+
+        this.storageFeeList.add(storageFee);
+        storageFee.cacheRelation(StorageFee.WAREHOUSE_PROPERTY, this);
         return this;
     }
 
@@ -285,11 +267,10 @@ public class Warehouse extends BaseEntity implements RemoteInput {
 
             case "updateTime": this.updateTime = (LocalDateTime) value; break;
 
-            case "transitRouteListAsOriginWarehouse": this.transitRouteListAsOriginWarehouse = (SmartList<TransitRoute>) value; break;
-            case "transitRouteListAsDestinationWarehouse": this.transitRouteListAsDestinationWarehouse = (SmartList<TransitRoute>) value; break;
             case "storageContainerList": this.storageContainerList = (SmartList<StorageContainer>) value; break;
             case "inventoryCheckList": this.inventoryCheckList = (SmartList<InventoryCheck>) value; break;
             case "palletList": this.palletList = (SmartList<Pallet>) value; break;
+            case "storageFeeList": this.storageFeeList = (SmartList<StorageFee>) value; break;
             default: super.__internalSet(property, value);
         }
     }
@@ -307,11 +288,10 @@ public class Warehouse extends BaseEntity implements RemoteInput {
             case "status": return this.status;
             case "createTime": return this.createTime;
             case "updateTime": return this.updateTime;
-            case "transitRouteListAsOriginWarehouse": return this.transitRouteListAsOriginWarehouse;
-            case "transitRouteListAsDestinationWarehouse": return this.transitRouteListAsDestinationWarehouse;
             case "storageContainerList": return this.storageContainerList;
             case "inventoryCheckList": return this.inventoryCheckList;
             case "palletList": return this.palletList;
+            case "storageFeeList": return this.storageFeeList;
             default: return super.__internalGet(property);
         }
     }

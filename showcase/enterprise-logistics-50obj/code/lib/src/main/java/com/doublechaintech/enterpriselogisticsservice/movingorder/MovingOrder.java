@@ -1,11 +1,13 @@
 package com.doublechaintech.enterpriselogisticsservice.movingorder;
 
 import com.doublechaintech.enterpriselogisticsservice.cargoitem.CargoItem;
+import com.doublechaintech.enterpriselogisticsservice.claimsrecord.ClaimsRecord;
+import com.doublechaintech.enterpriselogisticsservice.customsdeclaration.CustomsDeclaration;
 import com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan;
+import com.doublechaintech.enterpriselogisticsservice.feedbackreview.FeedbackReview;
 import com.doublechaintech.enterpriselogisticsservice.invoice.Invoice;
 import com.doublechaintech.enterpriselogisticsservice.pickupaddress.PickupAddress;
 import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.timeslot.TimeSlot;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
@@ -13,7 +15,6 @@ import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
 import io.teaql.core.SmartList;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -28,49 +29,55 @@ import java.util.Objects;
 public class MovingOrder extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "MovingOrder";
 
-    public static final String ORDER_ID_PROPERTY = "orderId";
-    public static final String CUSTOMER_PROPERTY = "customer";
+    public static final String ORDER_NUMBER_PROPERTY = "orderNumber";
     public static final String STATUS_PROPERTY = "status";
+    public static final String CUSTOMER_PROPERTY = "customer";
+    public static final String PICKUP_ADDRESS_PROPERTY = "pickupAddress";
+    public static final String DELIVERY_ADDRESS_PROPERTY = "deliveryAddress";
     public static final String TOTAL_WEIGHT_PROPERTY = "totalWeight";
     public static final String TOTAL_VOLUME_PROPERTY = "totalVolume";
     public static final String ESTIMATED_COST_PROPERTY = "estimatedCost";
     public static final String ACTUAL_COST_PROPERTY = "actualCost";
-    public static final String PICKUP_DATE_PROPERTY = "pickupDate";
-    public static final String DELIVERY_DATE_PROPERTY = "deliveryDate";
-    public static final String SPECIAL_INSTRUCTIONS_PROPERTY = "specialInstructions";
-    public static final String CREATE_TIME_PROPERTY = "createTime";
-    public static final String UPDATE_TIME_PROPERTY = "updateTime";
+    public static final String CREATED_TIME_PROPERTY = "createdTime";
+    public static final String UPDATED_TIME_PROPERTY = "updatedTime";
     public static final String DISPATCH_PLAN_LIST_PROPERTY = "dispatchPlanList";
-    public static final String TIME_SLOT_LIST_PROPERTY = "timeSlotList";
     public static final String CARGO_ITEM_LIST_PROPERTY = "cargoItemList";
-    public static final String PICKUP_ADDRESS_LIST_PROPERTY = "pickupAddressList";
+    public static final String FEEDBACK_REVIEW_LIST_PROPERTY = "feedbackReviewList";
     public static final String INVOICE_LIST_PROPERTY = "invoiceList";
-    private String orderId;
-    private PrivateCustomer customer;
+    public static final String CLAIMS_RECORD_LIST_PROPERTY = "claimsRecordList";
+    public static final String CUSTOMS_DECLARATION_LIST_PROPERTY = "customsDeclarationList";
+    private String orderNumber;
     private String status;
+    private PrivateCustomer customer;
+    private PickupAddress pickupAddress;
+    private PickupAddress deliveryAddress;
     private BigDecimal totalWeight;
     private BigDecimal totalVolume;
     private BigDecimal estimatedCost;
     private BigDecimal actualCost;
-    private LocalDate pickupDate;
-    private LocalDate deliveryDate;
-    private String specialInstructions;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
+    private LocalDateTime createdTime;
+    private LocalDateTime updatedTime;
     private SmartList<DispatchPlan> dispatchPlanList;
-    private SmartList<TimeSlot> timeSlotList;
     private SmartList<CargoItem> cargoItemList;
-    private SmartList<PickupAddress> pickupAddressList;
+    private SmartList<FeedbackReview> feedbackReviewList;
     private SmartList<Invoice> invoiceList;
+    private SmartList<ClaimsRecord> claimsRecordList;
+    private SmartList<CustomsDeclaration> customsDeclarationList;
 
-    public String getOrderId(){
-        return this.orderId;
+    public String getOrderNumber(){
+        return this.orderNumber;
+    }
+    public String getStatus(){
+        return this.status;
     }
     public PrivateCustomer getCustomer(){
         return this.customer;
     }
-    public String getStatus(){
-        return this.status;
+    public PickupAddress getPickupAddress(){
+        return this.pickupAddress;
+    }
+    public PickupAddress getDeliveryAddress(){
+        return this.deliveryAddress;
     }
     public BigDecimal getTotalWeight(){
         return this.totalWeight;
@@ -84,43 +91,46 @@ public class MovingOrder extends BaseEntity implements RemoteInput {
     public BigDecimal getActualCost(){
         return this.actualCost;
     }
-    public LocalDate getPickupDate(){
-        return this.pickupDate;
+    public LocalDateTime getCreatedTime(){
+        return this.createdTime;
     }
-    public LocalDate getDeliveryDate(){
-        return this.deliveryDate;
-    }
-    public String getSpecialInstructions(){
-        return this.specialInstructions;
-    }
-    public LocalDateTime getCreateTime(){
-        return this.createTime;
-    }
-    public LocalDateTime getUpdateTime(){
-        return this.updateTime;
+    public LocalDateTime getUpdatedTime(){
+        return this.updatedTime;
     }
     public SmartList<DispatchPlan> getDispatchPlanList(){
         return this.dispatchPlanList;
     }
-    public SmartList<TimeSlot> getTimeSlotList(){
-        return this.timeSlotList;
-    }
     public SmartList<CargoItem> getCargoItemList(){
         return this.cargoItemList;
     }
-    public SmartList<PickupAddress> getPickupAddressList(){
-        return this.pickupAddressList;
+    public SmartList<FeedbackReview> getFeedbackReviewList(){
+        return this.feedbackReviewList;
     }
     public SmartList<Invoice> getInvoiceList(){
         return this.invoiceList;
     }
-    public MovingOrder updateOrderId(String orderId){
-        orderId = (orderId == null ? null : orderId.trim());
-        if(Objects.equals(this.orderId, orderId)){
+    public SmartList<ClaimsRecord> getClaimsRecordList(){
+        return this.claimsRecordList;
+    }
+    public SmartList<CustomsDeclaration> getCustomsDeclarationList(){
+        return this.customsDeclarationList;
+    }
+    public MovingOrder updateOrderNumber(String orderNumber){
+        orderNumber = (orderNumber == null ? null : orderNumber.trim());
+        if(Objects.equals(this.orderNumber, orderNumber)){
             return this;
         }
-        handleUpdate(ORDER_ID_PROPERTY, getOrderId(), orderId);
-        this.orderId = orderId;
+        handleUpdate(ORDER_NUMBER_PROPERTY, getOrderNumber(), orderNumber);
+        this.orderNumber = orderNumber;
+        return this;
+    }
+    public MovingOrder updateStatus(String status){
+        status = (status == null ? null : status.trim());
+        if(Objects.equals(this.status, status)){
+            return this;
+        }
+        handleUpdate(STATUS_PROPERTY, getStatus(), status);
+        this.status = status;
         return this;
     }
     public MovingOrder updateCustomer(PrivateCustomer customer){
@@ -131,13 +141,20 @@ public class MovingOrder extends BaseEntity implements RemoteInput {
         this.customer = customer;
         return this;
     }
-    public MovingOrder updateStatus(String status){
-        status = (status == null ? null : status.trim());
-        if(Objects.equals(this.status, status)){
+    public MovingOrder updatePickupAddress(PickupAddress pickupAddress){
+        if(Objects.equals(this.pickupAddress, pickupAddress)){
             return this;
         }
-        handleUpdate(STATUS_PROPERTY, getStatus(), status);
-        this.status = status;
+        handleUpdate(PICKUP_ADDRESS_PROPERTY, getPickupAddress(), pickupAddress);
+        this.pickupAddress = pickupAddress;
+        return this;
+    }
+    public MovingOrder updateDeliveryAddress(PickupAddress deliveryAddress){
+        if(Objects.equals(this.deliveryAddress, deliveryAddress)){
+            return this;
+        }
+        handleUpdate(DELIVERY_ADDRESS_PROPERTY, getDeliveryAddress(), deliveryAddress);
+        this.deliveryAddress = deliveryAddress;
         return this;
     }
     public MovingOrder updateTotalWeight(BigDecimal totalWeight){
@@ -172,45 +189,20 @@ public class MovingOrder extends BaseEntity implements RemoteInput {
         this.actualCost = actualCost;
         return this;
     }
-    public MovingOrder updatePickupDate(LocalDate pickupDate){
-        if(Objects.equals(this.pickupDate, pickupDate)){
+    public MovingOrder updateCreatedTime(LocalDateTime createdTime){
+        if(Objects.equals(this.createdTime, createdTime)){
             return this;
         }
-        handleUpdate(PICKUP_DATE_PROPERTY, getPickupDate(), pickupDate);
-        this.pickupDate = pickupDate;
+        handleUpdate(CREATED_TIME_PROPERTY, getCreatedTime(), createdTime);
+        this.createdTime = createdTime;
         return this;
     }
-    public MovingOrder updateDeliveryDate(LocalDate deliveryDate){
-        if(Objects.equals(this.deliveryDate, deliveryDate)){
+    public MovingOrder updateUpdatedTime(LocalDateTime updatedTime){
+        if(Objects.equals(this.updatedTime, updatedTime)){
             return this;
         }
-        handleUpdate(DELIVERY_DATE_PROPERTY, getDeliveryDate(), deliveryDate);
-        this.deliveryDate = deliveryDate;
-        return this;
-    }
-    public MovingOrder updateSpecialInstructions(String specialInstructions){
-        specialInstructions = (specialInstructions == null ? null : specialInstructions.trim());
-        if(Objects.equals(this.specialInstructions, specialInstructions)){
-            return this;
-        }
-        handleUpdate(SPECIAL_INSTRUCTIONS_PROPERTY, getSpecialInstructions(), specialInstructions);
-        this.specialInstructions = specialInstructions;
-        return this;
-    }
-    public MovingOrder updateCreateTime(LocalDateTime createTime){
-        if(Objects.equals(this.createTime, createTime)){
-            return this;
-        }
-        handleUpdate(CREATE_TIME_PROPERTY, getCreateTime(), createTime);
-        this.createTime = createTime;
-        return this;
-    }
-    public MovingOrder updateUpdateTime(LocalDateTime updateTime){
-        if(Objects.equals(this.updateTime, updateTime)){
-            return this;
-        }
-        handleUpdate(UPDATE_TIME_PROPERTY, getUpdateTime(), updateTime);
-        this.updateTime = updateTime;
+        handleUpdate(UPDATED_TIME_PROPERTY, getUpdatedTime(), updatedTime);
+        this.updatedTime = updatedTime;
         return this;
     }
     public MovingOrder addDispatchPlan(DispatchPlan dispatchPlan){
@@ -226,19 +218,6 @@ public class MovingOrder extends BaseEntity implements RemoteInput {
         dispatchPlan.cacheRelation(DispatchPlan.MOVING_ORDER_PROPERTY, this);
         return this;
     }
-    public MovingOrder addTimeSlot(TimeSlot timeSlot){
-        if (timeSlot == null){
-            return this;
-        }
-
-        if(null == this.timeSlotList){
-            this.timeSlotList = new SmartList<>();
-        }
-
-        this.timeSlotList.add(timeSlot);
-        timeSlot.cacheRelation(TimeSlot.MOVING_ORDER_PROPERTY, this);
-        return this;
-    }
     public MovingOrder addCargoItem(CargoItem cargoItem){
         if (cargoItem == null){
             return this;
@@ -252,17 +231,17 @@ public class MovingOrder extends BaseEntity implements RemoteInput {
         cargoItem.cacheRelation(CargoItem.MOVING_ORDER_PROPERTY, this);
         return this;
     }
-    public MovingOrder addPickupAddress(PickupAddress pickupAddress){
-        if (pickupAddress == null){
+    public MovingOrder addFeedbackReview(FeedbackReview feedbackReview){
+        if (feedbackReview == null){
             return this;
         }
 
-        if(null == this.pickupAddressList){
-            this.pickupAddressList = new SmartList<>();
+        if(null == this.feedbackReviewList){
+            this.feedbackReviewList = new SmartList<>();
         }
 
-        this.pickupAddressList.add(pickupAddress);
-        pickupAddress.cacheRelation(PickupAddress.MOVING_ORDER_PROPERTY, this);
+        this.feedbackReviewList.add(feedbackReview);
+        feedbackReview.cacheRelation(FeedbackReview.MOVING_ORDER_PROPERTY, this);
         return this;
     }
     public MovingOrder addInvoice(Invoice invoice){
@@ -276,6 +255,32 @@ public class MovingOrder extends BaseEntity implements RemoteInput {
 
         this.invoiceList.add(invoice);
         invoice.cacheRelation(Invoice.MOVING_ORDER_PROPERTY, this);
+        return this;
+    }
+    public MovingOrder addClaimsRecord(ClaimsRecord claimsRecord){
+        if (claimsRecord == null){
+            return this;
+        }
+
+        if(null == this.claimsRecordList){
+            this.claimsRecordList = new SmartList<>();
+        }
+
+        this.claimsRecordList.add(claimsRecord);
+        claimsRecord.cacheRelation(ClaimsRecord.MOVING_ORDER_PROPERTY, this);
+        return this;
+    }
+    public MovingOrder addCustomsDeclaration(CustomsDeclaration customsDeclaration){
+        if (customsDeclaration == null){
+            return this;
+        }
+
+        if(null == this.customsDeclarationList){
+            this.customsDeclarationList = new SmartList<>();
+        }
+
+        this.customsDeclarationList.add(customsDeclaration);
+        customsDeclaration.cacheRelation(CustomsDeclaration.MOVING_ORDER_PROPERTY, this);
         return this;
     }
 
@@ -306,11 +311,15 @@ public class MovingOrder extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public void __internalSet(String property, Object value) {
         switch (property) {
-            case "orderId": this.orderId = (value == null ? null : ((String)value).trim()); break;
+            case "orderNumber": this.orderNumber = (value == null ? null : ((String)value).trim()); break;
+
+            case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
             case "customer": this.customer = (PrivateCustomer) value; break;
 
-            case "status": this.status = (value == null ? null : ((String)value).trim()); break;
+            case "pickupAddress": this.pickupAddress = (PickupAddress) value; break;
+
+            case "deliveryAddress": this.deliveryAddress = (PickupAddress) value; break;
 
             case "totalWeight": this.totalWeight = (BigDecimal) value; break;
 
@@ -320,21 +329,16 @@ public class MovingOrder extends BaseEntity implements RemoteInput {
 
             case "actualCost": this.actualCost = (BigDecimal) value; break;
 
-            case "pickupDate": this.pickupDate = (LocalDate) value; break;
+            case "createdTime": this.createdTime = (LocalDateTime) value; break;
 
-            case "deliveryDate": this.deliveryDate = (LocalDate) value; break;
-
-            case "specialInstructions": this.specialInstructions = (value == null ? null : ((String)value).trim()); break;
-
-            case "createTime": this.createTime = (LocalDateTime) value; break;
-
-            case "updateTime": this.updateTime = (LocalDateTime) value; break;
+            case "updatedTime": this.updatedTime = (LocalDateTime) value; break;
 
             case "dispatchPlanList": this.dispatchPlanList = (SmartList<DispatchPlan>) value; break;
-            case "timeSlotList": this.timeSlotList = (SmartList<TimeSlot>) value; break;
             case "cargoItemList": this.cargoItemList = (SmartList<CargoItem>) value; break;
-            case "pickupAddressList": this.pickupAddressList = (SmartList<PickupAddress>) value; break;
+            case "feedbackReviewList": this.feedbackReviewList = (SmartList<FeedbackReview>) value; break;
             case "invoiceList": this.invoiceList = (SmartList<Invoice>) value; break;
+            case "claimsRecordList": this.claimsRecordList = (SmartList<ClaimsRecord>) value; break;
+            case "customsDeclarationList": this.customsDeclarationList = (SmartList<CustomsDeclaration>) value; break;
             default: super.__internalSet(property, value);
         }
     }
@@ -343,23 +347,23 @@ public class MovingOrder extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public Object __internalGet(String property) {
         switch (property) {
-            case "orderId": return this.orderId;
-            case "customer": return this.customer;
+            case "orderNumber": return this.orderNumber;
             case "status": return this.status;
+            case "customer": return this.customer;
+            case "pickupAddress": return this.pickupAddress;
+            case "deliveryAddress": return this.deliveryAddress;
             case "totalWeight": return this.totalWeight;
             case "totalVolume": return this.totalVolume;
             case "estimatedCost": return this.estimatedCost;
             case "actualCost": return this.actualCost;
-            case "pickupDate": return this.pickupDate;
-            case "deliveryDate": return this.deliveryDate;
-            case "specialInstructions": return this.specialInstructions;
-            case "createTime": return this.createTime;
-            case "updateTime": return this.updateTime;
+            case "createdTime": return this.createdTime;
+            case "updatedTime": return this.updatedTime;
             case "dispatchPlanList": return this.dispatchPlanList;
-            case "timeSlotList": return this.timeSlotList;
             case "cargoItemList": return this.cargoItemList;
-            case "pickupAddressList": return this.pickupAddressList;
+            case "feedbackReviewList": return this.feedbackReviewList;
             case "invoiceList": return this.invoiceList;
+            case "claimsRecordList": return this.claimsRecordList;
+            case "customsDeclarationList": return this.customsDeclarationList;
             default: return super.__internalGet(property);
         }
     }

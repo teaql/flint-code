@@ -1,5 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.auditlog;
 
+import com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccount;
+import com.doublechaintech.enterpriselogisticsservice.useraccount.UserAccountExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
@@ -54,11 +56,12 @@ public class AuditLogExpression<T, E, U extends AuditLog> extends ExpressionAdap
        return new AuditLogExpression(this, $it ->  ((AuditLog)$it).updateEntityId(entityId));
     }
 
-    public Expression<T, String> getUserId(){
-       return apply(AuditLog::getUserId);
+    public UserAccountExpression<T, U, UserAccount> getUserAccount(){
+       return new UserAccountExpression(this, $it ->  ((AuditLog)$it).getUserAccount());
     }
-    public AuditLogExpression<T, U, U> updateUserId(String userId){
-       return new AuditLogExpression(this, $it ->  ((AuditLog)$it).updateUserId(userId));
+
+    public AuditLogExpression<T, U, U> updateUserAccount(UserAccount userAccount){
+       return new AuditLogExpression(this, $it ->  ((AuditLog)$it).updateUserAccount(userAccount));
     }
 
     public Expression<T, String> getIpAddress(){
@@ -68,18 +71,18 @@ public class AuditLogExpression<T, E, U extends AuditLog> extends ExpressionAdap
        return new AuditLogExpression(this, $it ->  ((AuditLog)$it).updateIpAddress(ipAddress));
     }
 
-    public Expression<T, String> getDetails(){
-       return apply(AuditLog::getDetails);
-    }
-    public AuditLogExpression<T, U, U> updateDetails(String details){
-       return new AuditLogExpression(this, $it ->  ((AuditLog)$it).updateDetails(details));
-    }
-
     public Expression<T, LocalDateTime> getCreatedTime(){
        return apply(AuditLog::getCreatedTime);
     }
     public AuditLogExpression<T, U, U> updateCreatedTime(LocalDateTime createdTime){
        return new AuditLogExpression(this, $it ->  ((AuditLog)$it).updateCreatedTime(createdTime));
+    }
+
+    public Expression<T, LocalDateTime> getUpdateTime(){
+       return apply(AuditLog::getUpdateTime);
+    }
+    public AuditLogExpression<T, U, U> updateUpdateTime(LocalDateTime updateTime){
+       return new AuditLogExpression(this, $it ->  ((AuditLog)$it).updateUpdateTime(updateTime));
     }
 
 }

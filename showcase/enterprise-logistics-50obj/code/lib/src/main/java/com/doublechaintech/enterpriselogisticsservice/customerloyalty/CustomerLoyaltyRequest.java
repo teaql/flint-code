@@ -1,8 +1,6 @@
 package com.doublechaintech.enterpriselogisticsservice.customerloyalty;
 
 import com.doublechaintech.enterpriselogisticsservice.Q;
-import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomerRequest;
 import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
 import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomerRequest;
 import io.teaql.core.AggrFunction;
@@ -12,6 +10,8 @@ import io.teaql.core.SearchCriteria;
 import io.teaql.core.SubQuerySearchCriteria;
 import io.teaql.core.criteria.Operator;
 import io.teaql.core.criteria.TwoOperatorCriteria;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 public class CustomerLoyaltyRequest<T extends CustomerLoyalty> extends BaseRequest<T> {
 
@@ -84,7 +84,7 @@ public class CustomerLoyaltyRequest<T extends CustomerLoyalty> extends BaseReque
 
     public CustomerLoyaltyRequest<T> selectSelf(){
         super.selectSelf();
-        return selectId().selectPoints().selectTier().selectPrivateCustomerIdOnly().selectCorporateCustomerIdOnly().selectVersion();
+        return selectId().selectPoints().selectTier().selectPrivateCustomerIdOnly().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public CustomerLoyaltyRequest<T> selectSelfFields(){
@@ -93,12 +93,12 @@ public class CustomerLoyaltyRequest<T extends CustomerLoyalty> extends BaseReque
 
     public CustomerLoyaltyRequest<T> selectAll(){
         super.selectAll();
-        return selectId().selectPoints().selectTier().selectPrivateCustomer().selectCorporateCustomer().selectVersion();
+        return selectId().selectPoints().selectTier().selectPrivateCustomer().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
     public CustomerLoyaltyRequest<T> selectChildren(){
         super.selectAny();
-        return selectId().selectPoints().selectTier().selectPrivateCustomer().selectCorporateCustomer().selectVersion();
+        return selectId().selectPoints().selectTier().selectPrivateCustomer().selectCreatedAt().selectUpdatedAt().selectVersion();
     }
 
 
@@ -180,23 +180,38 @@ public class CustomerLoyaltyRequest<T extends CustomerLoyalty> extends BaseReque
        unselectProperty(CustomerLoyalty.PRIVATE_CUSTOMER_PROPERTY);
        return this;
     }
-    public CustomerLoyaltyRequest<T> selectCorporateCustomerIdOnly(){
-       selectProperty(CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY);
+    public CustomerLoyaltyRequest<T> selectCreatedAt(){
+       selectProperty(CustomerLoyalty.CREATED_AT_PROPERTY);
        return this;
     }
 
-    public CustomerLoyaltyRequest<T> selectCorporateCustomer(){
-        return selectCorporateCustomerWith(Q.corporateCustomers().unlimited().selectSelf());
-    }
+    /**
+     * fill the createdAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  createdAt) to fetch createdAt property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
 
-    public CustomerLoyaltyRequest<T> selectCorporateCustomerWith(CorporateCustomerRequest corporateCustomer){
-       selectProperty(CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY);
-       enhanceRelation(CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY, corporateCustomer);
+
+
+
+    public CustomerLoyaltyRequest<T> unselectCreatedAt(){
+       unselectProperty(CustomerLoyalty.CREATED_AT_PROPERTY);
+       return this;
+    }
+    public CustomerLoyaltyRequest<T> selectUpdatedAt(){
+       selectProperty(CustomerLoyalty.UPDATED_AT_PROPERTY);
        return this;
     }
 
-    public CustomerLoyaltyRequest<T> unselectCorporateCustomer(){
-       unselectProperty(CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY);
+    /**
+     * fill the updatedAt with customized rawSqlSegment, TEAQL uses ({rawSqlSegment} AS  updatedAt) to fetch updatedAt property.
+     * @param rawSqlSegment  customized rawSqlSegment
+     */
+
+
+
+
+    public CustomerLoyaltyRequest<T> unselectUpdatedAt(){
+       unselectProperty(CustomerLoyalty.UPDATED_AT_PROPERTY);
        return this;
     }
     public CustomerLoyaltyRequest<T> selectVersion(){
@@ -375,38 +390,135 @@ public class CustomerLoyaltyRequest<T extends CustomerLoyalty> extends BaseReque
        return appendSearchCriteria(new SubQuerySearchCriteria(CustomerLoyalty.PRIVATE_CUSTOMER_PROPERTY, privateCustomer, PrivateCustomer.ID_PROPERTY));
     }
 
-    public CustomerLoyaltyRequest<T> filterByCorporateCustomer(CorporateCustomer... corporateCustomer){
-      if (corporateCustomer == null || corporateCustomer.length == 0) {
-        throw new IllegalArgumentException("filterByCorporateCustomer parameter corporateCustomer cannot be empty");
+    public CustomerLoyaltyRequest<T> filterByCreatedAt(LocalDateTime... createdAt){
+      if (createdAt == null || createdAt.length == 0) {
+        throw new IllegalArgumentException("filterByCreatedAt parameter createdAt cannot be empty");
       }
-      return appendSearchCriteria(createCorporateCustomerCriteria(Operator.EQUAL, (Object[])corporateCustomer));
+      return appendSearchCriteria(createCreatedAtCriteria(Operator.EQUAL, (Object[])createdAt));
     }
 
-    public CustomerLoyaltyRequest<T> withCorporateCustomer(Operator operator, Object... values){
-       return appendSearchCriteria(createCorporateCustomerCriteria(operator, values));
+    public CustomerLoyaltyRequest<T> withCreatedAt(Operator operator, Object... values){
+       return appendSearchCriteria(createCreatedAtCriteria(operator, values));
     }
 
-    public CustomerLoyaltyRequest<T> withCorporateCustomerIsUnknown(){
-       return withCorporateCustomer(Operator.IS_NULL);
+    public CustomerLoyaltyRequest<T> withCreatedAtIsUnknown(){
+       return withCreatedAt(Operator.IS_NULL);
     }
 
-    public CustomerLoyaltyRequest<T> withCorporateCustomerIsKnown(){
-       return withCorporateCustomer(Operator.IS_NOT_NULL);
+    public CustomerLoyaltyRequest<T> withCreatedAtIsKnown(){
+       return withCreatedAt(Operator.IS_NOT_NULL);
     }
 
-    public SearchCriteria createCorporateCustomerCriteria(Operator operator, Object... values) {
-        return createBasicSearchCriteria(CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY, operator, values);
+    public SearchCriteria createCreatedAtCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CustomerLoyalty.CREATED_AT_PROPERTY, operator, values);
     }
 
-    public CustomerLoyaltyRequest<T> filterByCorporateCustomer(Long corporateCustomer){
-      if(corporateCustomer == null){
-         return this;
+    public CustomerLoyaltyRequest<T> withCreatedAtGreaterThan(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withCreatedAtGreaterThanOrEqualTo(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN_OR_EQUAL, createdAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withCreatedAtLessThan(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withCreatedAtLessThanOrEqualTo(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN_OR_EQUAL, createdAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withCreatedAtBetween(LocalDateTime startOfCreatedAt, LocalDateTime endOfCreatedAt){
+       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    }
+    public CustomerLoyaltyRequest<T> withCreatedAtBefore(LocalDateTime createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withCreatedAtBefore(Date createdAt){
+       return withCreatedAt(Operator.LESS_THAN, createdAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withCreatedAtAfter(LocalDateTime createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withCreatedAtAfter(Date createdAt){
+       return withCreatedAt(Operator.GREATER_THAN, createdAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withCreatedAtBetween(Date startOfCreatedAt, Date endOfCreatedAt){
+       return withCreatedAt(Operator.BETWEEN, startOfCreatedAt, endOfCreatedAt);
+    }
+
+
+
+
+    public CustomerLoyaltyRequest<T> filterByUpdatedAt(LocalDateTime... updatedAt){
+      if (updatedAt == null || updatedAt.length == 0) {
+        throw new IllegalArgumentException("filterByUpdatedAt parameter updatedAt cannot be empty");
       }
-      return withCorporateCustomer(Operator.EQUAL, corporateCustomer);
+      return appendSearchCriteria(createUpdatedAtCriteria(Operator.EQUAL, (Object[])updatedAt));
     }
-    public CustomerLoyaltyRequest<T> withCorporateCustomerMatching(CorporateCustomerRequest corporateCustomer){
-       return appendSearchCriteria(new SubQuerySearchCriteria(CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY, corporateCustomer, CorporateCustomer.ID_PROPERTY));
+
+    public CustomerLoyaltyRequest<T> withUpdatedAt(Operator operator, Object... values){
+       return appendSearchCriteria(createUpdatedAtCriteria(operator, values));
     }
+
+    public CustomerLoyaltyRequest<T> withUpdatedAtIsUnknown(){
+       return withUpdatedAt(Operator.IS_NULL);
+    }
+
+    public CustomerLoyaltyRequest<T> withUpdatedAtIsKnown(){
+       return withUpdatedAt(Operator.IS_NOT_NULL);
+    }
+
+    public SearchCriteria createUpdatedAtCriteria(Operator operator, Object... values) {
+        return createBasicSearchCriteria(CustomerLoyalty.UPDATED_AT_PROPERTY, operator, values);
+    }
+
+    public CustomerLoyaltyRequest<T> withUpdatedAtGreaterThan(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withUpdatedAtGreaterThanOrEqualTo(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN_OR_EQUAL, updatedAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withUpdatedAtLessThan(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withUpdatedAtLessThanOrEqualTo(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN_OR_EQUAL, updatedAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withUpdatedAtBetween(LocalDateTime startOfUpdatedAt, LocalDateTime endOfUpdatedAt){
+       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    }
+    public CustomerLoyaltyRequest<T> withUpdatedAtBefore(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withUpdatedAtBefore(Date updatedAt){
+       return withUpdatedAt(Operator.LESS_THAN, updatedAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withUpdatedAtAfter(LocalDateTime updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withUpdatedAtAfter(Date updatedAt){
+       return withUpdatedAt(Operator.GREATER_THAN, updatedAt);
+    }
+
+    public CustomerLoyaltyRequest<T> withUpdatedAtBetween(Date startOfUpdatedAt, Date endOfUpdatedAt){
+       return withUpdatedAt(Operator.BETWEEN, startOfUpdatedAt, endOfUpdatedAt);
+    }
+
+
+
 
     public CustomerLoyaltyRequest<T> filterByVersion(Long... version){
       if (version == null || version.length == 0) {
@@ -533,14 +645,7 @@ public class CustomerLoyaltyRequest<T extends CustomerLoyalty> extends BaseReque
        return this;
     }
 
-    public CustomerLoyaltyRequest<T> groupByCorporateCustomerWithDetails(){
-       return groupByCorporateCustomerWithDetails(Q.corporateCustomers().unlimited());
-    }
 
-    public CustomerLoyaltyRequest<T> groupByCorporateCustomerWithDetails(CorporateCustomerRequest subRequest){
-       aggregate(CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY, subRequest);
-       return this;
-    }
 
 
 
@@ -606,22 +711,34 @@ public class CustomerLoyaltyRequest<T extends CustomerLoyalty> extends BaseReque
        groupBy(retName, CustomerLoyalty.PRIVATE_CUSTOMER_PROPERTY, function);
        return this;
     }
-    public CustomerLoyaltyRequest<T> groupByCorporateCustomerWith(CorporateCustomerRequest subRequest){
-       groupBy(CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY, subRequest);
-       return this;
-    }
-    public CustomerLoyaltyRequest<T> groupByCorporateCustomer(){
-       groupBy(CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY);
+
+    public CustomerLoyaltyRequest<T> groupByCreatedAt(){
+       groupBy(CustomerLoyalty.CREATED_AT_PROPERTY);
        return this;
     }
 
-    public CustomerLoyaltyRequest<T> groupByCorporateCustomerAs(String retName){
-       groupBy(retName, CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY);
+    public CustomerLoyaltyRequest<T> groupByCreatedAtAs(String retName){
+       groupBy(retName, CustomerLoyalty.CREATED_AT_PROPERTY);
        return this;
     }
 
-    public CustomerLoyaltyRequest<T> groupByCorporateCustomerWithFunction(String retName, AggrFunction function){
-       groupBy(retName, CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY, function);
+    public CustomerLoyaltyRequest<T> groupByCreatedAtWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CustomerLoyalty.CREATED_AT_PROPERTY, function);
+       return this;
+    }
+
+    public CustomerLoyaltyRequest<T> groupByUpdatedAt(){
+       groupBy(CustomerLoyalty.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CustomerLoyaltyRequest<T> groupByUpdatedAtAs(String retName){
+       groupBy(retName, CustomerLoyalty.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CustomerLoyaltyRequest<T> groupByUpdatedAtWithFunction(String retName, AggrFunction function){
+       groupBy(retName, CustomerLoyalty.UPDATED_AT_PROPERTY, function);
        return this;
     }
 
@@ -690,13 +807,23 @@ public class CustomerLoyaltyRequest<T extends CustomerLoyalty> extends BaseReque
        return this;
     }
 
-    public CustomerLoyaltyRequest<T> orderByCorporateCustomerAscending(){
-       addOrderByAscending(CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY);
+    public CustomerLoyaltyRequest<T> orderByCreatedAtAscending(){
+       addOrderByAscending(CustomerLoyalty.CREATED_AT_PROPERTY);
        return this;
     }
 
-    public CustomerLoyaltyRequest<T> orderByCorporateCustomerDescending(){
-       addOrderByDescending(CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY);
+    public CustomerLoyaltyRequest<T> orderByCreatedAtDescending(){
+       addOrderByDescending(CustomerLoyalty.CREATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CustomerLoyaltyRequest<T> orderByUpdatedAtAscending(){
+       addOrderByAscending(CustomerLoyalty.UPDATED_AT_PROPERTY);
+       return this;
+    }
+
+    public CustomerLoyaltyRequest<T> orderByUpdatedAtDescending(){
+       addOrderByDescending(CustomerLoyalty.UPDATED_AT_PROPERTY);
        return this;
     }
 
@@ -718,12 +845,7 @@ public class CustomerLoyaltyRequest<T extends CustomerLoyalty> extends BaseReque
        return privateCustomer;
     }
 
-    public CorporateCustomerRequest rollUpToCorporateCustomer(){
-       CorporateCustomerRequest corporateCustomer = Q.corporateCustomers().unlimited();
-       this.withCorporateCustomerMatching(corporateCustomer)
-           .groupByCorporateCustomerWith(corporateCustomer);
-       return corporateCustomer;
-    }
+
 
 
 
@@ -733,14 +855,6 @@ public class CustomerLoyaltyRequest<T extends CustomerLoyalty> extends BaseReque
 
    public CustomerLoyaltyRequest<T> facetByPrivateCustomerAs(String facetName, PrivateCustomerRequest privateCustomer, boolean includeAllFacets){
        addFacet(facetName, CustomerLoyalty.PRIVATE_CUSTOMER_PROPERTY, privateCustomer, includeAllFacets);
-       return this;
-   }
-   public CustomerLoyaltyRequest<T> facetByCorporateCustomerAs(String facetName, CorporateCustomerRequest corporateCustomer){
-       return facetByCorporateCustomerAs(facetName, corporateCustomer, true);
-   }
-
-   public CustomerLoyaltyRequest<T> facetByCorporateCustomerAs(String facetName, CorporateCustomerRequest corporateCustomer, boolean includeAllFacets){
-       addFacet(facetName, CustomerLoyalty.CORPORATE_CUSTOMER_PROPERTY, corporateCustomer, includeAllFacets);
        return this;
    }
 

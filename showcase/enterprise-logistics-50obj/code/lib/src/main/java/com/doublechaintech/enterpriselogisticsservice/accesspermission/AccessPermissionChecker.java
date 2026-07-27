@@ -1,7 +1,5 @@
 package com.doublechaintech.enterpriselogisticsservice.accesspermission;
 
-import com.doublechaintech.enterpriselogisticsservice.userrole.UserRole;
-import com.doublechaintech.enterpriselogisticsservice.userrole.UserRoleChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
@@ -26,18 +24,18 @@ public class AccessPermissionChecker implements Checker<AccessPermission>{
       if(accessPermission.newItem()){
       }else if(accessPermission.updateItem()){
       }
-      checkName(_ctx, accessPermission.getProperty(AccessPermission.NAME_PROPERTY), newLocation(_parentLocation, AccessPermission.NAME_PROPERTY));
+      checkPermissionCode(_ctx, accessPermission.getProperty(AccessPermission.PERMISSION_CODE_PROPERTY), newLocation(_parentLocation, AccessPermission.PERMISSION_CODE_PROPERTY));
       checkResource(_ctx, accessPermission.getProperty(AccessPermission.RESOURCE_PROPERTY), newLocation(_parentLocation, AccessPermission.RESOURCE_PROPERTY));
       checkAction(_ctx, accessPermission.getProperty(AccessPermission.ACTION_PROPERTY), newLocation(_parentLocation, AccessPermission.ACTION_PROPERTY));
-      checkRole(_ctx, accessPermission.getProperty(AccessPermission.ROLE_PROPERTY), newLocation(_parentLocation, AccessPermission.ROLE_PROPERTY));
+      checkDescription(_ctx, accessPermission.getProperty(AccessPermission.DESCRIPTION_PROPERTY), newLocation(_parentLocation, AccessPermission.DESCRIPTION_PROPERTY));
     }
 
-    public void checkName(UserContext _ctx, String name, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, name);
-    if((name == null)){
+    public void checkPermissionCode(UserContext _ctx, String permissionCode, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, permissionCode);
+    if((permissionCode == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, name);
+    maxStringCheck(_ctx, _parentLocation, 100, permissionCode);
 
     }
     public void checkResource(UserContext _ctx, String resource, ObjectLocation _parentLocation){
@@ -56,11 +54,12 @@ public class AccessPermissionChecker implements Checker<AccessPermission>{
     maxStringCheck(_ctx, _parentLocation, 100, action);
 
     }
-    public void checkRole(UserContext _ctx, UserRole role, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, role);
-    if((role == null)){
+    public void checkDescription(UserContext _ctx, String description, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, description);
+    if((description == null)){
         return;
     }
-    new UserRoleChecker().checkAndFix(_ctx, role, _parentLocation);
+    maxStringCheck(_ctx, _parentLocation, 100, description);
+
     }
 }

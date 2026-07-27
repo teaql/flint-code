@@ -1,10 +1,12 @@
 package com.doublechaintech.enterpriselogisticsservice.useraccount;
 
+import com.doublechaintech.enterpriselogisticsservice.auditlog.AuditLog;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
 import io.teaql.core.FrameworkInternal;
 import io.teaql.core.RemoteInput;
+import io.teaql.core.SmartList;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -19,23 +21,25 @@ import java.util.Objects;
 public class UserAccount extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "UserAccount";
 
-    public static final String NAME_PROPERTY = "name";
+    public static final String USERNAME_PROPERTY = "username";
     public static final String EMAIL_PROPERTY = "email";
     public static final String PHONE_PROPERTY = "phone";
-    public static final String PASSWORD_HASH_PROPERTY = "passwordHash";
     public static final String STATUS_PROPERTY = "status";
-    public static final String CREATE_TIME_PROPERTY = "createTime";
-    public static final String UPDATE_TIME_PROPERTY = "updateTime";
-    private String name;
+    public static final String PASSWORD_HASH_PROPERTY = "passwordHash";
+    public static final String CREATED_AT_PROPERTY = "createdAt";
+    public static final String UPDATED_AT_PROPERTY = "updatedAt";
+    public static final String AUDIT_LOG_LIST_PROPERTY = "auditLogList";
+    private String username;
     private String email;
     private String phone;
-    private String passwordHash;
     private String status;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
+    private String passwordHash;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private SmartList<AuditLog> auditLogList;
 
-    public String getName(){
-        return this.name;
+    public String getUsername(){
+        return this.username;
     }
     public String getEmail(){
         return this.email;
@@ -43,25 +47,28 @@ public class UserAccount extends BaseEntity implements RemoteInput {
     public String getPhone(){
         return this.phone;
     }
-    public String getPasswordHash(){
-        return this.passwordHash;
-    }
     public String getStatus(){
         return this.status;
     }
-    public LocalDateTime getCreateTime(){
-        return this.createTime;
+    public String getPasswordHash(){
+        return this.passwordHash;
     }
-    public LocalDateTime getUpdateTime(){
-        return this.updateTime;
+    public LocalDateTime getCreatedAt(){
+        return this.createdAt;
     }
-    public UserAccount updateName(String name){
-        name = (name == null ? null : name.trim());
-        if(Objects.equals(this.name, name)){
+    public LocalDateTime getUpdatedAt(){
+        return this.updatedAt;
+    }
+    public SmartList<AuditLog> getAuditLogList(){
+        return this.auditLogList;
+    }
+    public UserAccount updateUsername(String username){
+        username = (username == null ? null : username.trim());
+        if(Objects.equals(this.username, username)){
             return this;
         }
-        handleUpdate(NAME_PROPERTY, getName(), name);
-        this.name = name;
+        handleUpdate(USERNAME_PROPERTY, getUsername(), username);
+        this.username = username;
         return this;
     }
     public UserAccount updateEmail(String email){
@@ -82,15 +89,6 @@ public class UserAccount extends BaseEntity implements RemoteInput {
         this.phone = phone;
         return this;
     }
-    public UserAccount updatePasswordHash(String passwordHash){
-        passwordHash = (passwordHash == null ? null : passwordHash.trim());
-        if(Objects.equals(this.passwordHash, passwordHash)){
-            return this;
-        }
-        handleUpdate(PASSWORD_HASH_PROPERTY, getPasswordHash(), passwordHash);
-        this.passwordHash = passwordHash;
-        return this;
-    }
     public UserAccount updateStatus(String status){
         status = (status == null ? null : status.trim());
         if(Objects.equals(this.status, status)){
@@ -100,20 +98,42 @@ public class UserAccount extends BaseEntity implements RemoteInput {
         this.status = status;
         return this;
     }
-    public UserAccount updateCreateTime(LocalDateTime createTime){
-        if(Objects.equals(this.createTime, createTime)){
+    public UserAccount updatePasswordHash(String passwordHash){
+        passwordHash = (passwordHash == null ? null : passwordHash.trim());
+        if(Objects.equals(this.passwordHash, passwordHash)){
             return this;
         }
-        handleUpdate(CREATE_TIME_PROPERTY, getCreateTime(), createTime);
-        this.createTime = createTime;
+        handleUpdate(PASSWORD_HASH_PROPERTY, getPasswordHash(), passwordHash);
+        this.passwordHash = passwordHash;
         return this;
     }
-    public UserAccount updateUpdateTime(LocalDateTime updateTime){
-        if(Objects.equals(this.updateTime, updateTime)){
+    public UserAccount updateCreatedAt(LocalDateTime createdAt){
+        if(Objects.equals(this.createdAt, createdAt)){
             return this;
         }
-        handleUpdate(UPDATE_TIME_PROPERTY, getUpdateTime(), updateTime);
-        this.updateTime = updateTime;
+        handleUpdate(CREATED_AT_PROPERTY, getCreatedAt(), createdAt);
+        this.createdAt = createdAt;
+        return this;
+    }
+    public UserAccount updateUpdatedAt(LocalDateTime updatedAt){
+        if(Objects.equals(this.updatedAt, updatedAt)){
+            return this;
+        }
+        handleUpdate(UPDATED_AT_PROPERTY, getUpdatedAt(), updatedAt);
+        this.updatedAt = updatedAt;
+        return this;
+    }
+    public UserAccount addAuditLog(AuditLog auditLog){
+        if (auditLog == null){
+            return this;
+        }
+
+        if(null == this.auditLogList){
+            this.auditLogList = new SmartList<>();
+        }
+
+        this.auditLogList.add(auditLog);
+        auditLog.cacheRelation(AuditLog.USER_ACCOUNT_PROPERTY, this);
         return this;
     }
 
@@ -144,20 +164,21 @@ public class UserAccount extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public void __internalSet(String property, Object value) {
         switch (property) {
-            case "name": this.name = (value == null ? null : ((String)value).trim()); break;
+            case "username": this.username = (value == null ? null : ((String)value).trim()); break;
 
             case "email": this.email = (value == null ? null : ((String)value).trim()); break;
 
             case "phone": this.phone = (value == null ? null : ((String)value).trim()); break;
 
-            case "passwordHash": this.passwordHash = (value == null ? null : ((String)value).trim()); break;
-
             case "status": this.status = (value == null ? null : ((String)value).trim()); break;
 
-            case "createTime": this.createTime = (LocalDateTime) value; break;
+            case "passwordHash": this.passwordHash = (value == null ? null : ((String)value).trim()); break;
 
-            case "updateTime": this.updateTime = (LocalDateTime) value; break;
+            case "createdAt": this.createdAt = (LocalDateTime) value; break;
 
+            case "updatedAt": this.updatedAt = (LocalDateTime) value; break;
+
+            case "auditLogList": this.auditLogList = (SmartList<AuditLog>) value; break;
             default: super.__internalSet(property, value);
         }
     }
@@ -166,13 +187,14 @@ public class UserAccount extends BaseEntity implements RemoteInput {
     @FrameworkInternal
     public Object __internalGet(String property) {
         switch (property) {
-            case "name": return this.name;
+            case "username": return this.username;
             case "email": return this.email;
             case "phone": return this.phone;
-            case "passwordHash": return this.passwordHash;
             case "status": return this.status;
-            case "createTime": return this.createTime;
-            case "updateTime": return this.updateTime;
+            case "passwordHash": return this.passwordHash;
+            case "createdAt": return this.createdAt;
+            case "updatedAt": return this.updatedAt;
+            case "auditLogList": return this.auditLogList;
             default: return super.__internalGet(property);
         }
     }

@@ -1,13 +1,11 @@
 package com.doublechaintech.enterpriselogisticsservice.feedbackreview;
 
-import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.corporatecustomer.CorporateCustomerChecker;
-import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomer;
-import com.doublechaintech.enterpriselogisticsservice.privatecustomer.PrivateCustomerChecker;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
+import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class FeedbackReviewChecker implements Checker<FeedbackReview>{
 
@@ -27,13 +25,20 @@ public class FeedbackReviewChecker implements Checker<FeedbackReview>{
          return;
       }
       if(feedbackReview.newItem()){
+        if(feedbackReview.getCreatedAt() == null){
+           feedbackReview.updateCreatedAt(java.time.LocalDateTime.now());
+        }if(feedbackReview.getUpdatedAt() == null){
+           feedbackReview.updateUpdatedAt(java.time.LocalDateTime.now());
+        }
       }else if(feedbackReview.updateItem()){
+        feedbackReview.updateUpdatedAt(java.time.LocalDateTime.now());
       }
       checkRating(_ctx, feedbackReview.getProperty(FeedbackReview.RATING_PROPERTY), newLocation(_parentLocation, FeedbackReview.RATING_PROPERTY));
+      checkTitle(_ctx, feedbackReview.getProperty(FeedbackReview.TITLE_PROPERTY), newLocation(_parentLocation, FeedbackReview.TITLE_PROPERTY));
       checkComment(_ctx, feedbackReview.getProperty(FeedbackReview.COMMENT_PROPERTY), newLocation(_parentLocation, FeedbackReview.COMMENT_PROPERTY));
-      checkReviewDate(_ctx, feedbackReview.getProperty(FeedbackReview.REVIEW_DATE_PROPERTY), newLocation(_parentLocation, FeedbackReview.REVIEW_DATE_PROPERTY));
-      checkPrivateCustomer(_ctx, feedbackReview.getProperty(FeedbackReview.PRIVATE_CUSTOMER_PROPERTY), newLocation(_parentLocation, FeedbackReview.PRIVATE_CUSTOMER_PROPERTY));
-      checkCorporateCustomer(_ctx, feedbackReview.getProperty(FeedbackReview.CORPORATE_CUSTOMER_PROPERTY), newLocation(_parentLocation, FeedbackReview.CORPORATE_CUSTOMER_PROPERTY));
+      checkMovingOrder(_ctx, feedbackReview.getProperty(FeedbackReview.MOVING_ORDER_PROPERTY), newLocation(_parentLocation, FeedbackReview.MOVING_ORDER_PROPERTY));
+      checkCreatedAt(_ctx, feedbackReview.getProperty(FeedbackReview.CREATED_AT_PROPERTY), newLocation(_parentLocation, FeedbackReview.CREATED_AT_PROPERTY));
+      checkUpdatedAt(_ctx, feedbackReview.getProperty(FeedbackReview.UPDATED_AT_PROPERTY), newLocation(_parentLocation, FeedbackReview.UPDATED_AT_PROPERTY));
     }
 
     public void checkRating(UserContext _ctx, Integer rating, ObjectLocation _parentLocation){
@@ -41,6 +46,14 @@ public class FeedbackReviewChecker implements Checker<FeedbackReview>{
     if((rating == null)){
         return;
     }
+    }
+    public void checkTitle(UserContext _ctx, String title, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, title);
+    if((title == null)){
+        return;
+    }
+    maxStringCheck(_ctx, _parentLocation, 100, title);
+
     }
     public void checkComment(UserContext _ctx, String comment, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, comment);
@@ -50,24 +63,23 @@ public class FeedbackReviewChecker implements Checker<FeedbackReview>{
     maxStringCheck(_ctx, _parentLocation, 100, comment);
 
     }
-    public void checkReviewDate(UserContext _ctx, LocalDate reviewDate, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, reviewDate);
-    if((reviewDate == null)){
+    public void checkMovingOrder(UserContext _ctx, MovingOrder movingOrder, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, movingOrder);
+    if((movingOrder == null)){
+        return;
+    }
+    new MovingOrderChecker().checkAndFix(_ctx, movingOrder, _parentLocation);
+    }
+    public void checkCreatedAt(UserContext _ctx, LocalDateTime createdAt, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, createdAt);
+    if((createdAt == null)){
         return;
     }
     }
-    public void checkPrivateCustomer(UserContext _ctx, PrivateCustomer privateCustomer, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, privateCustomer);
-    if((privateCustomer == null)){
+    public void checkUpdatedAt(UserContext _ctx, LocalDateTime updatedAt, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, updatedAt);
+    if((updatedAt == null)){
         return;
     }
-    new PrivateCustomerChecker().checkAndFix(_ctx, privateCustomer, _parentLocation);
-    }
-    public void checkCorporateCustomer(UserContext _ctx, CorporateCustomer corporateCustomer, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, corporateCustomer);
-    if((corporateCustomer == null)){
-        return;
-    }
-    new CorporateCustomerChecker().checkAndFix(_ctx, corporateCustomer, _parentLocation);
     }
 }

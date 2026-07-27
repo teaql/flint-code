@@ -27,20 +27,24 @@ public class DiscountCouponChecker implements Checker<DiscountCoupon>{
       if(discountCoupon.newItem()){
         if(discountCoupon.getCreatedTime() == null){
            discountCoupon.updateCreatedTime(java.time.LocalDateTime.now());
-        }if(discountCoupon.getUpdateTime() == null){
-           discountCoupon.updateUpdateTime(java.time.LocalDateTime.now());
+        }if(discountCoupon.getUpdatedTime() == null){
+           discountCoupon.updateUpdatedTime(java.time.LocalDateTime.now());
         }
       }else if(discountCoupon.updateItem()){
-        discountCoupon.updateUpdateTime(java.time.LocalDateTime.now());
+        discountCoupon.updateUpdatedTime(java.time.LocalDateTime.now());
       }
       checkCode(_ctx, discountCoupon.getProperty(DiscountCoupon.CODE_PROPERTY), newLocation(_parentLocation, DiscountCoupon.CODE_PROPERTY));
+      checkDescription(_ctx, discountCoupon.getProperty(DiscountCoupon.DESCRIPTION_PROPERTY), newLocation(_parentLocation, DiscountCoupon.DESCRIPTION_PROPERTY));
       checkDiscountPercentage(_ctx, discountCoupon.getProperty(DiscountCoupon.DISCOUNT_PERCENTAGE_PROPERTY), newLocation(_parentLocation, DiscountCoupon.DISCOUNT_PERCENTAGE_PROPERTY));
-      checkMaxUses(_ctx, discountCoupon.getProperty(DiscountCoupon.MAX_USES_PROPERTY), newLocation(_parentLocation, DiscountCoupon.MAX_USES_PROPERTY));
-      checkCurrentUses(_ctx, discountCoupon.getProperty(DiscountCoupon.CURRENT_USES_PROPERTY), newLocation(_parentLocation, DiscountCoupon.CURRENT_USES_PROPERTY));
-      checkExpiryDate(_ctx, discountCoupon.getProperty(DiscountCoupon.EXPIRY_DATE_PROPERTY), newLocation(_parentLocation, DiscountCoupon.EXPIRY_DATE_PROPERTY));
+      checkMinOrderAmount(_ctx, discountCoupon.getProperty(DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY), newLocation(_parentLocation, DiscountCoupon.MIN_ORDER_AMOUNT_PROPERTY));
+      checkMaxDiscountAmount(_ctx, discountCoupon.getProperty(DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY), newLocation(_parentLocation, DiscountCoupon.MAX_DISCOUNT_AMOUNT_PROPERTY));
+      checkUsageLimit(_ctx, discountCoupon.getProperty(DiscountCoupon.USAGE_LIMIT_PROPERTY), newLocation(_parentLocation, DiscountCoupon.USAGE_LIMIT_PROPERTY));
+      checkUsedCount(_ctx, discountCoupon.getProperty(DiscountCoupon.USED_COUNT_PROPERTY), newLocation(_parentLocation, DiscountCoupon.USED_COUNT_PROPERTY));
+      checkStartDate(_ctx, discountCoupon.getProperty(DiscountCoupon.START_DATE_PROPERTY), newLocation(_parentLocation, DiscountCoupon.START_DATE_PROPERTY));
+      checkEndDate(_ctx, discountCoupon.getProperty(DiscountCoupon.END_DATE_PROPERTY), newLocation(_parentLocation, DiscountCoupon.END_DATE_PROPERTY));
       checkStatus(_ctx, discountCoupon.getProperty(DiscountCoupon.STATUS_PROPERTY), newLocation(_parentLocation, DiscountCoupon.STATUS_PROPERTY));
       checkCreatedTime(_ctx, discountCoupon.getProperty(DiscountCoupon.CREATED_TIME_PROPERTY), newLocation(_parentLocation, DiscountCoupon.CREATED_TIME_PROPERTY));
-      checkUpdateTime(_ctx, discountCoupon.getProperty(DiscountCoupon.UPDATE_TIME_PROPERTY), newLocation(_parentLocation, DiscountCoupon.UPDATE_TIME_PROPERTY));
+      checkUpdatedTime(_ctx, discountCoupon.getProperty(DiscountCoupon.UPDATED_TIME_PROPERTY), newLocation(_parentLocation, DiscountCoupon.UPDATED_TIME_PROPERTY));
     }
 
     public void checkCode(UserContext _ctx, String code, ObjectLocation _parentLocation){
@@ -51,27 +55,53 @@ public class DiscountCouponChecker implements Checker<DiscountCoupon>{
     maxStringCheck(_ctx, _parentLocation, 100, code);
 
     }
+    public void checkDescription(UserContext _ctx, String description, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, description);
+    if((description == null)){
+        return;
+    }
+    maxStringCheck(_ctx, _parentLocation, 100, description);
+
+    }
     public void checkDiscountPercentage(UserContext _ctx, BigDecimal discountPercentage, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, discountPercentage);
     if((discountPercentage == null)){
         return;
     }
     }
-    public void checkMaxUses(UserContext _ctx, Integer maxUses, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, maxUses);
-    if((maxUses == null)){
+    public void checkMinOrderAmount(UserContext _ctx, BigDecimal minOrderAmount, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, minOrderAmount);
+    if((minOrderAmount == null)){
         return;
     }
     }
-    public void checkCurrentUses(UserContext _ctx, Integer currentUses, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, currentUses);
-    if((currentUses == null)){
+    public void checkMaxDiscountAmount(UserContext _ctx, BigDecimal maxDiscountAmount, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, maxDiscountAmount);
+    if((maxDiscountAmount == null)){
         return;
     }
     }
-    public void checkExpiryDate(UserContext _ctx, LocalDate expiryDate, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, expiryDate);
-    if((expiryDate == null)){
+    public void checkUsageLimit(UserContext _ctx, Integer usageLimit, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, usageLimit);
+    if((usageLimit == null)){
+        return;
+    }
+    }
+    public void checkUsedCount(UserContext _ctx, Integer usedCount, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, usedCount);
+    if((usedCount == null)){
+        return;
+    }
+    }
+    public void checkStartDate(UserContext _ctx, LocalDate startDate, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, startDate);
+    if((startDate == null)){
+        return;
+    }
+    }
+    public void checkEndDate(UserContext _ctx, LocalDate endDate, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, endDate);
+    if((endDate == null)){
         return;
     }
     }
@@ -89,9 +119,9 @@ public class DiscountCouponChecker implements Checker<DiscountCoupon>{
         return;
     }
     }
-    public void checkUpdateTime(UserContext _ctx, LocalDateTime updateTime, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, updateTime);
-    if((updateTime == null)){
+    public void checkUpdatedTime(UserContext _ctx, LocalDateTime updatedTime, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, updatedTime);
+    if((updatedTime == null)){
         return;
     }
     }

@@ -1,6 +1,7 @@
 package com.doublechaintech.enterpriselogisticsservice.marketingroi;
 
 import com.doublechaintech.enterpriselogisticsservice.promotioncampaign.PromotionCampaign;
+import com.doublechaintech.enterpriselogisticsservice.saleschannel.SalesChannel;
 import io.teaql.core.Audited;
 import io.teaql.core.BaseEntity;
 import io.teaql.core.EntityStatus;
@@ -23,28 +24,33 @@ public class MarketingRoi extends BaseEntity implements RemoteInput {
     public static String INTERNAL_TYPE = "MarketingRoi";
 
     public static final String CAMPAIGN_PROPERTY = "campaign";
-    public static final String TOTAL_SPEND_PROPERTY = "totalSpend";
-    public static final String TOTAL_REVENUE_PROPERTY = "totalRevenue";
+    public static final String CHANNEL_PROPERTY = "channel";
+    public static final String SPEND_PROPERTY = "spend";
+    public static final String REVENUE_PROPERTY = "revenue";
     public static final String ROI_PERCENTAGE_PROPERTY = "roiPercentage";
     public static final String REPORT_DATE_PROPERTY = "reportDate";
     public static final String CREATED_TIME_PROPERTY = "createdTime";
-    public static final String UPDATE_TIME_PROPERTY = "updateTime";
+    public static final String UPDATED_TIME_PROPERTY = "updatedTime";
     private PromotionCampaign campaign;
-    private BigDecimal totalSpend;
-    private BigDecimal totalRevenue;
+    private SalesChannel channel;
+    private BigDecimal spend;
+    private BigDecimal revenue;
     private BigDecimal roiPercentage;
     private LocalDate reportDate;
     private LocalDateTime createdTime;
-    private LocalDateTime updateTime;
+    private LocalDateTime updatedTime;
 
     public PromotionCampaign getCampaign(){
         return this.campaign;
     }
-    public BigDecimal getTotalSpend(){
-        return this.totalSpend;
+    public SalesChannel getChannel(){
+        return this.channel;
     }
-    public BigDecimal getTotalRevenue(){
-        return this.totalRevenue;
+    public BigDecimal getSpend(){
+        return this.spend;
+    }
+    public BigDecimal getRevenue(){
+        return this.revenue;
     }
     public BigDecimal getRoiPercentage(){
         return this.roiPercentage;
@@ -55,8 +61,8 @@ public class MarketingRoi extends BaseEntity implements RemoteInput {
     public LocalDateTime getCreatedTime(){
         return this.createdTime;
     }
-    public LocalDateTime getUpdateTime(){
-        return this.updateTime;
+    public LocalDateTime getUpdatedTime(){
+        return this.updatedTime;
     }
     public MarketingRoi updateCampaign(PromotionCampaign campaign){
         if(Objects.equals(this.campaign, campaign)){
@@ -66,20 +72,28 @@ public class MarketingRoi extends BaseEntity implements RemoteInput {
         this.campaign = campaign;
         return this;
     }
-    public MarketingRoi updateTotalSpend(BigDecimal totalSpend){
-        if(Objects.equals(this.totalSpend, totalSpend)){
+    public MarketingRoi updateChannel(SalesChannel channel){
+        if(Objects.equals(this.channel, channel)){
             return this;
         }
-        handleUpdate(TOTAL_SPEND_PROPERTY, getTotalSpend(), totalSpend);
-        this.totalSpend = totalSpend;
+        handleUpdate(CHANNEL_PROPERTY, getChannel(), channel);
+        this.channel = channel;
         return this;
     }
-    public MarketingRoi updateTotalRevenue(BigDecimal totalRevenue){
-        if(Objects.equals(this.totalRevenue, totalRevenue)){
+    public MarketingRoi updateSpend(BigDecimal spend){
+        if(Objects.equals(this.spend, spend)){
             return this;
         }
-        handleUpdate(TOTAL_REVENUE_PROPERTY, getTotalRevenue(), totalRevenue);
-        this.totalRevenue = totalRevenue;
+        handleUpdate(SPEND_PROPERTY, getSpend(), spend);
+        this.spend = spend;
+        return this;
+    }
+    public MarketingRoi updateRevenue(BigDecimal revenue){
+        if(Objects.equals(this.revenue, revenue)){
+            return this;
+        }
+        handleUpdate(REVENUE_PROPERTY, getRevenue(), revenue);
+        this.revenue = revenue;
         return this;
     }
     public MarketingRoi updateRoiPercentage(BigDecimal roiPercentage){
@@ -106,12 +120,12 @@ public class MarketingRoi extends BaseEntity implements RemoteInput {
         this.createdTime = createdTime;
         return this;
     }
-    public MarketingRoi updateUpdateTime(LocalDateTime updateTime){
-        if(Objects.equals(this.updateTime, updateTime)){
+    public MarketingRoi updateUpdatedTime(LocalDateTime updatedTime){
+        if(Objects.equals(this.updatedTime, updatedTime)){
             return this;
         }
-        handleUpdate(UPDATE_TIME_PROPERTY, getUpdateTime(), updateTime);
-        this.updateTime = updateTime;
+        handleUpdate(UPDATED_TIME_PROPERTY, getUpdatedTime(), updatedTime);
+        this.updatedTime = updatedTime;
         return this;
     }
 
@@ -144,9 +158,11 @@ public class MarketingRoi extends BaseEntity implements RemoteInput {
         switch (property) {
             case "campaign": this.campaign = (PromotionCampaign) value; break;
 
-            case "totalSpend": this.totalSpend = (BigDecimal) value; break;
+            case "channel": this.channel = (SalesChannel) value; break;
 
-            case "totalRevenue": this.totalRevenue = (BigDecimal) value; break;
+            case "spend": this.spend = (BigDecimal) value; break;
+
+            case "revenue": this.revenue = (BigDecimal) value; break;
 
             case "roiPercentage": this.roiPercentage = (BigDecimal) value; break;
 
@@ -154,7 +170,7 @@ public class MarketingRoi extends BaseEntity implements RemoteInput {
 
             case "createdTime": this.createdTime = (LocalDateTime) value; break;
 
-            case "updateTime": this.updateTime = (LocalDateTime) value; break;
+            case "updatedTime": this.updatedTime = (LocalDateTime) value; break;
 
             default: super.__internalSet(property, value);
         }
@@ -165,12 +181,13 @@ public class MarketingRoi extends BaseEntity implements RemoteInput {
     public Object __internalGet(String property) {
         switch (property) {
             case "campaign": return this.campaign;
-            case "totalSpend": return this.totalSpend;
-            case "totalRevenue": return this.totalRevenue;
+            case "channel": return this.channel;
+            case "spend": return this.spend;
+            case "revenue": return this.revenue;
             case "roiPercentage": return this.roiPercentage;
             case "reportDate": return this.reportDate;
             case "createdTime": return this.createdTime;
-            case "updateTime": return this.updateTime;
+            case "updatedTime": return this.updatedTime;
             default: return super.__internalGet(property);
         }
     }

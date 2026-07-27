@@ -3,6 +3,8 @@ package com.doublechaintech.enterpriselogisticsservice.storagecontainer;
 import com.doublechaintech.enterpriselogisticsservice.Q;
 import com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnit;
 import com.doublechaintech.enterpriselogisticsservice.containerunit.ContainerUnitRequest;
+import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee;
+import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFeeRequest;
 import com.doublechaintech.enterpriselogisticsservice.warehouse.Warehouse;
 import com.doublechaintech.enterpriselogisticsservice.warehouse.WarehouseRequest;
 import io.teaql.core.AggrFunction;
@@ -100,7 +102,7 @@ public class StorageContainerRequest<T extends StorageContainer> extends BaseReq
 
     public StorageContainerRequest<T> selectChildren(){
         super.selectAny();
-        selectContainerUnitList();
+        selectContainerUnitList().selectStorageFeeList();
         return selectId().selectContainerId().selectWarehouse().selectStatus().selectCreateTime().selectUpdateTime().selectVersion();
     }
 
@@ -232,6 +234,14 @@ public class StorageContainerRequest<T extends StorageContainer> extends BaseReq
 
     public StorageContainerRequest<T> selectContainerUnitListWith(ContainerUnitRequest containerUnitList){
        enhanceRelation(StorageContainer.CONTAINER_UNIT_LIST_PROPERTY, containerUnitList);
+       return this;
+    }
+    public StorageContainerRequest<T> selectStorageFeeList(){
+       return selectStorageFeeListWith(Q.storageFees().selectSelf());
+    }
+
+    public StorageContainerRequest<T> selectStorageFeeListWith(StorageFeeRequest storageFeeList){
+       enhanceRelation(StorageContainer.STORAGE_FEE_LIST_PROPERTY, storageFeeList);
        return this;
     }
 
@@ -599,6 +609,21 @@ public class StorageContainerRequest<T extends StorageContainer> extends BaseReq
     public StorageContainerRequest<T> haveNoContainerUnits(){
         return withoutContainerUnitListMatching(Q.containerUnits().unlimited());
     }
+    public StorageContainerRequest<T> withStorageFeeListMatching(StorageFeeRequest storageFeeRequest){
+        return appendSearchCriteria(new SubQuerySearchCriteria(StorageContainer.ID_PROPERTY, storageFeeRequest, StorageFee.CONTAINER_PROPERTY));
+    }
+
+    public StorageContainerRequest<T> withoutStorageFeeListMatching(StorageFeeRequest storageFeeRequest){
+        return appendSearchCriteria(SearchCriteria.not(new SubQuerySearchCriteria(StorageContainer.ID_PROPERTY, storageFeeRequest, StorageFee.CONTAINER_PROPERTY)));
+    }
+
+    public StorageContainerRequest<T> haveStorageFees(){
+        return withStorageFeeListMatching(Q.storageFees().unlimited());
+    }
+
+    public StorageContainerRequest<T> haveNoStorageFees(){
+        return withoutStorageFeeListMatching(Q.storageFees().unlimited());
+    }
 
     public StorageContainerRequest<T> count(){
         super.count();
@@ -623,6 +648,10 @@ public class StorageContainerRequest<T extends StorageContainer> extends BaseReq
 
     public StorageContainerRequest<T> groupByContainerUnitsWithDetails(ContainerUnitRequest subRequest){
        aggregate(StorageContainer.CONTAINER_UNIT_LIST_PROPERTY, subRequest);
+       return this;
+    }
+    public StorageContainerRequest<T> groupByStorageFeesWithDetails(StorageFeeRequest subRequest){
+       aggregate(StorageContainer.STORAGE_FEE_LIST_PROPERTY, subRequest);
        return this;
     }
 
@@ -836,6 +865,19 @@ public class StorageContainerRequest<T extends StorageContainer> extends BaseReq
     public StorageContainerRequest<T> statsFromContainerUnits(ContainerUnitRequest subRequest){
        return statsFromContainerUnitsAs(REFINEMENTS, subRequest);
     }
+    public StorageContainerRequest<T> statsFromStorageFeesAs(String name, StorageFeeRequest subRequest){
+       return statsFromStorageFeesAs(name, subRequest, false);
+    }
+
+    public StorageContainerRequest<T> statsFromStorageFeesAs(String name, StorageFeeRequest subRequest, boolean singleResult){
+       subRequest.setPartitionProperty(StorageFee.CONTAINER_PROPERTY);
+       addAggregateDynamicProperty(name, subRequest, singleResult);
+       return this;
+    }
+
+    public StorageContainerRequest<T> statsFromStorageFees(StorageFeeRequest subRequest){
+       return statsFromStorageFeesAs(REFINEMENTS, subRequest);
+    }
     public WarehouseRequest rollUpToWarehouse(){
        WarehouseRequest warehouse = Q.warehouses().unlimited();
        this.withWarehouseMatching(warehouse)
@@ -858,93 +900,192 @@ public class StorageContainerRequest<T extends StorageContainer> extends BaseReq
     public StorageContainerRequest<T> countContainerUnitsWith(String name, ContainerUnitRequest subRequest){
         return statsFromContainerUnitsAs(name, subRequest.count(), true);
     }
-    public StorageContainerRequest<T> minQuantityOfContainerUnits(){
-        return minQuantityOfContainerUnitsAs("minQuantityOfContainerUnits");
+    public StorageContainerRequest<T> countStorageFees(){
+        return countStorageFeesAs("Count");
     }
 
-    public StorageContainerRequest<T> minQuantityOfContainerUnitsAs(String name){
-        return minQuantityOfContainerUnitsAs(name, Q.containerUnits().unlimited());
+    public StorageContainerRequest<T> countStorageFeesAs(String name){
+        return countStorageFeesWith(name, Q.storageFees().unlimited());
     }
 
-    public StorageContainerRequest<T> minQuantityOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
-        return statsFromContainerUnitsAs(name, subRequest.minQuantity(), true);
+    public StorageContainerRequest<T> countStorageFeesWith(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.count(), true);
     }
-    public StorageContainerRequest<T> maxQuantityOfContainerUnits(){
-        return maxQuantityOfContainerUnitsAs("maxQuantityOfContainerUnits");
-    }
-
-    public StorageContainerRequest<T> maxQuantityOfContainerUnitsAs(String name){
-        return maxQuantityOfContainerUnitsAs(name, Q.containerUnits().unlimited());
+    public StorageContainerRequest<T> minItemCountOfContainerUnits(){
+        return minItemCountOfContainerUnitsAs("minItemCountOfContainerUnits");
     }
 
-    public StorageContainerRequest<T> maxQuantityOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
-        return statsFromContainerUnitsAs(name, subRequest.maxQuantity(), true);
-    }
-    public StorageContainerRequest<T> sumQuantityOfContainerUnits(){
-        return sumQuantityOfContainerUnitsAs("sumQuantityOfContainerUnits");
+    public StorageContainerRequest<T> minItemCountOfContainerUnitsAs(String name){
+        return minItemCountOfContainerUnitsAs(name, Q.containerUnits().unlimited());
     }
 
-    public StorageContainerRequest<T> sumQuantityOfContainerUnitsAs(String name){
-        return sumQuantityOfContainerUnitsAs(name, Q.containerUnits().unlimited());
+    public StorageContainerRequest<T> minItemCountOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
+        return statsFromContainerUnitsAs(name, subRequest.minItemCount(), true);
+    }
+    public StorageContainerRequest<T> maxItemCountOfContainerUnits(){
+        return maxItemCountOfContainerUnitsAs("maxItemCountOfContainerUnits");
     }
 
-    public StorageContainerRequest<T> sumQuantityOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
-        return statsFromContainerUnitsAs(name, subRequest.sumQuantity(), true);
-    }
-    public StorageContainerRequest<T> avgQuantityOfContainerUnits(){
-        return avgQuantityOfContainerUnitsAs("avgQuantityOfContainerUnits");
+    public StorageContainerRequest<T> maxItemCountOfContainerUnitsAs(String name){
+        return maxItemCountOfContainerUnitsAs(name, Q.containerUnits().unlimited());
     }
 
-    public StorageContainerRequest<T> avgQuantityOfContainerUnitsAs(String name){
-        return avgQuantityOfContainerUnitsAs(name, Q.containerUnits().unlimited());
+    public StorageContainerRequest<T> maxItemCountOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
+        return statsFromContainerUnitsAs(name, subRequest.maxItemCount(), true);
+    }
+    public StorageContainerRequest<T> sumItemCountOfContainerUnits(){
+        return sumItemCountOfContainerUnitsAs("sumItemCountOfContainerUnits");
     }
 
-    public StorageContainerRequest<T> avgQuantityOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
-        return statsFromContainerUnitsAs(name, subRequest.avgQuantity(), true);
-    }
-    public StorageContainerRequest<T> standardDeviationQuantityOfContainerUnits(){
-        return standardDeviationQuantityOfContainerUnitsAs("stdDevQuantityOfContainerUnits");
+    public StorageContainerRequest<T> sumItemCountOfContainerUnitsAs(String name){
+        return sumItemCountOfContainerUnitsAs(name, Q.containerUnits().unlimited());
     }
 
-    public StorageContainerRequest<T> standardDeviationQuantityOfContainerUnitsAs(String name){
-        return standardDeviationQuantityOfContainerUnitsAs(name, Q.containerUnits().unlimited());
+    public StorageContainerRequest<T> sumItemCountOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
+        return statsFromContainerUnitsAs(name, subRequest.sumItemCount(), true);
+    }
+    public StorageContainerRequest<T> avgItemCountOfContainerUnits(){
+        return avgItemCountOfContainerUnitsAs("avgItemCountOfContainerUnits");
     }
 
-    public StorageContainerRequest<T> standardDeviationQuantityOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
-        return statsFromContainerUnitsAs(name, subRequest.standardDeviationQuantity(), true);
-    }
-    public StorageContainerRequest<T> squareRootOfPopulationStandardDeviationQuantityOfContainerUnits(){
-        return squareRootOfPopulationStandardDeviationQuantityOfContainerUnitsAs("stdDevPopQuantityOfContainerUnits");
+    public StorageContainerRequest<T> avgItemCountOfContainerUnitsAs(String name){
+        return avgItemCountOfContainerUnitsAs(name, Q.containerUnits().unlimited());
     }
 
-    public StorageContainerRequest<T> squareRootOfPopulationStandardDeviationQuantityOfContainerUnitsAs(String name){
-        return squareRootOfPopulationStandardDeviationQuantityOfContainerUnitsAs(name, Q.containerUnits().unlimited());
+    public StorageContainerRequest<T> avgItemCountOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
+        return statsFromContainerUnitsAs(name, subRequest.avgItemCount(), true);
+    }
+    public StorageContainerRequest<T> standardDeviationItemCountOfContainerUnits(){
+        return standardDeviationItemCountOfContainerUnitsAs("stdDevItemCountOfContainerUnits");
     }
 
-    public StorageContainerRequest<T> squareRootOfPopulationStandardDeviationQuantityOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
-        return statsFromContainerUnitsAs(name, subRequest.squareRootOfPopulationStandardDeviationQuantity(), true);
-    }
-    public StorageContainerRequest<T> sampleVarianceQuantityOfContainerUnits(){
-        return sampleVarianceQuantityOfContainerUnitsAs("varSampQuantityOfContainerUnits");
+    public StorageContainerRequest<T> standardDeviationItemCountOfContainerUnitsAs(String name){
+        return standardDeviationItemCountOfContainerUnitsAs(name, Q.containerUnits().unlimited());
     }
 
-    public StorageContainerRequest<T> sampleVarianceQuantityOfContainerUnitsAs(String name){
-        return sampleVarianceQuantityOfContainerUnitsAs(name, Q.containerUnits().unlimited());
+    public StorageContainerRequest<T> standardDeviationItemCountOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
+        return statsFromContainerUnitsAs(name, subRequest.standardDeviationItemCount(), true);
+    }
+    public StorageContainerRequest<T> squareRootOfPopulationStandardDeviationItemCountOfContainerUnits(){
+        return squareRootOfPopulationStandardDeviationItemCountOfContainerUnitsAs("stdDevPopItemCountOfContainerUnits");
     }
 
-    public StorageContainerRequest<T> sampleVarianceQuantityOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
-        return statsFromContainerUnitsAs(name, subRequest.sampleVarianceQuantity(), true);
-    }
-    public StorageContainerRequest<T> samplePopulationVarianceQuantityOfContainerUnits(){
-        return samplePopulationVarianceQuantityOfContainerUnitsAs("varPopQuantityOfContainerUnits");
+    public StorageContainerRequest<T> squareRootOfPopulationStandardDeviationItemCountOfContainerUnitsAs(String name){
+        return squareRootOfPopulationStandardDeviationItemCountOfContainerUnitsAs(name, Q.containerUnits().unlimited());
     }
 
-    public StorageContainerRequest<T> samplePopulationVarianceQuantityOfContainerUnitsAs(String name){
-        return samplePopulationVarianceQuantityOfContainerUnitsAs(name, Q.containerUnits().unlimited());
+    public StorageContainerRequest<T> squareRootOfPopulationStandardDeviationItemCountOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
+        return statsFromContainerUnitsAs(name, subRequest.squareRootOfPopulationStandardDeviationItemCount(), true);
+    }
+    public StorageContainerRequest<T> sampleVarianceItemCountOfContainerUnits(){
+        return sampleVarianceItemCountOfContainerUnitsAs("varSampItemCountOfContainerUnits");
     }
 
-    public StorageContainerRequest<T> samplePopulationVarianceQuantityOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
-        return statsFromContainerUnitsAs(name, subRequest.samplePopulationVarianceQuantity(), true);
+    public StorageContainerRequest<T> sampleVarianceItemCountOfContainerUnitsAs(String name){
+        return sampleVarianceItemCountOfContainerUnitsAs(name, Q.containerUnits().unlimited());
+    }
+
+    public StorageContainerRequest<T> sampleVarianceItemCountOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
+        return statsFromContainerUnitsAs(name, subRequest.sampleVarianceItemCount(), true);
+    }
+    public StorageContainerRequest<T> samplePopulationVarianceItemCountOfContainerUnits(){
+        return samplePopulationVarianceItemCountOfContainerUnitsAs("varPopItemCountOfContainerUnits");
+    }
+
+    public StorageContainerRequest<T> samplePopulationVarianceItemCountOfContainerUnitsAs(String name){
+        return samplePopulationVarianceItemCountOfContainerUnitsAs(name, Q.containerUnits().unlimited());
+    }
+
+    public StorageContainerRequest<T> samplePopulationVarianceItemCountOfContainerUnitsAs(String name, ContainerUnitRequest subRequest){
+        return statsFromContainerUnitsAs(name, subRequest.samplePopulationVarianceItemCount(), true);
+    }
+    public StorageContainerRequest<T> minAmountOfStorageFees(){
+        return minAmountOfStorageFeesAs("minAmountOfStorageFees");
+    }
+
+    public StorageContainerRequest<T> minAmountOfStorageFeesAs(String name){
+        return minAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
+    }
+
+    public StorageContainerRequest<T> minAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.minAmount(), true);
+    }
+    public StorageContainerRequest<T> maxAmountOfStorageFees(){
+        return maxAmountOfStorageFeesAs("maxAmountOfStorageFees");
+    }
+
+    public StorageContainerRequest<T> maxAmountOfStorageFeesAs(String name){
+        return maxAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
+    }
+
+    public StorageContainerRequest<T> maxAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.maxAmount(), true);
+    }
+    public StorageContainerRequest<T> sumAmountOfStorageFees(){
+        return sumAmountOfStorageFeesAs("sumAmountOfStorageFees");
+    }
+
+    public StorageContainerRequest<T> sumAmountOfStorageFeesAs(String name){
+        return sumAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
+    }
+
+    public StorageContainerRequest<T> sumAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.sumAmount(), true);
+    }
+    public StorageContainerRequest<T> avgAmountOfStorageFees(){
+        return avgAmountOfStorageFeesAs("avgAmountOfStorageFees");
+    }
+
+    public StorageContainerRequest<T> avgAmountOfStorageFeesAs(String name){
+        return avgAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
+    }
+
+    public StorageContainerRequest<T> avgAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.avgAmount(), true);
+    }
+    public StorageContainerRequest<T> standardDeviationAmountOfStorageFees(){
+        return standardDeviationAmountOfStorageFeesAs("stdDevAmountOfStorageFees");
+    }
+
+    public StorageContainerRequest<T> standardDeviationAmountOfStorageFeesAs(String name){
+        return standardDeviationAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
+    }
+
+    public StorageContainerRequest<T> standardDeviationAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.standardDeviationAmount(), true);
+    }
+    public StorageContainerRequest<T> squareRootOfPopulationStandardDeviationAmountOfStorageFees(){
+        return squareRootOfPopulationStandardDeviationAmountOfStorageFeesAs("stdDevPopAmountOfStorageFees");
+    }
+
+    public StorageContainerRequest<T> squareRootOfPopulationStandardDeviationAmountOfStorageFeesAs(String name){
+        return squareRootOfPopulationStandardDeviationAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
+    }
+
+    public StorageContainerRequest<T> squareRootOfPopulationStandardDeviationAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.squareRootOfPopulationStandardDeviationAmount(), true);
+    }
+    public StorageContainerRequest<T> sampleVarianceAmountOfStorageFees(){
+        return sampleVarianceAmountOfStorageFeesAs("varSampAmountOfStorageFees");
+    }
+
+    public StorageContainerRequest<T> sampleVarianceAmountOfStorageFeesAs(String name){
+        return sampleVarianceAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
+    }
+
+    public StorageContainerRequest<T> sampleVarianceAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.sampleVarianceAmount(), true);
+    }
+    public StorageContainerRequest<T> samplePopulationVarianceAmountOfStorageFees(){
+        return samplePopulationVarianceAmountOfStorageFeesAs("varPopAmountOfStorageFees");
+    }
+
+    public StorageContainerRequest<T> samplePopulationVarianceAmountOfStorageFeesAs(String name){
+        return samplePopulationVarianceAmountOfStorageFeesAs(name, Q.storageFees().unlimited());
+    }
+
+    public StorageContainerRequest<T> samplePopulationVarianceAmountOfStorageFeesAs(String name, StorageFeeRequest subRequest){
+        return statsFromStorageFeesAs(name, subRequest.samplePopulationVarianceAmount(), true);
     }
 
    public StorageContainerRequest<T> facetByWarehouseAs(String facetName, WarehouseRequest warehouse){

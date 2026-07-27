@@ -1,7 +1,5 @@
 package com.doublechaintech.enterpriselogisticsservice.timeslot;
 
-import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrder;
-import com.doublechaintech.enterpriselogisticsservice.movingorder.MovingOrderChecker;
 import io.teaql.core.UserContext;
 import io.teaql.core.checker.Checker;
 import io.teaql.core.checker.ObjectLocation;
@@ -25,61 +23,68 @@ public class TimeSlotChecker implements Checker<TimeSlot>{
          return;
       }
       if(timeSlot.newItem()){
-        if(timeSlot.getCreateTime() == null){
-           timeSlot.updateCreateTime(java.time.LocalDateTime.now());
+        if(timeSlot.getStartTime() == null){
+           timeSlot.updateStartTime(java.time.LocalDateTime.now());
+        }if(timeSlot.getEndTime() == null){
+           timeSlot.updateEndTime(java.time.LocalDateTime.now());
+        }if(timeSlot.getCreatedTime() == null){
+           timeSlot.updateCreatedTime(java.time.LocalDateTime.now());
+        }if(timeSlot.getUpdatedTime() == null){
+           timeSlot.updateUpdatedTime(java.time.LocalDateTime.now());
         }
       }else if(timeSlot.updateItem()){
+        timeSlot.updateUpdatedTime(java.time.LocalDateTime.now());
       }
-      checkSlotId(_ctx, timeSlot.getProperty(TimeSlot.SLOT_ID_PROPERTY), newLocation(_parentLocation, TimeSlot.SLOT_ID_PROPERTY));
-      checkMovingOrder(_ctx, timeSlot.getProperty(TimeSlot.MOVING_ORDER_PROPERTY), newLocation(_parentLocation, TimeSlot.MOVING_ORDER_PROPERTY));
+      checkSlotCode(_ctx, timeSlot.getProperty(TimeSlot.SLOT_CODE_PROPERTY), newLocation(_parentLocation, TimeSlot.SLOT_CODE_PROPERTY));
       checkStartTime(_ctx, timeSlot.getProperty(TimeSlot.START_TIME_PROPERTY), newLocation(_parentLocation, TimeSlot.START_TIME_PROPERTY));
       checkEndTime(_ctx, timeSlot.getProperty(TimeSlot.END_TIME_PROPERTY), newLocation(_parentLocation, TimeSlot.END_TIME_PROPERTY));
-      checkStatus(_ctx, timeSlot.getProperty(TimeSlot.STATUS_PROPERTY), newLocation(_parentLocation, TimeSlot.STATUS_PROPERTY));
-      checkCreateTime(_ctx, timeSlot.getProperty(TimeSlot.CREATE_TIME_PROPERTY), newLocation(_parentLocation, TimeSlot.CREATE_TIME_PROPERTY));
+      checkCapacity(_ctx, timeSlot.getProperty(TimeSlot.CAPACITY_PROPERTY), newLocation(_parentLocation, TimeSlot.CAPACITY_PROPERTY));
+      checkAvailableSpots(_ctx, timeSlot.getProperty(TimeSlot.AVAILABLE_SPOTS_PROPERTY), newLocation(_parentLocation, TimeSlot.AVAILABLE_SPOTS_PROPERTY));
+      checkCreatedTime(_ctx, timeSlot.getProperty(TimeSlot.CREATED_TIME_PROPERTY), newLocation(_parentLocation, TimeSlot.CREATED_TIME_PROPERTY));
+      checkUpdatedTime(_ctx, timeSlot.getProperty(TimeSlot.UPDATED_TIME_PROPERTY), newLocation(_parentLocation, TimeSlot.UPDATED_TIME_PROPERTY));
     }
 
-    public void checkSlotId(UserContext _ctx, String slotId, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, slotId);
-    if((slotId == null)){
+    public void checkSlotCode(UserContext _ctx, String slotCode, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, slotCode);
+    if((slotCode == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, slotId);
+    maxStringCheck(_ctx, _parentLocation, 100, slotCode);
 
     }
-    public void checkMovingOrder(UserContext _ctx, MovingOrder movingOrder, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, movingOrder);
-    if((movingOrder == null)){
-        return;
-    }
-    new MovingOrderChecker().checkAndFix(_ctx, movingOrder, _parentLocation);
-    }
-    public void checkStartTime(UserContext _ctx, String startTime, ObjectLocation _parentLocation){
+    public void checkStartTime(UserContext _ctx, LocalDateTime startTime, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, startTime);
     if((startTime == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, startTime);
-
     }
-    public void checkEndTime(UserContext _ctx, String endTime, ObjectLocation _parentLocation){
+    public void checkEndTime(UserContext _ctx, LocalDateTime endTime, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, endTime);
     if((endTime == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, endTime);
-
     }
-    public void checkStatus(UserContext _ctx, String status, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, status);
-    if((status == null)){
+    public void checkCapacity(UserContext _ctx, Integer capacity, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, capacity);
+    if((capacity == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, status);
-
     }
-    public void checkCreateTime(UserContext _ctx, LocalDateTime createTime, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, createTime);
-    if((createTime == null)){
+    public void checkAvailableSpots(UserContext _ctx, Integer availableSpots, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, availableSpots);
+    if((availableSpots == null)){
+        return;
+    }
+    }
+    public void checkCreatedTime(UserContext _ctx, LocalDateTime createdTime, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, createdTime);
+    if((createdTime == null)){
+        return;
+    }
+    }
+    public void checkUpdatedTime(UserContext _ctx, LocalDateTime updatedTime, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, updatedTime);
+    if((updatedTime == null)){
         return;
     }
     }

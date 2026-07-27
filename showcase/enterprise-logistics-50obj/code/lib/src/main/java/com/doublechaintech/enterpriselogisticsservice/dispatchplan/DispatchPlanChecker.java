@@ -29,31 +29,43 @@ public class DispatchPlanChecker implements Checker<DispatchPlan>{
          return;
       }
       if(dispatchPlan.newItem()){
-        if(dispatchPlan.getCreateTime() == null){
-           dispatchPlan.updateCreateTime(java.time.LocalDateTime.now());
-        }if(dispatchPlan.getUpdateTime() == null){
-           dispatchPlan.updateUpdateTime(java.time.LocalDateTime.now());
+        if(dispatchPlan.getScheduledDeparture() == null){
+           dispatchPlan.updateScheduledDeparture(java.time.LocalDateTime.now());
+        }if(dispatchPlan.getScheduledArrival() == null){
+           dispatchPlan.updateScheduledArrival(java.time.LocalDateTime.now());
+        }if(dispatchPlan.getCreatedTime() == null){
+           dispatchPlan.updateCreatedTime(java.time.LocalDateTime.now());
+        }if(dispatchPlan.getUpdatedTime() == null){
+           dispatchPlan.updateUpdatedTime(java.time.LocalDateTime.now());
         }
       }else if(dispatchPlan.updateItem()){
-        dispatchPlan.updateUpdateTime(java.time.LocalDateTime.now());
+        dispatchPlan.updateUpdatedTime(java.time.LocalDateTime.now());
       }
-      checkPlanId(_ctx, dispatchPlan.getProperty(DispatchPlan.PLAN_ID_PROPERTY), newLocation(_parentLocation, DispatchPlan.PLAN_ID_PROPERTY));
+      checkPlanNumber(_ctx, dispatchPlan.getProperty(DispatchPlan.PLAN_NUMBER_PROPERTY), newLocation(_parentLocation, DispatchPlan.PLAN_NUMBER_PROPERTY));
+      checkStatus(_ctx, dispatchPlan.getProperty(DispatchPlan.STATUS_PROPERTY), newLocation(_parentLocation, DispatchPlan.STATUS_PROPERTY));
       checkMovingOrder(_ctx, dispatchPlan.getProperty(DispatchPlan.MOVING_ORDER_PROPERTY), newLocation(_parentLocation, DispatchPlan.MOVING_ORDER_PROPERTY));
       checkVehicle(_ctx, dispatchPlan.getProperty(DispatchPlan.VEHICLE_PROPERTY), newLocation(_parentLocation, DispatchPlan.VEHICLE_PROPERTY));
       checkDriver(_ctx, dispatchPlan.getProperty(DispatchPlan.DRIVER_PROPERTY), newLocation(_parentLocation, DispatchPlan.DRIVER_PROPERTY));
-      checkStatus(_ctx, dispatchPlan.getProperty(DispatchPlan.STATUS_PROPERTY), newLocation(_parentLocation, DispatchPlan.STATUS_PROPERTY));
       checkScheduledDeparture(_ctx, dispatchPlan.getProperty(DispatchPlan.SCHEDULED_DEPARTURE_PROPERTY), newLocation(_parentLocation, DispatchPlan.SCHEDULED_DEPARTURE_PROPERTY));
       checkScheduledArrival(_ctx, dispatchPlan.getProperty(DispatchPlan.SCHEDULED_ARRIVAL_PROPERTY), newLocation(_parentLocation, DispatchPlan.SCHEDULED_ARRIVAL_PROPERTY));
-      checkCreateTime(_ctx, dispatchPlan.getProperty(DispatchPlan.CREATE_TIME_PROPERTY), newLocation(_parentLocation, DispatchPlan.CREATE_TIME_PROPERTY));
-      checkUpdateTime(_ctx, dispatchPlan.getProperty(DispatchPlan.UPDATE_TIME_PROPERTY), newLocation(_parentLocation, DispatchPlan.UPDATE_TIME_PROPERTY));
+      checkCreatedTime(_ctx, dispatchPlan.getProperty(DispatchPlan.CREATED_TIME_PROPERTY), newLocation(_parentLocation, DispatchPlan.CREATED_TIME_PROPERTY));
+      checkUpdatedTime(_ctx, dispatchPlan.getProperty(DispatchPlan.UPDATED_TIME_PROPERTY), newLocation(_parentLocation, DispatchPlan.UPDATED_TIME_PROPERTY));
     }
 
-    public void checkPlanId(UserContext _ctx, String planId, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, planId);
-    if((planId == null)){
+    public void checkPlanNumber(UserContext _ctx, String planNumber, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, planNumber);
+    if((planNumber == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, planId);
+    maxStringCheck(_ctx, _parentLocation, 100, planNumber);
+
+    }
+    public void checkStatus(UserContext _ctx, String status, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, status);
+    if((status == null)){
+        return;
+    }
+    maxStringCheck(_ctx, _parentLocation, 100, status);
 
     }
     public void checkMovingOrder(UserContext _ctx, MovingOrder movingOrder, ObjectLocation _parentLocation){
@@ -77,39 +89,27 @@ public class DispatchPlanChecker implements Checker<DispatchPlan>{
     }
     new StaffMemberChecker().checkAndFix(_ctx, driver, _parentLocation);
     }
-    public void checkStatus(UserContext _ctx, String status, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, status);
-    if((status == null)){
-        return;
-    }
-    maxStringCheck(_ctx, _parentLocation, 100, status);
-
-    }
-    public void checkScheduledDeparture(UserContext _ctx, String scheduledDeparture, ObjectLocation _parentLocation){
+    public void checkScheduledDeparture(UserContext _ctx, LocalDateTime scheduledDeparture, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, scheduledDeparture);
     if((scheduledDeparture == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, scheduledDeparture);
-
     }
-    public void checkScheduledArrival(UserContext _ctx, String scheduledArrival, ObjectLocation _parentLocation){
+    public void checkScheduledArrival(UserContext _ctx, LocalDateTime scheduledArrival, ObjectLocation _parentLocation){
     requiredCheck(_ctx, _parentLocation, scheduledArrival);
     if((scheduledArrival == null)){
         return;
     }
-    maxStringCheck(_ctx, _parentLocation, 100, scheduledArrival);
-
     }
-    public void checkCreateTime(UserContext _ctx, LocalDateTime createTime, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, createTime);
-    if((createTime == null)){
+    public void checkCreatedTime(UserContext _ctx, LocalDateTime createdTime, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, createdTime);
+    if((createdTime == null)){
         return;
     }
     }
-    public void checkUpdateTime(UserContext _ctx, LocalDateTime updateTime, ObjectLocation _parentLocation){
-    requiredCheck(_ctx, _parentLocation, updateTime);
-    if((updateTime == null)){
+    public void checkUpdatedTime(UserContext _ctx, LocalDateTime updatedTime, ObjectLocation _parentLocation){
+    requiredCheck(_ctx, _parentLocation, updatedTime);
+    if((updatedTime == null)){
         return;
     }
     }

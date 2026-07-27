@@ -6,8 +6,8 @@ import com.doublechaintech.enterpriselogisticsservice.pallet.Pallet;
 import com.doublechaintech.enterpriselogisticsservice.pallet.PalletListExpression;
 import com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainer;
 import com.doublechaintech.enterpriselogisticsservice.storagecontainer.StorageContainerListExpression;
-import com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRoute;
-import com.doublechaintech.enterpriselogisticsservice.transitroute.TransitRouteListExpression;
+import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFee;
+import com.doublechaintech.enterpriselogisticsservice.storagefee.StorageFeeListExpression;
 import io.teaql.core.UserContext;
 import io.teaql.core.value.BaseEntityExpression;
 import io.teaql.core.value.Expression;
@@ -105,12 +105,6 @@ public class WarehouseExpression<T, E, U extends Warehouse> extends ExpressionAd
        return new WarehouseExpression(this, $it ->  ((Warehouse)$it).updateUpdateTime(updateTime));
     }
 
-    public TransitRouteListExpression<T, U, TransitRoute> getTransitRouteListAsOriginWarehouse(){
-        return new TransitRouteListExpression(this, $it ->  ((Warehouse)$it).getTransitRouteListAsOriginWarehouse());
-    }
-    public TransitRouteListExpression<T, U, TransitRoute> getTransitRouteListAsDestinationWarehouse(){
-        return new TransitRouteListExpression(this, $it ->  ((Warehouse)$it).getTransitRouteListAsDestinationWarehouse());
-    }
     public StorageContainerListExpression<T, U, StorageContainer> getStorageContainerList(){
         return new StorageContainerListExpression(this, $it ->  ((Warehouse)$it).getStorageContainerList());
     }
@@ -120,11 +114,8 @@ public class WarehouseExpression<T, E, U extends Warehouse> extends ExpressionAd
     public PalletListExpression<T, U, Pallet> getPalletList(){
         return new PalletListExpression(this, $it ->  ((Warehouse)$it).getPalletList());
     }
-    public WarehouseExpression<T, U, U> addTransitRouteAsOriginWarehouse(TransitRoute transitRoute){
-       return new WarehouseExpression(this, $it ->  ((Warehouse)$it).addTransitRouteAsOriginWarehouse(transitRoute));
-    }
-    public WarehouseExpression<T, U, U> addTransitRouteAsDestinationWarehouse(TransitRoute transitRoute){
-       return new WarehouseExpression(this, $it ->  ((Warehouse)$it).addTransitRouteAsDestinationWarehouse(transitRoute));
+    public StorageFeeListExpression<T, U, StorageFee> getStorageFeeList(){
+        return new StorageFeeListExpression(this, $it ->  ((Warehouse)$it).getStorageFeeList());
     }
     public WarehouseExpression<T, U, U> addStorageContainer(StorageContainer storageContainer){
        return new WarehouseExpression(this, $it ->  ((Warehouse)$it).addStorageContainer(storageContainer));
@@ -134,5 +125,8 @@ public class WarehouseExpression<T, E, U extends Warehouse> extends ExpressionAd
     }
     public WarehouseExpression<T, U, U> addPallet(Pallet pallet){
        return new WarehouseExpression(this, $it ->  ((Warehouse)$it).addPallet(pallet));
+    }
+    public WarehouseExpression<T, U, U> addStorageFee(StorageFee storageFee){
+       return new WarehouseExpression(this, $it ->  ((Warehouse)$it).addStorageFee(storageFee));
     }
 }

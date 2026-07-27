@@ -1,10 +1,9 @@
 package com.doublechaintech.enterpriselogisticsservice.staffmember;
 
 import com.doublechaintech.enterpriselogisticsservice.dispatchplan.DispatchPlan;
-import com.doublechaintech.enterpriselogisticsservice.expenseitem.ExpenseItem;
 import com.doublechaintech.enterpriselogisticsservice.performancereview.PerformanceReview;
-import com.doublechaintech.enterpriselogisticsservice.safetytraining.SafetyTraining;
 import com.doublechaintech.enterpriselogisticsservice.salaryslip.SalarySlip;
+import com.doublechaintech.enterpriselogisticsservice.saleslead.SalesLead;
 import com.doublechaintech.enterpriselogisticsservice.staffmember.StaffMember;
 import com.doublechaintech.enterpriselogisticsservice.workedhours.WorkedHours;
 import io.teaql.core.Audited;
@@ -44,8 +43,7 @@ public class StaffMember extends BaseEntity implements RemoteInput {
     public static final String SALARY_SLIP_LIST_PROPERTY = "salarySlipList";
     public static final String PERFORMANCE_REVIEW_LIST_AS_STAFF_PROPERTY = "performanceReviewListAsStaff";
     public static final String PERFORMANCE_REVIEW_LIST_AS_REVIEWER_PROPERTY = "performanceReviewListAsReviewer";
-    public static final String SAFETY_TRAINING_LIST_PROPERTY = "safetyTrainingList";
-    public static final String EXPENSE_ITEM_LIST_PROPERTY = "expenseItemList";
+    public static final String SALES_LEAD_LIST_PROPERTY = "salesLeadList";
     private String name;
     private String email;
     private String phone;
@@ -62,8 +60,7 @@ public class StaffMember extends BaseEntity implements RemoteInput {
     private SmartList<SalarySlip> salarySlipList;
     private SmartList<PerformanceReview> performanceReviewListAsStaff;
     private SmartList<PerformanceReview> performanceReviewListAsReviewer;
-    private SmartList<SafetyTraining> safetyTrainingList;
-    private SmartList<ExpenseItem> expenseItemList;
+    private SmartList<SalesLead> salesLeadList;
 
     public String getName(){
         return this.name;
@@ -113,11 +110,8 @@ public class StaffMember extends BaseEntity implements RemoteInput {
     public SmartList<PerformanceReview> getPerformanceReviewListAsReviewer(){
         return this.performanceReviewListAsReviewer;
     }
-    public SmartList<SafetyTraining> getSafetyTrainingList(){
-        return this.safetyTrainingList;
-    }
-    public SmartList<ExpenseItem> getExpenseItemList(){
-        return this.expenseItemList;
+    public SmartList<SalesLead> getSalesLeadList(){
+        return this.salesLeadList;
     }
     public StaffMember updateName(String name){
         name = (name == null ? null : name.trim());
@@ -283,30 +277,17 @@ public class StaffMember extends BaseEntity implements RemoteInput {
         performanceReview.cacheRelation(PerformanceReview.REVIEWER_PROPERTY, this);
         return this;
     }
-    public StaffMember addSafetyTraining(SafetyTraining safetyTraining){
-        if (safetyTraining == null){
+    public StaffMember addSalesLead(SalesLead salesLead){
+        if (salesLead == null){
             return this;
         }
 
-        if(null == this.safetyTrainingList){
-            this.safetyTrainingList = new SmartList<>();
+        if(null == this.salesLeadList){
+            this.salesLeadList = new SmartList<>();
         }
 
-        this.safetyTrainingList.add(safetyTraining);
-        safetyTraining.cacheRelation(SafetyTraining.STAFF_PROPERTY, this);
-        return this;
-    }
-    public StaffMember addExpenseItem(ExpenseItem expenseItem){
-        if (expenseItem == null){
-            return this;
-        }
-
-        if(null == this.expenseItemList){
-            this.expenseItemList = new SmartList<>();
-        }
-
-        this.expenseItemList.add(expenseItem);
-        expenseItem.cacheRelation(ExpenseItem.STAFF_MEMBER_PROPERTY, this);
+        this.salesLeadList.add(salesLead);
+        salesLead.cacheRelation(SalesLead.ASSIGNED_TO_PROPERTY, this);
         return this;
     }
 
@@ -363,8 +344,7 @@ public class StaffMember extends BaseEntity implements RemoteInput {
             case "salarySlipList": this.salarySlipList = (SmartList<SalarySlip>) value; break;
             case "performanceReviewListAsStaff": this.performanceReviewListAsStaff = (SmartList<PerformanceReview>) value; break;
             case "performanceReviewListAsReviewer": this.performanceReviewListAsReviewer = (SmartList<PerformanceReview>) value; break;
-            case "safetyTrainingList": this.safetyTrainingList = (SmartList<SafetyTraining>) value; break;
-            case "expenseItemList": this.expenseItemList = (SmartList<ExpenseItem>) value; break;
+            case "salesLeadList": this.salesLeadList = (SmartList<SalesLead>) value; break;
             default: super.__internalSet(property, value);
         }
     }
@@ -389,8 +369,7 @@ public class StaffMember extends BaseEntity implements RemoteInput {
             case "salarySlipList": return this.salarySlipList;
             case "performanceReviewListAsStaff": return this.performanceReviewListAsStaff;
             case "performanceReviewListAsReviewer": return this.performanceReviewListAsReviewer;
-            case "safetyTrainingList": return this.safetyTrainingList;
-            case "expenseItemList": return this.expenseItemList;
+            case "salesLeadList": return this.salesLeadList;
             default: return super.__internalGet(property);
         }
     }
