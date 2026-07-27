@@ -569,11 +569,22 @@ impl PipelineExecutor {
                 .replace("{{/if}}", "")
                 .replace("{{assist_outputs}}", &assist_outputs);
 
+            // Give the agent specific first-step instructions based on detected build system
+            let compile_hint = if build_target.starts_with("java") {
+                "This is a Java/Maven project. Your FIRST action must be: run_command({\"command\": \"mvn compile -f pom.xml 2>&1 | tail -30\"})"
+            } else {
+                "This is a Rust/Cargo project. Your FIRST action must be: run_command({\"command\": \"cargo check 2>&1 | tail -30\"})"
+            };
+
             let user_prompt = format!(
-                "The project has been generated at `{}`. \
-                 Write the business logic code (one query function per entity) and make the project compile successfully.\n\n\
-                 Start by reading AGENTS.md, then inspect the source files, write the business logic, compile, and fix any errors.",
-                build_dir.display()
+                "The project is at `{dir}`. {hint}\n\n\
+                 After seeing the compile output:\n\
+                 - If it succeeds, respond with a summary (no more tool calls).\n\
+                 - If it fails, read the relevant source files, fix the errors using write_file, and recompile.\n\
+                 - Write business logic code (one query function per entity) if the src/ files are empty stubs.\n\n\
+                 Do NOT spend time exploring the directory tree. Compile first, fix errors after.",
+                dir = build_dir.display(),
+                hint = compile_hint
             );
 
             let max_iterations = 20; // Enough for explore → compile → fix → recompile cycles

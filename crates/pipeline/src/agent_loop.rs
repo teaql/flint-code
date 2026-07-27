@@ -64,6 +64,7 @@ pub async fn run_agent_loop(
     ];
 
     let mut total_tool_calls = 0usize;
+    let mut iters_without_action = 0usize; // Track iterations without run_command or write_file
 
     for iteration in 0..max_iterations {
         info!(iteration, total_tool_calls, msgs = messages.len(), "Agent loop iteration");
@@ -87,6 +88,16 @@ pub async fn run_agent_loop(
                             num_calls = calls.len(),
                             "Agent requested tool calls"
                         );
+
+                        // Track whether this iteration includes an "action" tool
+                        let has_action = calls.iter().any(|tc| {
+                            tc.function.name == "run_command" || tc.function.name == "write_file"
+                        });
+                        if has_action {
+                            iters_without_action = 0;
+                        } else {
+                            iters_without_action += 1;
+                        }
 
                         // Add the assistant's message (with tool calls) to history
                         messages.push(ChatMessage::assistant_with_tool_calls(
@@ -112,6 +123,19 @@ pub async fn run_agent_loop(
                             .await;
 
                             messages.push(ChatMessage::tool_result(&tc.id, &tool_result));
+                        }
+
+                        // Nudge: if the agent has been exploring without acting, prod it
+                        if iters_without_action >= 3 {
+                            warn!(iteration, iters_without_action, "Agent stuck in exploration — injecting nudge");
+                            messages.push(ChatMessage::user(
+                                "STOP exploring. You have read enough files. Now take action:\n\
+                                 1. If there is a pom.xml, run: run_command({\"command\": \"mvn compile -f pom.xml\"})\n\
+                                 2. If there is a Cargo.toml, run: run_command({\"command\": \"cargo check\"})\n\
+                                 3. If business logic code is missing, use write_file to create it.\n\
+                                 DO NOT call list_directory or read_file again until you have tried compiling."
+                            ));
+                            iters_without_action = 0; // Reset so we don't spam
                         }
                     }
                     _ => {
