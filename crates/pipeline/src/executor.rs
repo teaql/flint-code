@@ -663,6 +663,14 @@ impl PipelineExecutor {
             let agents_md = std::fs::read_to_string(&agents_md_path).unwrap_or_default();
             let lib_rs = std::fs::read_to_string(build_dir.join("src/lib.rs")).unwrap_or_default();
 
+            let lib_cargo_toml = std::fs::read_to_string(build_dir.join("lib/Cargo.toml")).unwrap_or_default();
+            let mut crate_name = "school_service_core".to_string(); // fallback
+            if let Ok(value) = lib_cargo_toml.parse::<toml::Value>() {
+                if let Some(name) = value.get("package").and_then(|p| p.get("name")).and_then(|n| n.as_str()) {
+                    crate_name = name.replace('-', "_");
+                }
+            }
+
             let biz_prompt = format!(
                 r#"You are writing Rust business logic for a TeaQL app workspace.
 
@@ -677,15 +685,15 @@ impl PipelineExecutor {
 
 ## Task
 Write a COMPLETE replacement for src/lib.rs that:
-1. Has a SINGLE `use` block — merge all needed imports into ONE `use school_service_core::{{...}}` statement
-2. DO NOT have BOTH `use school_service_core::Q` AND `pub use school_service_core::Q` — that causes error E0252
-3. Keep `pub use school_service_core::{{teaql_core, E, Q}};` and add entity types to it
+1. Has a SINGLE `use` block — merge all needed imports into ONE `use {crate_name}::{{...}}` statement
+2. DO NOT have BOTH `use {crate_name}::Q` AND `pub use {crate_name}::Q` — that causes error E0252
+3. Keep `pub use {crate_name}::{{teaql_core, E, Q}};` and add entity types to it
 4. Keep the `generated_domain_crate()` function
 5. Add ONE query function per entity using `Q::entities_minimal()` from the assist output
 6. Each function uses `.purpose("why")` and `.comment("what")` before `.execute_for_list(ctx).await`
 7. Each function returns `Result<SmartList<EntityType>, Box<dyn std::error::Error>>`
 
-CRITICAL: Use `use teaql_core::SmartList;` for SmartList. Do NOT add a separate `use school_service_core::Q;` — Q comes from the `pub use` line.
+CRITICAL: Use `use teaql_core::SmartList;` for SmartList. Do NOT add a separate `use {crate_name}::Q;` — Q comes from the `pub use` line.
 
 Output ONLY raw Rust source code. No markdown fences, no explanation.
 "#
