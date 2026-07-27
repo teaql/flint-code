@@ -576,7 +576,7 @@ impl PipelineExecutor {
                 build_dir.display()
             );
 
-            let max_iterations = (self.profile.run.max_repairs as usize + 1) * 3;
+            let max_iterations = 20; // Enough for explore → compile → fix → recompile cycles
 
             let loop_result = crate::agent_loop::run_agent_loop(
                 &self.client,
