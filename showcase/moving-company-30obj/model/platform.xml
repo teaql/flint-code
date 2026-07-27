@@ -1,0 +1,135 @@
+<platform _name="Platform"
+          _module="Platform" _module_key="platform"
+          version="1.0.0"
+          api_version="v2"
+          maintenance_mode="false"
+          create_time="createTime()"
+          update_time="updateTime()"/>
+
+<user_role _name="User Role"
+           _module="Platform" _module_key="platform"
+           name="Admin"
+           code="ADMIN"
+           description="Full system access"
+           is_system_role="true"
+           create_time="createTime()"
+           update_time="updateTime()"
+           platform="platform()"/>
+
+<permission _name="Permission"
+            _module="Platform" _module_key="platform"
+            name="View Dashboard"
+            code="DASHBOARD_VIEW"
+            resource_type="dashboard"
+            action="read"
+            create_time="createTime()"
+            update_time="updateTime()"
+            platform="platform()"/>
+
+<role_permission _name="Role Permission"
+                 _module="Platform" _module_key="platform"
+                 role="user_role()"
+                 permission="permission()"
+                 create_time="createTime()"
+                 update_time="updateTime()"
+                 platform="platform()"/>
+
+<user_status _name="User Status"
+             _module="Platform" _module_key="platform"
+             id="id()" name="string()" code="string()"
+             _constant="true" _identifier="code"
+             platform="platform()">
+  <_value id="1001" name="Active" code="ACTIVE"/>
+  <_value id="1002" name="Inactive" code="INACTIVE"/>
+  <_value id="1003" name="Suspended" code="SUSPENDED"/>
+</user_status>
+
+<user _name="User"
+      _module="Platform" _module_key="platform"
+      username="john_doe"
+      email="john@example.com"
+      password_hash="hashed_password_here"
+      first_name="John"
+      last_name="Doe"
+      status="user_status()"
+      last_login="2023-10-15T10:30:00"
+      create_time="createTime()"
+      update_time="updateTime()"
+      platform="platform()"
+      _audit_mask_fields="password_hash"/>
+
+<user_role_assignment _name="User Role Assignment"
+                      _module="Platform" _module_key="platform"
+                      user="user()"
+                      role="user_role()"
+                      assigned_by="user()"
+                      assigned_at="2023-10-15T10:35:00"
+                      expires_at="2024-10-15T10:35:00"
+                      create_time="createTime()"
+                      update_time="updateTime()"
+                      platform="platform()"/>
+
+<activity_log _name="Activity Log"
+              _module="Platform" _module_key="platform"
+              action="USER_LOGIN"
+              entity_type="user"
+              entity_id="1001"
+              user="user()"
+              ip_address="192.168.1.100"
+              user_agent="Mozilla/5.0"
+              details="Successful login"
+              timestamp="2023-10-15T10:35:00"
+              create_time="createTime()"
+              update_time="updateTime()"
+              platform="platform()"/>
+
+<notification_type _name="Notification Type"
+                   _module="Platform" _module_key="platform"
+                   id="id()" name="string()" code="string()"
+                   _constant="true" _identifier="code"
+                   platform="platform()">
+  <_value id="2001" name="System Alert" code="SYSTEM_ALERT"/>
+  <_value id="2002" name="Task Update" code="TASK_UPDATE"/>
+  <_value id="2003" name="Financial Update" code="FINANCIAL_UPDATE"/>
+  <_value id="2004" name="Security Alert" code="SECURITY_ALERT"/>
+</notification_type>
+
+<notification _name="Notification"
+              _module="Platform" _module_key="platform"
+              title="New Assignment"
+              message="You have been assigned to move #12345"
+              notification_type="notification_type()"
+              recipient="user()"
+              is_read="false"
+              read_at=""
+              channel="EMAIL"
+              status="SENT"
+              sent_at="2023-10-15T11:00:00"
+              create_time="createTime()"
+              update_time="updateTime()"
+              platform="platform()"/>
+
+<webhook_endpoint _name="Webhook Endpoint"
+                  _module="Platform" _module_key="platform"
+                  name="Slack Notifications"
+                  url="https://hooks.slack.com/services/xxx"
+                  secret="webhook_secret_here"
+                  events="MOVE_CREATED,PAYMENT_RECEIVED"
+                  is_active="true"
+                  last_triggered="2023-10-15T11:05:00"
+                  create_time="createTime()"
+                  update_time="updateTime()"
+                  platform="platform()"
+                  _audit_mask_fields="secret"/>
+
+<data_version _name="Data Version"
+              _module="Platform" _module_key="platform"
+              entity_type="moving_event"
+              entity_id="1001"
+              version="3"
+              data_snapshot="{...}"
+              created_by="user()"
+              change_summary="Updated delivery address"
+              create_time="createTime()"
+              update_time="updateTime()"
+              platform="platform()"/>
