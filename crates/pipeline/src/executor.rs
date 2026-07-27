@@ -604,8 +604,22 @@ impl PipelineExecutor {
             Vec::new()
         };
 
+        // Limit assist queries to avoid context overflow (each ~1500 tokens; 64K limit)
+        const MAX_ASSIST_ENTITIES: usize = 8;
+        let assist_entities: Vec<&String> = if entity_names.len() > MAX_ASSIST_ENTITIES {
+            // Pick evenly-spaced entities for representative coverage
+            let step = entity_names.len() as f64 / MAX_ASSIST_ENTITIES as f64;
+            (0..MAX_ASSIST_ENTITIES)
+                .map(|i| &entity_names[(i as f64 * step) as usize])
+                .collect()
+        } else {
+            entity_names.iter().collect()
+        };
+
+        info!(attempt, total = entity_names.len(), sampled = assist_entities.len(), "Running assist commands");
+
         let mut assist_outputs = String::new();
-        for entity in &entity_names {
+        for entity in &assist_entities {
             let assist_target = format!("rust-assist-query/{}", entity);
             info!(attempt, entity = %entity, "Running assist command");
             let assist_result = tokio::process::Command::new("cargo")
@@ -616,8 +630,23 @@ impl PipelineExecutor {
 
             if let Ok(output) = &assist_result {
                 let stdout = String::from_utf8_lossy(&output.stdout);
-                assist_outputs.push_str(&format!("### Assist: query/{}\n\n{}\n\n", entity, stdout));
+                // Truncate each assist output to ~1200 chars to fit context budget
+                let truncated = if stdout.len() > 1200 {
+                    format!("{}...\n[truncated]", &stdout[..1200])
+                } else {
+                    stdout.to_string()
+                };
+                assist_outputs.push_str(&format!("### Assist: query/{}\n\n{}\n\n", entity, truncated));
             }
+        }
+
+        // Also list the remaining entity names so LLM knows the full set
+        if entity_names.len() > MAX_ASSIST_ENTITIES {
+            assist_outputs.push_str(&format!(
+                "### All entity names ({})\n{}\n\n",
+                entity_names.len(),
+                entity_names.join(", ")
+            ));
         }
 
         // Save assist outputs as artifact
