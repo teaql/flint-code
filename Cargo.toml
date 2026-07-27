@@ -1,8 +1,8 @@
 [workspace]
 resolver = "3"
 members = [
-    "apps/dgx-agent-tui",
-    "apps/dgx-agent-cli",
+    "apps/flintcode-tui",
+    "apps/flintcode-cli",
     "crates/agent-core",
     "crates/model-vllm",
     "crates/context-builder",

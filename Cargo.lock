@@ -404,54 +404,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7cd812cc2bc1d69d4764bd80df88b4317eaef9e773c75226407d9bc0876b211c"
 
 [[package]]
-name = "dgx-agent-cli"
-version = "0.1.0"
-dependencies = [
- "agent-core",
- "anyhow",
- "artifact-store",
- "chrono",
- "clap",
- "context-builder",
- "model-vllm",
- "pipeline",
- "serde",
- "serde_json",
- "tokio",
- "toml",
- "tool-runner",
- "tracing",
- "tracing-subscriber",
- "validation",
- "workspace-guard",
-]
-
-[[package]]
-name = "dgx-agent-tui"
-version = "0.1.0"
-dependencies = [
- "agent-core",
- "anyhow",
- "artifact-store",
- "chrono",
- "context-builder",
- "crossterm",
- "dirs",
- "futures",
- "model-vllm",
- "pipeline",
- "ratatui",
- "tokio",
- "toml",
- "tool-runner",
- "tracing",
- "tracing-appender",
- "tracing-subscriber",
- "validation",
- "workspace-guard",
-]
-
-[[package]]
 name = "digest"
 version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -535,6 +487,54 @@ name = "find-msvc-tools"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5baebc0774151f905a1a2cc41989300b1e6fbb29aff0ceffa1064fdd3088d582"
+
+[[package]]
+name = "flintcode-cli"
+version = "0.1.0"
+dependencies = [
+ "agent-core",
+ "anyhow",
+ "artifact-store",
+ "chrono",
+ "clap",
+ "context-builder",
+ "model-vllm",
+ "pipeline",
+ "serde",
+ "serde_json",
+ "tokio",
+ "toml",
+ "tool-runner",
+ "tracing",
+ "tracing-subscriber",
+ "validation",
+ "workspace-guard",
+]
+
+[[package]]
+name = "flintcode-tui"
+version = "0.1.0"
+dependencies = [
+ "agent-core",
+ "anyhow",
+ "artifact-store",
+ "chrono",
+ "context-builder",
+ "crossterm",
+ "dirs",
+ "futures",
+ "model-vllm",
+ "pipeline",
+ "ratatui",
+ "tokio",
+ "toml",
+ "tool-runner",
+ "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
+ "validation",
+ "workspace-guard",
+]
 
 [[package]]
 name = "fnv"

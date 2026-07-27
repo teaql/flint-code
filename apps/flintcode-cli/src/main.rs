@@ -1,8 +1,8 @@
-//! DGX Agent CLI — Headless batch runner for evaluation.
+//! FlintCode CLI — AI coding agent for air-gapped environments.
 //!
 //! Usage:
-//!   dgx-agent evaluate --plan <plan.toml> --profile <profile.toml> --output <dir>
-//!   dgx-agent health --profile <profile.toml>
+//!   flintcode evaluate --plan <plan.toml> --profile <profile.toml> --output <dir>
+//!   flintcode health --profile <profile.toml>
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -11,8 +11,8 @@ use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
 #[derive(Parser)]
 #[command(
-    name = "dgx-agent",
-    about = "DGX Spark Agent — Headless evaluation and batch runner",
+    name = "flintcode",
+    about = "FlintCode — AI coding agent for air-gapped environments",
     version
 )]
 struct Cli {
@@ -22,7 +22,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Run an evaluation suite against a DGX Spark model
+    /// Run an evaluation suite against a local model
     Evaluate {
         /// Path to the evaluation plan (TOML)
         #[arg(long)]

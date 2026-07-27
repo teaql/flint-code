@@ -147,7 +147,7 @@ fn draw(f: &mut Frame, app: &App) {
 fn draw_header(f: &mut Frame, app: &App, area: Rect) {
     let in_flight = if app.run_state().state.is_active() { "1" } else { "0" };
     let header = Line::from(vec![
-        Span::styled(" DGX Agent", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+        Span::styled(" FlintCode", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
         Span::raw(" ─ Model: "),
         Span::styled(&app.profile.model.name, Style::default().fg(Color::Green)),
         Span::raw(" ─ "),
@@ -339,7 +339,7 @@ fn draw_keybindings(f: &mut Frame, area: Rect) {
     f.render_widget(Paragraph::new(line), area);
 }
 
-const HELP_TEXT: &str = r#"DGX Agent TUI — Keyboard Shortcuts
+const HELP_TEXT: &str = r#"FlintCode TUI — Keyboard Shortcuts
 
   g     Pipeline view (default)
   v     Validation / diagnostics view
