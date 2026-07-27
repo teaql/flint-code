@@ -279,7 +279,12 @@ impl PipelineExecutor {
             let attempt_dir = artifacts.create_attempt(attempt).unwrap_or_else(|_| artifacts.root.clone());
             let model_path = attempt_dir.join("main.xml");
             if let Some(c) = &self.candidate {
-                let clean = strip_markdown_fences(c);
+                let mut clean = strip_markdown_fences(c);
+                // Auto-repair: ensure </root> closing tag exists
+                if clean.contains("<root") && !clean.contains("</root>") {
+                    tracing::warn!("main.xml missing </root> — auto-appending closing tag");
+                    clean.push_str("\n</root>\n");
+                }
                 std::fs::write(&model_path, &clean).ok();
             }
             
