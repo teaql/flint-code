@@ -45,26 +45,41 @@ pub fn parse_teaql_output(output: &str) -> ValidationResult {
     let mut error_count: u32 = 0;
     let mut warning_count: u32 = 0;
     let mut suggestion_count: u32 = 0;
+    let mut in_error_table = false;
 
     for line in output.lines() {
         let line = line.trim();
-        if line.contains("error") || line.contains("Error") {
+
+        // Parse summary counts from "- **Errors**: 3" format
+        if line.starts_with("- **Errors**:") {
             if let Some(count) = extract_count(line) {
                 error_count = count;
-            } else {
-                errors.push(line.to_string());
-                error_count += 1;
             }
         }
-        if line.contains("warning") || line.contains("Warning") {
+        if line.starts_with("- **Warnings**:") {
             if let Some(count) = extract_count(line) {
                 warning_count = count;
             }
         }
-        if line.contains("suggestion") || line.contains("Suggestion") {
+        if line.starts_with("- **Suggestions**:") {
             if let Some(count) = extract_count(line) {
                 suggestion_count = count;
             }
+        }
+
+        // Detect error table section
+        if line.contains("## ❌ Errors") || line.contains("## Errors") {
+            in_error_table = true;
+            errors.push(line.to_string());
+            continue;
+        }
+        // End of error table on next section
+        if in_error_table && line.starts_with("## ") {
+            in_error_table = false;
+        }
+        // Collect error table rows (start with |, skip header/separator)
+        if in_error_table && line.starts_with("| `") {
+            errors.push(line.to_string());
         }
     }
 

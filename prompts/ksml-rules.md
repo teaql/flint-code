@@ -28,6 +28,29 @@ Business objects:
 - Must never have `_identifier`.
 - Must never have `<_value>` children.
 
+### Constant Objects Must Reference the Domain Root
+
+Every constant object MUST include a reference to the domain root object.
+For example, if `bookstore` is the domain root:
+
+```xml
+<book_category _name="Book Category"
+               _module="Core" _module_key="core"
+               id="id()" name="string()" code="string()"
+               _constant="true" _identifier="code"
+               bookstore="bookstore()">
+  <_value id="1001" name="Fiction" code="FICTION"/>
+</book_category>
+```
+
+Without `bookstore="bookstore()"`, you will get error `KSML-CONSTANT-002`.
+
+### Domain Root Object
+
+Every model must have exactly one domain root business object — the largest
+organizational boundary. All other business objects and constant objects must
+reference it (directly or through a chain of references).
+
 ### Multi-File Layout with `<_include>`
 
 For models with more than 10 objects, ALWAYS split into multiple files:
