@@ -671,33 +671,14 @@ impl PipelineExecutor {
                 }
             }
 
-            let biz_prompt = format!(
-                r#"You are writing Rust business logic for a TeaQL app workspace.
+            let template = std::fs::read_to_string("prompts/business-logic.txt")
+                .unwrap_or_else(|_| include_str!("../../../prompts/business-logic.txt").to_string());
 
-## Generated AGENTS.md
-{agents_md}
-
-## Current src/lib.rs
-{lib_rs}
-
-## API Reference (from assist commands)
-{assist_outputs}
-
-## Task
-Write a COMPLETE replacement for src/lib.rs that:
-1. Has a SINGLE `use` block — merge all needed imports into ONE `use {crate_name}::{{...}}` statement
-2. DO NOT have BOTH `use {crate_name}::Q` AND `pub use {crate_name}::Q` — that causes error E0252
-3. Keep `pub use {crate_name}::{{teaql_core, E, Q}};` and add entity types to it
-4. Keep the `generated_domain_crate()` function
-5. Add ONE query function per entity using `Q::entities_minimal()` from the assist output
-6. Each function uses `.purpose("why")` and `.comment("what")` before `.execute_for_list(ctx).await`
-7. Each function returns `Result<SmartList<EntityType>, Box<dyn std::error::Error>>`
-
-CRITICAL: Use `use teaql_core::SmartList;` for SmartList. Do NOT add a separate `use {crate_name}::Q;` — Q comes from the `pub use` line.
-
-Output ONLY raw Rust source code. No markdown fences, no explanation.
-"#
-            );
+            let biz_prompt = template
+                .replace("{{agents_md}}", &agents_md)
+                .replace("{{lib_rs}}", &lib_rs)
+                .replace("{{assist_outputs}}", &assist_outputs)
+                .replace("{{crate_name}}", &crate_name);
 
             let biz_messages = vec![
                 ChatMessage {
@@ -767,11 +748,12 @@ Output ONLY raw Rust source code. No markdown fences, no explanation.
                     let current_code = std::fs::read_to_string(&lib_rs_path).unwrap_or_default();
                     warn!(attempt, "App workspace failed — attempting LLM repair");
 
-                    let fix_prompt = format!(
-                        "The following Rust code failed to compile:\n\n```rust\n{}\n```\n\nCompiler errors:\n```\n{}\n```\n\nFix the code. Output ONLY the complete corrected Rust source. No markdown fences, no explanation.\nCRITICAL: Do not import the same name twice. If `Q` is in `pub use`, don't also add `use ... Q`.",
-                        current_code,
-                        &stderr[..stderr.len().min(2000)]
-                    );
+                    let template = std::fs::read_to_string("prompts/repair.txt")
+                        .unwrap_or_else(|_| include_str!("../../../prompts/repair.txt").to_string());
+
+                    let fix_prompt = template
+                        .replace("{{current_code}}", &current_code)
+                        .replace("{{stderr}}", &stderr[..stderr.len().min(2000)]);
 
                     let fix_messages = vec![
                         ChatMessage {

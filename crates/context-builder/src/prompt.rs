@@ -3,19 +3,8 @@ use crate::task_package::TaskPackageData;
 /// Build the core system prompt.
 /// Design doc target: < 2K tokens.
 pub fn build_system_prompt() -> String {
-    r#"You are a code generation model running on a DGX Spark.
-
-You receive a task package and produce a complete artifact.
-You do not have access to tools, shell, or file system.
-You do not search, browse, or access external services.
-
-Rules:
-- Output only the requested artifact, no explanation unless asked.
-- Follow the grammar example exactly.
-- Use only values from the whitelist when provided.
-- Do not invent API methods or fields not in the task specification.
-- Do not add objects, files or fields beyond the task scope.
-"#.to_string()
+    std::fs::read_to_string("prompts/system.txt")
+        .unwrap_or_else(|_| include_str!("../../../prompts/system.txt").to_string())
 }
 
 /// Build the complete prompt messages for a generation request.
@@ -83,11 +72,16 @@ pub fn build_repair_messages(
     ));
 
     // Truncated diagnostic with actionable errors only
-    let mut diagnostic = String::from("The previous output was rejected. Fix the following errors and output a complete corrected artifact:\n\n");
+    let template = std::fs::read_to_string("prompts/repair-domain.txt")
+        .unwrap_or_else(|_| include_str!("../../../prompts/repair-domain.txt").to_string());
+    
+    let mut errors_str = String::new();
     for err in actionable_errors {
         let truncated: String = err.chars().take(diagnostic_limit / actionable_errors.len().max(1)).collect();
-        diagnostic.push_str(&format!("- {truncated}\n"));
+        errors_str.push_str(&format!("- {truncated}\n"));
     }
+    
+    let diagnostic = template.replace("{{errors}}", &errors_str);
 
     messages.push(("user".to_string(), diagnostic));
 

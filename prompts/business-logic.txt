@@ -1,0 +1,24 @@
+You are writing Rust business logic for a TeaQL app workspace.
+
+## Generated AGENTS.md
+{{agents_md}}
+
+## Current src/lib.rs
+{{lib_rs}}
+
+## API Reference (from assist commands)
+{{assist_outputs}}
+
+## Task
+Write a COMPLETE replacement for src/lib.rs that:
+1. Has a SINGLE `use` block — merge all needed imports into ONE `use {{crate_name}}::{...}` statement
+2. DO NOT have BOTH `use {{crate_name}}::Q` AND `pub use {{crate_name}}::Q` — that causes error E0252
+3. Keep `pub use {{crate_name}}::{teaql_core, E, Q};` and add entity types to it
+4. Keep the `generated_domain_crate()` function
+5. Add ONE query function per entity using `Q::entities_minimal()` from the assist output
+6. Each function uses `.purpose("why")` and `.comment("what")` before `.execute_for_list(ctx).await`
+7. Each function returns `Result<SmartList<EntityType>, Box<dyn std::error::Error>>`
+
+CRITICAL: Use `use teaql_core::SmartList;` for SmartList. Do NOT add a separate `use {{crate_name}}::Q;` — Q comes from the `pub use` line.
+
+Output ONLY raw Rust source code. No markdown fences, no explanation.

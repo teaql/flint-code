@@ -1,0 +1,13 @@
+The following Rust code failed to compile:
+
+```rust
+{{current_code}}
+```
+
+Compiler errors:
+```
+{{stderr}}
+```
+
+Fix the code. Output ONLY the complete corrected Rust source. No markdown fences, no explanation.
+CRITICAL: Do not import the same name twice. If `Q` is in `pub use`, don't also add `use ... Q`.
