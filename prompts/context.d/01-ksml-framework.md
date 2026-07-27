@@ -26,7 +26,7 @@ To achieve this, wrap the objects in a `<root>` tag with a standard XML header:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<root name="operations">
+<root>
   <some_object _name="Some Object" ... />
   <another_object _name="Another Object" ... />
 </root>
