@@ -294,8 +294,23 @@ impl PipelineExecutor {
                 std::fs::write(&model_path, c).ok();
             }
             
+            let model_dir = attempt_dir.join("model");
+            std::fs::create_dir_all(&model_dir).ok();
+            if let Ok(entries) = std::fs::read_dir(&attempt_dir) {
+                for entry in entries.flatten() {
+                    let path = entry.path();
+                    if path.is_file() {
+                        if let Some(ext) = path.extension() {
+                            if ext == "xml" || ext == "ksml" {
+                                std::fs::copy(&path, model_dir.join(path.file_name().unwrap())).ok();
+                            }
+                        }
+                    }
+                }
+            }
+            
             info!(attempt, path = %attempt_dir.display(), "Running domain validation");
-            validation::domain::validate_domain(&attempt_dir)
+            validation::domain::validate_domain(&model_dir)
         } else {
             // Fallback if no artifacts dir (shouldn't happen in normal runs)
             info!(attempt, "Domain validation skipped — no artifact dir");
@@ -372,7 +387,7 @@ impl PipelineExecutor {
         // Step 1: Run cargo teaql to generate code
         info!(attempt, target = %build_target, dir = %attempt_dir.display(), "Running code generation");
         let gen_result = tokio::process::Command::new("cargo")
-            .args(["teaql", "--input", ".", &build_target])
+            .args(["teaql", "--input", "model", &build_target])
             .current_dir(&attempt_dir)
             .output()
             .await;
@@ -546,7 +561,7 @@ impl PipelineExecutor {
         // ── Step 4: Generate app target ──
         info!(attempt, "Generating {}", app_target);
         let app_gen_result = tokio::process::Command::new("cargo")
-            .args(["teaql", "--input", ".", &app_target])
+            .args(["teaql", "--input", "model", &app_target])
             .current_dir(&attempt_dir)
             .output()
             .await;
@@ -640,7 +655,7 @@ impl PipelineExecutor {
             let assist_target = format!("{}/{}", assist_target_base, entity);
             info!(attempt, entity = %entity, "Running assist command");
             let assist_result = tokio::process::Command::new("cargo")
-                .args(["teaql", "--input", ".", &assist_target])
+                .args(["teaql", "--input", "model", &assist_target])
                 .current_dir(&attempt_dir)
                 .output()
                 .await;
