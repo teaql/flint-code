@@ -39,6 +39,8 @@ pub struct TestCase {
     pub expect: String,       // "completed", "preflight_rejected", "failed"
     #[serde(default = "default_timeout")]
     pub timeout_secs: u64,
+    #[serde(default)]
+    pub patches: Option<std::collections::HashMap<String, String>>,
 }
 
 fn default_expect() -> String { "completed".to_string() }
@@ -128,6 +130,10 @@ pub async fn run_suite(
 
         if let Some(ref target) = case.build_target {
             executor.set_build_target(target.clone());
+        }
+        
+        if let Some(ref patches) = case.patches {
+            executor.set_patches(patches.clone());
         }
 
         // Run controller and executor concurrently

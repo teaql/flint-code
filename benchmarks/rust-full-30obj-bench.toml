@@ -10,6 +10,7 @@ workflow = "ksml-rust-gen"
 expect = "completed"
 timeout_secs = 1200
 build_target = "rust-lib-core"
+patches = { 'rusqlite = { version = "0.32"' = 'rusqlite = { version = "0.40"' }
 
 [[cases]]
 name = "moving-30obj-run2"
@@ -18,6 +19,7 @@ workflow = "ksml-rust-gen"
 expect = "completed"
 timeout_secs = 1200
 build_target = "rust-lib-core"
+patches = { 'rusqlite = { version = "0.32"' = 'rusqlite = { version = "0.40"' }
 
 [[cases]]
 name = "moving-30obj-run3"
@@ -26,3 +28,4 @@ workflow = "ksml-rust-gen"
 expect = "completed"
 timeout_secs = 1200
 build_target = "rust-lib-core"
+patches = { 'rusqlite = { version = "0.32"' = 'rusqlite = { version = "0.40"' }

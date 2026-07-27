@@ -25,6 +25,8 @@ pub struct PipelineExecutor {
     run_id: String,
     /// Optional build target for code generation (e.g. "rust-lib-core")
     build_target: Option<String>,
+    /// Optional patches to apply to generated Cargo.toml files
+    patches: Option<std::collections::HashMap<String, String>>,
 }
 
 impl PipelineExecutor {
@@ -45,12 +47,18 @@ impl PipelineExecutor {
             runs_root,
             run_id,
             build_target: None,
+            patches: None,
         }
     }
 
     /// Set the build target for code generation (e.g. "rust-lib-core")
     pub fn set_build_target(&mut self, target: String) {
         self.build_target = Some(target);
+    }
+
+    /// Set patches for generated Cargo.toml files
+    pub fn set_patches(&mut self, patches: std::collections::HashMap<String, String>) {
+        self.patches = Some(patches);
     }
 
     /// Process a side effect. This is the main dispatch loop.
@@ -421,10 +429,12 @@ impl PipelineExecutor {
         let cargo_toml_path = lib_dir.join("Cargo.toml");
         if cargo_toml_path.exists() {
             if let Ok(content) = std::fs::read_to_string(&cargo_toml_path) {
-                let fixed = content.replace(
-                    r#"rusqlite = { version = "0.32""#,
-                    r#"rusqlite = { version = "0.40""#,
-                );
+                let mut fixed = content.clone();
+                if let Some(patches) = &self.patches {
+                    for (find, replace) in patches {
+                        fixed = fixed.replace(find, replace);
+                    }
+                }
                 if fixed != content {
                     info!(attempt, "Patched rusqlite version in generated Cargo.toml");
                     std::fs::write(&cargo_toml_path, &fixed).ok();
@@ -590,10 +600,12 @@ impl PipelineExecutor {
         let lib_cargo_toml = build_dir.join("lib/Cargo.toml");
         if lib_cargo_toml.exists() {
             if let Ok(content) = std::fs::read_to_string(&lib_cargo_toml) {
-                let fixed = content.replace(
-                    r#"rusqlite = { version = "0.32""#,
-                    r#"rusqlite = { version = "0.40""#,
-                );
+                let mut fixed = content;
+                if let Some(patches) = &self.patches {
+                    for (find, replace) in patches {
+                        fixed = fixed.replace(find, replace);
+                    }
+                }
                 std::fs::write(&lib_cargo_toml, &fixed).ok();
             }
         }

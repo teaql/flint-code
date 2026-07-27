@@ -55,3 +55,4 @@ workflow = "ksml-rust-gen"
 expect = "completed"
 timeout_secs = 900
 build_target = "rust-lib-core"
+patches = { 'rusqlite = { version = "0.32"' = 'rusqlite = { version = "0.40"' }
