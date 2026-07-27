@@ -521,10 +521,293 @@ impl PipelineExecutor {
             }
         };
 
-        if let Some(artifacts) = &self.artifacts {
-            artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+        // If lib check failed, report and return early
+        if !result.passed {
+            if let Some(artifacts) = &self.artifacts {
+                artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+            }
+            self.send(RunEvent::ValidationCompleted(result)).await;
+            return;
         }
-        self.send(RunEvent::ValidationCompleted(result)).await;
+
+        // ── Step 4: Generate rust-app-console ──
+        info!(attempt, "Generating rust-app-console");
+        let app_gen_result = tokio::process::Command::new("cargo")
+            .args(["teaql", "--input", ".", "rust-app-console"])
+            .current_dir(&attempt_dir)
+            .output()
+            .await;
+
+        match &app_gen_result {
+            Ok(output) if !output.status.success() => {
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                warn!(attempt, "rust-app-console generation failed, continuing with lib-only result");
+                if let Some(artifacts) = &self.artifacts {
+                    artifacts.save_attempt_raw(attempt, "app-console-gen-error.txt", &stderr).ok();
+                }
+                // Still pass — lib compiled, app-console is bonus
+                if let Some(artifacts) = &self.artifacts {
+                    artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+                }
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+            Err(e) => {
+                warn!(attempt, %e, "Failed to run rust-app-console generation");
+                if let Some(artifacts) = &self.artifacts {
+                    artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+                }
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+            _ => {
+                info!(attempt, "rust-app-console generated successfully");
+            }
+        }
+
+        // ── Step 5: Fix dependency paths in app Cargo.toml ──
+        let build_dir = attempt_dir.join("build");
+        let app_cargo_toml = build_dir.join("Cargo.toml");
+        if app_cargo_toml.exists() {
+            if let Ok(content) = std::fs::read_to_string(&app_cargo_toml) {
+                // Fix the path dependency to point to ./lib instead of ../rust-lib-core/lib
+                let fixed = content.replace(
+                    r#"path = "../rust-lib-core/lib""#,
+                    r#"path = "./lib""#,
+                );
+                if fixed != content {
+                    info!(attempt, "Fixed app-console dependency path");
+                }
+                std::fs::write(&app_cargo_toml, &fixed).ok();
+            }
+        }
+
+        // Also fix rusqlite in lib again (app-console gen may have reset it)
+        let lib_cargo_toml = build_dir.join("lib/Cargo.toml");
+        if lib_cargo_toml.exists() {
+            if let Ok(content) = std::fs::read_to_string(&lib_cargo_toml) {
+                let fixed = content.replace(
+                    r#"rusqlite = { version = "0.32""#,
+                    r#"rusqlite = { version = "0.40""#,
+                );
+                std::fs::write(&lib_cargo_toml, &fixed).ok();
+            }
+        }
+
+        // ── Step 6: Run assist commands for each entity ──
+        // Parse entity names from the generated AGENTS.md
+        let agents_md_path = build_dir.join("AGENTS.md");
+        let entity_names = if agents_md_path.exists() {
+            let agents_content = std::fs::read_to_string(&agents_md_path).unwrap_or_default();
+            parse_entity_names_from_agents_md(&agents_content)
+        } else {
+            Vec::new()
+        };
+
+        let mut assist_outputs = String::new();
+        for entity in &entity_names {
+            let assist_target = format!("rust-assist-query/{}", entity);
+            info!(attempt, entity = %entity, "Running assist command");
+            let assist_result = tokio::process::Command::new("cargo")
+                .args(["teaql", "--input", ".", &assist_target])
+                .current_dir(&attempt_dir)
+                .output()
+                .await;
+
+            if let Ok(output) = &assist_result {
+                let stdout = String::from_utf8_lossy(&output.stdout);
+                assist_outputs.push_str(&format!("### Assist: query/{}\n\n{}\n\n", entity, stdout));
+            }
+        }
+
+        // Save assist outputs as artifact
+        if !assist_outputs.is_empty() {
+            if let Some(artifacts) = &self.artifacts {
+                artifacts.save_attempt_raw(attempt, "assist-output.md", &assist_outputs).ok();
+            }
+        }
+
+        // ── Step 7: Generate business logic via LLM ──
+        if !entity_names.is_empty() && !assist_outputs.is_empty() {
+            info!(attempt, entities = entity_names.len(), "Generating business logic via LLM");
+
+            let agents_md = std::fs::read_to_string(&agents_md_path).unwrap_or_default();
+            let lib_rs = std::fs::read_to_string(build_dir.join("src/lib.rs")).unwrap_or_default();
+
+            let biz_prompt = format!(
+                r#"You are writing Rust business logic for a TeaQL app workspace.
+
+## Generated AGENTS.md
+{agents_md}
+
+## Current src/lib.rs
+{lib_rs}
+
+## API Reference (from assist commands)
+{assist_outputs}
+
+## Task
+Write a COMPLETE replacement for src/lib.rs that:
+1. Has a SINGLE `use` block — merge all needed imports into ONE `use school_service_core::{{...}}` statement
+2. DO NOT have BOTH `use school_service_core::Q` AND `pub use school_service_core::Q` — that causes error E0252
+3. Keep `pub use school_service_core::{{teaql_core, E, Q}};` and add entity types to it
+4. Keep the `generated_domain_crate()` function
+5. Add ONE query function per entity using `Q::entities_minimal()` from the assist output
+6. Each function uses `.purpose("why")` and `.comment("what")` before `.execute_for_list(ctx).await`
+7. Each function returns `Result<SmartList<EntityType>, Box<dyn std::error::Error>>`
+
+CRITICAL: Use `use teaql_core::SmartList;` for SmartList. Do NOT add a separate `use school_service_core::Q;` — Q comes from the `pub use` line.
+
+Output ONLY raw Rust source code. No markdown fences, no explanation.
+"#
+            );
+
+            let biz_messages = vec![
+                ChatMessage {
+                    role: "system".to_string(),
+                    content: "You generate Rust code. Output ONLY raw Rust source. No markdown.".to_string(),
+                },
+                ChatMessage {
+                    role: "user".to_string(),
+                    content: biz_prompt,
+                },
+            ];
+
+            match self.client.chat(biz_messages).await {
+                Ok(biz_result) => {
+                    let biz_code = biz_result.content
+                        .trim()
+                        .strip_prefix("```rust").unwrap_or(&biz_result.content)
+                        .strip_prefix("```").unwrap_or(&biz_result.content)
+                        .strip_suffix("```").unwrap_or(&biz_result.content)
+                        .trim()
+                        .to_string();
+
+                    info!(attempt, tokens = biz_result.usage.completion_tokens, "Business logic generated");
+
+                    // Write generated business logic
+                    let lib_rs_path = build_dir.join("src/lib.rs");
+                    std::fs::write(&lib_rs_path, &biz_code).ok();
+
+                    if let Some(artifacts) = &self.artifacts {
+                        artifacts.save_attempt_raw(attempt, "business-logic.rs", &biz_code).ok();
+                    }
+                }
+                Err(e) => {
+                    warn!(attempt, %e, "Business logic generation failed, keeping default lib.rs");
+                }
+            }
+        }
+
+        // ── Step 8: Final compile check on app workspace (with one repair attempt) ──
+        let lib_rs_path = build_dir.join("src/lib.rs");
+        for compile_attempt in 0..2u8 {
+            info!(attempt, compile_attempt, "Running cargo check on app workspace");
+            let app_check = tokio::process::Command::new("cargo")
+                .args(["check"])
+                .current_dir(&build_dir)
+                .output()
+                .await;
+
+            match &app_check {
+                Ok(output) if output.status.success() => {
+                    let total_elapsed = start.elapsed().as_secs_f64();
+                    info!(attempt, total_elapsed, "Full build validation passed — lib + app workspace");
+                    let mut r = validation::pass(5, "build", total_elapsed);
+                    r.diagnostic = format!(
+                        "rust-lib-core: cargo check ✓\nrust-app-console: cargo check ✓\nassist entities: {:?}\nbusiness logic: generated (compile attempt {})",
+                        entity_names, compile_attempt + 1
+                    );
+                    if let Some(artifacts) = &self.artifacts {
+                        artifacts.save_attempt_file(attempt, "build-validation.json", &r).ok();
+                    }
+                    self.send(RunEvent::ValidationCompleted(r)).await;
+                    return;
+                }
+                Ok(output) if compile_attempt == 0 => {
+                    // First failure — try to fix via LLM
+                    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+                    let current_code = std::fs::read_to_string(&lib_rs_path).unwrap_or_default();
+                    warn!(attempt, "App workspace failed — attempting LLM repair");
+
+                    let fix_prompt = format!(
+                        "The following Rust code failed to compile:\n\n```rust\n{}\n```\n\nCompiler errors:\n```\n{}\n```\n\nFix the code. Output ONLY the complete corrected Rust source. No markdown fences, no explanation.\nCRITICAL: Do not import the same name twice. If `Q` is in `pub use`, don't also add `use ... Q`.",
+                        current_code,
+                        &stderr[..stderr.len().min(2000)]
+                    );
+
+                    let fix_messages = vec![
+                        ChatMessage {
+                            role: "system".to_string(),
+                            content: "You fix Rust compilation errors. Output ONLY raw Rust source.".to_string(),
+                        },
+                        ChatMessage {
+                            role: "user".to_string(),
+                            content: fix_prompt,
+                        },
+                    ];
+
+                    match self.client.chat(fix_messages).await {
+                        Ok(fix_result) => {
+                            let fixed = fix_result.content
+                                .trim()
+                                .strip_prefix("```rust").unwrap_or(&fix_result.content)
+                                .strip_prefix("```").unwrap_or(&fix_result.content)
+                                .strip_suffix("```").unwrap_or(&fix_result.content)
+                                .trim()
+                                .to_string();
+                            info!(attempt, tokens = fix_result.usage.completion_tokens, "LLM repair generated");
+                            std::fs::write(&lib_rs_path, &fixed).ok();
+                            if let Some(artifacts) = &self.artifacts {
+                                artifacts.save_attempt_raw(attempt, "business-logic-repaired.rs", &fixed).ok();
+                            }
+                            // Loop will retry cargo check
+                        }
+                        Err(e) => {
+                            warn!(attempt, %e, "LLM repair failed");
+                            break;
+                        }
+                    }
+                }
+                _ => break, // Second failure or other error — fall through
+            }
+        }
+
+        // If we get here, all compile attempts failed
+        let total_elapsed = start.elapsed().as_secs_f64();
+        let final_stderr = tokio::process::Command::new("cargo")
+            .args(["check"])
+            .current_dir(&build_dir)
+            .output()
+            .await
+            .map(|o| String::from_utf8_lossy(&o.stderr).to_string())
+            .unwrap_or_default();
+
+        let error_count = final_stderr.lines()
+            .filter(|l| l.contains("error["))
+            .count() as u32;
+        let actionable_errors: Vec<String> = final_stderr.lines()
+            .filter(|l| l.starts_with("error"))
+            .take(10)
+            .map(|l| l.to_string())
+            .collect();
+
+        let final_result = ValidationResult {
+            level: 5,
+            level_name: "build".to_string(),
+            passed: false,
+            error_count: std::cmp::max(error_count, 1),
+            warning_count: 0,
+            suggestion_count: 0,
+            actionable_errors,
+            diagnostic: format!("rust-lib-core: ✓\nrust-app-console: FAILED (after LLM repair)\n\n{}", final_stderr),
+            elapsed_secs: total_elapsed,
+        };
+
+        if let Some(artifacts) = &self.artifacts {
+            artifacts.save_attempt_file(attempt, "build-validation.json", &final_result).ok();
+        }
+        self.send(RunEvent::ValidationCompleted(final_result)).await;
     }
 
     async fn repair(&mut self, attempt: u8) {
@@ -656,4 +939,51 @@ fn extract_includes(content: &str) -> Vec<String> {
         }
     }
     includes
+}
+
+/// Parse entity names from the generated AGENTS.md.
+///
+/// The generated AGENTS.md contains a markdown table like:
+/// ```
+/// | entity-name | display-name |
+/// |-------------|--------------|
+/// | school | School |
+/// | teacher | Teacher |
+/// ```
+/// We extract the entity-name column values.
+fn parse_entity_names_from_agents_md(content: &str) -> Vec<String> {
+    let mut entities = Vec::new();
+    let mut in_entity_table = false;
+    let mut header_seen = false;
+
+    for line in content.lines() {
+        let trimmed = line.trim();
+        // Detect the entity table header
+        if trimmed.contains("entity-name") && trimmed.contains("display-name") {
+            in_entity_table = true;
+            header_seen = false;
+            continue;
+        }
+        if in_entity_table {
+            // Skip the separator line (|---|---|)
+            if trimmed.starts_with("|") && trimmed.contains("---") {
+                header_seen = true;
+                continue;
+            }
+            // Parse data rows
+            if header_seen && trimmed.starts_with('|') {
+                let parts: Vec<&str> = trimmed.split('|').collect();
+                if parts.len() >= 3 {
+                    let entity = parts[1].trim();
+                    if !entity.is_empty() && !entity.contains("---") {
+                        entities.push(entity.to_string());
+                    }
+                }
+            } else if header_seen && !trimmed.starts_with('|') {
+                // End of table
+                break;
+            }
+        }
+    }
+    entities
 }
