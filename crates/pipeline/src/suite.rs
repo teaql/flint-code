@@ -33,6 +33,8 @@ pub struct TestCase {
     pub name: String,
     pub task: String,         // relative path to task package dir
     pub workflow: String,
+    #[serde(default)]
+    pub build_target: Option<String>,  // e.g. "rust-lib-core"
     #[serde(default = "default_expect")]
     pub expect: String,       // "completed", "preflight_rejected", "failed"
     #[serde(default = "default_timeout")]
@@ -123,6 +125,10 @@ pub async fn run_suite(
 
         // Load the task
         executor.load_task_from_path(&task_path).await;
+
+        if let Some(ref target) = case.build_target {
+            executor.set_build_target(target.clone());
+        }
 
         // Run controller and executor concurrently
         let mut controller_handle = tokio::spawn(async move {

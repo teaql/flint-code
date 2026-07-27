@@ -23,6 +23,8 @@ pub struct PipelineExecutor {
     artifacts: Option<RunArtifacts>,
     runs_root: PathBuf,
     run_id: String,
+    /// Optional build target for code generation (e.g. "rust-lib-core")
+    build_target: Option<String>,
 }
 
 impl PipelineExecutor {
@@ -42,7 +44,13 @@ impl PipelineExecutor {
             artifacts: None,
             runs_root,
             run_id,
+            build_target: None,
         }
+    }
+
+    /// Set the build target for code generation (e.g. "rust-lib-core")
+    pub fn set_build_target(&mut self, target: String) {
+        self.build_target = Some(target);
     }
 
     /// Process a side effect. This is the main dispatch loop.
@@ -292,11 +300,227 @@ impl PipelineExecutor {
         self.send(RunEvent::ValidationCompleted(result)).await;
     }
 
+    /// Run build validation: code generation via `cargo teaql` + `cargo check`.
+    ///
+    /// When `build_target` is set (e.g. "rust-lib-core"), this method:
+    /// 1. Runs `cargo teaql --input <attempt_dir> <target>` to generate code
+    /// 2. Patches the known rusqlite dependency conflict in the generated Cargo.toml
+    /// 3. Runs `cargo check` on the generated crate
+    /// 4. Parses compiler output into a ValidationResult
     async fn build_validate(&mut self, attempt: u8) {
-        // Build validation would run cargo check/test.
-        // For now, pass through.
-        info!(attempt, "Build validation — no build configured, passing");
-        let result = validation::pass(5, "build", 0.0);
+        let build_target = match &self.build_target {
+            Some(t) => t.clone(),
+            None => {
+                info!(attempt, "Build validation — no build target configured, passing");
+                let result = validation::pass(5, "build", 0.0);
+                if let Some(artifacts) = &self.artifacts {
+                    artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+                }
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+        };
+
+        let attempt_dir = match &self.artifacts {
+            Some(a) => match a.create_attempt(attempt) {
+                Ok(dir) => dir,
+                Err(e) => {
+                    error!(attempt, %e, "Failed to create attempt directory");
+                    let result = ValidationResult {
+                        level: 5,
+                        level_name: "build".to_string(),
+                        passed: false,
+                        error_count: 1,
+                        warning_count: 0,
+                        suggestion_count: 0,
+                        actionable_errors: vec![format!("Failed to create attempt dir: {}", e)],
+                        diagnostic: e.to_string(),
+                        elapsed_secs: 0.0,
+                    };
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
+                }
+            },
+            None => {
+                error!(attempt, "No artifact directory for build validation");
+                let result = ValidationResult {
+                    level: 5,
+                    level_name: "build".to_string(),
+                    passed: false,
+                    error_count: 1,
+                    warning_count: 0,
+                    suggestion_count: 0,
+                    actionable_errors: vec!["No artifact directory available".to_string()],
+                    diagnostic: "Internal error: no artifact store".to_string(),
+                    elapsed_secs: 0.0,
+                };
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+        };
+
+        let start = std::time::Instant::now();
+
+        // Step 1: Run cargo teaql to generate code
+        info!(attempt, target = %build_target, dir = %attempt_dir.display(), "Running code generation");
+        let gen_result = tokio::process::Command::new("cargo")
+            .args(["teaql", "--input", ".", &build_target])
+            .current_dir(&attempt_dir)
+            .output()
+            .await;
+
+        match &gen_result {
+            Ok(output) if !output.status.success() => {
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                let stdout = String::from_utf8_lossy(&output.stdout);
+                let diagnostic = format!("Code generation failed:\n{}\n{}", stdout, stderr);
+                warn!(attempt, "Code generation failed");
+                let result = ValidationResult {
+                    level: 5,
+                    level_name: "build".to_string(),
+                    passed: false,
+                    error_count: 1,
+                    warning_count: 0,
+                    suggestion_count: 0,
+                    actionable_errors: vec![format!("cargo teaql {} failed", build_target)],
+                    diagnostic,
+                    elapsed_secs: start.elapsed().as_secs_f64(),
+                };
+                if let Some(artifacts) = &self.artifacts {
+                    artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+                }
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+            Err(e) => {
+                error!(attempt, %e, "Failed to run cargo teaql");
+                let result = ValidationResult {
+                    level: 5,
+                    level_name: "build".to_string(),
+                    passed: false,
+                    error_count: 1,
+                    warning_count: 0,
+                    suggestion_count: 0,
+                    actionable_errors: vec![format!("Failed to execute cargo teaql: {}", e)],
+                    diagnostic: e.to_string(),
+                    elapsed_secs: start.elapsed().as_secs_f64(),
+                };
+                if let Some(artifacts) = &self.artifacts {
+                    artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+                }
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+            _ => {
+                info!(attempt, "Code generation succeeded");
+            }
+        }
+
+        // Step 2: Fix known rusqlite dependency conflict in generated Cargo.toml
+        let lib_dir = attempt_dir.join("build/lib");
+        let cargo_toml_path = lib_dir.join("Cargo.toml");
+        if cargo_toml_path.exists() {
+            if let Ok(content) = std::fs::read_to_string(&cargo_toml_path) {
+                let fixed = content.replace(
+                    r#"rusqlite = { version = "0.32""#,
+                    r#"rusqlite = { version = "0.40""#,
+                );
+                if fixed != content {
+                    info!(attempt, "Patched rusqlite version in generated Cargo.toml");
+                    std::fs::write(&cargo_toml_path, &fixed).ok();
+                }
+            }
+        } else {
+            warn!(attempt, path = %cargo_toml_path.display(), "Generated Cargo.toml not found");
+            let result = ValidationResult {
+                level: 5,
+                level_name: "build".to_string(),
+                passed: false,
+                error_count: 1,
+                warning_count: 0,
+                suggestion_count: 0,
+                actionable_errors: vec!["Generated build/lib/Cargo.toml not found after code generation".to_string()],
+                diagnostic: format!("Expected {} but file does not exist", cargo_toml_path.display()),
+                elapsed_secs: start.elapsed().as_secs_f64(),
+            };
+            if let Some(artifacts) = &self.artifacts {
+                artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+            }
+            self.send(RunEvent::ValidationCompleted(result)).await;
+            return;
+        }
+
+        // Step 3: Run cargo check on the generated crate
+        info!(attempt, dir = %lib_dir.display(), "Running cargo check");
+        let check_result = tokio::process::Command::new("cargo")
+            .args(["check"])
+            .current_dir(&lib_dir)
+            .output()
+            .await;
+
+        let elapsed = start.elapsed().as_secs_f64();
+
+        let result = match check_result {
+            Ok(output) => {
+                let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+                if output.status.success() {
+                    info!(attempt, elapsed, "Build validation passed — cargo check succeeded");
+                    let mut r = validation::pass(5, "build", elapsed);
+                    // Count warnings from stderr
+                    let warning_count = stderr.lines()
+                        .filter(|l| l.contains("warning[") || l.starts_with("warning:"))
+                        .count() as u32;
+                    r.warning_count = warning_count;
+                    r.diagnostic = if warning_count > 0 {
+                        format!("{} warnings\n{}", warning_count, stderr)
+                    } else {
+                        "cargo check passed".to_string()
+                    };
+                    r
+                } else {
+                    // Parse error count from stderr
+                    let error_count = stderr.lines()
+                        .filter(|l| l.contains("error["))
+                        .count() as u32;
+                    let error_count = std::cmp::max(error_count, 1);
+
+                    // Extract actionable error lines
+                    let actionable_errors: Vec<String> = stderr.lines()
+                        .filter(|l| l.starts_with("error"))
+                        .take(10)
+                        .map(|l| l.to_string())
+                        .collect();
+
+                    warn!(attempt, error_count, "Build validation failed — cargo check errors");
+                    ValidationResult {
+                        level: 5,
+                        level_name: "build".to_string(),
+                        passed: false,
+                        error_count,
+                        warning_count: 0,
+                        suggestion_count: 0,
+                        actionable_errors,
+                        diagnostic: stderr,
+                        elapsed_secs: elapsed,
+                    }
+                }
+            }
+            Err(e) => {
+                error!(attempt, %e, "Failed to run cargo check");
+                ValidationResult {
+                    level: 5,
+                    level_name: "build".to_string(),
+                    passed: false,
+                    error_count: 1,
+                    warning_count: 0,
+                    suggestion_count: 0,
+                    actionable_errors: vec![format!("Failed to execute cargo check: {}", e)],
+                    diagnostic: e.to_string(),
+                    elapsed_secs: elapsed,
+                }
+            }
+        };
+
         if let Some(artifacts) = &self.artifacts {
             artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
         }

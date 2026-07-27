@@ -47,3 +47,11 @@ task = "tasks/moving-company-30obj"
 workflow = "ksml-modeling"
 expect = "completed"
 timeout_secs = 1200
+
+[[cases]]
+name = "school-service-rust"
+task = "tasks/school-service-rust"
+workflow = "ksml-rust-gen"
+expect = "completed"
+timeout_secs = 900
+build_target = "rust-lib-core"
