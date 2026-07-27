@@ -7,12 +7,25 @@ pub fn build_system_prompt() -> String {
         .unwrap_or_else(|_| include_str!("../../../prompts/system.txt").to_string())
 }
 
+/// Load KSML modeling rules (from teaql-agent-kit).
+fn load_ksml_rules() -> Option<String> {
+    std::fs::read_to_string("prompts/ksml-rules.md").ok()
+}
+
 /// Build the complete prompt messages for a generation request.
 /// Returns Vec of (role, content) pairs.
 pub fn build_generation_messages(task: &TaskPackageData) -> Vec<(String, String)> {
     let mut messages = vec![
         ("system".to_string(), build_system_prompt()),
     ];
+
+    // Add KSML modeling rules (from teaql-agent-kit)
+    if let Some(rules) = load_ksml_rules() {
+        messages.push((
+            "system".to_string(),
+            format!("KSML Modeling Rules (follow these exactly):\n\n{rules}"),
+        ));
+    }
 
     // Add grammar example if present
     if let Some(example) = &task.grammar_example {
@@ -48,6 +61,13 @@ pub fn build_repair_messages(
         ("system".to_string(), build_system_prompt()),
     ];
 
+    // Add KSML rules for repair too
+    if let Some(rules) = load_ksml_rules() {
+        messages.push((
+            "system".to_string(),
+            format!("KSML Modeling Rules (follow these exactly):\n\n{rules}"),
+        ));
+    }
     if let Some(example) = &task.grammar_example {
         messages.push((
             "system".to_string(),
