@@ -22,6 +22,9 @@ pub struct ModelConfig {
     pub endpoint_env: String,
     pub default_endpoint: String,
     pub api_path: String,
+    /// Environment variable name for the API key (optional, for cloud endpoints)
+    #[serde(default)]
+    pub api_key_env: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -103,5 +106,13 @@ impl ModelProfile {
         let base = self.resolve_endpoint();
         let base = base.trim_end_matches('/');
         format!("{}{}", base, self.model.api_path)
+    }
+
+    /// Resolve the API key from environment variable (if configured)
+    pub fn resolve_api_key(&self) -> Option<String> {
+        self.model
+            .api_key_env
+            .as_ref()
+            .and_then(|env_var| std::env::var(env_var).ok())
     }
 }

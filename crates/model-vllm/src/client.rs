@@ -44,11 +44,13 @@ impl VllmClient {
         let base = self.profile.resolve_endpoint();
         let base = base.trim_end_matches('/');
         let url = format!("{}/v1/models", base);
-        let resp = self.client
+        let mut req = self.client
             .get(&url)
-            .timeout(Duration::from_secs(self.profile.timeouts.health_secs))
-            .send()
-            .await;
+            .timeout(Duration::from_secs(self.profile.timeouts.health_secs));
+        if let Some(api_key) = self.profile.resolve_api_key() {
+            req = req.header("Authorization", format!("Bearer {}", api_key));
+        }
+        let resp = req.send().await;
         match resp {
             Ok(r) => Ok(r.status().is_success()),
             Err(_) => Ok(false),
@@ -94,9 +96,16 @@ impl VllmClient {
         let url = self.profile.chat_url();
         let start = Instant::now();
 
-        let response = self.client
+        let mut req = self.client
             .post(&url)
-            .json(&request)
+            .json(&request);
+
+        // Add API key if configured (for cloud endpoints)
+        if let Some(api_key) = self.profile.resolve_api_key() {
+            req = req.header("Authorization", format!("Bearer {}", api_key));
+        }
+
+        let response = req
             .send()
             .await
             .map_err(|e| {
