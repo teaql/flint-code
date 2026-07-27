@@ -19,11 +19,6 @@ fn load_context_file(path: &str) -> Option<String> {
 fn build_context_block(task: &TaskPackageData) -> String {
     let mut parts = Vec::new();
 
-    // KSML modeling rules (from teaql-agent-kit)
-    if let Some(rules) = load_context_file("prompts/ksml-rules.md") {
-        parts.push(format!("## KSML Modeling Rules\n\n{rules}"));
-    }
-
     // Grammar example (from task package)
     if let Some(example) = &task.grammar_example {
         parts.push(format!("## Grammar Example\n\nFollow this structure exactly:\n\n```xml\n{example}\n```"));
