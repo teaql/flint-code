@@ -11,11 +11,12 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Gauge, List, ListItem, Paragraph, Wrap},
+    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
     Frame, Terminal,
 };
 use std::io;
-use std::time::Duration;
+use std::path::Path;
+use futures::StreamExt;
 
 use crate::app::{App, StageStatus, View};
 
@@ -35,8 +36,6 @@ pub async fn run(app: &mut App) -> Result<()> {
 
     result
 }
-
-use futures::StreamExt;
 
 async fn event_loop(
     terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
@@ -59,6 +58,15 @@ async fn event_loop(
                         KeyCode::Char('v') => app.view = View::Diagnostics,
                         KeyCode::Char('d') => app.view = View::Candidate,
                         KeyCode::Char('t') => app.view = View::Task,
+                        KeyCode::Char('p') => {
+                            let _ = app.next_profile();
+                        }
+                        KeyCode::Tab => {
+                            // Cycle subfiles in candidate view
+                            if !app.candidate_files.is_empty() {
+                                app.active_candidate_idx = (app.active_candidate_idx + 1) % app.candidate_files.len();
+                            }
+                        }
                         KeyCode::Char('?') => {
                             app.view = if app.view == View::Help { View::Pipeline } else { View::Help };
                         }
@@ -68,9 +76,9 @@ async fn event_loop(
                         KeyCode::Char('k') | KeyCode::Up => {
                             app.scroll_offset = app.scroll_offset.saturating_sub(1);
                         }
-                        // Dummy hotkey to load a task for testing
+                        // Hotkey 'r' to load bookstore 3-obj task
                         KeyCode::Char('r') => {
-                            let _ = app.start_task(std::path::Path::new("tasks/dummy")).await;
+                            let _ = app.start_task(Path::new("benchmarks/tasks/bookstore-3obj")).await;
                         }
                         _ => {}
                     }
@@ -90,9 +98,25 @@ async fn event_loop(
                     agent_core::event::RunEvent::ModelCompleted(res) => {
                         app.token_prompt += res.usage.prompt_tokens;
                         app.token_completion += res.usage.completion_tokens;
+                        if res.elapsed_secs > 0.0 {
+                            app.generation_tps = res.usage.completion_tokens as f64 / res.elapsed_secs;
+                            app.prompt_tps = res.usage.prompt_tokens as f64 / (res.elapsed_secs * 0.2).max(0.1);
+                        }
+                        app.add_log(format!(
+                            "Model response received: {} prompt tokens, {} completion tokens ({:.1} tps)",
+                            res.usage.prompt_tokens, res.usage.completion_tokens, app.generation_tps
+                        ));
                     }
                     agent_core::event::RunEvent::ValidationCompleted(res) => {
                         app.diagnostics = res.diagnostic.clone();
+                        app.add_log(format!(
+                            "Validation completed: level={}, passed={:?}, errors={}",
+                            res.level_name, res.passed, res.actionable_errors.len()
+                        ));
+                    }
+                    agent_core::event::RunEvent::TaskLoaded(task) => {
+                        app.task_files = vec![task.name.clone(), format!("task_file={}", task.task_file.display())];
+                        app.add_log(format!("Task loaded: {}", task.name));
                     }
                     _ => {}
                 }
@@ -110,11 +134,14 @@ async fn event_loop(
                     std::future::pending().await
                 }
             } => {
-                if let Some(exec) = app.executor.as_mut() {
+                let candidate_path = if let Some(exec) = app.executor.as_mut() {
                     exec.handle(effect).await;
-                    if let Some(cand) = exec.candidate() {
-                        app.candidate = cand.to_string();
-                    }
+                    exec.candidate().map(|c| c.to_string())
+                } else {
+                    None
+                };
+                if let Some(cand) = candidate_path {
+                    app.refresh_candidate_files(Path::new(&cand));
                 }
             }
         }
@@ -147,19 +174,20 @@ fn draw(f: &mut Frame, app: &App) {
 fn draw_header(f: &mut Frame, app: &App, area: Rect) {
     let in_flight = if app.run_state().state.is_active() { "1" } else { "0" };
     let header = Line::from(vec![
-        Span::styled(" FlintCode", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
-        Span::raw(" ─ Model: "),
-        Span::styled(&app.profile.model.name, Style::default().fg(Color::Green)),
-        Span::raw(" ─ "),
+        Span::styled(" FlintCode TUI ", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+        Span::raw(" ─ Profile: "),
+        Span::styled(&app.profile.model.name, Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
+        Span::raw(" ─ Limit: "),
         Span::styled(
             format!("{}K", app.profile.context.model_context_tokens / 1000),
             Style::default().fg(Color::Yellow),
         ),
-        Span::raw(" ─ In-flight: "),
+        Span::raw(" ─ Concurrency: "),
         Span::styled(
             format!("{in_flight}/{}", app.profile.concurrency.max_in_flight),
             Style::default().fg(if in_flight == "0" { Color::Gray } else { Color::Cyan }),
         ),
+        Span::raw(" ─ [p] Switch Profile"),
     ]);
     let block = Block::default().borders(Borders::TOP | Borders::LEFT | Borders::RIGHT);
     let paragraph = Paragraph::new(header).block(block);
@@ -176,24 +204,26 @@ fn draw_run_info(f: &mut Frame, app: &App, area: Rect) {
     };
 
     let run_name = app.run_state().task_name.as_deref().unwrap_or(&app.run_state().run_id);
+    let elapsed = app.run_start_time.map(|t| format!("{:.1}s", t.elapsed().as_secs_f64())).unwrap_or_else(|| "0.0s".to_string());
+
     let line = Line::from(vec![
         Span::raw(" Run: "),
         Span::styled(run_name, Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
         Span::raw("  │  State: "),
         Span::styled(app.run_state().state.label(), Style::default().fg(state_color).add_modifier(Modifier::BOLD)),
+        Span::raw("  │  Elapsed: "),
+        Span::styled(elapsed, Style::default().fg(Color::Yellow)),
     ]);
     let block = Block::default().borders(Borders::LEFT | Borders::RIGHT);
     f.render_widget(Paragraph::new(line).block(block), area);
 }
 
 fn draw_main(f: &mut Frame, app: &App, area: Rect) {
-    // Split main area into left (pipeline/task) and right (candidate/diagnostics)
     let cols = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([Constraint::Percentage(40), Constraint::Percentage(60)])
+        .constraints([Constraint::Percentage(35), Constraint::Percentage(65)])
         .split(area);
 
-    // Left column: Pipeline + Task files
     let left_rows = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
@@ -201,8 +231,6 @@ fn draw_main(f: &mut Frame, app: &App, area: Rect) {
 
     draw_pipeline(f, app, left_rows[0]);
     draw_task_files(f, app, left_rows[1]);
-
-    // Right column: Candidate/Diagnostics
     draw_right_panel(f, app, cols[1]);
 }
 
@@ -218,24 +246,15 @@ fn draw_pipeline(f: &mut Frame, app: &App, area: Rect) {
                 StageStatus::Failed => ("✗", Color::Red),
             };
 
-            // Find timing for this stage
-            let timing = app.run_state().timings.iter().find(|t| {
-                t.stage.contains(&name.to_lowercase().replace(' ', "_"))
-            });
-            let time_str = timing
-                .map(|t| format!("  {:.1}s", t.elapsed_secs()))
-                .unwrap_or_default();
-
             ListItem::new(Line::from(vec![
                 Span::styled(format!(" {icon} "), Style::default().fg(color)),
                 Span::styled(*name, Style::default().fg(color)),
-                Span::styled(time_str, Style::default().fg(Color::DarkGray)),
             ]))
         })
         .collect();
 
     let block = Block::default()
-        .title(" Pipeline ")
+        .title(" Pipeline Stages ")
         .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::DarkGray));
     let list = List::new(items).block(block);
@@ -255,7 +274,7 @@ fn draw_task_files(f: &mut Frame, app: &App, area: Rect) {
         .collect();
 
     let block = Block::default()
-        .title(" Task / Files ")
+        .title(" Loaded Task ")
         .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::DarkGray));
     let list = List::new(items).block(block);
@@ -263,58 +282,124 @@ fn draw_task_files(f: &mut Frame, app: &App, area: Rect) {
 }
 
 fn draw_right_panel(f: &mut Frame, app: &App, area: Rect) {
-    let (title, content) = match app.view {
-        View::Candidate => (" Candidate / Diff ", &app.candidate),
-        View::Diagnostics => (" Diagnostics ", &app.diagnostics),
-        View::Help => (" Help ", &HELP_TEXT.to_string()),
-        _ => (" Diagnostics ", &app.diagnostics),
-    };
-
-    let block = Block::default()
-        .title(title)
-        .borders(Borders::ALL)
-        .border_style(Style::default().fg(Color::DarkGray));
-    let paragraph = Paragraph::new(content.as_str())
-        .block(block)
-        .wrap(Wrap { trim: false })
-        .scroll((app.scroll_offset, 0));
-    f.render_widget(paragraph, area);
+    match app.view {
+        View::Candidate => draw_candidate_multi_file(f, app, area),
+        View::Diagnostics => draw_diagnostics_and_logs(f, app, area),
+        View::Help => {
+            let block = Block::default().title(" Help ").borders(Borders::ALL);
+            let paragraph = Paragraph::new(HELP_TEXT).block(block);
+            f.render_widget(paragraph, area);
+        }
+        _ => draw_diagnostics_and_logs(f, app, area),
+    }
 }
 
+/// Phase 2: Multi-file Candidate Viewer
+fn draw_candidate_multi_file(f: &mut Frame, app: &App, area: Rect) {
+    if app.candidate_files.is_empty() {
+        let block = Block::default()
+            .title(" Candidate / Multi-File Preview (Tab to switch) ")
+            .borders(Borders::ALL);
+        let paragraph = Paragraph::new("No candidate generated yet. Press 'r' to start bookstore benchmark task.");
+        f.render_widget(paragraph.block(block), area);
+        return;
+    }
+
+    let chunks = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Length(24), Constraint::Min(10)])
+        .split(area);
+
+    // Left file list
+    let file_items: Vec<ListItem> = app
+        .candidate_files
+        .iter()
+        .enumerate()
+        .map(|(idx, (filename, _))| {
+            let is_selected = idx == app.active_candidate_idx;
+            let style = if is_selected {
+                Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+            } else {
+                Style::default().fg(Color::White)
+            };
+            let prefix = if is_selected { "▶ " } else { "  " };
+            ListItem::new(Line::from(vec![Span::styled(format!("{prefix}{filename}"), style)]))
+        })
+        .collect();
+
+    let list_block = Block::default().title(" Subfiles (Tab) ").borders(Borders::ALL);
+    let list = List::new(file_items).block(list_block);
+    f.render_widget(list, chunks[0]);
+
+    // Right file content
+    let (active_name, active_content) = &app.candidate_files[app.active_candidate_idx];
+    let content_block = Block::default()
+        .title(format!(" Content: {active_name} "))
+        .borders(Borders::ALL);
+
+    let paragraph = Paragraph::new(active_content.as_str())
+        .block(content_block)
+        .wrap(Wrap { trim: false })
+        .scroll((app.scroll_offset, 0));
+
+    f.render_widget(paragraph, chunks[1]);
+}
+
+/// Phase 3: Diagnostics & Live ReAct Log Stream
+fn draw_diagnostics_and_logs(f: &mut Frame, app: &App, area: Rect) {
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(40), Constraint::Percentage(60)])
+        .split(area);
+
+    // Diagnostics report top box
+    let diag_block = Block::default()
+        .title(" TeaQL Domain Diagnostics ")
+        .borders(Borders::ALL);
+    let diag_text = if app.diagnostics.is_empty() {
+        "No domain validation report yet."
+    } else {
+        &app.diagnostics
+    };
+    let diag_paragraph = Paragraph::new(diag_text).block(diag_block).wrap(Wrap { trim: false });
+    f.render_widget(diag_paragraph, chunks[0]);
+
+    // Live ReAct log stream bottom box
+    let log_items: Vec<ListItem> = app
+        .react_logs
+        .iter()
+        .map(|log| ListItem::new(Line::from(vec![Span::styled(log, Style::default().fg(Color::Green))])))
+        .collect();
+
+    let logs_block = Block::default()
+        .title(" Agentic ReAct Live Log Stream ")
+        .borders(Borders::ALL);
+    let logs_list = List::new(log_items).block(logs_block);
+    f.render_widget(logs_list, chunks[1]);
+}
+
+/// Phase 4: Token Bar & Telemetry Metrics
 fn draw_token_bar(f: &mut Frame, app: &App, area: Rect) {
     let prompt_limit = app.profile.context.max_prompt_tokens;
     let completion_limit = app.profile.context.max_completion_tokens;
     let safety = app.profile.context.safety_tokens;
 
     let line = Line::from(vec![
-        Span::raw(" Prompt "),
-        Span::styled(
-            format!("{:>5}", app.token_prompt),
-            Style::default().fg(Color::Cyan),
-        ),
-        Span::styled(
-            format!(" / {prompt_limit:>5}"),
-            Style::default().fg(Color::DarkGray),
-        ),
-        Span::raw(" │ Completion "),
-        Span::styled(
-            format!("{:>5}", app.token_completion),
-            Style::default().fg(Color::Green),
-        ),
-        Span::styled(
-            format!(" / {completion_limit:>4}"),
-            Style::default().fg(Color::DarkGray),
-        ),
-        Span::raw(" │ Reserve "),
-        Span::styled(
-            format!("{safety:>5}"),
-            Style::default().fg(Color::Yellow),
-        ),
+        Span::raw(" Prompt Tokens: "),
+        Span::styled(format!("{:>6}", app.token_prompt), Style::default().fg(Color::Cyan)),
+        Span::styled(format!(" / {prompt_limit:>5}"), Style::default().fg(Color::DarkGray)),
+        Span::raw(" │ Completion: "),
+        Span::styled(format!("{:>5}", app.token_completion), Style::default().fg(Color::Green)),
+        Span::styled(format!(" / {completion_limit:>4}"), Style::default().fg(Color::DarkGray)),
+        Span::raw(" │ Output Speed: "),
+        Span::styled(format!("{:.1} t/s", app.generation_tps), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+        Span::raw(" │ Reserve: "),
+        Span::styled(format!("{safety:>5}"), Style::default().fg(Color::DarkGray)),
     ]);
 
     let block = Block::default()
         .borders(Borders::ALL)
-        .title(" Tokens ")
+        .title(" Real-time LLM Telemetry ")
         .border_style(Style::default().fg(Color::DarkGray));
     f.render_widget(Paragraph::new(line).block(block), area);
 }
@@ -322,15 +407,17 @@ fn draw_token_bar(f: &mut Frame, app: &App, area: Rect) {
 fn draw_keybindings(f: &mut Frame, area: Rect) {
     let line = Line::from(vec![
         Span::styled(" [g]", Style::default().fg(Color::Cyan)),
-        Span::raw(" Run  "),
+        Span::raw(" Pipeline  "),
         Span::styled("[v]", Style::default().fg(Color::Cyan)),
-        Span::raw(" Validate  "),
+        Span::raw(" Logs  "),
         Span::styled("[d]", Style::default().fg(Color::Cyan)),
-        Span::raw(" Diff  "),
-        Span::styled("[t]", Style::default().fg(Color::Cyan)),
-        Span::raw(" Task  "),
-        Span::styled("[c]", Style::default().fg(Color::Cyan)),
-        Span::raw(" Cancel  "),
+        Span::raw(" Subfiles  "),
+        Span::styled("[p]", Style::default().fg(Color::Yellow)),
+        Span::raw(" Switch Profile  "),
+        Span::styled("[Tab]", Style::default().fg(Color::Cyan)),
+        Span::raw(" Next File  "),
+        Span::styled("[r]", Style::default().fg(Color::Green)),
+        Span::raw(" Run Task  "),
         Span::styled("[?]", Style::default().fg(Color::Cyan)),
         Span::raw(" Help  "),
         Span::styled("[q]", Style::default().fg(Color::Red)),
@@ -341,14 +428,12 @@ fn draw_keybindings(f: &mut Frame, area: Rect) {
 
 const HELP_TEXT: &str = r#"FlintCode TUI — Keyboard Shortcuts
 
-  g     Pipeline view (default)
-  v     Validation / diagnostics view
-  d     Candidate / diff view
-  t     Task files view
-  ?     Toggle help
-  j/k   Scroll down/up
-  c     Cancel current operation
-  q     Quit
-
-The TUI observes the pipeline state machine.
-All execution is driven by the agent-core reducer."#;
+  g     Pipeline view
+  v     Validation & Live ReAct Logs stream
+  d     Multi-file Candidate viewer (Tab to switch files)
+  p     Switch Model Profile (Qwen3.6-Coder / MiMo / Nemotron)
+  r     Start benchmark evaluation task
+  Tab   Cycle through generated subfiles (main.xml, operations.xml, etc.)
+  j/k   Scroll content down/up
+  ?     Toggle help screen
+  q     Quit TUI"#;

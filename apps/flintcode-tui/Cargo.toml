@@ -20,6 +20,7 @@ artifact-store = { workspace = true }
 pipeline = { workspace = true }
 ratatui = { workspace = true }
 crossterm = { workspace = true }
+clap = { workspace = true }
 tokio = { workspace = true }
 anyhow = { workspace = true }
 tracing = { workspace = true }

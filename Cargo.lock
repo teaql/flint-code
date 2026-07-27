@@ -519,6 +519,7 @@ dependencies = [
  "anyhow",
  "artifact-store",
  "chrono",
+ "clap",
  "context-builder",
  "crossterm",
  "dirs",
