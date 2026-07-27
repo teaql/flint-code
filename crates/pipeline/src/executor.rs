@@ -208,13 +208,7 @@ impl PipelineExecutor {
                     
                     match self.client.chat(sub_messages).await {
                         Ok(sub_result) => {
-                            let clean_content = sub_result.content
-                                .trim()
-                                .strip_prefix("```xml").unwrap_or(&sub_result.content)
-                                .strip_prefix("```").unwrap_or(&sub_result.content)
-                                .strip_suffix("```").unwrap_or(&sub_result.content)
-                                .trim()
-                                .to_string();
+                            let clean_content = strip_markdown_fences(&sub_result.content);
                                 
                             if let Some(artifacts) = &self.artifacts {
                                 artifacts.save_attempt_raw(attempt, &file, &clean_content).ok();
@@ -285,7 +279,8 @@ impl PipelineExecutor {
             let attempt_dir = artifacts.create_attempt(attempt).unwrap_or_else(|_| artifacts.root.clone());
             let model_path = attempt_dir.join("main.xml");
             if let Some(c) = &self.candidate {
-                std::fs::write(&model_path, c).ok();
+                let clean = strip_markdown_fences(c);
+                std::fs::write(&model_path, &clean).ok();
             }
             
             let model_dir = attempt_dir.join("model");
@@ -871,4 +866,26 @@ fn walkdir_toml_xml(dir: &Path) -> Vec<PathBuf> {
         }
     }
     results
+}
+
+/// Strip markdown code fences from LLM output (e.g. ```xml ... ```)
+fn strip_markdown_fences(content: &str) -> String {
+    let trimmed = content.trim();
+    // Handle ```xml or ```ksml prefix
+    let stripped = if trimmed.starts_with("```xml") {
+        &trimmed[6..]
+    } else if trimmed.starts_with("```ksml") {
+        &trimmed[7..]
+    } else if trimmed.starts_with("```") {
+        &trimmed[3..]
+    } else {
+        return trimmed.to_string();
+    };
+    // Remove trailing ```
+    let stripped = stripped.trim();
+    if stripped.ends_with("```") {
+        stripped[..stripped.len() - 3].trim().to_string()
+    } else {
+        stripped.to_string()
+    }
 }
