@@ -21,8 +21,18 @@ For models with more than 10 objects, ALWAYS split into multiple files to avoid 
 </root>
 ```
 
-Each included file (e.g. `operations.xml`) contains ONLY the object elements (no `<?xml?>` header, no `<root>` wrapper).
+Each included file (e.g. `operations.xml`) MUST be a valid, standalone XML document.
+To achieve this, wrap the objects in a `<domain>` tag with a standard XML header:
 
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<domain name="operations">
+  <some_object _name="Some Object" ... />
+  <another_object _name="Another Object" ... />
+</domain>
+```
+
+This ensures every file is standard-compliant XML.
 ## 2. Basic Object Shape
 
 Business objects use attributes for fields:
