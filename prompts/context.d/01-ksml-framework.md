@@ -22,14 +22,14 @@ For models with more than 10 objects, ALWAYS split into multiple files to avoid 
 ```
 
 Each included file (e.g. `operations.xml`) MUST be a valid, standalone XML document.
-To achieve this, wrap the objects in a `<domain>` tag with a standard XML header:
+To achieve this, wrap the objects in a `<root>` tag with a standard XML header:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<domain name="operations">
+<root name="operations">
   <some_object _name="Some Object" ... />
   <another_object _name="Another Object" ... />
-</domain>
+</root>
 ```
 
 This ensures every file is standard-compliant XML.
