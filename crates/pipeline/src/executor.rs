@@ -530,10 +530,13 @@ impl PipelineExecutor {
             return;
         }
 
-        // ── Step 4: Generate rust-app-console ──
-        info!(attempt, "Generating rust-app-console");
+        let target = self.build_target.as_deref().unwrap_or("rust-lib-core");
+        let app_target = target.replace("-lib-core", "-app-console");
+
+        // ── Step 4: Generate app target ──
+        info!(attempt, "Generating {}", app_target);
         let app_gen_result = tokio::process::Command::new("cargo")
-            .args(["teaql", "--input", ".", "rust-app-console"])
+            .args(["teaql", "--input", ".", &app_target])
             .current_dir(&attempt_dir)
             .output()
             .await;
@@ -541,7 +544,7 @@ impl PipelineExecutor {
         match &app_gen_result {
             Ok(output) if !output.status.success() => {
                 let stderr = String::from_utf8_lossy(&output.stderr);
-                warn!(attempt, "rust-app-console generation failed, continuing with lib-only result");
+                warn!(attempt, "{} generation failed, continuing with lib-only result", app_target);
                 if let Some(artifacts) = &self.artifacts {
                     artifacts.save_attempt_raw(attempt, "app-console-gen-error.txt", &stderr).ok();
                 }
@@ -553,7 +556,7 @@ impl PipelineExecutor {
                 return;
             }
             Err(e) => {
-                warn!(attempt, %e, "Failed to run rust-app-console generation");
+                warn!(attempt, %e, "Failed to run {} generation", app_target);
                 if let Some(artifacts) = &self.artifacts {
                     artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
                 }
@@ -561,7 +564,7 @@ impl PipelineExecutor {
                 return;
             }
             _ => {
-                info!(attempt, "rust-app-console generated successfully");
+                info!(attempt, "{} generated successfully", app_target);
             }
         }
 
@@ -570,9 +573,10 @@ impl PipelineExecutor {
         let app_cargo_toml = build_dir.join("Cargo.toml");
         if app_cargo_toml.exists() {
             if let Ok(content) = std::fs::read_to_string(&app_cargo_toml) {
-                // Fix the path dependency to point to ./lib instead of ../rust-lib-core/lib
+                // Fix the path dependency to point to ./lib instead of ../<target>/lib
+                let old_path = format!(r#"path = "../{}/lib""#, target);
                 let fixed = content.replace(
-                    r#"path = "../rust-lib-core/lib""#,
+                    &old_path,
                     r#"path = "./lib""#,
                 );
                 if fixed != content {
@@ -618,9 +622,10 @@ impl PipelineExecutor {
 
         info!(attempt, total = entity_names.len(), sampled = assist_entities.len(), "Running assist commands");
 
+        let assist_target_base = target.replace("-lib-core", "-assist-query");
         let mut assist_outputs = String::new();
         for entity in &assist_entities {
-            let assist_target = format!("rust-assist-query/{}", entity);
+            let assist_target = format!("{}/{}", assist_target_base, entity);
             info!(attempt, entity = %entity, "Running assist command");
             let assist_result = tokio::process::Command::new("cargo")
                 .args(["teaql", "--input", ".", &assist_target])
