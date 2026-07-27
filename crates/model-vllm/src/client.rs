@@ -34,6 +34,7 @@ impl VllmClient {
     pub fn new(profile: ModelProfile) -> Self {
         let client = Client::builder()
             .timeout(Duration::from_secs(profile.timeouts.model_secs))
+            .pool_max_idle_per_host(0)
             .build()
             .unwrap_or_else(|_| Client::new());
         Self { client, profile }
