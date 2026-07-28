@@ -1,6 +1,6 @@
-use crate::state::RunState;
 use crate::event::RunEvent;
-use crate::reducer::{reduce, SideEffect};
+use crate::reducer::{SideEffect, reduce};
+use crate::state::RunState;
 use tokio::sync::mpsc;
 use tracing::info;
 

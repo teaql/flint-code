@@ -2,12 +2,11 @@
 
 mod app;
 mod ui;
-mod input;
 
 use anyhow::Result;
-use tracing_subscriber::{EnvFilter, fmt, prelude::*};
-use tracing_appender;
 use std::path::PathBuf;
+use tracing_appender;
+use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -28,6 +27,9 @@ async fn main() -> Result<()> {
     tracing::info!("FlintCode TUI starting");
 
     let mut app = app::App::new()?;
+    if let Ok(task) = std::env::var("FLINTCODE_TASK") {
+        app.start_task(std::path::Path::new(&task)).await?;
+    }
     ui::run(&mut app).await?;
 
     tracing::info!("FlintCode TUI shutdown");

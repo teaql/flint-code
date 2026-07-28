@@ -10,17 +10,17 @@
 //! | L5 | Build (cargo check) | Truncated compiler errors |
 //! | L6 | Test (cargo test) | Failed assertions |
 
-pub mod transport;
-pub mod parse;
 pub mod acceptance;
-pub mod domain;
 pub mod build;
+pub mod domain;
+pub mod parse;
+pub mod transport;
 
-pub use transport::*;
-pub use parse::*;
 pub use acceptance::*;
-pub use domain::*;
 pub use build::*;
+pub use domain::*;
+pub use parse::*;
+pub use transport::*;
 
 use agent_core::event::ValidationResult;
 

@@ -6,9 +6,9 @@ mod policy;
 pub use policy::*;
 
 use anyhow::Result;
+use std::time::Duration;
 use thiserror::Error;
 use tokio::process::Command;
-use std::time::Duration;
 use tracing::{info, warn};
 
 #[derive(Debug, Error)]
@@ -42,8 +42,12 @@ pub async fn execute_command(
 ) -> Result<ToolResult, ToolError> {
     // Reject shell operators
     let full = format!("{} {}", command, args.join(" "));
-    if full.contains('|') || full.contains(';') || full.contains('&')
-        || full.contains('`') || full.contains("$(") {
+    if full.contains('|')
+        || full.contains(';')
+        || full.contains('&')
+        || full.contains('`')
+        || full.contains("$(")
+    {
         return Err(ToolError::ShellOperators);
     }
 
@@ -52,13 +56,12 @@ pub async fn execute_command(
 
     let output = tokio::time::timeout(
         Duration::from_secs(timeout_secs),
-        Command::new(command)
-            .args(args)
-            .current_dir(cwd)
-            .output(),
+        Command::new(command).args(args).current_dir(cwd).output(),
     )
     .await
-    .map_err(|_| ToolError::Timeout { seconds: timeout_secs })?
+    .map_err(|_| ToolError::Timeout {
+        seconds: timeout_secs,
+    })?
     .map_err(|e| ToolError::ExecFailed {
         code: -1,
         stderr: e.to_string(),

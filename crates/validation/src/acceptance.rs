@@ -5,10 +5,7 @@ use serde_json::Value;
 
 /// Validate the candidate against an acceptance specification.
 /// This is a structural check — does the output contain the right objects/fields?
-pub fn validate_acceptance(
-    _content: &str,
-    spec: &Value,
-) -> ValidationResult {
+pub fn validate_acceptance(_content: &str, spec: &Value) -> ValidationResult {
     let start = std::time::Instant::now();
 
     // TODO: Implement full acceptance spec checking.

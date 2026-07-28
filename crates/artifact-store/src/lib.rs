@@ -15,8 +15,8 @@
 //! └── summary.json
 //! ```
 
-mod run;
 mod report;
+mod run;
 
-pub use run::*;
 pub use report::*;
+pub use run::*;

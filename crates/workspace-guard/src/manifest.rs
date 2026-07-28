@@ -21,8 +21,12 @@ pub struct Manifest {
     pub recursive_discovery: bool,
 }
 
-fn default_max_single() -> u64 { 180_000 }
-fn default_max_total() -> u64 { 500_000 }
+fn default_max_single() -> u64 {
+    180_000
+}
+fn default_max_total() -> u64 {
+    500_000
+}
 
 impl Default for Manifest {
     fn default() -> Self {

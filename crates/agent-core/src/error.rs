@@ -1,5 +1,5 @@
-use thiserror::Error;
 use std::path::PathBuf;
+use thiserror::Error;
 
 /// Agent-level errors with structured classification
 #[derive(Debug, Error)]
@@ -49,16 +49,14 @@ impl AgentError {
     pub fn is_model_repairable(&self) -> bool {
         matches!(
             self,
-            AgentError::ValidationFailed { .. }
-            | AgentError::IncompleteGeneration { .. }
+            AgentError::ValidationFailed { .. } | AgentError::IncompleteGeneration { .. }
         )
     }
 
     pub fn is_infrastructure(&self) -> bool {
         matches!(
             self,
-            AgentError::InfrastructureError { .. }
-            | AgentError::Timeout { .. }
+            AgentError::InfrastructureError { .. } | AgentError::Timeout { .. }
         )
     }
 }

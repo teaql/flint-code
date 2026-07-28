@@ -50,7 +50,7 @@ mod tests {
 
     #[test]
     fn test_estimate_cjk() {
-        let text = "这是一个中文测试";
+        let text = "\u{8fd9}\u{662f}\u{4e00}\u{4e2a}\u{4e2d}\u{6587}\u{6d4b}\u{8bd5}";
         let tokens = estimate_tokens(text);
         // 8 CJK chars * 2.5 = 20 / 3.5 ≈ 5.7 * 1.1 ≈ 7
         assert!(tokens > 4 && tokens < 15, "tokens = {tokens}");

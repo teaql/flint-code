@@ -134,16 +134,12 @@ impl WorkspaceGuard {
         for pattern in &self.manifest.denied {
             if let Ok(glob_pattern) = glob::Pattern::new(pattern) {
                 if glob_pattern.matches(&path_str) {
-                    return Err(GuardError::DeniedByPolicy {
-                        path: path_str,
-                    });
+                    return Err(GuardError::DeniedByPolicy { path: path_str });
                 }
                 // Also check just the filename
                 if let Some(name) = path.file_name() {
                     if glob_pattern.matches(&name.to_string_lossy()) {
-                        return Err(GuardError::DeniedByPolicy {
-                            path: path_str,
-                        });
+                        return Err(GuardError::DeniedByPolicy { path: path_str });
                     }
                 }
             }

@@ -1,9 +1,9 @@
+use crate::error::AgentError;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use crate::error::AgentError;
 
 /// Token usage from a model response
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TokenUsage {
     pub prompt_tokens: u32,
     pub completion_tokens: u32,
@@ -23,10 +23,9 @@ pub struct ContextBudget {
 impl ContextBudget {
     /// Whether the estimated prompt fits within budget
     pub fn admits(&self) -> bool {
-        self.estimated_prompt
-            + self.completion_limit
-            + self.safety_reserve
-            <= self.model_context
+        self.estimated_prompt <= self.prompt_limit
+            && self.estimated_prompt + self.completion_limit + self.safety_reserve
+                <= self.model_context
     }
 
     /// How many tokens are remaining for prompt content
@@ -95,6 +94,8 @@ pub enum RunEvent {
     PreflightPassed(ContextBudget),
     /// Preflight checks failed
     PreflightFailed(String),
+    /// An interactive client must ask the user before continuing.
+    ConsentRequired { action: String },
     /// User granted consent for external operation
     ConsentGranted(ExportConsent),
     /// User denied consent
@@ -103,8 +104,18 @@ pub enum RunEvent {
     ModelStarted { attempt: u8 },
     /// Model generation completed successfully
     ModelCompleted(ModelResult),
+    /// Usage from an auxiliary model call that does not advance the pipeline.
+    ModelUsageRecorded(TokenUsage),
     /// Model generation failed (HTTP error, timeout, etc.)
     ModelFailed(AgentError),
+    /// A process-backed tool command is about to be launched.
+    ToolProcessStarted { id: u64, command: String },
+    /// A process-backed tool command exited or failed to launch.
+    ToolProcessFinished {
+        id: u64,
+        success: bool,
+        exit_code: Option<i32>,
+    },
     /// Validation gate completed
     ValidationCompleted(ValidationResult),
     /// Repair cycle scheduled
@@ -115,4 +126,23 @@ pub enum RunEvent {
     CancelRequested,
     /// Unrecoverable error
     Failed(AgentError),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn budget_respects_the_explicit_prompt_limit() {
+        let budget = ContextBudget {
+            model_context: 65_536,
+            prompt_limit: 48_000,
+            completion_limit: 4_096,
+            safety_reserve: 8_192,
+            estimated_prompt: 50_000,
+        };
+
+        assert!(!budget.admits());
+        assert_eq!(budget.remaining_prompt_tokens(), 0);
+    }
 }

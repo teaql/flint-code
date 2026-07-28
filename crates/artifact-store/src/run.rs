@@ -1,7 +1,7 @@
 use anyhow::Result;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use sha2::{Sha256, Digest};
+use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 use tracing::info;
 
@@ -80,7 +80,12 @@ impl RunArtifacts {
     }
 
     /// Save arbitrary JSON to an attempt directory.
-    pub fn save_attempt_file(&self, attempt: u8, filename: &str, content: &impl Serialize) -> Result<()> {
+    pub fn save_attempt_file(
+        &self,
+        attempt: u8,
+        filename: &str,
+        content: &impl Serialize,
+    ) -> Result<()> {
         let dir = self.create_attempt(attempt)?;
         let path = dir.join(filename);
         let json = serde_json::to_string_pretty(content)?;

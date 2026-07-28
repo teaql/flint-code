@@ -1,10 +1,19 @@
 # FlintCode
 
+> [!WARNING]
+> **Active development:** FlintCode is under active development. APIs,
+> configuration, workflows, and the TUI may change without notice. It is not
+> yet recommended for production use.
+
 > *Strike code without the cloud.* — 燧石取火，离线生码。
 
 **FlintCode** is an AI coding agent designed for **air-gapped and compliance-restricted environments**. It runs entirely on local hardware (NVIDIA DGX Spark / DGX Station), requires no internet connection, and produces **compiler-verified** production code.
 
 Built with Rust. Powered by [TeaQL](https://teaql.io).
+
+## TUI Preview
+
+![FlintCode interactive TUI showing the validated execution plan](docs/images/flintcode-tui.png)
 
 ## Why FlintCode?
 
@@ -94,6 +103,30 @@ FLINTCODE_BASE_URL="http://localhost:8000" \
 # Interactive TUI
 ./target/release/flintcode-tui
 ```
+
+The TUI opens with its prompt composer focused. Type a task and press `Enter`
+to submit it through the normal Pipeline. Use `Shift+Enter` or `Alt+Enter` for
+a new line. The composer grows from one to eight visible lines; additional
+lines remain editable while the viewport follows the latest eight. Use `Esc`
+for dashboard shortcuts and `i` to return to the composer.
+The default surface stays minimal; enter `/stats` for Plan, Validation,
+Context, and Token details, then `/main` to return.
+
+### Dynamic Plan and Tool Probe
+
+Use the persistent protocol probe to test whether an OpenAI-compatible model
+can generate a task-specific plan, publish explicit plan status transitions,
+call constrained tools, edit an isolated Rust fixture, and pass its tests:
+
+```bash
+MIMO_API_KEY="<key>" \
+FLINTCODE_ENDPOINT="https://example.com/v1" \
+FLINTCODE_MODEL="model-id" \
+node scripts/model-agent-probe.mjs
+```
+
+The probe never edits the repository. It writes a detailed `report.json` to
+its temporary workspace.
 
 ### Configuration
 

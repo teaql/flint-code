@@ -32,8 +32,12 @@ pub struct WorkspaceManifest {
     pub recursive_discovery: bool,
 }
 
-fn default_max_single_file_bytes() -> u64 { 180_000 }
-fn default_max_total_read_bytes() -> u64 { 500_000 }
+fn default_max_single_file_bytes() -> u64 {
+    180_000
+}
+fn default_max_total_read_bytes() -> u64 {
+    500_000
+}
 
 /// Tool policy: controls which commands can be executed.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -46,7 +50,9 @@ pub struct ToolPolicy {
     pub allow_network: bool,
 }
 
-fn default_false() -> bool { false }
+fn default_false() -> bool {
+    false
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CommandTemplate {
@@ -57,6 +63,24 @@ pub struct CommandTemplate {
 }
 
 impl TaskPackageData {
+    /// Build an in-memory task from text entered in an interactive client.
+    pub fn from_prompt(
+        name: impl Into<String>,
+        prompt: impl Into<String>,
+        workspace_root: PathBuf,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            root: workspace_root,
+            task_content: prompt.into(),
+            grammar_example: None,
+            value_whitelist: None,
+            acceptance_spec: None,
+            workspace_manifest: None,
+            tool_policy: None,
+        }
+    }
+
     /// Load a task package from a directory.
     pub fn load(dir: &Path) -> Result<Self> {
         let name = dir

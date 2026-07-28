@@ -1,5 +1,75 @@
-use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+
+use crate::event::{ContextBudget, TokenUsage, ValidationResult};
+
+/// User-visible state of a plan step.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum PlanStepStatus {
+    Pending,
+    InProgress,
+    WaitingUser,
+    Blocked,
+    Completed,
+    Failed,
+    Skipped,
+    Cancelled,
+}
+
+/// A stable, user-visible unit in the run plan.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct PlanStep {
+    pub id: String,
+    pub title: String,
+    pub detail: Option<String>,
+    pub status: PlanStepStatus,
+}
+
+impl PlanStep {
+    fn new(id: impl Into<String>, title: impl Into<String>) -> Self {
+        Self {
+            id: id.into(),
+            title: title.into(),
+            detail: None,
+            status: PlanStepStatus::Pending,
+        }
+    }
+}
+
+/// Cumulative model usage for a run.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct TokenTotals {
+    pub input_tokens: u64,
+    pub output_tokens: u64,
+    pub total_tokens: u64,
+    pub model_calls: u32,
+}
+
+impl TokenTotals {
+    fn record(&mut self, usage: &TokenUsage) {
+        self.input_tokens += u64::from(usage.prompt_tokens);
+        self.output_tokens += u64::from(usage.completion_tokens);
+        self.total_tokens += u64::from(usage.total_tokens);
+        self.model_calls += 1;
+    }
+}
+
+/// Lifecycle state for a process-backed tool invocation.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ToolProcessStatus {
+    Running,
+    Succeeded,
+    Failed,
+}
+
+/// A command launched by the agent as part of tool use.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ToolProcess {
+    pub id: u64,
+    pub command: String,
+    pub status: ToolProcessStatus,
+    pub exit_code: Option<i32>,
+}
 
 /// Pipeline state — must be an explicit enum, never inferred from log text.
 /// State transitions are handled exclusively by the reducer.
@@ -41,9 +111,9 @@ impl PipelineState {
         matches!(
             self,
             PipelineState::Completed
-            | PipelineState::Failed { .. }
-            | PipelineState::Cancelled
-            | PipelineState::SkippedByPolicy { .. }
+                | PipelineState::Failed { .. }
+                | PipelineState::Cancelled
+                | PipelineState::SkippedByPolicy { .. }
         )
     }
 
@@ -116,6 +186,24 @@ pub struct RunState {
     pub current_attempt: u8,
     pub max_repairs: u8,
     pub created_at: DateTime<Utc>,
+    /// First-class plan rendered by all clients.
+    #[serde(default = "default_pipeline_plan")]
+    pub plan: Vec<PlanStep>,
+    /// Most recent admitted context budget.
+    #[serde(default)]
+    pub context_budget: Option<ContextBudget>,
+    /// Usage reported by the most recent model call.
+    #[serde(default)]
+    pub last_model_usage: Option<TokenUsage>,
+    /// Cumulative usage for the complete run.
+    #[serde(default)]
+    pub token_totals: TokenTotals,
+    /// Structured validation history, including failed repair attempts.
+    #[serde(default)]
+    pub validation_history: Vec<ValidationResult>,
+    /// Process-backed tool invocations in launch order.
+    #[serde(default)]
+    pub tool_processes: Vec<ToolProcess>,
 }
 
 impl RunState {
@@ -128,6 +216,12 @@ impl RunState {
             current_attempt: 0,
             max_repairs,
             created_at: Utc::now(),
+            plan: default_pipeline_plan(),
+            context_budget: None,
+            last_model_usage: None,
+            token_totals: TokenTotals::default(),
+            validation_history: Vec::new(),
+            tool_processes: Vec::new(),
         }
     }
 
@@ -145,5 +239,164 @@ impl RunState {
         if let Some(last) = self.timings.last_mut() {
             last.complete();
         }
+    }
+
+    /// Mark a plan step as active and attach the current concrete action.
+    pub fn activate_plan_step(&mut self, id: &str, detail: impl Into<String>) {
+        for step in &mut self.plan {
+            if matches!(
+                step.status,
+                PlanStepStatus::InProgress | PlanStepStatus::WaitingUser
+            ) {
+                step.status = PlanStepStatus::Pending;
+            }
+        }
+        if let Some(step) = self.plan.iter_mut().find(|step| step.id == id) {
+            step.status = PlanStepStatus::InProgress;
+            step.detail = Some(detail.into());
+        }
+    }
+
+    /// Mark a plan step as completed.
+    pub fn complete_plan_step(&mut self, id: &str) {
+        if let Some(step) = self.plan.iter_mut().find(|step| step.id == id) {
+            step.status = PlanStepStatus::Completed;
+            step.detail = None;
+        }
+    }
+
+    /// Mark the current plan step with a terminal or blocking status.
+    pub fn mark_current_plan_step(&mut self, status: PlanStepStatus, detail: impl Into<String>) {
+        if let Some(step) = self.plan.iter_mut().find(|step| {
+            matches!(
+                step.status,
+                PlanStepStatus::InProgress | PlanStepStatus::WaitingUser
+            )
+        }) {
+            step.status = status;
+            step.detail = Some(detail.into());
+        }
+    }
+
+    /// Current plan step and its one-based position.
+    pub fn current_plan_step(&self) -> Option<(usize, &PlanStep)> {
+        self.plan
+            .iter()
+            .enumerate()
+            .find(|(_, step)| {
+                matches!(
+                    step.status,
+                    PlanStepStatus::InProgress
+                        | PlanStepStatus::WaitingUser
+                        | PlanStepStatus::Blocked
+                )
+            })
+            .map(|(index, step)| (index + 1, step))
+    }
+
+    /// Prompt tokens reported by the latest completed model call.
+    pub fn current_context_tokens(&self) -> Option<u32> {
+        self.last_model_usage
+            .as_ref()
+            .map(|usage| usage.prompt_tokens)
+    }
+
+    /// Record one model call without conflating cumulative usage with context size.
+    pub fn record_model_usage(&mut self, usage: TokenUsage) {
+        self.token_totals.record(&usage);
+        self.last_model_usage = Some(usage);
+    }
+
+    /// Record a process before it starts so clients can render it immediately.
+    pub fn start_tool_process(&mut self, id: u64, command: String) {
+        self.tool_processes.push(ToolProcess {
+            id,
+            command,
+            status: ToolProcessStatus::Running,
+            exit_code: None,
+        });
+    }
+
+    /// Update a previously launched process with its terminal result.
+    pub fn finish_tool_process(&mut self, id: u64, success: bool, exit_code: Option<i32>) {
+        if let Some(process) = self
+            .tool_processes
+            .iter_mut()
+            .rev()
+            .find(|process| process.id == id)
+        {
+            process.status = if success {
+                ToolProcessStatus::Succeeded
+            } else {
+                ToolProcessStatus::Failed
+            };
+            process.exit_code = exit_code;
+        }
+    }
+}
+
+fn default_pipeline_plan() -> Vec<PlanStep> {
+    vec![
+        PlanStep::new("preflight", "Inspect task and workspace"),
+        PlanStep::new("generate", "Generate candidate"),
+        PlanStep::new("local_validation", "Run L1–L2 validation"),
+        PlanStep::new("domain_validation", "Run L3 TeaQL validation"),
+        PlanStep::new("build_validation", "Generate and compile code"),
+        PlanStep::new("finalize", "Save final Artifact"),
+    ]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cumulative_usage_does_not_replace_current_context() {
+        let mut run = RunState::new("run-1".to_string(), 2);
+        run.record_model_usage(TokenUsage {
+            prompt_tokens: 12_000,
+            completion_tokens: 2_000,
+            total_tokens: 14_000,
+        });
+        run.record_model_usage(TokenUsage {
+            prompt_tokens: 18_000,
+            completion_tokens: 3_000,
+            total_tokens: 21_000,
+        });
+
+        assert_eq!(run.current_context_tokens(), Some(18_000));
+        assert_eq!(run.token_totals.input_tokens, 30_000);
+        assert_eq!(run.token_totals.output_tokens, 5_000);
+        assert_eq!(run.token_totals.model_calls, 2);
+    }
+
+    #[test]
+    fn activating_a_step_keeps_only_one_current_step() {
+        let mut run = RunState::new("run-1".to_string(), 2);
+        run.activate_plan_step("preflight", "checking");
+        run.complete_plan_step("preflight");
+        run.activate_plan_step("generate", "generating");
+
+        let (position, step) = run.current_plan_step().expect("current plan step");
+        assert_eq!(position, 2);
+        assert_eq!(step.id, "generate");
+        assert_eq!(
+            run.plan
+                .iter()
+                .filter(|step| step.status == PlanStepStatus::InProgress)
+                .count(),
+            1
+        );
+    }
+
+    #[test]
+    fn tool_process_is_updated_in_place_when_it_finishes() {
+        let mut run = RunState::new("run-1".to_string(), 2);
+        run.start_tool_process(7, "cargo check".to_string());
+        run.finish_tool_process(7, false, Some(101));
+
+        assert_eq!(run.tool_processes.len(), 1);
+        assert_eq!(run.tool_processes[0].status, ToolProcessStatus::Failed);
+        assert_eq!(run.tool_processes[0].exit_code, Some(101));
     }
 }

@@ -74,7 +74,12 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Evaluate { plan, profile, output, report } => {
+        Commands::Evaluate {
+            plan,
+            profile,
+            output,
+            report,
+        } => {
             tracing::info!(
                 plan = %plan.display(),
                 profile = %profile.display(),
@@ -92,17 +97,17 @@ async fn main() -> Result<()> {
             // Load evaluation plan, iterate test cases, run pipeline
             let suite_plan = pipeline::suite::SuitePlan::load(&plan)?;
             let base_dir = plan.parent().unwrap_or(std::path::Path::new("."));
-            
-            let result = pipeline::suite::run_suite(
-                &suite_plan,
-                &model_profile,
-                &output,
-                base_dir,
-            ).await?;
+
+            let result =
+                pipeline::suite::run_suite(&suite_plan, &model_profile, &output, base_dir).await?;
 
             std::fs::create_dir_all(&output)?;
-            let run_id = format!("{}-{}", result.suite_name, chrono::Utc::now().format("%Y%m%d-%H%M%S"));
-            
+            let run_id = format!(
+                "{}-{}",
+                result.suite_name,
+                chrono::Utc::now().format("%Y%m%d-%H%M%S")
+            );
+
             let report_types: Vec<&str> = report.split(',').collect();
             if report_types.contains(&"json") {
                 let json_path = output.join(format!("{}.json", run_id));
@@ -112,7 +117,7 @@ async fn main() -> Result<()> {
                 let md_path = output.join(format!("{}.md", run_id));
                 std::fs::write(&md_path, pipeline::suite::format_suite_markdown(&result))?;
             }
-            
+
             if result.failed > 0 {
                 std::process::exit(1);
             }
@@ -120,20 +125,43 @@ async fn main() -> Result<()> {
 
         Commands::Health { profile } => {
             let model_profile = model_vllm::profile::ModelProfile::load(&profile)?;
-            let client = model_vllm::client::VllmClient::new(model_profile.clone());
+            let client = model_vllm::backend::ModelClient::from_profile(model_profile.clone())?;
 
-            eprint!("Checking {} at {} ... ", model_profile.model.name, model_profile.resolve_endpoint());
+            eprint!(
+                "Checking {} at {} ... ",
+                model_profile.model.name,
+                model_profile.resolve_endpoint()
+            );
 
             match client.health_check().await {
                 Ok(true) => {
                     eprintln!("✓ healthy");
                     eprintln!("  Model: {}", model_profile.model.name);
-                    eprintln!("  Context: {} tokens", model_profile.context.model_context_tokens);
-                    eprintln!("  Prompt limit: {} tokens", model_profile.context.max_prompt_tokens);
-                    eprintln!("  Completion limit: {} tokens", model_profile.context.max_completion_tokens);
-                    eprintln!("  Safety reserve: {} tokens", model_profile.context.safety_tokens);
+                    eprintln!(
+                        "  Context: {} tokens",
+                        model_profile.context.model_context_tokens
+                    );
+                    eprintln!(
+                        "  Prompt limit: {} tokens",
+                        model_profile.context.max_prompt_tokens
+                    );
+                    eprintln!(
+                        "  Completion limit: {} tokens",
+                        model_profile.context.max_completion_tokens
+                    );
+                    eprintln!(
+                        "  Safety reserve: {} tokens",
+                        model_profile.context.safety_tokens
+                    );
                     eprintln!("  Concurrency: {}", model_profile.concurrency.max_in_flight);
-                    eprintln!("  Thinking: {}", if model_profile.thinking.enabled { "on" } else { "off" });
+                    eprintln!(
+                        "  Thinking: {}",
+                        if model_profile.thinking.enabled {
+                            "on"
+                        } else {
+                            "off"
+                        }
+                    );
                 }
                 Ok(false) => {
                     eprintln!("✗ unhealthy");
@@ -146,7 +174,11 @@ async fn main() -> Result<()> {
             }
         }
 
-        Commands::Run { task, profile, output } => {
+        Commands::Run {
+            task,
+            profile,
+            output,
+        } => {
             tracing::info!(
                 task = %task.display(),
                 profile = %profile.display(),
@@ -160,23 +192,42 @@ async fn main() -> Result<()> {
             let run_id = format!("run-{}", chrono::Utc::now().format("%Y%m%d-%H%M%S"));
 
             let (side_effect_tx, mut side_effect_rx) = tokio::sync::mpsc::channel(32);
-            let (mut controller, event_tx) = agent_core::run_controller::RunController::new(run_id.clone(), max_repairs, side_effect_tx);
+            let (mut controller, event_tx) = agent_core::run_controller::RunController::new(
+                run_id.clone(),
+                max_repairs,
+                side_effect_tx,
+            );
 
-            let mut executor = pipeline::executor::PipelineExecutor::new(model_profile, event_tx, output.clone(), run_id);
+            let mut executor = pipeline::executor::PipelineExecutor::new(
+                model_profile,
+                event_tx,
+                output.clone(),
+                run_id,
+            )?;
             executor.load_task_from_path(&task).await;
 
-            let controller_task = tokio::spawn(async move {
+            let mut controller_task = tokio::spawn(async move {
                 controller.run_to_completion().await;
                 controller
             });
 
-            while let Some(effect) = side_effect_rx.recv().await {
-                executor.handle(effect).await;
-            }
+            let controller = loop {
+                tokio::select! {
+                    Some(effect) = side_effect_rx.recv() => {
+                        executor.handle(effect).await;
+                    }
+                    result = &mut controller_task => {
+                        let controller = result?;
+                        side_effect_rx.close();
+                        while let Some(effect) = side_effect_rx.recv().await {
+                            executor.handle(effect).await;
+                        }
+                        break controller;
+                    }
+                }
+            };
 
-            let controller = controller_task.await;
-            
-            if let agent_core::state::PipelineState::Completed = controller.unwrap().state.state {
+            if let agent_core::state::PipelineState::Completed = controller.state.state {
                 eprintln!("✓ Task completed successfully.");
                 std::process::exit(0);
             } else {

@@ -3,7 +3,11 @@
 use agent_core::event::ValidationResult;
 
 /// Parse cargo check output to create a validation result.
-pub fn parse_cargo_check_output(exit_code: i32, stderr: &str, elapsed_secs: f64) -> ValidationResult {
+pub fn parse_cargo_check_output(
+    exit_code: i32,
+    stderr: &str,
+    elapsed_secs: f64,
+) -> ValidationResult {
     if exit_code == 0 {
         let warning_count = stderr.matches("warning").count() as u32;
         let mut result = super::pass(5, "build", elapsed_secs);
@@ -27,7 +31,12 @@ pub fn parse_cargo_check_output(exit_code: i32, stderr: &str, elapsed_secs: f64)
 }
 
 /// Parse cargo test output to create a validation result.
-pub fn parse_cargo_test_output(exit_code: i32, stdout: &str, stderr: &str, elapsed_secs: f64) -> ValidationResult {
+pub fn parse_cargo_test_output(
+    exit_code: i32,
+    stdout: &str,
+    stderr: &str,
+    elapsed_secs: f64,
+) -> ValidationResult {
     if exit_code == 0 {
         super::pass(6, "test", elapsed_secs)
     } else {

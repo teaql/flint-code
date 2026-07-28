@@ -13,7 +13,10 @@ pub fn validate_transport(result: &ModelResult) -> ValidationResult {
     }
 
     if result.finish_reason != "stop" {
-        errors.push(format!("finish_reason='{}', expected 'stop'", result.finish_reason));
+        errors.push(format!(
+            "finish_reason='{}', expected 'stop'",
+            result.finish_reason
+        ));
     }
 
     if result.content.trim().is_empty() {

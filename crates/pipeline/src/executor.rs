@@ -1,25 +1,27 @@
+use agent_core::error::AgentError;
 use agent_core::event::*;
 use agent_core::reducer::SideEffect;
-use agent_core::error::AgentError;
-use model_vllm::client::VllmClient;
+use artifact_store::RunArtifacts;
+use context_builder::{
+    TaskPackageData, build_generation_messages, build_repair_messages, calculate_budget,
+};
+use model_vllm::backend::ModelClient;
 use model_vllm::chat::ChatMessage;
 use model_vllm::profile::ModelProfile;
 use model_vllm::tokenizer;
-use context_builder::{TaskPackageData, build_generation_messages, build_repair_messages, calculate_budget};
-use validation;
-use artifact_store::RunArtifacts;
-use tokio::sync::mpsc;
-use tracing::{info, warn, error};
 use std::path::{Path, PathBuf};
+use tokio::sync::mpsc;
+use tracing::{error, info, warn};
+use validation;
 
 /// PipelineExecutor processes SideEffects and sends RunEvents back.
 /// Both TUI and headless CLI create one of these.
 pub struct PipelineExecutor {
     profile: ModelProfile,
-    client: VllmClient,
+    client: ModelClient,
     event_tx: mpsc::Sender<RunEvent>,
     task: Option<TaskPackageData>,
-    candidate: Option<String>,      // current candidate output
+    candidate: Option<String>, // current candidate output
     artifacts: Option<RunArtifacts>,
     runs_root: PathBuf,
     run_id: String,
@@ -27,6 +29,7 @@ pub struct PipelineExecutor {
     build_target: Option<String>,
     /// Optional patches to apply to generated Cargo.toml files
     patches: Option<std::collections::HashMap<String, String>>,
+    next_tool_process_id: u64,
 }
 
 impl PipelineExecutor {
@@ -35,9 +38,9 @@ impl PipelineExecutor {
         event_tx: mpsc::Sender<RunEvent>,
         runs_root: PathBuf,
         run_id: String,
-    ) -> Self {
-        let client = VllmClient::new(profile.clone());
-        Self {
+    ) -> Result<Self, AgentError> {
+        let client = ModelClient::from_profile(profile.clone())?;
+        Ok(Self {
             profile,
             client,
             event_tx,
@@ -48,7 +51,8 @@ impl PipelineExecutor {
             run_id,
             build_target: None,
             patches: None,
-        }
+            next_tool_process_id: 1,
+        })
     }
 
     /// Set the build target for code generation (e.g. "rust-lib-core")
@@ -76,7 +80,10 @@ impl PipelineExecutor {
             SideEffect::RequestConsent { action, .. } => {
                 // In headless mode: auto-deny
                 // In TUI mode: the TUI will handle this
-                self.send(RunEvent::ConsentDenied(format!("Auto-denied in headless: {action}"))).await;
+                self.send(RunEvent::ConsentDenied(format!(
+                    "Auto-denied in headless: {action}"
+                )))
+                .await;
             }
             SideEffect::None => {}
         }
@@ -85,20 +92,36 @@ impl PipelineExecutor {
     /// Load a task package from disk.
     pub async fn load_task_from_path(&mut self, path: &Path) {
         match TaskPackageData::load(path) {
-            Ok(task) => {
-                let pkg = TaskPackage {
-                    name: task.name.clone(),
-                    task_file: task.root.join("task.md"),
-                    files: task.files(),
-                    acceptance_spec: task.acceptance_spec.clone(),
-                };
-                self.task = Some(task);
-                self.send(RunEvent::TaskLoaded(pkg)).await;
-            }
+            Ok(task) => self.load_task_data(task, false).await,
             Err(e) => {
-                self.send(RunEvent::TaskLoadFailed(format!("Failed to load task: {e}"))).await;
+                self.send(RunEvent::TaskLoadFailed(format!(
+                    "Failed to load task: {e}"
+                )))
+                .await;
             }
         }
+    }
+
+    /// Load an in-memory task entered by an interactive client.
+    pub async fn load_prompt(&mut self, name: impl Into<String>, prompt: impl Into<String>) {
+        let workspace_root = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+        let task = TaskPackageData::from_prompt(name, prompt, workspace_root);
+        self.load_task_data(task, true).await;
+    }
+
+    async fn load_task_data(&mut self, task: TaskPackageData, in_memory: bool) {
+        let pkg = TaskPackage {
+            name: task.name.clone(),
+            task_file: if in_memory {
+                PathBuf::from("<interactive-input>")
+            } else {
+                task.root.join("task.md")
+            },
+            files: if in_memory { Vec::new() } else { task.files() },
+            acceptance_spec: task.acceptance_spec.clone(),
+        };
+        self.task = Some(task);
+        self.send(RunEvent::TaskLoaded(pkg)).await;
     }
 
     async fn load_task(&mut self, path: &Path) {
@@ -109,7 +132,8 @@ impl PipelineExecutor {
         let task = match &self.task {
             Some(t) => t,
             None => {
-                self.send(RunEvent::PreflightFailed("No task loaded".to_string())).await;
+                self.send(RunEvent::PreflightFailed("No task loaded".to_string()))
+                    .await;
                 return;
             }
         };
@@ -132,9 +156,12 @@ impl PipelineExecutor {
                 estimated_prompt,
                 self.profile.context.max_completion_tokens,
                 self.profile.context.safety_tokens,
-                estimated_prompt + self.profile.context.max_completion_tokens + self.profile.context.safety_tokens,
+                estimated_prompt
+                    + self.profile.context.max_completion_tokens
+                    + self.profile.context.safety_tokens,
                 self.profile.context.model_context_tokens,
-            ))).await;
+            )))
+            .await;
             return;
         }
 
@@ -162,7 +189,8 @@ impl PipelineExecutor {
             None => {
                 self.send(RunEvent::ModelFailed(AgentError::InfrastructureError {
                     detail: "No task loaded".to_string(),
-                })).await;
+                }))
+                .await;
                 return;
             }
         };
@@ -174,19 +202,25 @@ impl PipelineExecutor {
             .map(|(role, content)| ChatMessage { role, content })
             .collect();
 
-        info!(attempt, message_count = messages.len(), "Sending generation request");
+        info!(
+            attempt,
+            message_count = messages.len(),
+            "Sending generation request"
+        );
 
         // Save request to artifacts
         if let Some(artifacts) = &self.artifacts {
-            artifacts.save_attempt_file(
-                attempt,
-                "request.json",
-                &serde_json::json!({
-                    "attempt": attempt,
-                    "message_count": messages.len(),
-                    "model": self.profile.model.name,
-                }),
-            ).ok();
+            artifacts
+                .save_attempt_file(
+                    attempt,
+                    "request.json",
+                    &serde_json::json!({
+                        "attempt": attempt,
+                        "message_count": messages.len(),
+                        "model": self.profile.model.name,
+                    }),
+                )
+                .ok();
         }
 
         match self.client.chat(messages.clone()).await {
@@ -195,7 +229,9 @@ impl PipelineExecutor {
                 self.candidate = Some(result.content.clone());
                 if let Some(artifacts) = &self.artifacts {
                     artifacts.save_candidate(attempt, &result.content).ok();
-                    artifacts.save_attempt_file(attempt, "response.json", &result).ok();
+                    artifacts
+                        .save_attempt_file(attempt, "response.json", &result)
+                        .ok();
                 }
 
                 // MULTI-STEP LOOP: Generate included files
@@ -211,19 +247,27 @@ impl PipelineExecutor {
                         role: "user".to_string(),
                         content: format!("Please provide the contents of {}. Output ONLY the raw XML, nothing else. Do not use markdown blocks, just the raw XML text.", file),
                     });
-                    
+
                     match self.client.chat(sub_messages).await {
                         Ok(sub_result) => {
-                            let clean_content = sub_result.content
+                            self.send(RunEvent::ModelUsageRecorded(sub_result.usage.clone()))
+                                .await;
+                            let clean_content = sub_result
+                                .content
                                 .trim()
-                                .strip_prefix("```xml").unwrap_or(&sub_result.content)
-                                .strip_prefix("```").unwrap_or(&sub_result.content)
-                                .strip_suffix("```").unwrap_or(&sub_result.content)
+                                .strip_prefix("```xml")
+                                .unwrap_or(&sub_result.content)
+                                .strip_prefix("```")
+                                .unwrap_or(&sub_result.content)
+                                .strip_suffix("```")
+                                .unwrap_or(&sub_result.content)
                                 .trim()
                                 .to_string();
-                                
+
                             if let Some(artifacts) = &self.artifacts {
-                                artifacts.save_attempt_raw(attempt, &file, &clean_content).ok();
+                                artifacts
+                                    .save_attempt_raw(attempt, &file, &clean_content)
+                                    .ok();
                             }
                         }
                         Err(e) => {
@@ -237,11 +281,13 @@ impl PipelineExecutor {
             Err(err) => {
                 // Save error
                 if let Some(artifacts) = &self.artifacts {
-                    artifacts.save_attempt_file(
-                        attempt,
-                        "error.json",
-                        &serde_json::json!({ "error": err.to_string() }),
-                    ).ok();
+                    artifacts
+                        .save_attempt_file(
+                            attempt,
+                            "error.json",
+                            &serde_json::json!({ "error": err.to_string() }),
+                        )
+                        .ok();
                 }
                 self.send(RunEvent::ModelFailed(err)).await;
             }
@@ -254,7 +300,8 @@ impl PipelineExecutor {
             None => {
                 self.send(RunEvent::Failed(AgentError::InfrastructureError {
                     detail: "No candidate to validate".to_string(),
-                })).await;
+                }))
+                .await;
                 return;
             }
         };
@@ -262,7 +309,9 @@ impl PipelineExecutor {
         // L1: XML parse validation
         let parse_result = validation::validate_xml_parse(&candidate);
         if let Some(artifacts) = &self.artifacts {
-            artifacts.save_attempt_file(attempt, "local-validation.json", &parse_result).ok();
+            artifacts
+                .save_attempt_file(attempt, "local-validation.json", &parse_result)
+                .ok();
         }
 
         if !parse_result.passed {
@@ -275,7 +324,8 @@ impl PipelineExecutor {
             if let Some(spec) = &task.acceptance_spec {
                 let acceptance_result = validation::validate_acceptance(&candidate, spec);
                 if !acceptance_result.passed {
-                    self.send(RunEvent::ValidationCompleted(acceptance_result)).await;
+                    self.send(RunEvent::ValidationCompleted(acceptance_result))
+                        .await;
                     return;
                 }
             }
@@ -286,14 +336,16 @@ impl PipelineExecutor {
     }
 
     async fn domain_validate(&mut self, attempt: u8) {
-        let result = if let Some(artifacts) = &self.artifacts {
+        let model_dir = if let Some(artifacts) = &self.artifacts {
             // Write the candidate to a temporary model.xml in the attempt dir
-            let attempt_dir = artifacts.create_attempt(attempt).unwrap_or_else(|_| artifacts.root.clone());
+            let attempt_dir = artifacts
+                .create_attempt(attempt)
+                .unwrap_or_else(|_| artifacts.root.clone());
             let model_path = attempt_dir.join("main.xml");
             if let Some(c) = &self.candidate {
                 std::fs::write(&model_path, c).ok();
             }
-            
+
             let model_dir = attempt_dir.join("model");
             std::fs::create_dir_all(&model_dir).ok();
             if let Ok(entries) = std::fs::read_dir(&attempt_dir) {
@@ -302,23 +354,61 @@ impl PipelineExecutor {
                     if path.is_file() {
                         if let Some(ext) = path.extension() {
                             if ext == "xml" || ext == "ksml" {
-                                std::fs::copy(&path, model_dir.join(path.file_name().unwrap())).ok();
+                                std::fs::copy(&path, model_dir.join(path.file_name().unwrap()))
+                                    .ok();
                             }
                         }
                     }
                 }
             }
-            
+
             info!(attempt, path = %attempt_dir.display(), "Running domain validation");
-            validation::domain::validate_domain(&model_dir)
+            Some(model_dir)
         } else {
             // Fallback if no artifacts dir (shouldn't happen in normal runs)
             info!(attempt, "Domain validation skipped — no artifact dir");
+            None
+        };
+
+        let result = if let Some(model_dir) = model_dir {
+            let input = model_dir.to_string_lossy().to_string();
+            let start = std::time::Instant::now();
+            match self
+                .run_process("cargo", &["teaql", "--input", &input, "evaluate"], None)
+                .await
+            {
+                Ok(output) => {
+                    let stdout = String::from_utf8_lossy(&output.stdout);
+                    let stderr = String::from_utf8_lossy(&output.stderr);
+                    let combined = format!("{stdout}\n{stderr}");
+                    let mut result = validation::domain::parse_teaql_output(&combined);
+                    result.elapsed_secs = start.elapsed().as_secs_f64();
+                    if !output.status.success() && result.error_count == 0 {
+                        result.passed = false;
+                        result.error_count = 1;
+                        result.actionable_errors.push(format!(
+                            "Command failed with exit code: {:?}",
+                            output.status.code()
+                        ));
+                    }
+                    result
+                }
+                Err(error) => validation::fail(
+                    3,
+                    "domain",
+                    vec![error.to_string()],
+                    error.to_string(),
+                    start.elapsed().as_secs_f64(),
+                ),
+            }
+        } else {
             validation::pass(3, "domain", 0.0)
         };
 
         if let Some(artifacts) = &self.artifacts {
-            artifacts.save_attempt_file(attempt, "domain-validation.json", &result).ok();
+            artifacts
+                .save_attempt_file(attempt, "domain-validation.json", &result)
+                .ok();
         }
         self.send(RunEvent::ValidationCompleted(result)).await;
     }
@@ -334,10 +424,15 @@ impl PipelineExecutor {
         let build_target = match &self.build_target {
             Some(t) => t.clone(),
             None => {
-                info!(attempt, "Build validation — no build target configured, passing");
+                info!(
+                    attempt,
+                    "Build validation — no build target configured, passing"
+                );
                 let result = validation::pass(5, "build", 0.0);
                 if let Some(artifacts) = &self.artifacts {
-                    artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+                    artifacts
+                        .save_attempt_file(attempt, "build-validation.json", &result)
+                        .ok();
                 }
                 self.send(RunEvent::ValidationCompleted(result)).await;
                 return;
@@ -386,10 +481,12 @@ impl PipelineExecutor {
 
         // Step 1: Run cargo teaql to generate code
         info!(attempt, target = %build_target, dir = %attempt_dir.display(), "Running code generation");
-        let gen_result = tokio::process::Command::new("cargo")
-            .args(["teaql", "--input", "model", &build_target])
-            .current_dir(&attempt_dir)
-            .output()
+        let gen_result = self
+            .run_process(
+                "cargo",
+                &["teaql", "--input", "model", &build_target],
+                Some(&attempt_dir),
+            )
             .await;
 
         match &gen_result {
@@ -410,7 +507,9 @@ impl PipelineExecutor {
                     elapsed_secs: start.elapsed().as_secs_f64(),
                 };
                 if let Some(artifacts) = &self.artifacts {
-                    artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+                    artifacts
+                        .save_attempt_file(attempt, "build-validation.json", &result)
+                        .ok();
                 }
                 self.send(RunEvent::ValidationCompleted(result)).await;
                 return;
@@ -429,7 +528,9 @@ impl PipelineExecutor {
                     elapsed_secs: start.elapsed().as_secs_f64(),
                 };
                 if let Some(artifacts) = &self.artifacts {
-                    artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+                    artifacts
+                        .save_attempt_file(attempt, "build-validation.json", &result)
+                        .ok();
                 }
                 self.send(RunEvent::ValidationCompleted(result)).await;
                 return;
@@ -464,12 +565,19 @@ impl PipelineExecutor {
                 error_count: 1,
                 warning_count: 0,
                 suggestion_count: 0,
-                actionable_errors: vec!["Generated build/lib/Cargo.toml not found after code generation".to_string()],
-                diagnostic: format!("Expected {} but file does not exist", cargo_toml_path.display()),
+                actionable_errors: vec![
+                    "Generated build/lib/Cargo.toml not found after code generation".to_string(),
+                ],
+                diagnostic: format!(
+                    "Expected {} but file does not exist",
+                    cargo_toml_path.display()
+                ),
                 elapsed_secs: start.elapsed().as_secs_f64(),
             };
             if let Some(artifacts) = &self.artifacts {
-                artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+                artifacts
+                    .save_attempt_file(attempt, "build-validation.json", &result)
+                    .ok();
             }
             self.send(RunEvent::ValidationCompleted(result)).await;
             return;
@@ -477,11 +585,7 @@ impl PipelineExecutor {
 
         // Step 3: Run cargo check on the generated crate
         info!(attempt, dir = %lib_dir.display(), "Running cargo check");
-        let check_result = tokio::process::Command::new("cargo")
-            .args(["check"])
-            .current_dir(&lib_dir)
-            .output()
-            .await;
+        let check_result = self.run_process("cargo", &["check"], Some(&lib_dir)).await;
 
         let elapsed = start.elapsed().as_secs_f64();
 
@@ -489,10 +593,14 @@ impl PipelineExecutor {
             Ok(output) => {
                 let stderr = String::from_utf8_lossy(&output.stderr).to_string();
                 if output.status.success() {
-                    info!(attempt, elapsed, "Build validation passed — cargo check succeeded");
+                    info!(
+                        attempt,
+                        elapsed, "Build validation passed — cargo check succeeded"
+                    );
                     let mut r = validation::pass(5, "build", elapsed);
                     // Count warnings from stderr
-                    let warning_count = stderr.lines()
+                    let warning_count = stderr
+                        .lines()
                         .filter(|l| l.contains("warning[") || l.starts_with("warning:"))
                         .count() as u32;
                     r.warning_count = warning_count;
@@ -504,19 +612,22 @@ impl PipelineExecutor {
                     r
                 } else {
                     // Parse error count from stderr
-                    let error_count = stderr.lines()
-                        .filter(|l| l.contains("error["))
-                        .count() as u32;
+                    let error_count =
+                        stderr.lines().filter(|l| l.contains("error[")).count() as u32;
                     let error_count = std::cmp::max(error_count, 1);
 
                     // Extract actionable error lines
-                    let actionable_errors: Vec<String> = stderr.lines()
+                    let actionable_errors: Vec<String> = stderr
+                        .lines()
                         .filter(|l| l.starts_with("error"))
                         .take(10)
                         .map(|l| l.to_string())
                         .collect();
 
-                    warn!(attempt, error_count, "Build validation failed — cargo check errors");
+                    warn!(
+                        attempt,
+                        error_count, "Build validation failed — cargo check errors"
+                    );
                     ValidationResult {
                         level: 5,
                         level_name: "build".to_string(),
@@ -549,33 +660,47 @@ impl PipelineExecutor {
         // If lib check failed, report and return early
         if !result.passed {
             if let Some(artifacts) = &self.artifacts {
-                artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+                artifacts
+                    .save_attempt_file(attempt, "build-validation.json", &result)
+                    .ok();
             }
             self.send(RunEvent::ValidationCompleted(result)).await;
             return;
         }
 
-        let target = self.build_target.as_deref().unwrap_or("rust-lib-core");
+        let target = self
+            .build_target
+            .clone()
+            .unwrap_or_else(|| "rust-lib-core".to_string());
         let app_target = target.replace("-lib-core", "-app-console");
 
         // ── Step 4: Generate app target ──
         info!(attempt, "Generating {}", app_target);
-        let app_gen_result = tokio::process::Command::new("cargo")
-            .args(["teaql", "--input", "model", &app_target])
-            .current_dir(&attempt_dir)
-            .output()
+        let app_gen_result = self
+            .run_process(
+                "cargo",
+                &["teaql", "--input", "model", &app_target],
+                Some(&attempt_dir),
+            )
             .await;
 
         match &app_gen_result {
             Ok(output) if !output.status.success() => {
                 let stderr = String::from_utf8_lossy(&output.stderr);
-                warn!(attempt, "{} generation failed, continuing with lib-only result", app_target);
+                warn!(
+                    attempt,
+                    "{} generation failed, continuing with lib-only result", app_target
+                );
                 if let Some(artifacts) = &self.artifacts {
-                    artifacts.save_attempt_raw(attempt, "app-console-gen-error.txt", &stderr).ok();
+                    artifacts
+                        .save_attempt_raw(attempt, "app-console-gen-error.txt", &stderr)
+                        .ok();
                 }
                 // Still pass — lib compiled, app-console is bonus
                 if let Some(artifacts) = &self.artifacts {
-                    artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+                    artifacts
+                        .save_attempt_file(attempt, "build-validation.json", &result)
+                        .ok();
                 }
                 self.send(RunEvent::ValidationCompleted(result)).await;
                 return;
@@ -583,7 +708,9 @@ impl PipelineExecutor {
             Err(e) => {
                 warn!(attempt, %e, "Failed to run {} generation", app_target);
                 if let Some(artifacts) = &self.artifacts {
-                    artifacts.save_attempt_file(attempt, "build-validation.json", &result).ok();
+                    artifacts
+                        .save_attempt_file(attempt, "build-validation.json", &result)
+                        .ok();
                 }
                 self.send(RunEvent::ValidationCompleted(result)).await;
                 return;
@@ -600,10 +727,7 @@ impl PipelineExecutor {
             if let Ok(content) = std::fs::read_to_string(&app_cargo_toml) {
                 // Fix the path dependency to point to ./lib instead of ../<target>/lib
                 let old_path = format!(r#"path = "../{}/lib""#, target);
-                let fixed = content.replace(
-                    &old_path,
-                    r#"path = "./lib""#,
-                );
+                let fixed = content.replace(&old_path, r#"path = "./lib""#);
                 if fixed != content {
                     info!(attempt, "Fixed app-console dependency path");
                 }
@@ -647,17 +771,24 @@ impl PipelineExecutor {
             entity_names.iter().collect()
         };
 
-        info!(attempt, total = entity_names.len(), sampled = assist_entities.len(), "Running assist commands");
+        info!(
+            attempt,
+            total = entity_names.len(),
+            sampled = assist_entities.len(),
+            "Running assist commands"
+        );
 
         let assist_target_base = target.replace("-lib-core", "-assist-query");
         let mut assist_outputs = String::new();
         for entity in &assist_entities {
             let assist_target = format!("{}/{}", assist_target_base, entity);
             info!(attempt, entity = %entity, "Running assist command");
-            let assist_result = tokio::process::Command::new("cargo")
-                .args(["teaql", "--input", "model", &assist_target])
-                .current_dir(&attempt_dir)
-                .output()
+            let assist_result = self
+                .run_process(
+                    "cargo",
+                    &["teaql", "--input", "model", &assist_target],
+                    Some(&attempt_dir),
+                )
                 .await;
 
             if let Ok(output) = &assist_result {
@@ -668,7 +799,10 @@ impl PipelineExecutor {
                 } else {
                     stdout.to_string()
                 };
-                assist_outputs.push_str(&format!("### Assist: query/{}\n\n{}\n\n", entity, truncated));
+                assist_outputs.push_str(&format!(
+                    "### Assist: query/{}\n\n{}\n\n",
+                    entity, truncated
+                ));
             }
         }
 
@@ -684,27 +818,40 @@ impl PipelineExecutor {
         // Save assist outputs as artifact
         if !assist_outputs.is_empty() {
             if let Some(artifacts) = &self.artifacts {
-                artifacts.save_attempt_raw(attempt, "assist-output.md", &assist_outputs).ok();
+                artifacts
+                    .save_attempt_raw(attempt, "assist-output.md", &assist_outputs)
+                    .ok();
             }
         }
 
         // ── Step 7: Generate business logic via LLM ──
         if !entity_names.is_empty() && !assist_outputs.is_empty() {
-            info!(attempt, entities = entity_names.len(), "Generating business logic via LLM");
+            info!(
+                attempt,
+                entities = entity_names.len(),
+                "Generating business logic via LLM"
+            );
 
             let agents_md = std::fs::read_to_string(&agents_md_path).unwrap_or_default();
             let lib_rs = std::fs::read_to_string(build_dir.join("src/lib.rs")).unwrap_or_default();
 
-            let lib_cargo_toml = std::fs::read_to_string(build_dir.join("lib/Cargo.toml")).unwrap_or_default();
+            let lib_cargo_toml =
+                std::fs::read_to_string(build_dir.join("lib/Cargo.toml")).unwrap_or_default();
             let mut crate_name = "school_service_core".to_string(); // fallback
             if let Ok(value) = lib_cargo_toml.parse::<toml::Value>() {
-                if let Some(name) = value.get("package").and_then(|p| p.get("name")).and_then(|n| n.as_str()) {
+                if let Some(name) = value
+                    .get("package")
+                    .and_then(|p| p.get("name"))
+                    .and_then(|n| n.as_str())
+                {
                     crate_name = name.replace('-', "_");
                 }
             }
 
-            let template = std::fs::read_to_string("prompts/business-logic.txt")
-                .unwrap_or_else(|_| include_str!("../../../prompts/business-logic.txt").to_string());
+            let template =
+                std::fs::read_to_string("prompts/business-logic.txt").unwrap_or_else(|_| {
+                    include_str!("../../../prompts/business-logic.txt").to_string()
+                });
 
             let biz_prompt = template
                 .replace("{{agents_md}}", &agents_md)
@@ -715,7 +862,8 @@ impl PipelineExecutor {
             let biz_messages = vec![
                 ChatMessage {
                     role: "system".to_string(),
-                    content: "You generate Rust code. Output ONLY raw Rust source. No markdown.".to_string(),
+                    content: "You generate Rust code. Output ONLY raw Rust source. No markdown."
+                        .to_string(),
                 },
                 ChatMessage {
                     role: "user".to_string(),
@@ -725,22 +873,34 @@ impl PipelineExecutor {
 
             match self.client.chat(biz_messages).await {
                 Ok(biz_result) => {
-                    let biz_code = biz_result.content
+                    self.send(RunEvent::ModelUsageRecorded(biz_result.usage.clone()))
+                        .await;
+                    let biz_code = biz_result
+                        .content
                         .trim()
-                        .strip_prefix("```rust").unwrap_or(&biz_result.content)
-                        .strip_prefix("```").unwrap_or(&biz_result.content)
-                        .strip_suffix("```").unwrap_or(&biz_result.content)
+                        .strip_prefix("```rust")
+                        .unwrap_or(&biz_result.content)
+                        .strip_prefix("```")
+                        .unwrap_or(&biz_result.content)
+                        .strip_suffix("```")
+                        .unwrap_or(&biz_result.content)
                         .trim()
                         .to_string();
 
-                    info!(attempt, tokens = biz_result.usage.completion_tokens, "Business logic generated");
+                    info!(
+                        attempt,
+                        tokens = biz_result.usage.completion_tokens,
+                        "Business logic generated"
+                    );
 
                     // Write generated business logic
                     let lib_rs_path = build_dir.join("src/lib.rs");
                     std::fs::write(&lib_rs_path, &biz_code).ok();
 
                     if let Some(artifacts) = &self.artifacts {
-                        artifacts.save_attempt_raw(attempt, "business-logic.rs", &biz_code).ok();
+                        artifacts
+                            .save_attempt_raw(attempt, "business-logic.rs", &biz_code)
+                            .ok();
                     }
                 }
                 Err(e) => {
@@ -752,24 +912,31 @@ impl PipelineExecutor {
         // ── Step 8: Final compile check on app workspace (with one repair attempt) ──
         let lib_rs_path = build_dir.join("src/lib.rs");
         for compile_attempt in 0..2u8 {
-            info!(attempt, compile_attempt, "Running cargo check on app workspace");
-            let app_check = tokio::process::Command::new("cargo")
-                .args(["check"])
-                .current_dir(&build_dir)
-                .output()
+            info!(
+                attempt,
+                compile_attempt, "Running cargo check on app workspace"
+            );
+            let app_check = self
+                .run_process("cargo", &["check"], Some(&build_dir))
                 .await;
 
             match &app_check {
                 Ok(output) if output.status.success() => {
                     let total_elapsed = start.elapsed().as_secs_f64();
-                    info!(attempt, total_elapsed, "Full build validation passed — lib + app workspace");
+                    info!(
+                        attempt,
+                        total_elapsed, "Full build validation passed — lib + app workspace"
+                    );
                     let mut r = validation::pass(5, "build", total_elapsed);
                     r.diagnostic = format!(
                         "rust-lib-core: cargo check ✓\nrust-app-console: cargo check ✓\nassist entities: {:?}\nbusiness logic: generated (compile attempt {})",
-                        entity_names, compile_attempt + 1
+                        entity_names,
+                        compile_attempt + 1
                     );
                     if let Some(artifacts) = &self.artifacts {
-                        artifacts.save_attempt_file(attempt, "build-validation.json", &r).ok();
+                        artifacts
+                            .save_attempt_file(attempt, "build-validation.json", &r)
+                            .ok();
                     }
                     self.send(RunEvent::ValidationCompleted(r)).await;
                     return;
@@ -780,8 +947,10 @@ impl PipelineExecutor {
                     let current_code = std::fs::read_to_string(&lib_rs_path).unwrap_or_default();
                     warn!(attempt, "App workspace failed — attempting LLM repair");
 
-                    let template = std::fs::read_to_string("prompts/repair.txt")
-                        .unwrap_or_else(|_| include_str!("../../../prompts/repair.txt").to_string());
+                    let template =
+                        std::fs::read_to_string("prompts/repair.txt").unwrap_or_else(|_| {
+                            include_str!("../../../prompts/repair.txt").to_string()
+                        });
 
                     let fix_prompt = template
                         .replace("{{current_code}}", &current_code)
@@ -790,7 +959,9 @@ impl PipelineExecutor {
                     let fix_messages = vec![
                         ChatMessage {
                             role: "system".to_string(),
-                            content: "You fix Rust compilation errors. Output ONLY raw Rust source.".to_string(),
+                            content:
+                                "You fix Rust compilation errors. Output ONLY raw Rust source."
+                                    .to_string(),
                         },
                         ChatMessage {
                             role: "user".to_string(),
@@ -800,17 +971,29 @@ impl PipelineExecutor {
 
                     match self.client.chat(fix_messages).await {
                         Ok(fix_result) => {
-                            let fixed = fix_result.content
+                            self.send(RunEvent::ModelUsageRecorded(fix_result.usage.clone()))
+                                .await;
+                            let fixed = fix_result
+                                .content
                                 .trim()
-                                .strip_prefix("```rust").unwrap_or(&fix_result.content)
-                                .strip_prefix("```").unwrap_or(&fix_result.content)
-                                .strip_suffix("```").unwrap_or(&fix_result.content)
+                                .strip_prefix("```rust")
+                                .unwrap_or(&fix_result.content)
+                                .strip_prefix("```")
+                                .unwrap_or(&fix_result.content)
+                                .strip_suffix("```")
+                                .unwrap_or(&fix_result.content)
                                 .trim()
                                 .to_string();
-                            info!(attempt, tokens = fix_result.usage.completion_tokens, "LLM repair generated");
+                            info!(
+                                attempt,
+                                tokens = fix_result.usage.completion_tokens,
+                                "LLM repair generated"
+                            );
                             std::fs::write(&lib_rs_path, &fixed).ok();
                             if let Some(artifacts) = &self.artifacts {
-                                artifacts.save_attempt_raw(attempt, "business-logic-repaired.rs", &fixed).ok();
+                                artifacts
+                                    .save_attempt_raw(attempt, "business-logic-repaired.rs", &fixed)
+                                    .ok();
                             }
                             // Loop will retry cargo check
                         }
@@ -826,18 +1009,18 @@ impl PipelineExecutor {
 
         // If we get here, all compile attempts failed
         let total_elapsed = start.elapsed().as_secs_f64();
-        let final_stderr = tokio::process::Command::new("cargo")
-            .args(["check"])
-            .current_dir(&build_dir)
-            .output()
+        let final_stderr = self
+            .run_process("cargo", &["check"], Some(&build_dir))
             .await
             .map(|o| String::from_utf8_lossy(&o.stderr).to_string())
             .unwrap_or_default();
 
-        let error_count = final_stderr.lines()
+        let error_count = final_stderr
+            .lines()
             .filter(|l| l.contains("error["))
             .count() as u32;
-        let actionable_errors: Vec<String> = final_stderr.lines()
+        let actionable_errors: Vec<String> = final_stderr
+            .lines()
             .filter(|l| l.starts_with("error"))
             .take(10)
             .map(|l| l.to_string())
@@ -851,12 +1034,17 @@ impl PipelineExecutor {
             warning_count: 0,
             suggestion_count: 0,
             actionable_errors,
-            diagnostic: format!("rust-lib-core: ✓\nrust-app-console: FAILED (after LLM repair)\n\n{}", final_stderr),
+            diagnostic: format!(
+                "rust-lib-core: ✓\nrust-app-console: FAILED (after LLM repair)\n\n{}",
+                final_stderr
+            ),
             elapsed_secs: total_elapsed,
         };
 
         if let Some(artifacts) = &self.artifacts {
-            artifacts.save_attempt_file(attempt, "build-validation.json", &final_result).ok();
+            artifacts
+                .save_attempt_file(attempt, "build-validation.json", &final_result)
+                .ok();
         }
         self.send(RunEvent::ValidationCompleted(final_result)).await;
     }
@@ -867,7 +1055,8 @@ impl PipelineExecutor {
             None => {
                 self.send(RunEvent::Failed(AgentError::InfrastructureError {
                     detail: "No task for repair".to_string(),
-                })).await;
+                }))
+                .await;
                 return;
             }
         };
@@ -877,7 +1066,8 @@ impl PipelineExecutor {
             None => {
                 self.send(RunEvent::Failed(AgentError::InfrastructureError {
                     detail: "No candidate to repair".to_string(),
-                })).await;
+                }))
+                .await;
                 return;
             }
         };
@@ -914,27 +1104,34 @@ impl PipelineExecutor {
                     Err(e) => {
                         self.send(RunEvent::Failed(AgentError::InfrastructureError {
                             detail: format!("Failed to write final artifact: {e}"),
-                        })).await;
+                        }))
+                        .await;
                     }
                 }
             } else {
                 // No artifact store, just report success with a fake path
-                self.send(RunEvent::FinalArtifactWritten(PathBuf::from("<no-artifact-store>"))).await;
+                self.send(RunEvent::FinalArtifactWritten(PathBuf::from(
+                    "<no-artifact-store>",
+                )))
+                .await;
             }
         } else {
             self.send(RunEvent::Failed(AgentError::InfrastructureError {
                 detail: "No candidate to finalize".to_string(),
-            })).await;
+            }))
+            .await;
         }
     }
 
     async fn record_failure(&mut self, error: &str) {
         error!(%error, "Recording failure");
         if let Some(artifacts) = &self.artifacts {
-            artifacts.save_summary(&serde_json::json!({
-                "status": "failed",
-                "error": error,
-            })).ok();
+            artifacts
+                .save_summary(&serde_json::json!({
+                    "status": "failed",
+                    "error": error,
+                }))
+                .ok();
         }
     }
 
@@ -944,8 +1141,39 @@ impl PipelineExecutor {
         }
     }
 
+    async fn run_process(
+        &mut self,
+        program: &str,
+        args: &[&str],
+        current_dir: Option<&Path>,
+    ) -> std::io::Result<std::process::Output> {
+        let id = self.next_tool_process_id;
+        self.next_tool_process_id += 1;
+        let command = render_command(program, args);
+        self.send(RunEvent::ToolProcessStarted { id, command })
+            .await;
+
+        let mut process = tokio::process::Command::new(program);
+        process.args(args);
+        if let Some(directory) = current_dir {
+            process.current_dir(directory);
+        }
+        let result = process.output().await;
+        let (success, exit_code) = match &result {
+            Ok(output) => (output.status.success(), output.status.code()),
+            Err(_) => (false, None),
+        };
+        self.send(RunEvent::ToolProcessFinished {
+            id,
+            success,
+            exit_code,
+        })
+        .await;
+        result
+    }
+
     /// Get the VllmClient reference for health checks
-    pub fn client(&self) -> &VllmClient {
+    pub fn client(&self) -> &ModelClient {
         &self.client
     }
 
@@ -963,6 +1191,26 @@ impl PipelineExecutor {
     pub fn set_last_errors(&mut self, _errors: Vec<String>) {
         // Will be used when building repair messages
         // For now this is a placeholder for richer repair context
+    }
+}
+
+fn render_command(program: &str, args: &[&str]) -> String {
+    std::iter::once(program)
+        .chain(args.iter().copied())
+        .map(shell_quote)
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn shell_quote(value: &str) -> String {
+    if !value.is_empty()
+        && value
+            .chars()
+            .all(|character| character.is_ascii_alphanumeric() || "_-./:".contains(character))
+    {
+        value.to_string()
+    } else {
+        format!("'{}'", value.replace('\'', "'\"'\"'"))
     }
 }
 
@@ -995,7 +1243,7 @@ fn extract_includes(content: &str) -> Vec<String> {
 /// Parse entity names from the generated AGENTS.md.
 ///
 /// The generated AGENTS.md contains a markdown table like:
-/// ```
+/// ```text
 /// | entity-name | display-name |
 /// |-------------|--------------|
 /// | school | School |
@@ -1037,4 +1285,18 @@ fn parse_entity_names_from_agents_md(content: &str) -> Vec<String> {
         }
     }
     entities
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rendered_command_quotes_arguments_with_shell_metacharacters() {
+        assert_eq!(
+            render_command("cargo", &["teaql", "--input", "model path", "evaluate"]),
+            "cargo teaql --input 'model path' evaluate"
+        );
+        assert_eq!(shell_quote("it's"), "'it'\"'\"'s'");
+    }
 }

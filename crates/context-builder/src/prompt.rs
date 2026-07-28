@@ -7,12 +7,30 @@ pub fn build_system_prompt() -> String {
         .unwrap_or_else(|_| include_str!("../../../prompts/system.txt").to_string())
 }
 
+/// Build messages for a lightweight conversational request that must not enter
+/// the artifact generation and validation pipeline.
+pub fn build_chat_messages(question: &str, model_name: &str) -> Vec<(String, String)> {
+    vec![
+        (
+            "system".to_string(),
+            format!(
+                "You are Flint, an AI coding agent built by TeaQL for isolated and \
+air-gapped development environments. The configured model backend is \
+{model_name}. Never claim to be a Xiaomi assistant, MiMo assistant, or a \
+product-support bot. Answer the user's question directly and concisely. This \
+is a conversational request: do not emit a TeaQL artifact, XML model, plan, \
+or validation instructions. If repository changes are required, tell the \
+user to submit an explicit development task."
+            ),
+        ),
+        ("user".to_string(), question.to_string()),
+    ]
+}
+
 /// Build the complete prompt messages for a generation request.
 /// Returns Vec of (role, content) pairs.
 pub fn build_generation_messages(task: &TaskPackageData) -> Vec<(String, String)> {
-    let mut messages = vec![
-        ("system".to_string(), build_system_prompt()),
-    ];
+    let mut messages = vec![("system".to_string(), build_system_prompt())];
 
     // Add grammar example if present
     if let Some(example) = &task.grammar_example {
@@ -44,9 +62,7 @@ pub fn build_repair_messages(
     actionable_errors: &[String],
     diagnostic_limit: usize,
 ) -> Vec<(String, String)> {
-    let mut messages = vec![
-        ("system".to_string(), build_system_prompt()),
-    ];
+    let mut messages = vec![("system".to_string(), build_system_prompt())];
 
     if let Some(example) = &task.grammar_example {
         messages.push((
@@ -66,24 +82,74 @@ pub fn build_repair_messages(
     messages.push(("user".to_string(), task.task_content.clone()));
 
     // Rejected candidate
-    messages.push((
-        "assistant".to_string(),
-        rejected_candidate.to_string(),
-    ));
+    messages.push(("assistant".to_string(), rejected_candidate.to_string()));
 
     // Truncated diagnostic with actionable errors only
     let template = std::fs::read_to_string("prompts/repair-domain.txt")
         .unwrap_or_else(|_| include_str!("../../../prompts/repair-domain.txt").to_string());
-    
     let mut errors_str = String::new();
     for err in actionable_errors {
-        let truncated: String = err.chars().take(diagnostic_limit / actionable_errors.len().max(1)).collect();
+        let truncated: String = err
+            .chars()
+            .take(diagnostic_limit / actionable_errors.len().max(1))
+            .collect();
         errors_str.push_str(&format!("- {truncated}\n"));
     }
-    
+
     let diagnostic = template.replace("{{errors}}", &errors_str);
 
     messages.push(("user".to_string(), diagnostic));
 
     messages
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    fn chat_prompt_pins_flint_identity_and_disables_artifact_output() {
+        let messages = build_chat_messages("Who are you?", "mimo-v2.5-pro");
+
+        assert_eq!(messages.len(), 2);
+        assert!(messages[0].1.contains("You are Flint"));
+        assert!(messages[0].1.contains("mimo-v2.5-pro"));
+        assert!(messages[0].1.contains("do not emit a TeaQL artifact"));
+        assert_eq!(
+            messages[1],
+            ("user".to_string(), "Who are you?".to_string())
+        );
+    }
+
+    #[test]
+    fn generation_prompt_is_an_explicit_teaql_ksml_contract() {
+        let prompt = build_system_prompt();
+
+        assert!(prompt.contains("TeaQL KSML"));
+        assert!(prompt.contains("exactly one `<root>`"));
+        assert!(prompt.contains("Never output GraphQL"));
+        assert!(prompt.contains("Output raw XML only"));
+        assert!(prompt.contains("<book _name=\"Book\""));
+    }
+
+    #[test]
+    fn interactive_generation_request_uses_the_teaql_system_contract() {
+        let task = TaskPackageData::from_prompt(
+            "interactive-task",
+            "Build a small library system with about five objects.",
+            PathBuf::from("."),
+        );
+
+        let messages = build_generation_messages(&task);
+
+        assert_eq!(messages[0].0, "system");
+        assert!(messages[0].1.contains("Your only output"));
+        assert!(messages[0].1.contains("TeaQL KSML"));
+        assert_eq!(messages.last().expect("user message").0, "user");
+        assert_eq!(
+            messages.last().expect("user message").1,
+            "Build a small library system with about five objects."
+        );
+    }
 }

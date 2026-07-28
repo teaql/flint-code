@@ -1,14 +1,15 @@
 use anyhow::Result;
-use reqwest::Client;
-use std::time::{Duration, Instant};
-use tracing::{info, warn, error};
 use futures::StreamExt;
+use reqwest::Client;
+use serde::Deserialize;
+use std::time::{Duration, Instant};
 use tokio::sync::mpsc;
+use tracing::{error, info, warn};
 
-use agent_core::event::{ModelResult, TokenUsage};
-use agent_core::error::AgentError;
-use crate::profile::ModelProfile;
 use crate::chat::*;
+use crate::profile::ModelProfile;
+use agent_core::error::AgentError;
+use agent_core::event::{ModelResult, TokenUsage};
 
 /// Events during streaming
 #[derive(Debug, Clone)]
@@ -30,6 +31,19 @@ pub struct VllmClient {
     profile: ModelProfile,
 }
 
+/// Basic model metadata returned by an OpenAI-compatible `/models` endpoint.
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub struct AvailableModel {
+    pub id: String,
+    #[serde(default)]
+    pub owned_by: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct ModelList {
+    data: Vec<AvailableModel>,
+}
+
 impl VllmClient {
     pub fn new(profile: ModelProfile) -> Self {
         let client = Client::builder()
@@ -41,11 +55,8 @@ impl VllmClient {
 
     /// Check if the model service is healthy
     pub async fn health_check(&self) -> Result<bool> {
-        let base = self.profile.resolve_endpoint();
-        let base = base.trim_end_matches('/');
-        let url = format!("{}/v1/models", base);
-        let resp = self.client
-            .get(&url)
+        let resp = self
+            .authorize(self.client.get(self.profile.models_url()))
             .timeout(Duration::from_secs(self.profile.timeouts.health_secs))
             .send()
             .await;
@@ -53,6 +64,30 @@ impl VllmClient {
             Ok(r) => Ok(r.status().is_success()),
             Err(_) => Ok(false),
         }
+    }
+
+    /// List model IDs exposed by the configured endpoint.
+    pub async fn list_models(&self) -> std::result::Result<Vec<AvailableModel>, AgentError> {
+        let response = self
+            .authorize(self.client.get(self.profile.models_url()))
+            .timeout(Duration::from_secs(self.profile.timeouts.health_secs))
+            .send()
+            .await
+            .map_err(|error| AgentError::InfrastructureError {
+                detail: format!("Failed to list models: {error}"),
+            })?;
+        let status = response.status().as_u16();
+        if !response.status().is_success() {
+            let body = response.text().await.unwrap_or_default();
+            return Err(AgentError::TransportError { status, body });
+        }
+        response
+            .json::<ModelList>()
+            .await
+            .map(|models| models.data)
+            .map_err(|error| AgentError::InfrastructureError {
+                detail: format!("Failed to parse model list: {error}"),
+            })
     }
 
     /// Build a ChatRequest from messages
@@ -65,21 +100,28 @@ impl VllmClient {
             max_tokens: self.profile.context.max_completion_tokens,
             stream: false,
             chat_template_kwargs: if !self.profile.thinking.enabled {
-                Some(ChatTemplateKwargs { enable_thinking: false })
+                Some(ChatTemplateKwargs {
+                    enable_thinking: false,
+                })
             } else {
-                Some(ChatTemplateKwargs { enable_thinking: true })
+                Some(ChatTemplateKwargs {
+                    enable_thinking: true,
+                })
             },
         }
     }
 
     /// Non-streaming chat completion. Returns ModelResult.
-    pub async fn chat(&self, messages: Vec<ChatMessage>) -> std::result::Result<ModelResult, AgentError> {
+    pub async fn chat(
+        &self,
+        messages: Vec<ChatMessage>,
+    ) -> std::result::Result<ModelResult, AgentError> {
         let request = self.build_request(messages);
         let url = self.profile.chat_url();
         let start = Instant::now();
 
-        let response = self.client
-            .post(&url)
+        let response = self
+            .authorize(self.client.post(&url))
             .json(&request)
             .send()
             .await
@@ -104,30 +146,48 @@ impl VllmClient {
             return Err(AgentError::TransportError { status, body });
         }
 
-        let chat_response: ChatResponse = response
-            .json()
-            .await
-            .map_err(|e| AgentError::InfrastructureError {
-                detail: format!("Failed to parse response JSON: {e}"),
+        let chat_response: ChatResponse =
+            response
+                .json()
+                .await
+                .map_err(|e| AgentError::InfrastructureError {
+                    detail: format!("Failed to parse response JSON: {e}"),
+                })?;
+
+        let choice =
+            chat_response
+                .choices
+                .first()
+                .ok_or_else(|| AgentError::InfrastructureError {
+                    detail: "No choices in response".to_string(),
+                })?;
+
+        let message = choice
+            .message
+            .as_ref()
+            .ok_or_else(|| AgentError::InfrastructureError {
+                detail: "No message in choice".to_string(),
             })?;
-
-        let choice = chat_response.choices.first().ok_or_else(|| {
-            AgentError::InfrastructureError { detail: "No choices in response".to_string() }
-        })?;
-
-        let message = choice.message.as_ref().ok_or_else(|| {
-            AgentError::InfrastructureError { detail: "No message in choice".to_string() }
-        })?;
 
         let content = message.content.clone().unwrap_or_default();
         let reasoning_content = message.reasoning_content.clone();
-        let finish_reason = choice.finish_reason.clone().unwrap_or_else(|| "unknown".to_string());
+        let finish_reason = choice
+            .finish_reason
+            .clone()
+            .unwrap_or_else(|| "unknown".to_string());
 
-        let usage = chat_response.usage.map(|u| TokenUsage {
-            prompt_tokens: u.prompt_tokens,
-            completion_tokens: u.completion_tokens,
-            total_tokens: u.total_tokens,
-        }).unwrap_or(TokenUsage { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 });
+        let usage = chat_response
+            .usage
+            .map(|u| TokenUsage {
+                prompt_tokens: u.prompt_tokens,
+                completion_tokens: u.completion_tokens,
+                total_tokens: u.total_tokens,
+            })
+            .unwrap_or(TokenUsage {
+                prompt_tokens: 0,
+                completion_tokens: 0,
+                total_tokens: 0,
+            });
 
         info!(
             status,
@@ -140,7 +200,9 @@ impl VllmClient {
 
         // Only finish_reason=stop with non-empty content is valid
         if finish_reason != "stop" {
-            return Err(AgentError::IncompleteGeneration { reason: finish_reason });
+            return Err(AgentError::IncompleteGeneration {
+                reason: finish_reason,
+            });
         }
 
         if content.trim().is_empty() {
@@ -170,8 +232,8 @@ impl VllmClient {
 
         let (tx, rx) = mpsc::channel(256);
 
-        let response = self.client
-            .post(&url)
+        let response = self
+            .authorize(self.client.post(&url))
             .json(&request)
             .send()
             .await
@@ -227,7 +289,9 @@ impl VllmClient {
                                         reasoning_content: reasoning,
                                         finish_reason: last_finish_reason.clone(),
                                         usage: last_usage.clone(),
-                                    }).await.ok();
+                                    })
+                                    .await
+                                    .ok();
                                     return;
                                 }
 
@@ -246,7 +310,9 @@ impl VllmClient {
                                             }
                                             if let Some(r) = &delta.reasoning_content {
                                                 full_reasoning.push_str(r);
-                                                tx.send(StreamEvent::ReasoningToken(r.clone())).await.ok();
+                                                tx.send(StreamEvent::ReasoningToken(r.clone()))
+                                                    .await
+                                                    .ok();
                                             }
                                         }
                                     }
@@ -255,20 +321,28 @@ impl VllmClient {
                         }
                     }
                     Err(e) => {
-                        tx.send(StreamEvent::Error(format!("Stream error: {e}"))).await.ok();
+                        tx.send(StreamEvent::Error(format!("Stream error: {e}")))
+                            .await
+                            .ok();
                         return;
                     }
                 }
             }
 
             // Stream ended without [DONE]
-            let reasoning = if full_reasoning.is_empty() { None } else { Some(full_reasoning) };
+            let reasoning = if full_reasoning.is_empty() {
+                None
+            } else {
+                Some(full_reasoning)
+            };
             tx.send(StreamEvent::Done {
                 content: full_content,
                 reasoning_content: reasoning,
                 finish_reason: last_finish_reason,
                 usage: last_usage,
-            }).await.ok();
+            })
+            .await
+            .ok();
         });
 
         Ok(rx)
@@ -277,5 +351,12 @@ impl VllmClient {
     /// Get the profile
     pub fn profile(&self) -> &ModelProfile {
         &self.profile
+    }
+
+    fn authorize(&self, request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
+        match self.profile.resolve_api_key() {
+            Some(key) => request.bearer_auth(key),
+            None => request,
+        }
     }
 }

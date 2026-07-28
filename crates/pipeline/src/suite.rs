@@ -1,15 +1,15 @@
-use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
 use anyhow::Result;
 use chrono::Utc;
-use tracing::{info, warn, error};
+use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
 use tokio::sync::mpsc;
+use tracing::{error, info, warn};
 
-use agent_core::state::PipelineState;
-use agent_core::run_controller::RunController;
-use agent_core::reducer::SideEffect;
-use model_vllm::profile::ModelProfile;
 use crate::executor::PipelineExecutor;
+use agent_core::reducer::SideEffect;
+use agent_core::run_controller::RunController;
+use agent_core::state::PipelineState;
+use model_vllm::profile::ModelProfile;
 
 /// Evaluation suite plan loaded from TOML
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -26,25 +26,31 @@ pub struct SuiteMetadata {
     pub version: String,
 }
 
-fn default_version() -> String { "1.0".to_string() }
+fn default_version() -> String {
+    "1.0".to_string()
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TestCase {
     pub name: String,
-    pub task: String,         // relative path to task package dir
+    pub task: String, // relative path to task package dir
     pub workflow: String,
     #[serde(default)]
-    pub build_target: Option<String>,  // e.g. "rust-lib-core"
+    pub build_target: Option<String>, // e.g. "rust-lib-core"
     #[serde(default = "default_expect")]
-    pub expect: String,       // "completed", "preflight_rejected", "failed"
+    pub expect: String, // "completed", "preflight_rejected", "failed"
     #[serde(default = "default_timeout")]
     pub timeout_secs: u64,
     #[serde(default)]
     pub patches: Option<std::collections::HashMap<String, String>>,
 }
 
-fn default_expect() -> String { "completed".to_string() }
-fn default_timeout() -> u64 { 600 }
+fn default_expect() -> String {
+    "completed".to_string()
+}
+fn default_timeout() -> u64 {
+    600
+}
 
 /// Result of running a single test case
 #[derive(Debug, Clone, Serialize)]
@@ -56,8 +62,8 @@ pub struct CaseResult {
     pub pass_at_1: bool,
     pub pass_after_repair: bool,
     pub attempts: u8,
-    pub prompt_tokens: u32,
-    pub completion_tokens: u32,
+    pub prompt_tokens: u64,
+    pub completion_tokens: u64,
     pub elapsed_secs: f64,
     pub error: Option<String>,
 }
@@ -91,7 +97,7 @@ pub async fn run_suite(
     plan: &SuitePlan,
     profile: &ModelProfile,
     output_root: &Path,
-    base_dir: &Path,   // base directory for resolving task paths
+    base_dir: &Path, // base directory for resolving task paths
 ) -> Result<SuiteResult> {
     let suite_start = Utc::now();
     let mut case_results = Vec::new();
@@ -100,7 +106,11 @@ pub async fn run_suite(
     let mut pass_after_repair_count = 0;
 
     info!(suite = %plan.suite.name, cases = plan.cases.len(), "Starting evaluation suite");
-    eprintln!("\n═══ Suite: {} ({} cases) ═══\n", plan.suite.name, plan.cases.len());
+    eprintln!(
+        "\n═══ Suite: {} ({} cases) ═══\n",
+        plan.suite.name,
+        plan.cases.len()
+    );
 
     for (i, case) in plan.cases.iter().enumerate() {
         eprintln!("[{}/{}] {} ...", i + 1, plan.cases.len(), case.name);
@@ -111,11 +121,8 @@ pub async fn run_suite(
 
         // Create channels
         let (side_effect_tx, mut side_effect_rx) = mpsc::channel::<SideEffect>(64);
-        let (mut controller, event_tx) = RunController::new(
-            run_id.clone(),
-            profile.run.max_repairs,
-            side_effect_tx,
-        );
+        let (mut controller, event_tx) =
+            RunController::new(run_id.clone(), profile.run.max_repairs, side_effect_tx);
 
         // Create executor
         let mut executor = PipelineExecutor::new(
@@ -123,7 +130,7 @@ pub async fn run_suite(
             event_tx.clone(),
             output_root.to_path_buf(),
             run_id.clone(),
-        );
+        )?;
 
         // Load the task
         executor.load_task_from_path(&task_path).await;
@@ -131,7 +138,7 @@ pub async fn run_suite(
         if let Some(ref target) = case.build_target {
             executor.set_build_target(target.clone());
         }
-        
+
         if let Some(ref patches) = case.patches {
             executor.set_patches(patches.clone());
         }
@@ -180,9 +187,15 @@ pub async fn run_suite(
         let pass_at_1 = actual_state == "completed" && controller.state.current_attempt <= 1;
         let pass_after_repair = actual_state == "completed" && controller.state.current_attempt > 1;
 
-        if pass { pass_count += 1; }
-        if pass_at_1 { pass_at_1_count += 1; }
-        if pass_after_repair { pass_after_repair_count += 1; }
+        if pass {
+            pass_count += 1;
+        }
+        if pass_at_1 {
+            pass_at_1_count += 1;
+        }
+        if pass_after_repair {
+            pass_after_repair_count += 1;
+        }
 
         let error = match &controller.state.state {
             PipelineState::Failed { error } => Some(error.clone()),
@@ -190,8 +203,10 @@ pub async fn run_suite(
         };
 
         let status_icon = if pass { "✓" } else { "✗" };
-        eprintln!("  {} {} (expected: {}, got: {}, {:.1}s)",
-            status_icon, case.name, case.expect, actual_state, elapsed);
+        eprintln!(
+            "  {} {} (expected: {}, got: {}, {:.1}s)",
+            status_icon, case.name, case.expect, actual_state, elapsed
+        );
 
         case_results.push(CaseResult {
             name: case.name.clone(),
@@ -201,8 +216,8 @@ pub async fn run_suite(
             pass_at_1,
             pass_after_repair,
             attempts: controller.state.current_attempt,
-            prompt_tokens: 0, // TODO: capture from model result
-            completion_tokens: 0,
+            prompt_tokens: controller.state.token_totals.input_tokens,
+            completion_tokens: controller.state.token_totals.output_tokens,
             elapsed_secs: elapsed,
             error,
         });
@@ -210,7 +225,10 @@ pub async fn run_suite(
 
     let suite_end = Utc::now();
     let total = plan.cases.len();
-    let completed_count = case_results.iter().filter(|c| c.actual == "completed").count();
+    let completed_count = case_results
+        .iter()
+        .filter(|c| c.actual == "completed")
+        .count();
 
     let result = SuiteResult {
         suite_name: plan.suite.name.clone(),
@@ -220,8 +238,16 @@ pub async fn run_suite(
         total_cases: total,
         passed: pass_count,
         failed: total - pass_count,
-        pass_at_1_rate: if completed_count > 0 { pass_at_1_count as f64 / completed_count as f64 } else { 0.0 },
-        pass_after_repair_rate: if completed_count > 0 { pass_after_repair_count as f64 / completed_count as f64 } else { 0.0 },
+        pass_at_1_rate: if completed_count > 0 {
+            pass_at_1_count as f64 / completed_count as f64
+        } else {
+            0.0
+        },
+        pass_after_repair_rate: if completed_count > 0 {
+            pass_after_repair_count as f64 / completed_count as f64
+        } else {
+            0.0
+        },
         cases: case_results,
     };
 
@@ -229,7 +255,10 @@ pub async fn run_suite(
     eprintln!("\n═══ Results ═══");
     eprintln!("Passed: {}/{}", pass_count, total);
     eprintln!("Pass@1: {:.0}%", result.pass_at_1_rate * 100.0);
-    eprintln!("Pass after repair: {:.0}%", result.pass_after_repair_rate * 100.0);
+    eprintln!(
+        "Pass after repair: {:.0}%",
+        result.pass_after_repair_rate * 100.0
+    );
 
     Ok(result)
 }
@@ -247,17 +276,30 @@ pub fn format_suite_markdown(result: &SuiteResult) -> String {
     md.push_str(&format!("| Total cases | {} |\n", result.total_cases));
     md.push_str(&format!("| Passed | {} |\n", result.passed));
     md.push_str(&format!("| Failed | {} |\n", result.failed));
-    md.push_str(&format!("| Pass@1 | {:.0}% |\n", result.pass_at_1_rate * 100.0));
-    md.push_str(&format!("| Pass after repair | {:.0}% |\n\n", result.pass_after_repair_rate * 100.0));
+    md.push_str(&format!(
+        "| Pass@1 | {:.0}% |\n",
+        result.pass_at_1_rate * 100.0
+    ));
+    md.push_str(&format!(
+        "| Pass after repair | {:.0}% |\n\n",
+        result.pass_after_repair_rate * 100.0
+    ));
 
     md.push_str("## Cases\n\n");
     md.push_str("| # | Name | Expected | Actual | Pass | Attempts | Time |\n");
     md.push_str("|---|------|----------|--------|------|----------|------|\n");
     for (i, case) in result.cases.iter().enumerate() {
         let pass_icon = if case.pass { "✓" } else { "✗" };
-        md.push_str(&format!("| {} | {} | {} | {} | {} | {} | {:.1}s |\n",
-            i + 1, case.name, case.expected, case.actual, pass_icon,
-            case.attempts, case.elapsed_secs));
+        md.push_str(&format!(
+            "| {} | {} | {} | {} | {} | {} | {:.1}s |\n",
+            i + 1,
+            case.name,
+            case.expected,
+            case.actual,
+            pass_icon,
+            case.attempts,
+            case.elapsed_secs
+        ));
     }
 
     if result.cases.iter().any(|c| c.error.is_some()) {
