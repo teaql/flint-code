@@ -112,10 +112,18 @@ pub fn step_patch_cargo_toml(ctx: &BuildContext) -> Result<(), ValidationResult>
                 }
             }
             if fixed != content {
-                info!(attempt = ctx.attempt, "Patched rusqlite version in generated Cargo.toml");
+                info!(attempt = ctx.attempt, "Patched generated Cargo.toml");
                 std::fs::write(&cargo_toml_path, &fixed).ok();
             }
         }
+        
+        // Prevent cargo from recursing up and finding the parent flint-code workspace
+        // by creating a workspace root in the build dir
+        let build_cargo_toml = ctx.build_dir().join("Cargo.toml");
+        if !build_cargo_toml.exists() {
+            std::fs::write(&build_cargo_toml, "[workspace]\nmembers = [\"lib\"]\nresolver = \"2\"\n").ok();
+        }
+        
         Ok(())
     } else {
         warn!(
@@ -243,9 +251,14 @@ pub fn step_fix_app_dependencies(ctx: &BuildContext) {
     if app_cargo_toml.exists() {
         if let Ok(content) = std::fs::read_to_string(&app_cargo_toml) {
             let old_path = format!(r#"path = "../{}/lib""#, ctx.build_target);
-            let fixed = content.replace(&old_path, r#"path = "./lib""#);
+            let mut fixed = content.replace(&old_path, r#"path = "./lib""#);
+            
+            if !fixed.contains("[workspace]") {
+                fixed.push_str("\n\n[workspace]\nmembers = [\"lib\"]\nresolver = \"2\"\n");
+            }
+            
             if fixed != content {
-                info!(attempt = ctx.attempt, "Fixed app-console dependency path");
+                info!(attempt = ctx.attempt, "Fixed app-console dependency path and workspace");
             }
             std::fs::write(&app_cargo_toml, &fixed).ok();
         }
