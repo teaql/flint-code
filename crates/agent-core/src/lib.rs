@@ -19,4 +19,5 @@ pub mod generic_controller;
 
 pub use generic_state::*;
 pub use generic_event::*;
+pub use generic_reducer::GenericSideEffect;
 pub use generic_controller::*;

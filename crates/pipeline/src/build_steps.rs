@@ -374,7 +374,7 @@ pub async fn step_generate_business_logic(
 
     let lib_cargo_toml =
         std::fs::read_to_string(build_dir.join("lib/Cargo.toml")).unwrap_or_default();
-    let mut crate_name = "school_service_core".to_string();
+    let mut crate_name = "unknown_service_core".to_string();
     if let Ok(value) = lib_cargo_toml.parse::<toml::Value>() {
         if let Some(name) = value
             .get("package")

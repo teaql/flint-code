@@ -2,7 +2,7 @@ use crate::generic_event::GenericRunEvent;
 use crate::generic_reducer::{reduce, GenericSideEffect};
 use crate::generic_state::{GenericPipelineState, GenericRunState};
 use tokio::sync::mpsc;
-use tracing::{debug, info};
+use tracing::{debug, error, info};
 
 pub struct GenericRunController {
     pub state: GenericRunState,
@@ -39,6 +39,10 @@ impl GenericRunController {
             // 2. Dispatch side effect to the executor
             if !matches!(effect, GenericSideEffect::None) {
                 if self.side_effect_tx.send(effect).await.is_err() {
+                    error!("Side effect channel closed unexpectedly; marking run as failed");
+                    self.state.state = GenericPipelineState::Failed {
+                        error: "Side effect channel closed".to_string(),
+                    };
                     break;
                 }
             }
@@ -48,6 +52,14 @@ impl GenericRunController {
                 info!(state = ?self.state.state, "Agent loop reached terminal state");
                 break;
             }
+        }
+
+        // If the event channel closed while we're still active, mark as failed
+        if self.state.is_active() {
+            error!("Event channel closed while state is still active; marking run as failed");
+            self.state.state = GenericPipelineState::Failed {
+                error: "Event channel closed prematurely".to_string(),
+            };
         }
     }
 }

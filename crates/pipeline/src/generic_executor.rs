@@ -4,7 +4,7 @@ use anyhow::Result;
 use model_vllm::client::VllmClient;
 use model_vllm::chat::ChatMessage;
 use model_vllm::profile::ModelProfile;
-use std::path::{PathBuf, Path};
+use std::path::PathBuf;
 use tokio::sync::mpsc;
 use tracing::{error, info, warn};
 
@@ -91,9 +91,9 @@ If you have finished the task, output <done>summary of work</done>.";
 
                 self.send(GenericRunEvent::PreflightPassed(
                     agent_core::event::ContextBudget {
-                        model_context: 64000,
-                        prompt_limit: 32000,
-                        completion_limit: 8000,
+                        model_context: self.profile.context.model_context_tokens,
+                        prompt_limit: self.profile.context.max_prompt_tokens,
+                        completion_limit: self.profile.context.max_completion_tokens,
                         safety_reserve: 1000,
                         estimated_prompt: 1000,
                     },
@@ -146,7 +146,8 @@ If you have finished the task, output <done>summary of work</done>.";
                 // Wrap the model's command in a bash invocation so pipes and redirection work
                 let args = vec!["-c", &command];
                 
-                match tool_runner::execute_command("bash", &args, cwd, 60).await {
+                let timeout = self.profile.timeouts.model_secs.max(120);
+                match tool_runner::execute_command("bash", &args, cwd, timeout).await {
                     Ok(res) => {
                         let out = format!("STDOUT:\n{}\nSTDERR:\n{}", res.stdout, res.stderr);
                         self.messages.push(ChatMessage {
@@ -178,10 +179,7 @@ If you have finished the task, output <done>summary of work</done>.";
             }
             GenericSideEffect::WriteFinalArtifact => {
                 info!("Writing final artifact");
-                self.send(GenericRunEvent::TaskCompleted {
-                    summary: "Done".to_string(),
-                })
-                .await;
+                self.send(GenericRunEvent::ArtifactWritten).await;
             }
             GenericSideEffect::RecordFailure { error } => {
                 error!(%error, "Recording failure");

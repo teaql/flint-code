@@ -1,6 +1,5 @@
 use crate::error::AgentError;
-use crate::event::{ContextBudget, ExportConsent, ModelResult, TaskPackage, TokenUsage};
-use serde::{Deserialize, Serialize};
+use crate::event::{ContextBudget, ExportConsent, ModelResult, TaskPackage};
 
 #[derive(Debug)]
 pub enum GenericRunEvent {
@@ -34,6 +33,8 @@ pub enum GenericRunEvent {
     
     /// Model indicated task completion
     TaskCompleted { summary: String },
+    /// Final artifact has been written to disk
+    ArtifactWritten,
     
     CancelRequested,
     Failed(AgentError),

@@ -1,5 +1,4 @@
 use agent_core::event::ContextBudget;
-use serde::{Deserialize, Serialize};
 
 /// Build a context budget from profile values and estimated prompt size.
 pub fn calculate_budget(

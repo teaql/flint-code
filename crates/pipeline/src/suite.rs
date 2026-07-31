@@ -1,9 +1,9 @@
 use anyhow::Result;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use tokio::sync::mpsc;
-use tracing::{error, info, warn};
+use tracing::{info, warn};
 
 use crate::executor::PipelineExecutor;
 use agent_core::reducer::SideEffect;
@@ -143,26 +143,52 @@ pub async fn run_suite(
             executor.set_patches(patches.clone());
         }
 
-        // Run controller and executor concurrently
+        // Run controller and executor concurrently, with timeout
         let mut controller_handle = tokio::spawn(async move {
             controller.run_to_completion().await;
             controller
         });
 
-        // Process side effects until controller finishes
-        let controller = loop {
-            tokio::select! {
-                Some(effect) = side_effect_rx.recv() => {
-                    executor.handle(effect).await;
-                }
-                res = &mut controller_handle => {
-                    let c = res?;
-                    side_effect_rx.close();
-                    while let Some(effect) = side_effect_rx.recv().await {
+        // Process side effects until controller finishes (with timeout)
+        let timeout_duration = std::time::Duration::from_secs(case.timeout_secs);
+        let execution_result = tokio::time::timeout(timeout_duration, async {
+            loop {
+                tokio::select! {
+                    Some(effect) = side_effect_rx.recv() => {
                         executor.handle(effect).await;
                     }
-                    break c;
+                    res = &mut controller_handle => {
+                        let c = res?;
+                        side_effect_rx.close();
+                        while let Some(effect) = side_effect_rx.recv().await {
+                            executor.handle(effect).await;
+                        }
+                        return Ok::<_, anyhow::Error>(c);
+                    }
                 }
+            }
+        }).await;
+
+        let controller = match execution_result {
+            Ok(inner) => inner?,
+            Err(_) => {
+                warn!(case = %case.name, timeout_secs = case.timeout_secs, "Test case timed out");
+                let elapsed = case_start.elapsed().as_secs_f64();
+                case_results.push(CaseResult {
+                    name: case.name.clone(),
+                    expected: case.expect.clone(),
+                    actual: "timed_out".to_string(),
+                    pass: false,
+                    pass_at_1: false,
+                    pass_after_repair: false,
+                    attempts: 0,
+                    prompt_tokens: 0,
+                    completion_tokens: 0,
+                    elapsed_secs: elapsed,
+                    error: Some(format!("Timed out after {}s", case.timeout_secs)),
+                });
+                eprintln!("  ✗ {} (timed out after {}s)", case.name, case.timeout_secs);
+                continue;
             }
         };
 

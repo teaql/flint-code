@@ -4,7 +4,7 @@ use reqwest::Client;
 use serde::Deserialize;
 use std::time::{Duration, Instant};
 use tokio::sync::mpsc;
-use tracing::{error, info, warn};
+use tracing::info;
 
 use crate::chat::*;
 use crate::profile::ModelProfile;

@@ -1,6 +1,5 @@
-use crate::error::AgentError;
 use crate::generic_event::GenericRunEvent;
-use crate::generic_state::{GenericPipelineState, GenericPlanStepStatus, GenericRunState};
+use crate::generic_state::{GenericPipelineState, GenericRunState};
 use tracing::{error, info, warn};
 
 #[derive(Debug, Clone)]
@@ -33,7 +32,7 @@ pub fn reduce(state: &mut GenericRunState, event: GenericRunEvent) -> GenericSid
             state.state = GenericPipelineState::Failed { error: reason.clone() };
             GenericSideEffect::RecordFailure { error: reason }
         }
-        (GenericPipelineState::Preflight, GenericRunEvent::PreflightPassed(budget)) => {
+        (GenericPipelineState::Preflight, GenericRunEvent::PreflightPassed(_budget)) => {
             info!("Preflight passed, starting reasoning loop");
             state.state = GenericPipelineState::Reasoning;
             GenericSideEffect::Reason
@@ -43,27 +42,32 @@ pub fn reduce(state: &mut GenericRunState, event: GenericRunEvent) -> GenericSid
             state.state = GenericPipelineState::Failed { error: reason.clone() };
             GenericSideEffect::RecordFailure { error: reason }
         }
-        (GenericPipelineState::Reasoning, GenericRunEvent::ModelCompleted(result)) => {
-            // In a real controller, we'd parse the model's output here to see if it emitted a tool call.
-            // For now, the RunController parses it and emits either ToolCallRequested or TaskCompleted.
+        (GenericPipelineState::Reasoning, GenericRunEvent::ModelCompleted(_result)) => {
+            // The executor parses the model's output and emits ToolCallRequested or TaskCompleted.
             GenericSideEffect::None
+        }
+        (GenericPipelineState::Reasoning, GenericRunEvent::ModelFailed(err)) => {
+            error!(%err, "Model failed during reasoning");
+            state.state = GenericPipelineState::Failed { error: err.to_string() };
+            GenericSideEffect::RecordFailure { error: err.to_string() }
         }
         (GenericPipelineState::Reasoning, GenericRunEvent::ToolCallRequested { command }) => {
             info!(%command, "Model requested tool call");
             state.state = GenericPipelineState::ExecutingTool { tool_call: command.clone() };
             GenericSideEffect::ExecuteTool { command }
         }
-        (GenericPipelineState::Reasoning, GenericRunEvent::TaskCompleted { summary }) => {
+        (GenericPipelineState::Reasoning, GenericRunEvent::TaskCompleted { summary: _ }) => {
             info!("Model completed the task");
             state.state = GenericPipelineState::Finalizing;
             GenericSideEffect::WriteFinalArtifact
         }
-        (GenericPipelineState::ExecutingTool { .. }, GenericRunEvent::ToolExecutionFinished { success, output, .. }) => {
+        (GenericPipelineState::ExecutingTool { .. }, GenericRunEvent::ToolExecutionFinished { success, output: _, .. }) => {
             info!(success, "Tool execution finished");
             state.state = GenericPipelineState::Reasoning;
             GenericSideEffect::Reason
         }
-        (GenericPipelineState::Finalizing, GenericRunEvent::TaskCompleted { .. }) => {
+        (GenericPipelineState::Finalizing, GenericRunEvent::ArtifactWritten) => {
+            info!("Artifact written, run completed");
             state.state = GenericPipelineState::Completed;
             GenericSideEffect::None
         }

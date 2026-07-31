@@ -100,13 +100,7 @@ impl GenericRunState {
     }
 
     pub fn is_active(&self) -> bool {
-        !matches!(
-            self.state,
-            GenericPipelineState::Idle
-                | GenericPipelineState::Completed
-                | GenericPipelineState::Failed { .. }
-                | GenericPipelineState::Cancelled
-        )
+        self.state.is_active()
     }
 
     pub fn mark_step(&mut self, status: GenericPlanStepStatus) {

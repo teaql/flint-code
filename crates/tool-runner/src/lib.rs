@@ -9,7 +9,7 @@ use anyhow::Result;
 use std::time::Duration;
 use thiserror::Error;
 use tokio::process::Command;
-use tracing::{info, warn};
+use tracing::info;
 
 #[derive(Debug, Error)]
 pub enum ToolError {

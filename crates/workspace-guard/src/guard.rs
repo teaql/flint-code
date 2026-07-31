@@ -1,7 +1,6 @@
 use anyhow::Result;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
-use tracing::warn;
 
 use crate::manifest::Manifest;
 
