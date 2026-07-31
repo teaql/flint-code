@@ -364,6 +364,25 @@ If you have finished the task, output <done>summary of work</done>.";
             }
             GenericSideEffect::Reason => {
                 self.turn_count += 1;
+                
+                // Max Turns Guard
+                if self.turn_count > 100 {
+                    self.send(GenericRunEvent::ModelFailed(
+                        agent_core::error::AgentError::InfrastructureError {
+                            detail: format!("Max turns guard exceeded ({} turns). The agent appears to be stuck in a loop.", self.turn_count),
+                        }
+                    )).await;
+                    return;
+                }
+
+                // Repair Loop Intelligence: warn the agent to change strategy
+                if self.turn_count > 0 && self.turn_count % 15 == 0 {
+                    self.messages.push(model_vllm::chat::ChatMessage {
+                        role: "user".to_string(),
+                        content: format!("[SYSTEM WARNING: You have reached turn {}. If you are paginating through a large file or repeating the same failed command, STOP. Use `grep` to find specific keywords, or check the file's head/tail, instead of reading line by line. Change your strategy immediately.]", self.turn_count),
+                    });
+                }
+
                 info!(turn = self.turn_count, "Executing reasoning phase with LLM");
                 
                 // Clean up ephemeral messages from previous turns
