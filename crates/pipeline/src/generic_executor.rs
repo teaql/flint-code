@@ -245,7 +245,13 @@ If you have finished the task, output <done>summary of work</done>.";
                 match self.client.chat(self.messages.clone()).await {
                     Ok(result) => {
                         let content = result.content.clone();
-                        info!(turn = self.turn_count, content_len = content.len(), "Model responded");
+                        let was_truncated = result.finish_reason == "length";
+                        info!(
+                            turn = self.turn_count,
+                            content_len = content.len(),
+                            truncated = was_truncated,
+                            "Model responded"
+                        );
                         
                         self.messages.push(ChatMessage {
                             role: "assistant".to_string(),
@@ -265,6 +271,23 @@ If you have finished the task, output <done>summary of work</done>.";
                         } else if content.contains("<done>") {
                             self.send(GenericRunEvent::TaskCompleted {
                                 summary: content,
+                            }).await;
+                        } else if was_truncated {
+                            // Output was truncated by max_completion_tokens.
+                            // Tell the model to continue with shorter output.
+                            warn!(
+                                turn = self.turn_count,
+                                "Model output truncated (finish_reason=length). Prompting for shorter continuation."
+                            );
+                            self.messages.push(ChatMessage {
+                                role: "user".to_string(),
+                                content: "Your output was truncated because it exceeded the token limit. \
+                                    Please continue with shorter commands. If you were writing a large file, \
+                                    split it into smaller parts or use multiple <execute> blocks.".to_string(),
+                            });
+                            self.send(GenericRunEvent::ToolExecutionFinished {
+                                id: 0, success: true, exit_code: Some(0),
+                                output: "Truncation recovery: prompted for shorter output".to_string(),
                             }).await;
                         } else {
                             warn!(turn = self.turn_count, "Model output didn't contain tool call or done tag. Prompting to continue.");

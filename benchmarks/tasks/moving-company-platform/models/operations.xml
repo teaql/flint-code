@@ -48,13 +48,13 @@
                _constant="true"
                _identifier="code">
     <_value id="1001" name="Scheduled" code="SCHEDULED"
-            color="#F59E0B" display_order="1" progress="0"/>
+            color="#F59E0B" display_order="1" progress="10"/>
     <_value id="1002" name="In Progress" code="IN_PROGRESS"
             color="#2563EB" display_order="2" progress="50"/>
     <_value id="1003" name="Completed" code="COMPLETED"
             color="#16A34A" display_order="3" progress="100"/>
     <_value id="1004" name="Cancelled" code="CANCELLED"
-            color="#6B7280" display_order="4" progress="0"/>
+            color="#6B7280" display_order="4" progress="-1"/>
   </move_status>
   
   <moving_job _name="Moving Job"

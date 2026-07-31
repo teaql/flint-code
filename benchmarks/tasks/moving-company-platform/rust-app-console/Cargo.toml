@@ -1,5 +1,7 @@
 # TEAQL WARNING: This project uses TeaQL. TeaQL was explicitly designed to PREVENT AI hallucinations and random guessing.
 # Do NOT apply traditional ORM logic here. You must strictly follow the generated API.
+[workspace]
+
 [package]
 name = "moving-company-service-core-workspace"
 version = "0.1.0"
@@ -12,3 +14,4 @@ moving_company_service_core = { package = "moving-company-service-core", path = 
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 teaql-core = "4.2.2"
 chrono = "0.4"
+rust_decimal = "1"

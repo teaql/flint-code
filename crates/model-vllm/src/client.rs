@@ -198,17 +198,30 @@ impl VllmClient {
             "Model response received"
         );
 
-        // Only finish_reason=stop with non-empty content is valid
-        if finish_reason != "stop" {
-            return Err(AgentError::IncompleteGeneration {
-                reason: finish_reason,
-            });
+        // finish_reason=stop is ideal; finish_reason=length means the model hit
+        // max_completion_tokens but may have produced usable partial output.
+        // We accept both and let the executor decide what to do with the content.
+        match finish_reason.as_str() {
+            "stop" | "length" => {}
+            other => {
+                return Err(AgentError::IncompleteGeneration {
+                    reason: other.to_string(),
+                });
+            }
         }
 
         if content.trim().is_empty() {
             return Err(AgentError::IncompleteGeneration {
-                reason: "empty content with finish_reason=stop".to_string(),
+                reason: format!("empty content with finish_reason={}", finish_reason),
             });
+        }
+
+        // Warn when output was truncated so the executor can adapt
+        if finish_reason == "length" {
+            tracing::warn!(
+                completion_tokens = usage.completion_tokens,
+                "Model output truncated (finish_reason=length); partial content returned"
+            );
         }
 
         Ok(ModelResult {
