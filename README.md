@@ -128,6 +128,36 @@ node scripts/model-agent-probe.mjs
 The probe never edits the repository. It writes a detailed `report.json` to
 its temporary workspace.
 
+### Bounded Skill Composition Probe
+
+Test whether MiMo can turn one immutable task goal and a bounded candidate
+skill set into a dependency-safe execution plan:
+
+```bash
+MIMO_API_KEY="<key>" \
+FLINTCODE_MODEL="mimo-v2.5-pro" \
+node scripts/mimo-skill-planner-probe.mjs \
+  --output /tmp/mimo-skill-plan-report.json
+```
+
+The probe includes phase-incompatible and unauthorized distractor skills. It
+checks goal preservation, skill identity, phase and permission constraints,
+input/output bindings, DAG validity, and acceptance-criterion coverage. Use
+`--dry-run` to inspect the static test payload without contacting a model.
+
+Add `--with-tools` to run the hierarchical DAG test. After the model creates
+the Skill TaskGraph, a second bounded request expands every selected Skill into
+a Tool ExecutionGraph. The local validator checks Skill-to-Tool allowlists,
+permissions, bindings, exports, traceability, cycles, and the merged topological
+execution waves:
+
+```bash
+MIMO_API_KEY="<key>" \
+node scripts/mimo-skill-planner-probe.mjs \
+  --with-tools \
+  --output /tmp/mimo-hierarchical-dag-report.json
+```
+
 ### Configuration
 
 Profiles are stored in `profiles/`. Example:
