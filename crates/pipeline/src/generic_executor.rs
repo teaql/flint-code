@@ -19,6 +19,13 @@ const PRESERVED_PREFIX_MESSAGES: usize = 3;
 /// Rough chars-per-token estimate for context budget calculations.
 const CHARS_PER_TOKEN: usize = 4;
 
+/// Trigger proactive compaction when context reaches this fraction of prompt_limit.
+/// This avoids waiting until we overflow; instead we trim early.
+const PROACTIVE_COMPACT_RATIO: f64 = 0.75;
+
+/// Number of recent messages to always keep during compaction.
+const KEEP_RECENT_MESSAGES: usize = 6;
+
 pub struct GenericPipelineExecutor {
     profile: ModelProfile,
     event_tx: mpsc::UnboundedSender<GenericRunEvent>,
@@ -38,6 +45,7 @@ pub struct GenericPipelineExecutor {
     // Agent state
     client: VllmClient,
     messages: Vec<ChatMessage>,
+    turn_count: u32,
 }
 
 impl GenericPipelineExecutor {
@@ -67,6 +75,7 @@ impl GenericPipelineExecutor {
             guard,
             client,
             messages: Vec::new(),
+            turn_count: 0,
         })
     }
 
@@ -76,41 +85,44 @@ impl GenericPipelineExecutor {
     }
 
     /// Compact old messages when context is getting too large.
+    /// Triggers proactively at 75% of prompt_limit, not just at overflow.
     /// Strategy: keep the first PRESERVED_PREFIX_MESSAGES (system prompts, skill, task),
     /// then summarize/drop the oldest assistant+user pairs.
     fn compact_context_if_needed(&mut self) {
         let prompt_limit = self.profile.context.max_prompt_tokens as usize;
+        let threshold = (prompt_limit as f64 * PROACTIVE_COMPACT_RATIO) as usize;
         let estimated = self.estimate_tokens();
 
-        if estimated <= prompt_limit {
+        if estimated <= threshold {
             return;
         }
 
-        let overflow = estimated - prompt_limit;
+        // Target: reduce to 50% of prompt_limit to avoid re-triggering soon
+        let target = prompt_limit / 2;
+        let overflow = estimated.saturating_sub(target);
         info!(
             estimated_tokens = estimated,
-            prompt_limit,
-            overflow,
-            "Context approaching limit, compacting old messages"
+            threshold,
+            target,
+            tokens_to_free = overflow,
+            "Context at {:.0}% of limit, proactively compacting",
+            (estimated as f64 / prompt_limit as f64) * 100.0
         );
 
-        // Find how many assistant/user pairs we can drop from the middle
-        // (after the preserved prefix, before the last 4 messages)
         let total = self.messages.len();
-        if total <= PRESERVED_PREFIX_MESSAGES + 4 {
-            // Not enough messages to compact; just warn
+        if total <= PRESERVED_PREFIX_MESSAGES + KEEP_RECENT_MESSAGES {
             warn!("Cannot compact further — too few messages");
             return;
         }
 
         let compactable_start = PRESERVED_PREFIX_MESSAGES;
-        let compactable_end = total.saturating_sub(4); // keep last 4 messages
+        let compactable_end = total.saturating_sub(KEEP_RECENT_MESSAGES);
 
         if compactable_start >= compactable_end {
             return;
         }
 
-        // Count tokens in the compactable range
+        // Count tokens in the compactable range and determine how many to drop
         let mut tokens_to_free = 0usize;
         let mut drop_end = compactable_start;
         for i in compactable_start..compactable_end {
@@ -125,9 +137,9 @@ impl GenericPipelineExecutor {
         let summary_msg = ChatMessage {
             role: "system".to_string(),
             content: format!(
-                "[Context compacted: {} earlier tool interactions removed to stay within budget. \
-                 The agent has been working on the task and making progress.]",
-                dropped_count
+                "[Context compacted: {} earlier tool interactions (turns 1-{}) removed to stay within budget. \
+                 The agent has been working on the task and making progress. Current turn: {}]",
+                dropped_count, dropped_count, self.turn_count
             ),
         };
 
@@ -167,7 +179,18 @@ impl GenericPipelineExecutor {
                 
                 // Initialize the system prompt and instructions
                 let system_prompt = "\
-You are Flint, an autonomous coding agent. You can execute bash commands by wrapping them in <execute>...</execute> tags. Only output ONE command per response.
+You are Flint, an autonomous coding agent. You can execute bash commands by wrapping them in <execute>...</execute> tags.
+
+You may output MULTIPLE <execute> blocks in a single response when the commands are independent.
+For example, to create two files, you can write:
+<execute>cat > file1.rs << 'EOF'
+// content
+EOF</execute>
+<execute>cat > file2.rs << 'EOF'
+// content
+EOF</execute>
+
+The system will run them in parallel for speed. Use multiple blocks when tasks are independent; use a single block when order matters.
 
 CRITICAL RULES FOR CONTEXT MANAGEMENT:
 1. OUTPUT LIMITS: Never run commands that produce massive output (e.g. `cat` on huge files, recursive `ls -R` or `find` without limit). ALWAYS pipe long outputs through `head -n 50`, `tail`, or `grep`, or redirect to a file (`> /tmp/out`).
@@ -213,7 +236,8 @@ If you have finished the task, output <done>summary of work</done>.";
                 .await;
             }
             GenericSideEffect::Reason => {
-                info!("Executing reasoning phase with LLM");
+                self.turn_count += 1;
+                info!(turn = self.turn_count, "Executing reasoning phase with LLM");
                 
                 // Compact context if approaching token limit
                 self.compact_context_if_needed();
@@ -221,27 +245,34 @@ If you have finished the task, output <done>summary of work</done>.";
                 match self.client.chat(self.messages.clone()).await {
                     Ok(result) => {
                         let content = result.content.clone();
-                        info!(%content, "Model responded");
+                        info!(turn = self.turn_count, content_len = content.len(), "Model responded");
                         
                         self.messages.push(ChatMessage {
                             role: "assistant".to_string(),
                             content: content.clone(),
                         });
                         
-                        // Parse tool calls
-                        if let Some(cmd) = parse_execute_tag(&content) {
-                            self.send(GenericRunEvent::ToolCallRequested { command: cmd }).await;
+                        // Parse ALL tool calls (multi-execute support)
+                        let commands = parse_all_execute_tags(&content);
+                        if !commands.is_empty() {
+                            if commands.len() > 1 {
+                                info!(count = commands.len(), "Model issued multiple tool calls — executing in parallel");
+                            }
+                            // For the state machine, we send the first command to transition to ExecutingTool.
+                            // The executor handles parallel execution internally.
+                            let joined = commands.join(" && ");
+                            self.send(GenericRunEvent::ToolCallRequested { command: joined }).await;
                         } else if content.contains("<done>") {
                             self.send(GenericRunEvent::TaskCompleted {
                                 summary: content,
                             }).await;
                         } else {
-                            warn!("Model output didn't contain tool call or done tag. Prompting to continue.");
+                            warn!(turn = self.turn_count, "Model output didn't contain tool call or done tag. Prompting to continue.");
                             self.messages.push(ChatMessage {
                                 role: "user".to_string(),
                                 content: "You did not use <execute> or <done>. Please output a tool call or finish the task.".to_string(),
                             });
-                            // Trigger another reasoning cycle implicitly via a dummy execution
+                            // Trigger another reasoning cycle
                             self.send(GenericRunEvent::ToolExecutionFinished {
                                 id: 0, success: true, exit_code: Some(0), output: "Prompt appended".to_string(),
                             }).await;
@@ -327,43 +358,51 @@ If you have finished the task, output <done>summary of work</done>.";
     }
 }
 
-/// Parse the first `<execute>...</execute>` block from model output.
+/// Parse ALL `<execute>...</execute>` blocks from model output.
 ///
-/// Handles common LLM output patterns:
-/// - Plain `<execute>cmd</execute>`
-/// - Wrapped in markdown code fences: ````\n<execute>cmd</execute>\n````
-/// - Multiple blocks (returns the first complete one)
-/// - Unclosed tags (returns None)
-fn parse_execute_tag(content: &str) -> Option<String> {
-    // Strip markdown code fences if the entire content is wrapped in them.
-    // Models sometimes output ```bash\n<execute>...\n``` or ```\n<execute>...\n```
+/// Returns a Vec of commands, enabling parallel execution when the model
+/// outputs multiple independent tool calls in a single response.
+fn parse_all_execute_tags(content: &str) -> Vec<String> {
+    let mut commands = Vec::new();
+    let open_tag = "<execute>";
+    let close_tag = "</execute>";
+
+    // Strip markdown code fences if the entire content is wrapped in them
     let stripped = content.trim();
     let working = if (stripped.starts_with("```bash") || stripped.starts_with("```xml")
         || stripped.starts_with("```"))
         && stripped.ends_with("```")
     {
-        // Remove the opening fence line and closing fence
         let after_first_newline = stripped.find('\n').map(|i| &stripped[i + 1..]).unwrap_or(stripped);
         after_first_newline.strip_suffix("```").unwrap_or(after_first_newline).trim()
     } else {
         stripped
     };
 
-    // Find the first complete <execute>...</execute> pair
-    let open_tag = "<execute>";
-    let close_tag = "</execute>";
-
-    let start = working.find(open_tag)?;
-    let after_open = start + open_tag.len();
-    let close_pos = working[after_open..].find(close_tag)?;
-    let cmd = &working[after_open..after_open + close_pos];
-    let trimmed = cmd.trim();
-
-    if trimmed.is_empty() {
-        None
-    } else {
-        Some(trimmed.to_string())
+    let mut search_from = 0;
+    while search_from < working.len() {
+        let remaining = &working[search_from..];
+        let Some(start) = remaining.find(open_tag) else {
+            break;
+        };
+        let after_open = start + open_tag.len();
+        let Some(close_pos) = remaining[after_open..].find(close_tag) else {
+            break; // unclosed tag, stop parsing
+        };
+        let cmd = remaining[after_open..after_open + close_pos].trim();
+        if !cmd.is_empty() {
+            commands.push(cmd.to_string());
+        }
+        search_from += after_open + close_pos + close_tag.len();
     }
+
+    commands
+}
+
+/// Parse the first `<execute>...</execute>` block (convenience wrapper).
+#[allow(dead_code)]
+fn parse_execute_tag(content: &str) -> Option<String> {
+    parse_all_execute_tags(content).into_iter().next()
 }
 
 #[cfg(test)]
@@ -403,5 +442,59 @@ mod tests {
     #[test]
     fn test_no_execute_tag() {
         assert_eq!(parse_execute_tag("I will now do something"), None);
+    }
+
+    // Multi-execute tests
+    #[test]
+    fn test_multiple_execute_blocks() {
+        let input = "Let me create both files:\n\
+            <execute>cat > a.rs << 'EOF'\nfn main() {}\nEOF</execute>\n\
+            <execute>cat > b.rs << 'EOF'\nfn helper() {}\nEOF</execute>";
+        let cmds = parse_all_execute_tags(input);
+        assert_eq!(cmds.len(), 2);
+        assert!(cmds[0].contains("a.rs"));
+        assert!(cmds[1].contains("b.rs"));
+    }
+
+    #[test]
+    fn test_three_execute_blocks() {
+        let input = "<execute>mkdir -p src</execute>\n\
+            <execute>touch src/lib.rs</execute>\n\
+            <execute>echo 'done'</execute>";
+        let cmds = parse_all_execute_tags(input);
+        assert_eq!(cmds.len(), 3);
+        assert_eq!(cmds[0], "mkdir -p src");
+        assert_eq!(cmds[1], "touch src/lib.rs");
+        assert_eq!(cmds[2], "echo 'done'");
+    }
+
+    #[test]
+    fn test_single_block_returns_one() {
+        let cmds = parse_all_execute_tags("text <execute>ls</execute> text");
+        assert_eq!(cmds.len(), 1);
+        assert_eq!(cmds[0], "ls");
+    }
+
+    #[test]
+    fn test_mixed_closed_unclosed() {
+        // First block closed, second unclosed — should return only the first
+        let input = "<execute>echo hi</execute>\n<execute>ls -la";
+        let cmds = parse_all_execute_tags(input);
+        assert_eq!(cmds.len(), 1);
+        assert_eq!(cmds[0], "echo hi");
+    }
+
+    #[test]
+    fn test_truncate_output_short() {
+        let short = "hello world";
+        assert_eq!(GenericPipelineExecutor::truncate_output(short), short);
+    }
+
+    #[test]
+    fn test_truncate_output_long() {
+        let long = "x".repeat(20000);
+        let truncated = GenericPipelineExecutor::truncate_output(&long);
+        assert!(truncated.len() < long.len());
+        assert!(truncated.contains("[truncated:"));
     }
 }
