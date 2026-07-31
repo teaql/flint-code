@@ -42,7 +42,6 @@ pub fn validate_domain(input_path: &Path) -> ValidationResult {
 
 /// Parse TeaQL evaluate output to extract error/warning/suggestion counts.
 pub fn parse_teaql_output(output: &str) -> ValidationResult {
-    let mut errors = Vec::new();
     let mut error_count: u32 = 0;
     let mut warning_count: u32 = 0;
     let mut suggestion_count: u32 = 0;
@@ -52,9 +51,6 @@ pub fn parse_teaql_output(output: &str) -> ValidationResult {
         if line.contains("error") || line.contains("Error") {
             if let Some(count) = extract_count(line) {
                 error_count = count;
-            } else {
-                errors.push(line.to_string());
-                error_count += 1;
             }
         }
         if line.contains("warning") || line.contains("Warning") {
@@ -68,6 +64,10 @@ pub fn parse_teaql_output(output: &str) -> ValidationResult {
             }
         }
     }
+
+    // Instead of filtering, take the head of the output to provide full context
+    let head: String = output.chars().take(12000).collect();
+    let errors = if head.is_empty() { vec![] } else { vec![head] };
 
     ValidationResult {
         level: 3,

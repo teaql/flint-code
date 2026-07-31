@@ -108,7 +108,7 @@ pub fn build_repair_messages(
 
     // Truncated diagnostic with actionable errors only
     let template = std::fs::read_to_string("prompts/repair-domain.txt")
-        .unwrap_or_else(|_| "Fix the following errors:\n{{errors}}".to_string());
+        .unwrap_or_else(|_| "Fix the following errors. Read the diagnostic logs, do not filter them, and pay special attention to the first 30 lines (the head) to find and fix the root issues. CRITICAL: You MUST modify the code to fix the errors. DO NOT return the exact same code as your previous attempt:\n{{errors}}".to_string());
     let mut errors_str = String::new();
     for err in actionable_errors {
         let truncated: String = err

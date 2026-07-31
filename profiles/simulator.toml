@@ -42,4 +42,4 @@ max_system_prompt_tokens = 2000
 
 [simulator]
 enabled = true
-scenario = "simulator/scenarios/happy-path.toml"
+scenario = "simulator/scenarios/infinite-repair.toml"

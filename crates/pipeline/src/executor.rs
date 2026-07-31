@@ -283,6 +283,7 @@ impl PipelineExecutor {
                         "attempt": attempt,
                         "message_count": messages.len(),
                         "model": self.profile.model.name,
+                        "messages": messages,
                     }),
                 )
                 .ok();
@@ -536,10 +537,9 @@ impl PipelineExecutor {
                     if !output.status.success() && result.error_count == 0 {
                         result.passed = false;
                         result.error_count = 1;
-                        result.actionable_errors.push(format!(
-                            "Command failed with exit code: {:?}",
-                            output.status.code()
-                        ));
+                        // parse_teaql_output already places the head of the output into actionable_errors
+                    } else if !output.status.success() {
+                        result.passed = false;
                     }
                     result
                 }

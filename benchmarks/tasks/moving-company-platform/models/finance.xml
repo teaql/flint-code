@@ -1,108 +1,129 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <root name="moving-company-service"
       cfg_mask_china_mobile="false"
       data_service="sqlite"
       org="example"
       _module_key="root">
-  
-  <payment_method _name="Payment Method"
-                  _module="Finance"
-                  _module_key="finance"
-                  id="id()"
-                  name="string()"
-                  code="string()"
-                  color="string()"
-                  display_order="number()"
-                  _constant="true"
-                  _identifier="code">
-    <_value id="1001" name="Credit Card" code="CREDIT_CARD"
-            color="#2563EB" display_order="1"/>
-    <_value id="1002" name="Bank Transfer" code="BANK_TRANSFER"
-            color="#16A34A" display_order="2"/>
-    <_value id="1003" name="Cash" code="CASH"
-            color="#F59E0B" display_order="3"/>
-    <_value id="1004" name="Check" code="CHECK"
-            color="#8B5CF6" display_order="4"/>
-  </payment_method>
-  
-  <payment _name="Payment"
-           _module="Finance"
-           _module_key="finance"
-           customer="customer()"
-           moving_job="moving_job()"
-           payment_method="payment_method()"
-           amount="1500.00"
-           payment_date="2025-06-01"
-           transaction_id="TXN123456"
-           status="completed"
-           create_time="createTime()"
-           update_time="updateTime()"/>
-  
-  <invoice _name="Invoice"
-           _module="Finance"
-           _module_key="finance"
-           customer="customer()"
-           moving_job="moving_job()"
-           invoice_number="INV-2025-001"
-           issue_date="2025-06-01"
-           due_date="2025-06-15"
-           subtotal="1500.00"
-           tax_amount="120.00"
-           total_amount="1620.00"
-           status="paid"
-           create_time="createTime()"
-           update_time="updateTime()"/>
-  
-  <expense_category _name="Expense Category"
-                    _module="Finance"
-                    _module_key="finance"
-                    id="id()"
-                    name="string()"
-                    code="string()"
-                    color="string()"
-                    display_order="number()"
-                    _constant="true"
-                    _identifier="code">
-    <_value id="1001" name="Fuel" code="FUEL"
-            color="#F59E0B" display_order="1"/>
-    <_value id="1002" name="Maintenance" code="MAINTENANCE"
-            color="#2563EB" display_order="2"/>
-    <_value id="1003" name="Supplies" code="SUPPLIES"
-            color="#16A34A" display_order="3"/>
-    <_value id="1004" name="Insurance" code="INSURANCE"
-            color="#8B5CF6" display_order="4"/>
-  </expense_category>
-  
-  <expense _name="Expense"
-           _module="Finance"
-           _module_key="finance"
-           expense_category="expense_category()"
-           vehicle="vehicle()"
-           amount="150.00"
-           expense_date="2025-06-01"
-           description="Fuel for truck #1"
-           receipt_number="REC789"
-           create_time="createTime()"
-           update_time="updateTime()"/>
-  
-  <vat_rate _name="VAT Rate"
-            _module="Finance"
-            _module_key="finance"
-            name="Standard Rate"
-            rate="8.00"
-            effective_date="2025-01-01"
-            is_active="true"
-            create_time="createTime()"
-            update_time="updateTime()"/>
-  
-  <financial_summary _name="Financial Summary"
-                     _module="Finance"
-                     _module_key="finance"
-                     period_start="2025-06-01"
-                     period_end="2025-06-30"
-                     total_revenue="25000.00"
-                     total_expenses="8000.00"
-                     net_profit="17000.00"
-                     create_time="createTime()"
-                     update_time="updateTime()"/>
+
+    <invoice _name="Invoice"
+             _module="finance_and_accounting"
+             _module_key="invoices"
+             invoice_number="INV00001"
+             customer="customer()"
+             move_order="move_order()"
+             issue_date="2025-09-16"
+             due_date="2025-10-16"
+             subtotal="1200.00"
+             vat_amount="264.00"
+             total_amount="1464.00"
+             status="invoice_status_type()"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+
+    <payment _name="Payment"
+             _module="finance_and_accounting"
+             _module_key="payments"
+             payment_number="PAY00001"
+             invoice="invoice()"
+             customer="customer()"
+             amount="1464.00"
+             payment_method="payment_method_type()"
+             payment_date="2025-09-20"
+             reference_number="TXN-98765"
+             status="payment_status_type()"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+
+    <expense _name="Expense"
+             _module="finance_and_accounting"
+             _module_key="expenses"
+             expense_number="EXP00001"
+             expense_category="expense_category()"
+             description="Fuel for truck fleet"
+             amount="450.00"
+             expense_date="2025-09-15"
+             recorded_by="employee()"
+             status="expense_status_type()"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+
+    <vat_record _name="VAT Record"
+                _module="finance_and_accounting"
+                _module_key="vat"
+                invoice="invoice()"
+                vat_rate="22.00"
+                vat_amount="264.00"
+                tax_period="2025-Q3"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+
+    <financial_summary _name="Financial Summary"
+                       _module="finance_and_accounting"
+                       _module_key="financial_summaries"
+                       summary_period="2025-09"
+                       total_revenue="45000.00"
+                       total_expenses="18000.00"
+                       net_profit="27000.00"
+                       outstanding_receivables="12000.00"
+                       create_time="createTime()"
+                       update_time="updateTime()"/>
+
+    <invoice_status_type _name="Invoice Status Type"
+                         _module="finance_and_accounting"
+                         _module_key="basic_data"
+                         id="id()"
+                         name="string()"
+                         code="string()"
+                         _constant="true"
+                         _identifier="code">
+        <_value id="1" name="Draft" code="DRAFT"/>
+        <_value id="2" name="Sent" code="SENT"/>
+        <_value id="3" name="Paid" code="PAID"/>
+        <_value id="4" name="Overdue" code="OVERDUE"/>
+        <_value id="5" name="Cancelled" code="CANCELLED"/>
+    </invoice_status_type>
+
+    <payment_status_type _name="Payment Status Type"
+                         _module="finance_and_accounting"
+                         _module_key="basic_data"
+                         id="id()"
+                         name="string()"
+                         code="string()"
+                         _constant="true"
+                         _identifier="code">
+        <_value id="1" name="Pending" code="PENDING"/>
+        <_value id="2" name="Completed" code="COMPLETED"/>
+        <_value id="3" name="Failed" code="FAILED"/>
+        <_value id="4" name="Refunded" code="REFUNDED"/>
+    </payment_status_type>
+
+    <expense_category _name="Expense Category"
+                      _module="finance_and_accounting"
+                      _module_key="basic_data"
+                      id="id()"
+                      name="string()"
+                      code="string()"
+                      _constant="true"
+                      _identifier="code">
+        <_value id="1" name="Fuel" code="FUEL"/>
+        <_value id="2" name="Maintenance" code="MAINTENANCE"/>
+        <_value id="3" name="Insurance" code="INSURANCE"/>
+        <_value id="4" name="Office Supplies" code="OFFICE_SUPPLIES"/>
+        <_value id="5" name="Marketing" code="MARKETING"/>
+    </expense_category>
+
+    <expense_status_type _name="Expense Status Type"
+                         _module="finance_and_accounting"
+                         _module_key="basic_data"
+                         id="id()"
+                         name="string()"
+                         code="string()"
+                         _constant="true"
+                         _identifier="code">
+        <_value id="1" name="Submitted" code="SUBMITTED"/>
+        <_value id="2" name="Approved" code="APPROVED"/>
+        <_value id="3" name="Reimbursed" code="REIMBURSED"/>
+        <_value id="4" name="Rejected" code="REJECTED"/>
+    </expense_status_type>
+
 </root>

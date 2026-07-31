@@ -488,13 +488,13 @@ pub async fn step_final_compile(
 
                 let fix_prompt = template
                     .replace("{{current_code}}", &current_code)
-                    .replace("{{stderr}}", &stderr[..stderr.len().min(2000)]);
+                    .replace("{{stderr}}", &stderr[..stderr.len().min(12000)]);
 
                 let fix_messages = vec![
                     ChatMessage {
                         role: "system".to_string(),
                         content:
-                            "You fix Rust compilation errors. Output ONLY raw Rust source."
+                            "You fix Rust compilation errors. Output ONLY raw Rust source. Read the stdout and stderr, do not filter them, and pay special attention to the first 30 lines (the head) to find and fix the root issues."
                                 .to_string(),
                     },
                     ChatMessage {
@@ -587,15 +587,14 @@ fn truncate_with_notice(content: &str, max_chars: usize) -> String {
 pub fn parse_cargo_errors(stderr: &str) -> (u32, Vec<String>) {
     let error_count = stderr
         .lines()
-        .filter(|l| l.contains("error["))
+        .filter(|l| l.contains("error[") || l.starts_with("error:"))
         .count() as u32;
     let error_count = std::cmp::max(error_count, 1);
-    let actionable_errors: Vec<String> = stderr
-        .lines()
-        .filter(|l| l.starts_with("error"))
-        .take(10)
-        .map(|l| l.to_string())
-        .collect();
+    
+    // Return the full stderr so the LLM gets context, just like we did for domain validation
+    let truncated: String = stderr.chars().take(12000).collect();
+    let actionable_errors = vec![truncated];
+    
     (error_count, actionable_errors)
 }
 
@@ -735,8 +734,8 @@ mod tests {
     fn parse_cargo_errors_extracts_error_lines() {
         let stderr = "error[E0308]: mismatched types\n  --> src/lib.rs:5:10\nerror: aborting\nwarning: unused variable\n";
         let (count, errors) = parse_cargo_errors(stderr);
-        assert_eq!(count, 1);
-        assert_eq!(errors.len(), 2); // error[E0308] and error: aborting
+        assert_eq!(count, 2); // 2 error lines
+        assert_eq!(errors.len(), 1); // 1 combined block
     }
 
     #[test]

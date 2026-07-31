@@ -1,82 +1,111 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <root name="moving-company-service"
       cfg_mask_china_mobile="false"
       data_service="sqlite"
       org="example"
       _module_key="root">
-  
-  <address _name="Address"
-           _module="Operations"
-           _module_key="operations"
-           street="123 Main St"
-           city="Springfield"
-           state="IL"
-           zip_code="62701"
-           country="USA"
-           create_time="createTime()"
-           update_time="updateTime()"/>
-  
-  <route _name="Route"
-         _module="Operations"
-         _module_key="operations"
-         name="Downtown Route"
-         origin="address()"
-         destination="address()"
-         estimated_duration="120"
-         distance_miles="45.5"
-         create_time="createTime()"
-         update_time="updateTime()"/>
-  
-  <time_slot _name="Time Slot"
-             _module="Operations"
-             _module_key="operations"
-             start_time="2025-06-01T08:00:00"
-             end_time="2025-06-01T12:00:00"
-             is_available="true"
+
+    <address _name="Address"
+             _module="operations_and_logistics"
+             _module_key="addresses"
+             line1="123 Main Street"
+             line2="Apt 4B"
+             city="New York"
+             region="NY"
+             postal_code="10001"
+             country="USA"
+             latitude="40.7128"
+             longitude="-74.0060"
              create_time="createTime()"
              update_time="updateTime()"/>
-  
-  <move_status _name="Move Status"
-               _module="Operations"
-               _module_key="operations"
-               id="id()"
-               name="string()"
-               code="string()"
-               color="string()"
-               display_order="number()"
-               progress="number()"
-               _constant="true"
-               _identifier="code">
-    <_value id="1001" name="Scheduled" code="SCHEDULED"
-            color="#F59E0B" display_order="1" progress="10"/>
-    <_value id="1002" name="In Progress" code="IN_PROGRESS"
-            color="#2563EB" display_order="2" progress="50"/>
-    <_value id="1003" name="Completed" code="COMPLETED"
-            color="#16A34A" display_order="3" progress="100"/>
-    <_value id="1004" name="Cancelled" code="CANCELLED"
-            color="#6B7280" display_order="4" progress="-1"/>
-  </move_status>
-  
-  <moving_job _name="Moving Job"
-        _module="Operations"
-        _module_key="operations"
-        customer="customer()"
-        route="route()"
-        time_slot="time_slot()"
-        status="move_status()"
-        scheduled_date="2025-06-01"
-        notes="Handle with care"
-        create_time="createTime()"
-        update_time="updateTime()"/>
-  
-  <fulfillment_event _name="Fulfillment Event"
-                     _module="Operations"
-                     _module_key="operations"
-                     moving_job="moving_job()"
-                     event_type="pickup"
-                     timestamp="2025-06-01T08:30:00"
-                     location="address()"
-                     notes="Items loaded successfully"
-                     create_time="createTime()"
-                     update_time="updateTime()"/>
+
+    <route _name="Route"
+           _module="operations_and_logistics"
+           _module_key="routes"
+           route_name="NYC to Boston Express"
+           start_city="New York"
+           end_city="Boston"
+           distance_km="350"
+           estimated_duration_hours="4.5"
+           create_time="createTime()"
+           update_time="updateTime()"/>
+
+    <time_slot _name="Time Slot"
+               _module="operations_and_logistics"
+               _module_key="time_slots"
+               slot_name="Morning Window"
+               start_time="08:00"
+               end_time="12:00"
+               is_peak_hour="true"
+               create_time="createTime()"
+               update_time="updateTime()"/>
+
+    <move_order _name="Move Order"
+                _module="operations_and_logistics"
+                _module_key="moves"
+                order_number="MOV00001"
+                customer="customer()"
+                pickup_address="address()"
+                delivery_address="address()"
+                route="route()"
+                time_slot="time_slot()"
+                scheduled_date="2025-09-15"
+                status="move_status_type()"
+                total_weight_kg="2500.00"
+                special_instructions="Handle piano with care"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+
+    <move_item _name="Move Item"
+               _module="operations_and_logistics"
+               _module_key="moves"
+               move_order="move_order()"
+               product="product()"
+               quantity="5"
+               unit_price="150.00"
+               extended_price="750.00"
+               create_time="createTime()"
+               update_time="updateTime()"/>
+
+    <fulfillment_event _name="Fulfillment Event"
+                       _module="operations_and_logistics"
+                       _module_key="fulfillment_events"
+                       move_order="move_order()"
+                       event_type="event_type()"
+                       event_time="updateTime()"
+                       location_address="address()"
+                       notes="Truck loaded and departed"
+                       performed_by="employee()"
+                       create_time="createTime()"/>
+
+    <move_status_type _name="Move Status Type"
+                      _module="operations_and_logistics"
+                      _module_key="basic_data"
+                      id="id()"
+                      name="string()"
+                      code="string()"
+                      _constant="true"
+                      _identifier="code">
+        <_value id="1" name="Pending" code="PENDING"/>
+        <_value id="2" name="Confirmed" code="CONFIRMED"/>
+        <_value id="3" name="In Transit" code="IN_TRANSIT"/>
+        <_value id="4" name="Delivered" code="DELIVERED"/>
+        <_value id="5" name="Cancelled" code="CANCELLED"/>
+    </move_status_type>
+
+    <event_type _name="Event Type"
+                _module="operations_and_logistics"
+                _module_key="basic_data"
+                id="id()"
+                name="string()"
+                code="string()"
+                _constant="true"
+                _identifier="code">
+        <_value id="1" name="Pickup Scheduled" code="PICKUP_SCHEDULED"/>
+        <_value id="2" name="Loading Started" code="LOADING_STARTED"/>
+        <_value id="3" name="In Transit" code="IN_TRANSIT"/>
+        <_value id="4" name="Unloading Started" code="UNLOADING_STARTED"/>
+        <_value id="5" name="Delivery Completed" code="DELIVERY_COMPLETED"/>
+    </event_type>
+
 </root>

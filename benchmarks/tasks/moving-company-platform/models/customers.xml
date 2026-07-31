@@ -1,72 +1,109 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <root name="moving-company-service"
       cfg_mask_china_mobile="false"
       data_service="sqlite"
       org="example"
       _module_key="root">
-  
-  <customer_type _name="Customer Type"
-                 _module="Customers"
-                 _module_key="customers"
-                 id="id()"
-                 name="string()"
-                 code="string()"
-                 color="string()"
-                 display_order="number()"
-                 _constant="true"
-                 _identifier="code">
-    <_value id="1001" name="Private" code="PRIVATE"
-            color="#2563EB" display_order="1"/>
-    <_value id="1002" name="Corporate" code="CORPORATE"
-            color="#16A34A" display_order="2"/>
-  </customer_type>
-  
-  <customer _name="Customer"
-            _module="Customers"
-            _module_key="customers"
-            customer_type="customer_type()"
-            first_name="Jane"
-            last_name="Smith"
-            email="jane.smith@example.com"
-            phone="555-987-6543"
-            company_name="Acme Corp"
-            _audit_mask_fields="email,phone,first_name,last_name,company_name"
-            create_time="createTime()"
-            update_time="updateTime()"/>
-  
-  <customer_contact _name="Customer Contact"
-                    _module="Customers"
-                    _module_key="customers"
-                    customer="customer()"
-                    contact_type="primary"
-                    first_name="Jane"
-                    last_name="Smith"
-                    email="jane.smith@example.com"
-                    phone="555-987-6543"
-                    is_primary="true"
-                    _audit_mask_fields="email,phone,first_name,last_name"
-                    create_time="createTime()"
-                    update_time="updateTime()"/>
-  
-  <billing_info _name="Billing Info"
-                _module="Customers"
-                _module_key="customers"
-                customer="customer()"
-                payment_method="credit_card"
-                card_last_four="1234"
-                billing_address="address()"
-                is_default="true"
-                create_time="createTime()"
-                update_time="updateTime()"/>
-  
-  <customer_history _name="Customer History"
-                    _module="Customers"
-                    _module_key="customers"
-                    customer="customer()"
-                    event_type="move_completed"
-                    event_date="2025-05-15"
-                    description="Completed move from Springfield to Chicago"
-                    amount="1500.00"
-                    create_time="createTime()"
-                    update_time="updateTime()"/>
+
+    <customer _name="Customer"
+              _module="customer_management"
+              _module_key="customers"
+              customer_number="CUST00001"
+              customer_type="customer_type()"
+              name="Acme Corporation"
+              email="info@acme.com"
+              phone="+12125559999"
+              billing_address="address()"
+              status="customer_status_type()"
+              loyalty_points="1500"
+              create_time="createTime()"
+              update_time="updateTime()"/>
+
+    <customer_contact _name="Customer Contact"
+                      _module="customer_management"
+                      _module_key="customer_contacts"
+                      customer="customer()"
+                      contact_name="Jane Doe"
+                      role="Contact Person"
+                      email="jane.doe@acme.com"
+                      phone="+12125558888"
+                      is_primary="true"
+                      create_time="createTime()"
+                      update_time="updateTime()"/>
+
+    <billing_info _name="Billing Info"
+                  _module="customer_management"
+                  _module_key="billing"
+                  customer="customer()"
+                  payment_method="payment_method_type()"
+                  card_last_four="4242"
+                  billing_email="billing@acme.com"
+                  tax_id="12-3456789"
+                  credit_limit="50000.00"
+                  create_time="createTime()"
+                  update_time="updateTime()"/>
+
+    <customer_history _name="Customer History"
+                      _module="customer_management"
+                      _module_key="customer_history"
+                      customer="customer()"
+                      action_type="history_action_type()"
+                      description="Moved office from downtown to uptown"
+                      action_date="2025-08-20"
+                      recorded_by="employee()"
+                      create_time="createTime()"/>
+
+    <customer_type _name="Customer Type"
+                   _module="customer_management"
+                   _module_key="basic_data"
+                   id="id()"
+                   name="string()"
+                   code="string()"
+                   _constant="true"
+                   _identifier="code">
+        <_value id="1" name="Private" code="PRIVATE"/>
+        <_value id="2" name="Corporate" code="CORPORATE"/>
+    </customer_type>
+
+    <customer_status_type _name="Customer Status Type"
+                          _module="customer_management"
+                          _module_key="basic_data"
+                          id="id()"
+                          name="string()"
+                          code="string()"
+                          _constant="true"
+                          _identifier="code">
+        <_value id="1" name="Active" code="ACTIVE"/>
+        <_value id="2" name="Inactive" code="INACTIVE"/>
+        <_value id="3" name="Blacklisted" code="BLACKLISTED"/>
+    </customer_status_type>
+
+    <payment_method_type _name="Payment Method Type"
+                         _module="customer_management"
+                         _module_key="basic_data"
+                         id="id()"
+                         name="string()"
+                         code="string()"
+                         _constant="true"
+                         _identifier="code">
+        <_value id="1" name="Credit Card" code="CREDIT_CARD"/>
+        <_value id="2" name="Bank Transfer" code="BANK_TRANSFER"/>
+        <_value id="3" name="Cash" code="CASH"/>
+        <_value id="4" name="Invoice" code="INVOICE"/>
+    </payment_method_type>
+
+    <history_action_type _name="History Action Type"
+                         _module="customer_management"
+                         _module_key="basic_data"
+                         id="id()"
+                         name="string()"
+                         code="string()"
+                         _constant="true"
+                         _identifier="code">
+        <_value id="1" name="Move Completed" code="MOVE_COMPLETED"/>
+        <_value id="2" name="Payment Received" code="PAYMENT_RECEIVED"/>
+        <_value id="3" name="Complaint Filed" code="COMPLAINT_FILED"/>
+        <_value id="4" name="Feedback Submitted" code="FEEDBACK_SUBMITTED"/>
+    </history_action_type>
+
 </root>

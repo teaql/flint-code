@@ -1,92 +1,438 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <root name="moving-company-service"
       cfg_mask_china_mobile="false"
       data_service="sqlite"
       org="example"
       _module_key="root">
-  
-  <vehicle_type _name="Vehicle Type"
-                _module="Assets"
-                _module_key="assets"
-                id="id()"
-                name="string()"
-                code="string()"
-                color="string()"
-                display_order="number()"
-                _constant="true"
-                _identifier="code">
-    <_value id="1001" name="Box Truck" code="BOX_TRUCK"
-            color="#2563EB" display_order="1"/>
-    <_value id="1002" name="Flatbed" code="FLATBED"
-            color="#16A34A" display_order="2"/>
-    <_value id="1003" name="Van" code="VAN"
-            color="#F59E0B" display_order="3"/>
-  </vehicle_type>
-  
-  <vehicle _name="Vehicle"
-           _module="Assets"
-           _module_key="assets"
-           vehicle_type="vehicle_type()"
-           make="Ford"
-           model="Transit"
-           year="2023"
-           license_plate="ABC123"
-           vin="1FTBW2CM3PKA12345"
-           mileage="25000"
-           status="available"
-           create_time="createTime()"
-           update_time="updateTime()"/>
-  
-  <equipment _name="Equipment"
-             _module="Assets"
-             _module_key="assets"
-             name="Hand Truck"
-             description="Heavy duty hand truck"
-             quantity="10"
-             condition="good"
-             purchase_date="2024-01-15"
+
+    <vehicle _name="Vehicle"
+             _module="asset_management"
+             _module_key="vehicles"
+             vehicle_number="VEH001"
+             make="Ford"
+             model="Transit"
+             year="2023"
+             license_plate="ABC-1234"
+             capacity_kg="3500"
+             vehicle_type="vehicle_type()"
+             status="vehicle_status_type()"
+             last_service_date="2025-08-01"
              create_time="createTime()"
              update_time="updateTime()"/>
-  
-  <consumable _name="Consumable"
-              _module="Assets"
-              _module_key="assets"
-              name="Packing Tape"
-              description="Heavy duty packing tape"
-              quantity_in_stock="50"
-              unit_cost="5.00"
-              reorder_level="10"
-              create_time="createTime()"
-              update_time="updateTime()"/>
-  
-  <maintenance_status _name="Maintenance Status"
-                      _module="Assets"
-                      _module_key="assets"
+
+    <equipment _name="Equipment"
+               _module="asset_management"
+               _module_key="equipment"
+               equipment_code="EQP001"
+               name="Heavy Duty Dolly"
+               equipment_type="equipment_type()"
+               purchase_date="2024-01-15"
+               condition="equipment_condition_type()"
+               assigned_vehicle="vehicle()"
+               create_time="createTime()"
+               update_time="updateTime()"/>
+
+    <consumable _name="Consumable"
+                _module="asset_management"
+                _module_key="consumables"
+                consumable_code="CON001"
+                name="Moving Blankets"
+                quantity_in_stock="150"
+                unit_cost="12.50"
+                reorder_level="30"
+                supplier_name="PackRight Supplies"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+
+    <maintenance_schedule _name="Maintenance Schedule"
+                          _module="asset_management"
+                          _module_key="maintenance"
+                          vehicle="vehicle()"
+                          maintenance_type="maintenance_type()"
+                          scheduled_date="2025-10-01"
+                          description="Oil change and tire rotation"
+                          estimated_cost="350.00"
+                          status="maintenance_status_type()"
+                          create_time="createTime()"
+                          update_time="updateTime()"/>
+
+    <vehicle_type _name="Vehicle Type"
+                  _module="asset_management"
+                  _module_key="basic_data"
+                  id="id()"
+                  name="string()"
+                  code="string()"
+                  _constant="true"
+                  _identifier="code">
+        <_value id="1" name="Box Truck" code="BOX_TRUCK"/>
+        <_value id="2" name="Flatbed" code="FLATBED"/>
+        <_value id="3" name="Van" code="VAN"/>
+        <_value id="4" name="Semi Trailer" code="SEMI_TRAILER"/>
+    </vehicle_type>
+
+    <vehicle_status_type _name="Vehicle Status Type"
+                         _module="asset_management"
+                         _module_key="basic_data"
+                         id="id()"
+                         name="string()"
+                         code="string()"
+                         _constant="true"
+                         _identifier="code">
+        <_value id="1" name="Available" code="AVAILABLE"/>
+        <_value id="2" name="In Use" code="IN_USE"/>
+        <_value id="3" name="In Maintenance" code="IN_MAINTENANCE"/>
+        <_value id="4" name="Retired" code="RETIRED"/>
+    </vehicle_status_type>
+
+    <equipment_type _name="Equipment Type"
+                    _module="asset_management"
+                    _module_key="basic_data"
+                    id="id()"
+                    name="string()"
+                    code="string()"
+                    _constant="true"
+                    _identifier="code">
+        <_value id="1" name="Dolly" code="DOLLY"/>
+        <_value id="2" name="Furniture Pad" code="FURNITURE_PAD"/>
+        <_value id="3" name="Strap" code="STRAP"/>
+        <_value id="4" name="Tool Kit" code="TOOL_KIT"/>
+    </equipment_type>
+
+    <equipment_condition_type _name="Equipment Condition Type"
+                              _module="asset_management"
+                              _module_key="basic_data"
+                              id="id()"
+                              name="string()"
+                              code="string()"
+                              _constant="true"
+                              _identifier="code">
+        <_value id="1" name="New" code="NEW"/>
+        <_value id="2" name="Good" code="GOOD"/>
+        <_value id="3" name="Fair" code="FAIR"/>
+        <_value id="4" name="Poor" code="POOR"/>
+    </equipment_condition_type>
+
+    <maintenance_type _name="Maintenance Type"
+                      _module="asset_management"
+                      _module_key="basic_data"
                       id="id()"
                       name="string()"
                       code="string()"
-                      color="string()"
-                      display_order="number()"
                       _constant="true"
                       _identifier="code">
-    <_value id="1001" name="Scheduled" code="SCHEDULED"
-            color="#F59E0B" display_order="1"/>
-    <_value id="1002" name="In Progress" code="IN_PROGRESS"
-            color="#2563EB" display_order="2"/>
-    <_value id="1003" name="Completed" code="COMPLETED"
-            color="#16A34A" display_order="3"/>
-    <_value id="1004" name="Cancelled" code="CANCELLED"
-            color="#6B7280" display_order="4"/>
-  </maintenance_status>
-  
-  <maintenance_schedule _name="Maintenance Schedule"
-                        _module="Assets"
-                        _module_key="assets"
-                        vehicle="vehicle()"
-                        maintenance_type="oil_change"
-                        scheduled_date="2025-07-01"
-                        status="maintenance_status()"
-                        notes="Regular maintenance"
-                        create_time="createTime()"
-                        update_time="updateTime()"/>
+        <_value id="1" name="Routine" code="ROUTINE"/>
+        <_value id="2" name="Repair" code="REPAIR"/>
+        <_value id="3" name="Inspection" code="INSPECTION"/>
+    </maintenance_type>
+
+    <maintenance_status_type _name="Maintenance Status Type"
+                             _module="asset_management"
+                             _module_key="basic_data"
+                             id="id()"
+                             name="string()"
+                             code="string()"
+                             _constant="true"
+                             _identifier="code">
+        <_value id="1" name="Scheduled" code="SCHEDULED"/>
+        <_value id="2" name="In Progress" code="IN_PROGRESS"/>
+        <_value id="3" name="Completed" code="COMPLETED"/>
+        <_value id="4" name="Overdue" code="OVERDUE"/>
+    </maintenance_status_type>
+
+</root>
+XMLEOF && cat > models/admin.xml << 'XMLEOF'
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<root name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="example"
+      _module_key="root">
+
+    <contract _name="Contract"
+              _module="administration_and_compliance"
+              _module_key="contracts"
+              contract_number="CTR00001"
+              customer="customer()"
+              contract_type="contract_type()"
+              start_date="2025-01-01"
+              end_date="2025-12-31"
+              total_value="60000.00"
+              terms_summary="Annual moving services agreement"
+              status="contract_status_type()"
+              create_time="createTime()"
+              update_time="updateTime()"/>
+
+    <insurance_policy _name="Insurance Policy"
+                      _module="administration_and_compliance"
+                      _module_key="insurance"
+                      policy_number="INS00001"
+                      policy_type="insurance_type()"
+                      provider="SafeGuard Insurance Co."
+                      coverage_amount="100000.00"
+                      premium_amount="1200.00"
+                      start_date="2025-01-01"
+                      end_date="2025-12-31"
+                      vehicle="vehicle()"
+                      status="insurance_status_type()"
+                      create_time="createTime()"
+                      update_time="updateTime()"/>
+
+    <document _name="Document"
+              _module="administration_and_compliance"
+              _module_key="document_storage"
+              document_number="DOC00001"
+              title="Moving Service Agreement - Acme Corp"
+              document_type="document_type()"
+              file_path="/documents/contracts/ctr00001.pdf"
+              related_contract="contract()"
+              uploaded_by="employee()"
+              create_time="createTime()"
+              update_time="updateTime()"/>
+
+    <audit_log _name="Audit Log"
+               _module="administration_and_compliance"
+               _module_key="audit_logs"
+               action="audit_action_type()"
+               entity_type="Move Order"
+               entity_id="MOV00001"
+               user_account="user_account()"
+               change_summary="Updated move status from PENDING to CONFIRMED"
+               ip_address="192.168.1.100"
+               create_time="createTime()"/>
+
+    <contract_type _name="Contract Type"
+                   _module="administration_and_compliance"
+                   _module_key="basic_data"
+                   id="id()"
+                   name="string()"
+                   code="string()"
+                   _constant="true"
+                   _identifier="code">
+        <_value id="1" name="Service Agreement" code="SERVICE_AGREEMENT"/>
+        <_value id="2" name="One-Time Move" code="ONE_TIME_MOVE"/>
+        <_value id="3" name="Corporate Partnership" code="CORPORATE_PARTNERSHIP"/>
+    </contract_type>
+
+    <contract_status_type _name="Contract Status Type"
+                          _module="administration_and_compliance"
+                          _module_key="basic_data"
+                          id="id()"
+                          name="string()"
+                          code="string()"
+                          _constant="true"
+                          _identifier="code">
+        <_value id="1" name="Draft" code="DRAFT"/>
+        <_value id="2" name="Active" code="ACTIVE"/>
+        <_value id="3" name="Expired" code="EXPIRED"/>
+        <_value id="4" name="Terminated" code="TERMINATED"/>
+    </contract_status_type>
+
+    <insurance_type _name="Insurance Type"
+                    _module="administration_and_compliance"
+                    _module_key="basic_data"
+                    id="id()"
+                    name="string()"
+                    code="string()"
+                    _constant="true"
+                    _identifier="code">
+        <_value id="1" name="Vehicle" code="VEHICLE"/>
+        <_value id="2" name="Cargo" code="CARGO"/>
+        <_value id="3" name="Liability" code="LIABILITY"/>
+    </insurance_type>
+
+    <insurance_status_type _name="Insurance Status Type"
+                           _module="administration_and_compliance"
+                           _module_key="basic_data"
+                           id="id()"
+                           name="string()"
+                           code="string()"
+                           _constant="true"
+                           _identifier="code">
+        <_value id="1" name="Active" code="ACTIVE"/>
+        <_value id="2" name="Expired" code="EXPIRED"/>
+        <_value id="3" name="Claimed" code="CLAIMED"/>
+    </insurance_status_type>
+
+    <document_type _name="Document Type"
+                   _module="administration_and_compliance"
+                   _module_key="basic_data"
+                   id="id()"
+                   name="string()"
+                   code="string()"
+                   _constant="true"
+                   _identifier="code">
+        <_value id="1" name="Contract" code="CONTRACT"/>
+        <_value id="2" name="Invoice" code="INVOICE"/>
+        <_value id="3" name="Receipt" code="RECEIPT"/>
+        <_value id="4" name="Insurance Certificate" code="INSURANCE_CERTIFICATE"/>
+    </document_type>
+
+    <audit_action_type _name="Audit Action Type"
+                       _module="administration_and_compliance"
+                       _module_key="basic_data"
+                       id="id()"
+                       name="string()"
+                       code="string()"
+                       _constant="true"
+                       _identifier="code">
+        <_value id="1" name="Create" code="CREATE"/>
+        <_value id="2" name="Update" code="UPDATE"/>
+        <_value id="3" name="Delete" code="DELETE"/>
+        <_value id="4" name="View" code="VIEW"/>
+    </audit_action_type>
+
+</root>
+XMLEOF && cat > models/platform.xml << 'XMLEOF'
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<root name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="example"
+      _module_key="root">
+
+    <user_account _name="User Account"
+                  _module="user_and_role_management"
+                  _module_key="user_management"
+                  login_id="jsmith"
+                  display_name="John Smith"
+                  email="john.smith@movers.com"
+                  employee="employee()"
+                  last_login_time="updateTime()"
+                  remote_ip="remoteIp()"
+                  city_by_ip="cityByIp()"
+                  status="user_status_type()"
+                  create_time="createTime()"
+                  update_time="updateTime()"/>
+
+    <user_role _name="User Role"
+               _module="user_and_role_management"
+               _module_key="role_management"
+               role_code="MANAGER"
+               role_name="Manager"
+               role_description="Full departmental administration rights"
+               create_time="createTime()"
+               update_time="updateTime()"/>
+
+    <user_role_assignment _name="User Role Assignment"
+                          _module="user_and_role_management"
+                          _module_key="role_assignment"
+                          user="user_account()"
+                          role="user_role()"
+                          assigned_by="employee()"
+                          create_time="createTime()"
+                          update_time="updateTime()"/>
+
+    <permission_set _name="Permission Set"
+                    _module="user_and_role_management"
+                    _module_key="permission_control"
+                    set_name="Finance View Access"
+                    set_description="Allows viewing of all financial reports"
+                    create_time="createTime()"
+                    update_time="updateTime()"/>
+
+    <role_permission _name="Role Permission"
+                     _module="user_and_role_management"
+                     _module_key="permission_control"
+                     user_role="user_role()"
+                     permission="permission_set()"
+                     create_time="createTime()"
+                     update_time="updateTime()"/>
+
+    <magic_link _name="Magic Link"
+                _module="authentication_and_permissions"
+                _module_key="authentication"
+                user_account="user_account()"
+                token_hash="abc123def456"
+                expires_at="updateTime()"
+                is_used="false"
+                create_time="createTime()"/>
+
+    <activity_log _name="Activity Log"
+                  _module="activity_logging"
+                  _module_key="activity_logs"
+                  user_account="user_account()"
+                  action="activity_action_type()"
+                  entity_type="Move Order"
+                  entity_id="MOV00001"
+                  description="Created new move order"
+                  ip_address="192.168.1.100"
+                  create_time="createTime()"/>
+
+    <notification _name="Notification"
+                  _module="notifications_and_automation"
+                  _module_key="notifications"
+                  user_account="user_account()"
+                  notification_type="notification_type()"
+                  title="Move Order Confirmed"
+                  message="Your move order MOV00001 has been confirmed"
+                  is_read="false"
+                  create_time="createTime()"
+                  update_time="updateTime()"/>
+
+    <automation_hook _name="Automation Hook"
+                     _module="notifications_and_automation"
+                     _module_key="automation"
+                     hook_name="On Move Status Change"
+                     trigger_event="trigger_event_type()"
+                     target_action="Send Email Notification"
+                     is_active="true"
+                     create_time="createTime()"
+                     update_time="updateTime()"/>
+
+    <user_status_type _name="User Status Type"
+                      _module="user_and_role_management"
+                      _module_key="basic_data"
+                      id="id()"
+                      name="string()"
+                      code="string()"
+                      _constant="true"
+                      _identifier="code">
+        <_value id="1" name="Active" code="ACTIVE"/>
+        <_value id="2" name="Suspended" code="SUSPENDED"/>
+        <_value id="3" name="Deactivated" code="DEACTIVATED"/>
+    </user_status_type>
+
+    <activity_action_type _name="Activity Action Type"
+                          _module="activity_logging"
+                          _module_key="basic_data"
+                          id="id()"
+                          name="string()"
+                          code="string()"
+                          _constant="true"
+                          _identifier="code">
+        <_value id="1" name="Login" code="LOGIN"/>
+        <_value id="2" name="Create" code="CREATE"/>
+        <_value id="3" name="Update" code="UPDATE"/>
+        <_value id="4" name="Delete" code="DELETE"/>
+        <_value id="5" name="Export" code="EXPORT"/>
+    </activity_action_type>
+
+    <notification_type _name="Notification Type"
+                       _module="notifications_and_automation"
+                       _module_key="basic_data"
+                       id="id()"
+                       name="string()"
+                       code="string()"
+                       _constant="true"
+                       _identifier="code">
+        <_value id="1" name="Info" code="INFO"/>
+        <_value id="2" name="Warning" code="WARNING"/>
+        <_value id="3" name="Success" code="SUCCESS"/>
+        <_value id="4" name="Error" code="ERROR"/>
+    </notification_type>
+
+    <trigger_event_type _name="Trigger Event Type"
+                        _module="notifications_and_automation"
+                        _module_key="basic_data"
+                        id="id()"
+                        name="string()"
+                        code="string()"
+                        _constant="true"
+                        _identifier="code">
+        <_value id="1" name="Move Status Changed" code="MOVE_STATUS_CHANGED"/>
+        <_value id="2" name="Payment Received" code="PAYMENT_RECEIVED"/>
+        <_value id="3" name="Invoice Overdue" code="INVOICE_OVERDUE"/>
+        <_value id="4" name="Maintenance Due" code="MAINTENANCE_DUE"/>
+    </trigger_event_type>
+
 </root>

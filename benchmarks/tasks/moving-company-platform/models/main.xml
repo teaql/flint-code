@@ -1,17 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <root name="moving-company-service"
       cfg_mask_china_mobile="false"
       data_service="sqlite"
       org="example"
       _module_key="root">
-  
-  <_include file="operations.xml" />
-  <_include file="employees.xml" />
-  <_include file="customers.xml" />
-  <_include file="products.xml" />
-  <_include file="marketing.xml" />
-  <_include file="finance.xml" />
-  <_include file="assets.xml" />
-  <_include file="admin.xml" />
-  <_include file="platform.xml" />
+
+    <_include file="models/operations.xml" />
+    <_include file="models/employees.xml" />
+    <_include file="models/customers.xml" />
+    <_include file="models/products.xml" />
+    <_include file="models/marketing.xml" />
+    <_include file="models/finance.xml" />
+    <_include file="models/assets.xml" />
+    <_include file="models/admin.xml" />
+    <_include file="models/platform.xml" />
+
 </root>

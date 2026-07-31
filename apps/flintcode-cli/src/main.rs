@@ -61,6 +61,10 @@ enum Commands {
         /// Output directory
         #[arg(long, default_value = "runs")]
         output: PathBuf,
+
+        /// Build target for teaql generate/build testing
+        #[arg(long)]
+        build_target: Option<String>,
     },
 
     /// Run the new generic autonomous agent
@@ -197,6 +201,7 @@ async fn main() -> Result<()> {
             task,
             profile,
             output,
+            build_target,
         } => {
             tracing::info!(
                 task = %task.display(),
@@ -223,6 +228,11 @@ async fn main() -> Result<()> {
                 output.clone(),
                 run_id,
             )?;
+            
+            if let Some(target) = build_target {
+                executor.set_build_target(target);
+            }
+            
             executor.load_task_from_path(&task).await;
 
             let mut controller_task = tokio::spawn(async move {

@@ -366,7 +366,7 @@ If you have finished the task, output <done>summary of work</done>.";
                 self.turn_count += 1;
                 
                 // Max Turns Guard
-                if self.turn_count > 100 {
+                if self.turn_count > 300 {
                     self.send(GenericRunEvent::ModelFailed(
                         agent_core::error::AgentError::InfrastructureError {
                             detail: format!("Max turns guard exceeded ({} turns). The agent appears to be stuck in a loop.", self.turn_count),
