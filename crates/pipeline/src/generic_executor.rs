@@ -252,10 +252,17 @@ If you have finished the task, output <done>summary of work</done>.";
                             truncated = was_truncated,
                             "Model responded"
                         );
+                        // If the output was truncated, don't store the full (potentially huge)
+                        // incomplete content in the message history — it would bloat the context.
+                        let stored_content = if was_truncated {
+                            Self::truncate_output(&content)
+                        } else {
+                            content.clone()
+                        };
                         
                         self.messages.push(ChatMessage {
                             role: "assistant".to_string(),
-                            content: content.clone(),
+                            content: stored_content,
                         });
                         
                         // Parse ALL tool calls (multi-execute support)
