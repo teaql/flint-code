@@ -365,8 +365,23 @@ impl PipelineExecutor {
                     return;
                 }
 
+                let mut clean_content = content.clone();
+                if let Some(end) = clean_content.rfind("</root>") {
+                    if let Some(start) = clean_content.find("<?xml") {
+                        if start < end {
+                            clean_content = clean_content[start..end + 7].to_string();
+                        } else if let Some(root_start) = clean_content.find("<root") {
+                            clean_content = clean_content[root_start..end + 7].to_string();
+                        }
+                    } else if let Some(root_start) = clean_content.find("<root") {
+                        clean_content = clean_content[root_start..end + 7].to_string();
+                    } else {
+                        clean_content = clean_content[..end + 7].to_string();
+                    }
+                }
+
                 let result = ModelResult {
-                    content: content.clone(),
+                    content: clean_content,
                     reasoning_content,
                     finish_reason,
                     usage,
