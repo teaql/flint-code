@@ -357,7 +357,7 @@ If you have finished the task, output <done>summary of work</done>.";
                 
                 // Clean up ephemeral messages from previous turns
                 let before = self.messages.len();
-                self.messages.retain(|m| !m.content.starts_with("[EPHEMERAL]"));
+                self.messages.retain(|m| !m.content.starts_with("<!-- ephemeral -->"));
                 let cleaned = before - self.messages.len();
                 if cleaned > 0 {
                     info!(cleaned, "Cleaned up ephemeral messages from previous turn");
@@ -460,7 +460,7 @@ If you have finished the task, output <done>summary of work</done>.";
                         let raw_out = format!("STDOUT:\n{}\nSTDERR:\n{}", res.stdout, res.stderr);
                         
                         // Check if the CLI tool wants this output to be ephemeral
-                        let is_ephemeral = raw_out.contains("[EPHEMERAL]");
+                        let is_ephemeral = raw_out.contains("<!-- ephemeral -->");
                         
                         let out = Self::truncate_output(&raw_out);
                         if raw_out.len() != out.len() {
@@ -471,9 +471,9 @@ If you have finished the task, output <done>summary of work</done>.";
                             );
                         }
                         
-                        // Ephemeral outputs get the [EPHEMERAL] prefix so they're auto-cleaned
+                        // Ephemeral outputs get the marker prefix so they're auto-cleaned
                         let msg_content = if is_ephemeral {
-                            format!("[EPHEMERAL] Command exited with code {}:\n{}", res.exit_code, out)
+                            format!("<!-- ephemeral -->\nCommand exited with code {}:\n{}", res.exit_code, out)
                         } else {
                             format!("Command exited with code {}:\n{}", res.exit_code, out)
                         };
@@ -592,8 +592,8 @@ mod tests {
 
     #[test]
     fn test_ephemeral_output_detection() {
-        let raw_out = "STDOUT:\n[EPHEMERAL]\nSome output\nSTDERR:\n";
-        assert!(raw_out.contains("[EPHEMERAL]"));
+        let raw_out = "STDOUT:\n<!-- ephemeral -->\nSome output\nSTDERR:\n";
+        assert!(raw_out.contains("<!-- ephemeral -->"));
     }
 
     #[test]
