@@ -194,20 +194,8 @@ pub async fn run_suite(
 
         let elapsed = case_start.elapsed().as_secs_f64();
 
-        // Determine result
-        let actual_state = match &controller.state.state {
-            PipelineState::Completed => "completed",
-            PipelineState::Failed { error } => {
-                if error.contains("Budget exceeded") || error.contains("budget") {
-                    "preflight_rejected"
-                } else {
-                    "failed"
-                }
-            }
-            PipelineState::Cancelled => "cancelled",
-            PipelineState::SkippedByPolicy { .. } => "skipped",
-            _ => "unknown",
-        };
+        // Determine result using structured state method (avoids fragile string matching)
+        let actual_state = controller.state.state.outcome_label();
 
         let pass = actual_state == case.expect;
         let pass_at_1 = actual_state == "completed" && controller.state.current_attempt <= 1;

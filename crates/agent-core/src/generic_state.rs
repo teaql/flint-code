@@ -86,6 +86,7 @@ pub struct GenericRunState {
     pub steps: Vec<GenericPlanStep>,
     pub current_step: Option<String>,
     pub active_tools: Vec<GenericToolProcess>,
+    pub tool_id_counter: u64,
 }
 
 impl GenericRunState {
@@ -96,6 +97,7 @@ impl GenericRunState {
             steps: vec![],
             current_step: None,
             active_tools: vec![],
+            tool_id_counter: 0,
         }
     }
 

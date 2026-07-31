@@ -117,6 +117,18 @@ impl PipelineState {
         )
     }
 
+    /// Machine-comparable outcome label for suite evaluation.
+    /// Avoids fragile string-matching on error messages.
+    pub fn outcome_label(&self) -> &'static str {
+        match self {
+            PipelineState::Completed => "completed",
+            PipelineState::Cancelled => "cancelled",
+            PipelineState::SkippedByPolicy { .. } => "skipped",
+            PipelineState::Failed { .. } => "failed",
+            _ => "unknown",
+        }
+    }
+
     /// Human-readable label for TUI display
     pub fn label(&self) -> &'static str {
         match self {

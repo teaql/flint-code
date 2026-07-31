@@ -53,6 +53,14 @@ pub fn reduce(state: &mut GenericRunState, event: GenericRunEvent) -> GenericSid
         }
         (GenericPipelineState::Reasoning, GenericRunEvent::ToolCallRequested { command }) => {
             info!(%command, "Model requested tool call");
+            state.tool_id_counter += 1;
+            let tool_id = state.tool_id_counter;
+            state.active_tools.push(crate::generic_state::GenericToolProcess {
+                id: tool_id,
+                command: command.clone(),
+                status: crate::generic_state::GenericToolProcessStatus::Running,
+                exit_code: None,
+            });
             state.state = GenericPipelineState::ExecutingTool { tool_call: command.clone() };
             GenericSideEffect::ExecuteTool { command }
         }
@@ -61,8 +69,19 @@ pub fn reduce(state: &mut GenericRunState, event: GenericRunEvent) -> GenericSid
             state.state = GenericPipelineState::Finalizing;
             GenericSideEffect::WriteFinalArtifact
         }
-        (GenericPipelineState::ExecutingTool { .. }, GenericRunEvent::ToolExecutionFinished { success, output: _, .. }) => {
+        (GenericPipelineState::ExecutingTool { .. }, GenericRunEvent::ToolExecutionFinished { success, output: _, id: _, exit_code }) => {
             info!(success, "Tool execution finished");
+            // Update the tool process record
+            if let Some(tool) = state.active_tools.iter_mut().rev().find(|t| {
+                matches!(t.status, crate::generic_state::GenericToolProcessStatus::Running)
+            }) {
+                tool.status = if success {
+                    crate::generic_state::GenericToolProcessStatus::Succeeded
+                } else {
+                    crate::generic_state::GenericToolProcessStatus::Failed
+                };
+                tool.exit_code = exit_code;
+            }
             state.state = GenericPipelineState::Reasoning;
             GenericSideEffect::Reason
         }
