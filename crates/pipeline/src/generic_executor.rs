@@ -244,15 +244,26 @@ impl GenericPipelineExecutor {
             return output.to_string();
         }
 
-        // Keep first and last portions for context
+        // Keep first and last portions for context, ensuring we slice at valid UTF-8 character boundaries
         let head_len = MAX_TOOL_OUTPUT_CHARS * 3 / 4;
         let tail_len = MAX_TOOL_OUTPUT_CHARS / 4;
         let total = output.len();
 
+        let mut head_idx = head_len;
+        while !output.is_char_boundary(head_idx) && head_idx > 0 {
+            head_idx -= 1;
+        }
+
+        let mut tail_idx = total - tail_len;
+        while !output.is_char_boundary(tail_idx) && tail_idx < total {
+            tail_idx += 1;
+        }
+
         format!(
-            "{}...\n\n[truncated: showing {head_len} + {tail_len} of {total} chars]\n\n...{}",
-            &output[..head_len],
-            &output[total - tail_len..]
+            "{}...\n\n[truncated: showing {head_idx} + {} of {total} bytes]\n\n...{}",
+            &output[..head_idx],
+            total - tail_idx,
+            &output[tail_idx..]
         )
     }
 

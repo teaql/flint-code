@@ -2576,18 +2576,18 @@ impl<R> MoveStatusRequest<R> {
 
 
 
-    pub fn progress_is_value_0(self) -> Self {
-        self.with_progress_is("0")
+    pub fn progress_is_value_10(self) -> Self {
+        self.with_progress_is("10")
     }
 
-    pub fn with_progress_is_value_0(self) -> Self {
-        self.with_progress_is("0")
+    pub fn with_progress_is_value_10(self) -> Self {
+        self.with_progress_is("10")
     }
 
 
 
-    pub fn with_progress_is_not_value_0(self) -> Self {
-        self.with_progress_is_not("0")
+    pub fn with_progress_is_not_value_10(self) -> Self {
+        self.with_progress_is_not("10")
     }
 
 
@@ -2621,18 +2621,18 @@ impl<R> MoveStatusRequest<R> {
     }
 
 
-    pub fn progress_is_value_0(self) -> Self {
-        self.with_progress_is("0")
+    pub fn progress_is_value_1(self) -> Self {
+        self.with_progress_is("-1")
     }
 
-    pub fn with_progress_is_value_0(self) -> Self {
-        self.with_progress_is("0")
+    pub fn with_progress_is_value_1(self) -> Self {
+        self.with_progress_is("-1")
     }
 
 
 
-    pub fn with_progress_is_not_value_0(self) -> Self {
-        self.with_progress_is_not("0")
+    pub fn with_progress_is_not_value_1(self) -> Self {
+        self.with_progress_is_not("-1")
     }
 
 
