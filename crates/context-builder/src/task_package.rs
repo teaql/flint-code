@@ -64,6 +64,9 @@ pub struct CommandTemplate {
 
 impl TaskPackageData {
     /// Build an in-memory task from text entered in an interactive client.
+    ///
+    /// Automatically loads the canonical grammar example so that inline tasks
+    /// get the same KSML structure guidance as file-based task packages.
     pub fn from_prompt(
         name: impl Into<String>,
         prompt: impl Into<String>,

@@ -62,6 +62,25 @@ enum Commands {
         #[arg(long, default_value = "runs")]
         output: PathBuf,
     },
+
+    /// Run the new generic autonomous agent
+    Agent {
+        /// Path to the task package directory
+        #[arg(long)]
+        task: PathBuf,
+        
+        /// Path to the skill instructions (optional)
+        #[arg(long)]
+        skill: Option<PathBuf>,
+
+        /// Path to the model profile (TOML)
+        #[arg(long, default_value = "profiles/dgx-spark-nemotron-3-super-64k.toml")]
+        profile: PathBuf,
+
+        /// Output directory
+        #[arg(long, default_value = "runs")]
+        output: PathBuf,
+    },
 }
 
 #[tokio::main]
@@ -232,6 +251,78 @@ async fn main() -> Result<()> {
                 std::process::exit(0);
             } else {
                 eprintln!("✗ Task failed.");
+                std::process::exit(1);
+            }
+        }
+        Commands::Agent {
+            task,
+            skill,
+            profile,
+            output,
+        } => {
+            tracing::info!(
+                task = %task.display(),
+                profile = %profile.display(),
+                "Running generic agent loop"
+            );
+
+            let model_profile = model_vllm::profile::ModelProfile::load(&profile)?;
+            let run_id = format!("agent-{}", chrono::Utc::now().format("%Y%m%d-%H%M%S"));
+
+            let (side_effect_tx, mut side_effect_rx) = tokio::sync::mpsc::channel(32);
+            let (mut controller, event_tx) = agent_core::generic_controller::GenericRunController::new(
+                run_id.clone(),
+                side_effect_tx,
+            );
+
+            // Pass the paths down
+            let task_path = task.join("task.md");
+            let mut executor = pipeline::generic_executor::GenericPipelineExecutor::new(
+                model_profile,
+                event_tx.clone(),
+                output.clone(),
+                run_id,
+                task_path,
+                skill,
+                task.clone(),
+            )?;
+
+            // Kick off the loop by simulating a task load
+            event_tx.send(agent_core::generic_event::GenericRunEvent::ContextLoaded(
+                agent_core::event::TaskPackage {
+                    name: "moving-company-platform".to_string(),
+                    task_file: task.clone(),
+                    files: vec![],
+                    acceptance_spec: None,
+                }
+            )).ok();
+
+            let mut controller_task = tokio::spawn(async move {
+                controller.run_to_completion().await;
+                controller
+            });
+
+            let controller = loop {
+                tokio::select! {
+                    Some(effect) = side_effect_rx.recv() => {
+                        executor.handle(effect).await;
+                    }
+                    result = &mut controller_task => {
+                        let controller = result?;
+                        side_effect_rx.close();
+                        while let Some(effect) = side_effect_rx.recv().await {
+                            executor.handle(effect).await;
+                        }
+                        break controller;
+                    }
+                }
+            };
+
+            if let agent_core::generic_state::GenericPipelineState::Completed = controller.state.state {
+                eprintln!("✓ Agent completed successfully.");
+                std::process::exit(0);
+            } else {
+                eprintln!("✗ Agent failed.");
                 std::process::exit(1);
             }
         }

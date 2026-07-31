@@ -8,7 +8,7 @@ api_key_env = "MIMO_API_KEY"
 [context]
 model_context_tokens = 65536
 max_prompt_tokens = 48000
-max_completion_tokens = 4096
+max_completion_tokens = 8192
 safety_tokens = 8192
 
 [sampling]
@@ -30,7 +30,7 @@ test_secs = 300
 cancel_grace_secs = 2
 
 [run]
-max_repairs = 1
+max_repairs = 10
 retry_http_4xx = false
 retry_http_5xx_count = 1
 diagnostic_character_limit = 12000

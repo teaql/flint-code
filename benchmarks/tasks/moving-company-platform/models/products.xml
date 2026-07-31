@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="example"
+      _module_key="root">
+  
+  <service_category _name="Service Category"
+                    _module="Products"
+                    _module_key="products"
+                    id="id()"
+                    name="string()"
+                    code="string()"
+                    color="string()"
+                    display_order="number()"
+                    _constant="true"
+                    _identifier="code">
+    <_value id="1001" name="Moving" code="MOVING"
+            color="#2563EB" display_order="1"/>
+    <_value id="1002" name="Cleaning" code="CLEANING"
+            color="#16A34A" display_order="2"/>
+    <_value id="1003" name="Box Rental" code="BOX_RENTAL"
+            color="#F59E0B" display_order="3"/>
+    <_value id="1004" name="Additional" code="ADDITIONAL"
+            color="#8B5CF6" display_order="4"/>
+  </service_category>
+  
+  <service _name="Service"
+           _module="Products"
+           _module_key="products"
+           service_category="service_category()"
+           name="Local Moving"
+           description="Moving services within the same city"
+           base_price="500.00"
+           price_per_hour="75.00"
+           is_active="true"
+           create_time="createTime()"
+           update_time="updateTime()"/>
+  
+  <service_configuration _name="Service Configuration"
+                         _module="Products"
+                         _module_key="products"
+                         service="service()"
+                         config_key="max_weight"
+                         config_value="5000"
+                         description="Maximum weight in pounds"
+                         create_time="createTime()"
+                         update_time="updateTime()"/>
+  
+  <pricing_rule _name="Pricing Rule"
+                _module="Products"
+                _module_key="products"
+                service="service()"
+                rule_name="Weekend Surcharge"
+                rule_type="percentage"
+                value="15.00"
+                start_date="2025-01-01"
+                end_date="2025-12-31"
+                is_active="true"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+  
+  <box_type _name="Box Type"
+            _module="Products"
+            _module_key="products"
+            name="Large Box"
+            description="24x18x18 inches"
+            daily_rate="2.50"
+            quantity_available="100"
+            create_time="createTime()"
+            update_time="updateTime()"/>
+  
+  <box_rental _name="Box Rental"
+              _module="Products"
+              _module_key="products"
+              customer="customer()"
+              box_type="box_type()"
+              quantity="20"
+              rental_start="2025-06-01"
+              rental_end="2025-06-15"
+              total_cost="750.00"
+              create_time="createTime()"
+              update_time="updateTime()"/>
+</root>

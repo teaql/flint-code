@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="example"
+      _module_key="root">
+  
+  <customer_type _name="Customer Type"
+                 _module="Customers"
+                 _module_key="customers"
+                 id="id()"
+                 name="string()"
+                 code="string()"
+                 color="string()"
+                 display_order="number()"
+                 _constant="true"
+                 _identifier="code">
+    <_value id="1001" name="Private" code="PRIVATE"
+            color="#2563EB" display_order="1"/>
+    <_value id="1002" name="Corporate" code="CORPORATE"
+            color="#16A34A" display_order="2"/>
+  </customer_type>
+  
+  <customer _name="Customer"
+            _module="Customers"
+            _module_key="customers"
+            customer_type="customer_type()"
+            first_name="Jane"
+            last_name="Smith"
+            email="jane.smith@example.com"
+            phone="555-987-6543"
+            company_name="Acme Corp"
+            _audit_mask_fields="email phone first_name last_name company_name"
+            create_time="createTime()"
+            update_time="updateTime()"/>
+  
+  <customer_contact _name="Customer Contact"
+                    _module="Customers"
+                    _module_key="customers"
+                    customer="customer()"
+                    contact_type="primary"
+                    first_name="Jane"
+                    last_name="Smith"
+                    email="jane.smith@example.com"
+                    phone="555-987-6543"
+                    is_primary="true"
+                    _audit_mask_fields="email phone first_name last_name"
+                    create_time="createTime()"
+                    update_time="updateTime()"/>
+  
+  <billing_info _name="Billing Info"
+                _module="Customers"
+                _module_key="customers"
+                customer="customer()"
+                payment_method="credit_card"
+                card_last_four="1234"
+                billing_address="address()"
+                is_default="true"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+  
+  <customer_history _name="Customer History"
+                    _module="Customers"
+                    _module_key="customers"
+                    customer="customer()"
+                    event_type="move_completed"
+                    event_date="2025-05-15"
+                    description="Completed move from Springfield to Chicago"
+                    amount="1500.00"
+                    create_time="createTime()"
+                    update_time="updateTime()"/>
+</root>

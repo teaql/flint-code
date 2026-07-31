@@ -1,3 +1,0 @@
-The previous output was rejected. Fix the following errors and output a complete corrected artifact:
-
-{{errors}}

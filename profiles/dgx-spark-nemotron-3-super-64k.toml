@@ -36,8 +36,8 @@ test_secs = 300
 cancel_grace_secs = 2
 
 [run]
-max_repairs = 1
-# Hard upper limit is 3
+max_repairs = 5
+# Hard upper limit is 5
 retry_http_4xx = false
 retry_http_5xx_count = 1
 diagnostic_character_limit = 12000

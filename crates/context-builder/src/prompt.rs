@@ -4,7 +4,7 @@ use crate::task_package::TaskPackageData;
 /// Design doc target: < 2K tokens.
 pub fn build_system_prompt() -> String {
     std::fs::read_to_string("prompts/system.txt")
-        .unwrap_or_else(|_| include_str!("../../../prompts/system.txt").to_string())
+        .unwrap_or_else(|_| "You are an autonomous coding agent. Please follow the instructions.".to_string())
 }
 
 /// Build messages for a lightweight conversational request that must not enter
@@ -24,6 +24,28 @@ user to submit an explicit development task."
             ),
         ),
         ("user".to_string(), question.to_string()),
+    ]
+}
+
+/// Build messages for a lightweight intent classification request.
+///
+/// The model responds with exactly one category word, enabling the TUI
+/// to route user input without brittle keyword matching.
+pub fn build_classify_intent_messages(input: &str) -> Vec<(String, String)> {
+    vec![
+        (
+            "system".to_string(),
+            "You classify user input intent. Respond with exactly one word:\n\
+             - TASK: user wants to create, modify, build, fix, generate, refactor, or delete code\n\
+             - CHAT: user asks a question, wants an explanation, or makes a conversational request\n\
+             - MODEL: user asks about the current model name or configuration\n\
+             - ENDPOINT: user asks about the service endpoint or address\n\
+             - SERVICE: user asks about service health\n\
+             - STATUS: user asks about system or agent status\n\
+             Respond with only the category word, nothing else."
+                .to_string(),
+        ),
+        ("user".to_string(), input.to_string()),
     ]
 }
 
@@ -86,7 +108,7 @@ pub fn build_repair_messages(
 
     // Truncated diagnostic with actionable errors only
     let template = std::fs::read_to_string("prompts/repair-domain.txt")
-        .unwrap_or_else(|_| include_str!("../../../prompts/repair-domain.txt").to_string());
+        .unwrap_or_else(|_| "Fix the following errors:\n{{errors}}".to_string());
     let mut errors_str = String::new();
     for err in actionable_errors {
         let truncated: String = err
@@ -151,5 +173,18 @@ mod tests {
             messages.last().expect("user message").1,
             "Build a small library system with about five objects."
         );
+    }
+
+    #[test]
+    fn classify_intent_prompt_enumerates_all_categories() {
+        let messages = build_classify_intent_messages("fix input routing");
+        assert_eq!(messages.len(), 2);
+        assert!(messages[0].1.contains("TASK"));
+        assert!(messages[0].1.contains("CHAT"));
+        assert!(messages[0].1.contains("MODEL"));
+        assert!(messages[0].1.contains("ENDPOINT"));
+        assert!(messages[0].1.contains("SERVICE"));
+        assert!(messages[0].1.contains("STATUS"));
+        assert_eq!(messages[1].1, "fix input routing");
     }
 }

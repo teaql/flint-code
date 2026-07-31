@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="example"
+      _module_key="root">
+  
+  <employee _name="Employee"
+            _module="Employees"
+            _module_key="employees"
+            first_name="John"
+            last_name="Doe"
+            email="john.doe@example.com"
+            phone="555-123-4567"
+            hire_date="2023-01-15"
+            position="Mover"
+            is_active="true"
+            _audit_mask_fields="email phone first_name last_name"
+            create_time="createTime()"
+            update_time="updateTime()"/>
+  
+  <job_assignment _name="Job Assignment"
+                  _module="Employees"
+                  _module_key="employees"
+                  employee="employee()"
+                  moving_job="moving_job()"
+                  role="lead_mover"
+                  assigned_date="2025-05-28"
+                  start_time="2025-06-01T08:00:00"
+                  end_time="2025-06-01T16:00:00"
+                  create_time="createTime()"
+                  update_time="updateTime()"/>
+  
+  <worked_hours _name="Worked Hours"
+                _module="Employees"
+                _module_key="employees"
+                employee="employee()"
+                job_assignment="job_assignment()"
+                date="2025-06-01"
+                hours_worked="8.0"
+                overtime_hours="0.5"
+                notes="Completed move successfully"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+  
+  <payroll_calculation _name="Payroll Calculation"
+                       _module="Employees"
+                       _module_key="employees"
+                       employee="employee()"
+                       period_start="2025-06-01"
+                       period_end="2025-06-15"
+                       regular_hours="80.0"
+                       overtime_hours="5.0"
+                       hourly_rate="25.00"
+                       gross_pay="2125.00"
+                       deductions="425.00"
+                       net_pay="1700.00"
+                       create_time="createTime()"
+                       update_time="updateTime()"/>
+  
+  <bonus _name="Bonus"
+         _module="Employees"
+         _module_key="employees"
+         employee="employee()"
+         amount="500.00"
+         reason="Performance bonus"
+         awarded_date="2025-06-15"
+         create_time="createTime()"
+         update_time="updateTime()"/>
+  
+  <leave_type _name="Leave Type"
+              _module="Employees"
+              _module_key="employees"
+              id="id()"
+              name="string()"
+              code="string()"
+              color="string()"
+              display_order="number()"
+              _constant="true"
+              _identifier="code">
+    <_value id="1001" name="Vacation" code="VACATION"
+            color="#2563EB" display_order="1"/>
+    <_value id="1002" name="Sick" code="SICK"
+            color="#F59E0B" display_order="2"/>
+    <_value id="1003" name="Personal" code="PERSONAL"
+            color="#16A34A" display_order="3"/>
+  </leave_type>
+  
+  <leave_request _name="Leave Request"
+                 _module="Employees"
+                 _module_key="employees"
+                 employee="employee()"
+                 leave_type="leave_type()"
+                 start_date="2025-07-01"
+                 end_date="2025-07-05"
+                 reason="Family vacation"
+                 status="pending"
+                 create_time="createTime()"
+                 update_time="updateTime()"/>
+</root>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="example"
+      _module_key="root">
+  
+  <role _name="Role"
+        _module="Platform"
+        _module_key="platform"
+        id="id()"
+        name="string()"
+        code="string()"
+        color="string()"
+        display_order="number()"
+        _constant="true"
+        _identifier="code">
+    <_value id="1001" name="Admin" code="ADMIN"
+            color="#EF4444" display_order="1"/>
+    <_value id="1002" name="Manager" code="MANAGER"
+            color="#F59E0B" display_order="2"/>
+    <_value id="1003" name="Employee" code="EMPLOYEE"
+            color="#2563EB" display_order="3"/>
+    <_value id="1004" name="Customer" code="CUSTOMER"
+            color="#16A34A" display_order="4"/>
+  </role>
+  
+  <user _name="User"
+        _module="Platform"
+        _module_key="platform"
+        username="jsmith"
+        email="jsmith@example.com"
+        password_hash="$2b$12$..."
+        first_name="John"
+        last_name="Smith"
+        role="role()"
+        is_active="true"
+        last_login="2025-06-01T09:00:00"
+        _audit_mask_fields="password_hash,email,username,first_name,last_name"
+        create_time="createTime()"
+        update_time="updateTime()"/>
+  
+  <permission _name="Permission"
+              _module="Platform"
+              _module_key="platform"
+              id="id()"
+              name="string()"
+              code="string()"
+              color="string()"
+              display_order="number()"
+              _constant="true"
+              _identifier="code">
+    <_value id="1001" name="Read" code="READ"
+            color="#2563EB" display_order="1"/>
+    <_value id="1002" name="Write" code="WRITE"
+            color="#16A34A" display_order="2"/>
+    <_value id="1003" name="Delete" code="DELETE"
+            color="#EF4444" display_order="3"/>
+    <_value id="1004" name="Admin" code="ADMIN"
+            color="#F59E0B" display_order="4"/>
+  </permission>
+  
+  <role_permission _name="Role Permission"
+                   _module="Platform"
+                   _module_key="platform"
+                   role="role()"
+                   permission="permission()"
+                   resource="customers"
+                   create_time="createTime()"
+                   update_time="updateTime()"/>
+  
+  <magic_link _name="Magic Link"
+              _module="Platform"
+              _module_key="platform"
+              user="user()"
+              token="abc123def456"
+              expires_at="2025-06-01T10:00:00"
+              is_used="false"
+              _audit_mask_fields="token"
+              create_time="createTime()"
+              update_time="updateTime()"/>
+  
+  <activity_log _name="Activity Log"
+                _module="Platform"
+                _module_key="platform"
+                user="user()"
+                action="login"
+                resource="auth"
+                details="Successful login"
+                ip_address="192.168.1.100"
+                user_agent="Mozilla/5.0"
+                timestamp="2025-06-01T09:00:00"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+  
+  <notification_type _name="Notification Type"
+                     _module="Platform"
+                     _module_key="platform"
+                     id="id()"
+                     name="string()"
+                     code="string()"
+                     color="string()"
+                     display_order="number()"
+                     _constant="true"
+                     _identifier="code">
+    <_value id="1001" name="Email" code="EMAIL"
+            color="#2563EB" display_order="1"/>
+    <_value id="1002" name="SMS" code="SMS"
+            color="#16A34A" display_order="2"/>
+    <_value id="1003" name="Push" code="PUSH"
+            color="#F59E0B" display_order="3"/>
+  </notification_type>
+  
+  <notification _name="Notification"
+                _module="Platform"
+                _module_key="platform"
+                user="user()"
+                notification_type="notification_type()"
+                title="Move Scheduled"
+                message="Your move has been scheduled for June 1st"
+                is_read="false"
+                sent_at="2025-05-28T14:00:00"
+                create_time="createTime()"
+                update_time="updateTime()"/>
+  
+  <automation_hook _name="Automation Hook"
+                   _module="Platform"
+                   _module_key="platform"
+                   name="Move Completion Hook"
+                   event_type="move_completed"
+                   webhook_url="https://api.example.com/hooks/move-completed"
+                   is_active="true"
+                   create_time="createTime()"
+                   update_time="updateTime()"/>
+</root>

@@ -32,7 +32,7 @@ test_secs = 300
 cancel_grace_secs = 1
 
 [run]
-max_repairs = 1
+max_repairs = 5
 retry_http_4xx = false
 retry_http_5xx_count = 0
 diagnostic_character_limit = 12000

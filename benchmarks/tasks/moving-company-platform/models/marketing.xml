@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="example"
+      _module_key="root">
+  
+  <campaign _name="Campaign"
+            _module="Marketing"
+            _module_key="marketing"
+            name="Summer Moving Sale"
+            description="20% off all moving services"
+            start_date="2025-06-01"
+            end_date="2025-08-31"
+            budget="10000.00"
+            status="active"
+            create_time="createTime()"
+            update_time="updateTime()"/>
+  
+  <discount_code _name="Discount Code"
+                 _module="Marketing"
+                 _module_key="marketing"
+                 campaign="campaign()"
+                 code="SUMMER20"
+                 discount_type="percentage"
+                 discount_value="20.00"
+                 max_uses="100"
+                 current_uses="45"
+                 start_date="2025-06-01"
+                 end_date="2025-08-31"
+                 is_active="true"
+                 create_time="createTime()"
+                 update_time="updateTime()"/>
+  
+  <lead _name="Lead"
+        _module="Marketing"
+        _module_key="marketing"
+        first_name="Mike"
+        last_name="Johnson"
+        email="mike.johnson@example.com"
+        phone="555-111-2222"
+        source="website"
+        status="new"
+        notes="Interested in moving services"
+        _audit_mask_fields="email phone"
+        create_time="createTime()"
+        update_time="updateTime()"/>
+  
+  <lead_status _name="Lead Status"
+               _module="Marketing"
+               _module_key="marketing"
+               id="id()"
+               name="string()"
+               code="string()"
+               color="string()"
+               display_order="number()"
+               _constant="true"
+               _identifier="code">
+    <_value id="1001" name="New" code="NEW"
+            color="#F59E0B" display_order="1"/>
+    <_value id="1002" name="Contacted" code="CONTACTED"
+            color="#2563EB" display_order="2"/>
+    <_value id="1003" name="Qualified" code="QUALIFIED"
+            color="#16A34A" display_order="3"/>
+    <_value id="1004" name="Converted" code="CONVERTED"
+            color="#8B5CF6" display_order="4"/>
+    <_value id="1005" name="Lost" code="LOST"
+            color="#6B7280" display_order="5"/>
+  </lead_status>
+  
+  <conversion_metric _name="Conversion Metric"
+                     _module="Marketing"
+                     _module_key="marketing"
+                     campaign="campaign()"
+                     metric_date="2025-06-15"
+                     impressions="1000"
+                     clicks="150"
+                     leads_generated="25"
+                     conversions="10"
+                     conversion_rate="40.0"
+                     create_time="createTime()"
+                     update_time="updateTime()"/>
+</root>

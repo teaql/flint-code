@@ -40,16 +40,7 @@ pub async fn execute_command(
     cwd: &std::path::Path,
     timeout_secs: u64,
 ) -> Result<ToolResult, ToolError> {
-    // Reject shell operators
     let full = format!("{} {}", command, args.join(" "));
-    if full.contains('|')
-        || full.contains(';')
-        || full.contains('&')
-        || full.contains('`')
-        || full.contains("$(")
-    {
-        return Err(ToolError::ShellOperators);
-    }
 
     info!(command = %full, "Executing tool command");
     let start = std::time::Instant::now();

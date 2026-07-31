@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="example"
+      _module_key="root">
+  
+  <vehicle_type _name="Vehicle Type"
+                _module="Assets"
+                _module_key="assets"
+                id="id()"
+                name="string()"
+                code="string()"
+                color="string()"
+                display_order="number()"
+                _constant="true"
+                _identifier="code">
+    <_value id="1001" name="Box Truck" code="BOX_TRUCK"
+            color="#2563EB" display_order="1"/>
+    <_value id="1002" name="Flatbed" code="FLATBED"
+            color="#16A34A" display_order="2"/>
+    <_value id="1003" name="Van" code="VAN"
+            color="#F59E0B" display_order="3"/>
+  </vehicle_type>
+  
+  <vehicle _name="Vehicle"
+           _module="Assets"
+           _module_key="assets"
+           vehicle_type="vehicle_type()"
+           make="Ford"
+           model="Transit"
+           year="2023"
+           license_plate="ABC123"
+           vin="1FTBW2CM3PKA12345"
+           mileage="25000"
+           status="available"
+           create_time="createTime()"
+           update_time="updateTime()"/>
+  
+  <equipment _name="Equipment"
+             _module="Assets"
+             _module_key="assets"
+             name="Hand Truck"
+             description="Heavy duty hand truck"
+             quantity="10"
+             condition="good"
+             purchase_date="2024-01-15"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+  
+  <consumable _name="Consumable"
+              _module="Assets"
+              _module_key="assets"
+              name="Packing Tape"
+              description="Heavy duty packing tape"
+              quantity_in_stock="50"
+              unit_cost="5.00"
+              reorder_level="10"
+              create_time="createTime()"
+              update_time="updateTime()"/>
+  
+  <maintenance_status _name="Maintenance Status"
+                      _module="Assets"
+                      _module_key="assets"
+                      id="id()"
+                      name="string()"
+                      code="string()"
+                      color="string()"
+                      display_order="number()"
+                      _constant="true"
+                      _identifier="code">
+    <_value id="1001" name="Scheduled" code="SCHEDULED"
+            color="#F59E0B" display_order="1"/>
+    <_value id="1002" name="In Progress" code="IN_PROGRESS"
+            color="#2563EB" display_order="2"/>
+    <_value id="1003" name="Completed" code="COMPLETED"
+            color="#16A34A" display_order="3"/>
+    <_value id="1004" name="Cancelled" code="CANCELLED"
+            color="#6B7280" display_order="4"/>
+  </maintenance_status>
+  
+  <maintenance_schedule _name="Maintenance Schedule"
+                        _module="Assets"
+                        _module_key="assets"
+                        vehicle="vehicle()"
+                        maintenance_type="oil_change"
+                        scheduled_date="2025-07-01"
+                        status="maintenance_status()"
+                        notes="Regular maintenance"
+                        create_time="createTime()"
+                        update_time="updateTime()"/>
+</root>

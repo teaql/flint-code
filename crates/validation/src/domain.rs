@@ -77,6 +77,7 @@ pub fn parse_teaql_output(output: &str) -> ValidationResult {
         warning_count,
         suggestion_count,
         actionable_errors: errors,
+        structured_errors: vec![],
         diagnostic: output.to_string(),
         elapsed_secs: 0.0,
     }

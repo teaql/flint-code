@@ -159,6 +159,9 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
             }
         }
 
+        // ── Streaming token (display-only, no state change) ──
+        (_, RunEvent::ModelToken(_)) => SideEffect::None,
+
         // ── Auxiliary model call usage ──
         (current, RunEvent::ModelUsageRecorded(usage)) if current.is_active() => {
             state.record_model_usage(usage);
@@ -443,6 +446,7 @@ mod tests {
             warning_count: 0,
             suggestion_count: 0,
             actionable_errors: vec![],
+            structured_errors: vec![],
             diagnostic: String::new(),
             elapsed_secs: 0.1,
         };
@@ -461,6 +465,7 @@ mod tests {
             warning_count: 5,
             suggestion_count: 2,
             actionable_errors: vec![],
+            structured_errors: vec![],
             diagnostic: String::new(),
             elapsed_secs: 1.2,
         };
@@ -479,6 +484,7 @@ mod tests {
             warning_count: 0,
             suggestion_count: 0,
             actionable_errors: vec![],
+            structured_errors: vec![],
             diagnostic: String::new(),
             elapsed_secs: 5.0,
         };
@@ -539,6 +545,7 @@ mod tests {
             warning_count: 0,
             suggestion_count: 0,
             actionable_errors: vec!["XML parse error".to_string()],
+            structured_errors: vec![],
             diagnostic: "line 1: unclosed tag".to_string(),
             elapsed_secs: 0.01,
         };

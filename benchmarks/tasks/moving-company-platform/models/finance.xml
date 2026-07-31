@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="example"
+      _module_key="root">
+  
+  <payment_method _name="Payment Method"
+                  _module="Finance"
+                  _module_key="finance"
+                  id="id()"
+                  name="string()"
+                  code="string()"
+                  color="string()"
+                  display_order="number()"
+                  _constant="true"
+                  _identifier="code">
+    <_value id="1001" name="Credit Card" code="CREDIT_CARD"
+            color="#2563EB" display_order="1"/>
+    <_value id="1002" name="Bank Transfer" code="BANK_TRANSFER"
+            color="#16A34A" display_order="2"/>
+    <_value id="1003" name="Cash" code="CASH"
+            color="#F59E0B" display_order="3"/>
+    <_value id="1004" name="Check" code="CHECK"
+            color="#8B5CF6" display_order="4"/>
+  </payment_method>
+  
+  <payment _name="Payment"
+           _module="Finance"
+           _module_key="finance"
+           customer="customer()"
+           moving_job="moving_job()"
+           payment_method="payment_method()"
+           amount="1500.00"
+           payment_date="2025-06-01"
+           transaction_id="TXN123456"
+           status="completed"
+           create_time="createTime()"
+           update_time="updateTime()"/>
+  
+  <invoice _name="Invoice"
+           _module="Finance"
+           _module_key="finance"
+           customer="customer()"
+           moving_job="moving_job()"
+           invoice_number="INV-2025-001"
+           issue_date="2025-06-01"
+           due_date="2025-06-15"
+           subtotal="1500.00"
+           tax_amount="120.00"
+           total_amount="1620.00"
+           status="paid"
+           create_time="createTime()"
+           update_time="updateTime()"/>
+  
+  <expense_category _name="Expense Category"
+                    _module="Finance"
+                    _module_key="finance"
+                    id="id()"
+                    name="string()"
+                    code="string()"
+                    color="string()"
+                    display_order="number()"
+                    _constant="true"
+                    _identifier="code">
+    <_value id="1001" name="Fuel" code="FUEL"
+            color="#F59E0B" display_order="1"/>
+    <_value id="1002" name="Maintenance" code="MAINTENANCE"
+            color="#2563EB" display_order="2"/>
+    <_value id="1003" name="Supplies" code="SUPPLIES"
+            color="#16A34A" display_order="3"/>
+    <_value id="1004" name="Insurance" code="INSURANCE"
+            color="#8B5CF6" display_order="4"/>
+  </expense_category>
+  
+  <expense _name="Expense"
+           _module="Finance"
+           _module_key="finance"
+           expense_category="expense_category()"
+           vehicle="vehicle()"
+           amount="150.00"
+           expense_date="2025-06-01"
+           description="Fuel for truck #1"
+           receipt_number="REC789"
+           create_time="createTime()"
+           update_time="updateTime()"/>
+  
+  <vat_rate _name="VAT Rate"
+            _module="Finance"
+            _module_key="finance"
+            name="Standard Rate"
+            rate="8.00"
+            effective_date="2025-01-01"
+            is_active="true"
+            create_time="createTime()"
+            update_time="updateTime()"/>
+  
+  <financial_summary _name="Financial Summary"
+                     _module="Finance"
+                     _module_key="finance"
+                     period_start="2025-06-01"
+                     period_end="2025-06-30"
+                     total_revenue="25000.00"
+                     total_expenses="8000.00"
+                     net_profit="17000.00"
+                     create_time="createTime()"
+                     update_time="updateTime()"/>
+</root>

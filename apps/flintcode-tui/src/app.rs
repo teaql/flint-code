@@ -102,6 +102,8 @@ pub struct App {
     pub input_notice: Option<String>,
     pub timeline: Vec<TimelineEntry>,
     pub service_health: ServiceHealth,
+    /// Accumulated token count during streaming generation.
+    pub streaming_tokens: usize,
 }
 
 impl App {
@@ -149,6 +151,7 @@ impl App {
             input_notice: None,
             timeline: Vec::new(),
             service_health: ServiceHealth::Checking,
+            streaming_tokens: 0,
         })
     }
 
@@ -224,7 +227,7 @@ impl App {
             self.execute_slash_command(&prompt);
             return Ok(());
         }
-        let intent = classify_input(&prompt);
+        let intent = self.classify_with_model(&prompt).await;
         if matches!(intent, InputIntent::Task(_) | InputIntent::Chat(_))
             && (self.run_state().state.is_active() || self.chat_in_flight)
         {
@@ -397,6 +400,10 @@ impl App {
     pub fn observe_event(&mut self, event: &RunEvent) {
         if let RunEvent::ModelCompleted(result) = event {
             self.candidate = result.content.clone();
+            self.streaming_tokens = 0;
+        }
+        if let RunEvent::ModelToken(_) = event {
+            self.streaming_tokens += 1;
         }
         let entry = match event {
             RunEvent::TaskLoaded(task) => {
@@ -545,6 +552,30 @@ impl App {
             .filter(|step| matches!(step.status, agent_core::state::PlanStepStatus::Completed))
             .count();
         (completed, run.plan.len())
+    }
+
+    /// Classify user input intent using the model.
+    /// Falls back to keyword matching if the model call fails.
+    async fn classify_with_model(&self, input: &str) -> InputIntent {
+        // Skip model classification for explicit slash commands
+        let lower = input.trim().to_ascii_lowercase();
+        if lower.starts_with("/task ") || lower.starts_with("/ask ") || lower.starts_with("/chat ") {
+            return classify_input(input);
+        }
+
+        let Ok(client) = ModelClient::from_profile(self.profile.clone()) else {
+            return classify_input(input);
+        };
+
+        let messages = context_builder::build_classify_intent_messages(input);
+        let chat_messages: Vec<model_vllm::chat::ChatMessage> = messages
+            .into_iter()
+            .map(|(role, content)| model_vllm::chat::ChatMessage { role, content })
+            .collect();
+        match client.chat(chat_messages).await {
+            Ok(result) => parse_intent_response(&result.content, input),
+            Err(_) => classify_input(input), // fallback to keyword matching
+        }
     }
 }
 
@@ -706,10 +737,45 @@ fn contains_any(content: &str, needles: &[&str]) -> bool {
     needles.iter().any(|needle| content.contains(needle))
 }
 
+/// Parse the model's one-word intent classification response.
+/// Falls back to keyword-based classification if the response is unrecognized.
+fn parse_intent_response(response: &str, original_input: &str) -> InputIntent {
+    match response.trim().to_ascii_uppercase().as_str() {
+        "TASK" => InputIntent::Task(original_input.to_string()),
+        "CHAT" => InputIntent::Chat(original_input.to_string()),
+        "MODEL" => InputIntent::Local(LocalQuery::Model),
+        "ENDPOINT" => InputIntent::Local(LocalQuery::Endpoint),
+        "SERVICE" => InputIntent::Local(LocalQuery::Service),
+        "STATUS" => InputIntent::Local(LocalQuery::Status),
+        _ => classify_input(original_input), // fallback
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use agent_core::state::PipelineState;
+
+    #[test]
+    fn parse_intent_maps_model_responses_to_intents() {
+        assert_eq!(
+            parse_intent_response("TASK", "fix the bug"),
+            InputIntent::Task("fix the bug".to_string())
+        );
+        assert_eq!(
+            parse_intent_response("CHAT", "how does this work"),
+            InputIntent::Chat("how does this work".to_string())
+        );
+        assert_eq!(
+            parse_intent_response("MODEL", "which model"),
+            InputIntent::Local(LocalQuery::Model)
+        );
+        // Unrecognized responses fall back to keyword matching
+        assert_eq!(
+            parse_intent_response("UNKNOWN", "fix the bug"),
+            InputIntent::Task("fix the bug".to_string())
+        );
+    }
 
     #[test]
     fn composer_edits_unicode_at_character_boundaries() {

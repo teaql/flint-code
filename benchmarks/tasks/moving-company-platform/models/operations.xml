@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root name="moving-company-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="example"
+      _module_key="root">
+  
+  <address _name="Address"
+           _module="Operations"
+           _module_key="operations"
+           street="123 Main St"
+           city="Springfield"
+           state="IL"
+           zip_code="62701"
+           country="USA"
+           create_time="createTime()"
+           update_time="updateTime()"/>
+  
+  <route _name="Route"
+         _module="Operations"
+         _module_key="operations"
+         name="Downtown Route"
+         origin="address()"
+         destination="address()"
+         estimated_duration="120"
+         distance_miles="45.5"
+         create_time="createTime()"
+         update_time="updateTime()"/>
+  
+  <time_slot _name="Time Slot"
+             _module="Operations"
+             _module_key="operations"
+             start_time="2025-06-01T08:00:00"
+             end_time="2025-06-01T12:00:00"
+             is_available="true"
+             create_time="createTime()"
+             update_time="updateTime()"/>
+  
+  <move_status _name="Move Status"
+               _module="Operations"
+               _module_key="operations"
+               id="id()"
+               name="string()"
+               code="string()"
+               color="string()"
+               display_order="number()"
+               progress="number()"
+               _constant="true"
+               _identifier="code">
+    <_value id="1001" name="Scheduled" code="SCHEDULED"
+            color="#F59E0B" display_order="1" progress="0"/>
+    <_value id="1002" name="In Progress" code="IN_PROGRESS"
+            color="#2563EB" display_order="2" progress="50"/>
+    <_value id="1003" name="Completed" code="COMPLETED"
+            color="#16A34A" display_order="3" progress="100"/>
+    <_value id="1004" name="Cancelled" code="CANCELLED"
+            color="#6B7280" display_order="4" progress="0"/>
+  </move_status>
+  
+  <moving_job _name="Moving Job"
+        _module="Operations"
+        _module_key="operations"
+        customer="customer()"
+        route="route()"
+        time_slot="time_slot()"
+        status="move_status()"
+        scheduled_date="2025-06-01"
+        notes="Handle with care"
+        create_time="createTime()"
+        update_time="updateTime()"/>
+  
+  <fulfillment_event _name="Fulfillment Event"
+                     _module="Operations"
+                     _module_key="operations"
+                     moving_job="moving_job()"
+                     event_type="pickup"
+                     timestamp="2025-06-01T08:30:00"
+                     location="address()"
+                     notes="Items loaded successfully"
+                     create_time="createTime()"
+                     update_time="updateTime()"/>
+</root>

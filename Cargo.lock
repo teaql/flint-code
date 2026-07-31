@@ -1328,6 +1328,7 @@ dependencies = [
  "model-vllm",
  "serde",
  "serde_json",
+ "tempfile",
  "tokio",
  "toml",
  "tool-runner",

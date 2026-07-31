@@ -34,6 +34,7 @@ pub fn pass(level: u8, level_name: &str, elapsed_secs: f64) -> ValidationResult 
         warning_count: 0,
         suggestion_count: 0,
         actionable_errors: vec![],
+        structured_errors: vec![],
         diagnostic: String::new(),
         elapsed_secs,
     }
@@ -55,6 +56,7 @@ pub fn fail(
         warning_count: 0,
         suggestion_count: 0,
         actionable_errors: errors,
+        structured_errors: vec![],
         diagnostic,
         elapsed_secs,
     }

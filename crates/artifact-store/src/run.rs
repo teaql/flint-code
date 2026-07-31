@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use tracing::info;
 
 /// Manages the artifact directory for a single run.
+#[derive(Clone)]
 pub struct RunArtifacts {
     pub run_id: String,
     pub root: PathBuf,

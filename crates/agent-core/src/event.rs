@@ -54,6 +54,25 @@ pub struct ModelResult {
     pub http_status: u16,
 }
 
+/// Severity level for a compiler diagnostic.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ErrorSeverity {
+    Error,
+    Warning,
+    Note,
+}
+
+/// A single structured compiler diagnostic.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CompilerError {
+    pub file: Option<String>,
+    pub line: Option<u32>,
+    pub column: Option<u32>,
+    pub code: Option<String>,   // e.g. "E0308"
+    pub message: String,
+    pub severity: ErrorSeverity,
+}
+
 /// Result from a validation gate
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ValidationResult {
@@ -66,6 +85,9 @@ pub struct ValidationResult {
     pub suggestion_count: u32,
     /// Actionable errors for repair diagnostic
     pub actionable_errors: Vec<String>,
+    /// Structured compiler errors parsed from `--message-format=json`
+    #[serde(default)]
+    pub structured_errors: Vec<CompilerError>,
     /// Full diagnostic output (may be truncated)
     pub diagnostic: String,
     pub elapsed_secs: f64,
@@ -102,6 +124,8 @@ pub enum RunEvent {
     ConsentDenied(String),
     /// Model generation request started
     ModelStarted { attempt: u8 },
+    /// Incremental token from a streaming generation request (display-only).
+    ModelToken(String),
     /// Model generation completed successfully
     ModelCompleted(ModelResult),
     /// Usage from an auxiliary model call that does not advance the pipeline.

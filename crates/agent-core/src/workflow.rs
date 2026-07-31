@@ -61,7 +61,7 @@ impl Workflow {
             build_command: None,
             test_validation: false,
             test_command: None,
-            max_repairs: Some(1),
+            max_repairs: Some(5),
         }
     }
 
@@ -79,7 +79,7 @@ impl Workflow {
             build_command: Some("cargo check --manifest-path {manifest}".to_string()),
             test_validation: true,
             test_command: Some("cargo test --manifest-path {manifest}".to_string()),
-            max_repairs: Some(1),
+            max_repairs: Some(5),
         }
     }
 }
