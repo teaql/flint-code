@@ -282,7 +282,6 @@ CRITICAL RULES FOR CONTEXT MANAGEMENT:
 3. INTERACTIVE TOOLS: Never run interactive/blocking commands like `vim`, `nano`, `top`, `less`, `tail -f`, or start foreground servers.
 4. NO WILD GUESSING: If a tool fails due to length or syntax, fix the command using a different approach (e.g. sed, awk, or writing a small python script) rather than repeating the same mistake.
 5. FILE INSPECTION: Before reading any unknown file, always check its size and line count first (e.g. using `wc -lc`). If it is large, do not output the entire file. Use `grep` to search, or `head`/`sed -n` to read only the specific parts you need.
-6. EPHEMERAL QUERIES: If you only need the output of a command for your immediate next step (e.g., querying an API reference, looking up a method signature) and don't need it in your long-term context, use `<execute ephemeral>command</execute>`. The output will be automatically deleted after your next reasoning turn, saving valuable context space.
 
 PHASE MANAGEMENT:
 Your skill instructions may contain sections tagged with phase names.
@@ -399,24 +398,13 @@ If you have finished the task, output <done>summary of work</done>.";
                         }
                         
                         // Parse ALL tool calls (multi-execute support)
-                        let blocks = parse_all_execute_tags(&content);
-                        if !blocks.is_empty() {
-                            let has_ephemeral = blocks.iter().any(|b| b.ephemeral);
-                            if blocks.len() > 1 {
-                                info!(
-                                    count = blocks.len(),
-                                    ephemeral = has_ephemeral,
-                                    "Model issued multiple tool calls — executing in parallel"
-                                );
+                        let commands = parse_all_execute_tags(&content);
+                        if !commands.is_empty() {
+                            if commands.len() > 1 {
+                                info!(count = commands.len(), "Model issued multiple tool calls — executing in parallel");
                             }
-                            // Join commands; prefix ephemeral ones so ExecuteTool can tag their output
-                            let commands: Vec<String> = blocks.iter().map(|b| {
-                                if b.ephemeral {
-                                    format!("__EPHEMERAL__ {}", b.command)
-                                } else {
-                                    b.command.clone()
-                                }
-                            }).collect();
+                            // For the state machine, we send the first command to transition to ExecutingTool.
+                            // The executor handles parallel execution internally.
                             let joined = commands.join(" && ");
                             self.send(GenericRunEvent::ToolCallRequested { command: joined }).await;
                         } else if content.contains("<done>") {
@@ -459,24 +447,21 @@ If you have finished the task, output <done>summary of work</done>.";
                 }
             }
             GenericSideEffect::ExecuteTool { command } => {
-                // Check if command is marked ephemeral (output should be auto-deleted next turn)
-                let (actual_command, is_ephemeral) = if command.starts_with("__EPHEMERAL__ ") {
-                    (command.strip_prefix("__EPHEMERAL__ ").unwrap().to_string(), true)
-                } else {
-                    (command.clone(), false)
-                };
-                
-                info!(command = %actual_command, ephemeral = is_ephemeral, "Executing tool");
+                info!(%command, "Executing tool");
                 
                 let cwd = &self.workspace_root;
                 
                 // Wrap the model's command in a bash invocation so pipes and redirection work
-                let args = vec!["-c", &actual_command as &str];
+                let args = vec!["-c", &command];
                 
                 let timeout = self.profile.timeouts.model_secs.max(120);
                 match tool_runner::execute_command("bash", &args, cwd, timeout).await {
                     Ok(res) => {
                         let raw_out = format!("STDOUT:\n{}\nSTDERR:\n{}", res.stdout, res.stderr);
+                        
+                        // Check if the CLI tool wants this output to be ephemeral
+                        let is_ephemeral = raw_out.contains("[EPHEMERAL]");
+                        
                         let out = Self::truncate_output(&raw_out);
                         if raw_out.len() != out.len() {
                             info!(
@@ -485,6 +470,7 @@ If you have finished the task, output <done>summary of work</done>.";
                                 "Tool output truncated to stay within context budget"
                             );
                         }
+                        
                         // Ephemeral outputs get the [EPHEMERAL] prefix so they're auto-cleaned
                         let msg_content = if is_ephemeral {
                             format!("[EPHEMERAL] Command exited with code {}:\n{}", res.exit_code, out)
@@ -545,20 +531,13 @@ If you have finished the task, output <done>summary of work</done>.";
     }
 }
 
-/// A parsed execute block with its command and whether it's ephemeral.
-#[derive(Debug, Clone, PartialEq)]
-struct ExecuteBlock {
-    command: String,
-    ephemeral: bool,
-}
-
-/// Parse ALL `<execute>...</execute>` and `<execute ephemeral>...</execute>` blocks.
+/// Parse ALL `<execute>...</execute>` blocks from model output.
 ///
-/// Returns a Vec of ExecuteBlock, enabling parallel execution when the model
+/// Returns a Vec of commands, enabling parallel execution when the model
 /// outputs multiple independent tool calls in a single response.
-/// Ephemeral blocks have their tool output auto-deleted after one reasoning turn.
-fn parse_all_execute_tags(content: &str) -> Vec<ExecuteBlock> {
-    let mut blocks = Vec::new();
+fn parse_all_execute_tags(content: &str) -> Vec<String> {
+    let mut commands = Vec::new();
+    let open_tag = "<execute>";
     let close_tag = "</execute>";
 
     // Strip markdown code fences if the entire content is wrapped in them
@@ -576,42 +555,27 @@ fn parse_all_execute_tags(content: &str) -> Vec<ExecuteBlock> {
     let mut search_from = 0;
     while search_from < working.len() {
         let remaining = &working[search_from..];
-        // Try <execute ephemeral> first, then <execute>
-        let (start, ephemeral, open_len) =
-            if let Some(pos) = remaining.find("<execute ephemeral>") {
-                let normal_pos = remaining.find("<execute>");
-                // Use whichever comes first
-                if normal_pos.map_or(true, |np| pos < np) {
-                    (pos, true, "<execute ephemeral>".len())
-                } else {
-                    (normal_pos.unwrap(), false, "<execute>".len())
-                }
-            } else if let Some(pos) = remaining.find("<execute>") {
-                (pos, false, "<execute>".len())
-            } else {
-                break;
-            };
-        let after_open = start + open_len;
+        let Some(start) = remaining.find(open_tag) else {
+            break;
+        };
+        let after_open = start + open_tag.len();
         let Some(close_pos) = remaining[after_open..].find(close_tag) else {
             break; // unclosed tag, stop parsing
         };
         let cmd = remaining[after_open..after_open + close_pos].trim();
         if !cmd.is_empty() {
-            blocks.push(ExecuteBlock {
-                command: cmd.to_string(),
-                ephemeral,
-            });
+            commands.push(cmd.to_string());
         }
         search_from += after_open + close_pos + close_tag.len();
     }
 
-    blocks
+    commands
 }
 
 /// Parse the first `<execute>...</execute>` block (convenience wrapper).
 #[allow(dead_code)]
 fn parse_execute_tag(content: &str) -> Option<String> {
-    parse_all_execute_tags(content).into_iter().next().map(|b| b.command)
+    parse_all_execute_tags(content).into_iter().next()
 }
 
 #[cfg(test)]
@@ -627,23 +591,9 @@ mod tests {
     }
 
     #[test]
-    fn test_ephemeral_execute() {
-        let blocks = parse_all_execute_tags("text <execute ephemeral>ls -la</execute> more text");
-        assert_eq!(blocks.len(), 1);
-        assert_eq!(blocks[0].command, "ls -la");
-        assert!(blocks[0].ephemeral);
-    }
-
-    #[test]
-    fn test_mixed_ephemeral_execute() {
-        let blocks = parse_all_execute_tags("text <execute>ls</execute> <execute ephemeral>grep</execute> <execute>cat</execute>");
-        assert_eq!(blocks.len(), 3);
-        assert_eq!(blocks[0].command, "ls");
-        assert!(!blocks[0].ephemeral);
-        assert_eq!(blocks[1].command, "grep");
-        assert!(blocks[1].ephemeral);
-        assert_eq!(blocks[2].command, "cat");
-        assert!(!blocks[2].ephemeral);
+    fn test_ephemeral_output_detection() {
+        let raw_out = "STDOUT:\n[EPHEMERAL]\nSome output\nSTDERR:\n";
+        assert!(raw_out.contains("[EPHEMERAL]"));
     }
 
     #[test]
@@ -681,8 +631,8 @@ mod tests {
             <execute>cat > b.rs << 'EOF'\nfn helper() {}\nEOF</execute>";
         let cmds = parse_all_execute_tags(input);
         assert_eq!(cmds.len(), 2);
-        assert!(cmds[0].command.contains("a.rs"));
-        assert!(cmds[1].command.contains("b.rs"));
+        assert!(cmds[0].contains("a.rs"));
+        assert!(cmds[1].contains("b.rs"));
     }
 
     #[test]
@@ -692,16 +642,16 @@ mod tests {
             <execute>echo 'done'</execute>";
         let cmds = parse_all_execute_tags(input);
         assert_eq!(cmds.len(), 3);
-        assert_eq!(cmds[0].command, "mkdir -p src");
-        assert_eq!(cmds[1].command, "touch src/lib.rs");
-        assert_eq!(cmds[2].command, "echo 'done'");
+        assert_eq!(cmds[0], "mkdir -p src");
+        assert_eq!(cmds[1], "touch src/lib.rs");
+        assert_eq!(cmds[2], "echo 'done'");
     }
 
     #[test]
     fn test_single_block_returns_one() {
         let cmds = parse_all_execute_tags("text <execute>ls</execute> text");
         assert_eq!(cmds.len(), 1);
-        assert_eq!(cmds[0].command, "ls");
+        assert_eq!(cmds[0], "ls");
     }
 
     #[test]
@@ -710,7 +660,7 @@ mod tests {
         let input = "<execute>echo hi</execute>\n<execute>ls -la";
         let cmds = parse_all_execute_tags(input);
         assert_eq!(cmds.len(), 1);
-        assert_eq!(cmds[0].command, "echo hi");
+        assert_eq!(cmds[0], "echo hi");
     }
 
     #[test]
