@@ -4,6 +4,7 @@ use anyhow::Result;
 use model_vllm::client::VllmClient;
 use model_vllm::chat::ChatMessage;
 use model_vllm::profile::ModelProfile;
+use std::collections::HashSet;
 use std::path::PathBuf;
 use tokio::sync::mpsc;
 use tracing::{error, info, warn};
@@ -46,6 +47,8 @@ pub struct GenericPipelineExecutor {
     client: VllmClient,
     messages: Vec<ChatMessage>,
     turn_count: u32,
+    /// Tracks which phases have been completed; their skill sections are dropped from context.
+    completed_phases: HashSet<String>,
 }
 
 impl GenericPipelineExecutor {
@@ -76,12 +79,93 @@ impl GenericPipelineExecutor {
             client,
             messages: Vec::new(),
             turn_count: 0,
+            completed_phases: HashSet::new(),
         })
     }
 
     /// Estimate total tokens in the message history.
     fn estimate_tokens(&self) -> usize {
         self.messages.iter().map(|m| m.content.len() / CHARS_PER_TOKEN).sum()
+    }
+
+    /// Parse skill content and split into phase-tagged sections.
+    /// Returns: (non-phase content, vec of (phase_name, phase_content))
+    fn parse_skill_phases(skill_content: &str) -> (String, Vec<(String, String)>) {
+        let mut general = String::new();
+        let mut phases = Vec::new();
+        let mut current_phase: Option<String> = None;
+        let mut phase_buf = String::new();
+
+        for line in skill_content.lines() {
+            let trimmed = line.trim();
+            if let Some(rest) = trimmed.strip_prefix("<!-- phase:") {
+                if let Some(name) = rest.strip_suffix(" -->") {
+                    current_phase = Some(name.to_string());
+                    phase_buf.clear();
+                    continue;
+                }
+            }
+            if let Some(rest) = trimmed.strip_prefix("<!-- /phase:") {
+                if let Some(name) = rest.strip_suffix(" -->") {
+                    if current_phase.as_deref() == Some(name) {
+                        phases.push((name.to_string(), phase_buf.clone()));
+                        current_phase = None;
+                        phase_buf.clear();
+                        continue;
+                    }
+                }
+            }
+            if current_phase.is_some() {
+                phase_buf.push_str(line);
+                phase_buf.push('\n');
+            } else {
+                general.push_str(line);
+                general.push('\n');
+            }
+        }
+
+        // If there was an unclosed phase tag, append its content to general
+        if current_phase.is_some() {
+            general.push_str(&phase_buf);
+        }
+
+        (general, phases)
+    }
+
+    /// Drop messages belonging to a completed phase.
+    fn drop_phase(&mut self, phase_name: &str) {
+        let marker = format!("[PHASE:{}]", phase_name);
+        let before = self.messages.len();
+        self.messages.retain(|m| !m.content.starts_with(&marker));
+        let dropped = before - self.messages.len();
+        if dropped > 0 {
+            info!(
+                phase = phase_name,
+                dropped_messages = dropped,
+                freed_tokens_est = dropped * 500, // rough estimate
+                "Phase completed — dropped ephemeral skill section"
+            );
+        }
+    }
+
+    /// Check model output for <phase-complete>name</phase-complete> tags.
+    fn extract_completed_phases(content: &str) -> Vec<String> {
+        let mut phases = Vec::new();
+        let open = "<phase-complete>";
+        let close = "</phase-complete>";
+        let mut search_from = 0;
+        while search_from < content.len() {
+            let remaining = &content[search_from..];
+            let Some(start) = remaining.find(open) else { break };
+            let after_open = start + open.len();
+            let Some(close_pos) = remaining[after_open..].find(close) else { break };
+            let name = remaining[after_open..after_open + close_pos].trim();
+            if !name.is_empty() {
+                phases.push(name.to_string());
+            }
+            search_from += after_open + close_pos + close.len();
+        }
+        phases
     }
 
     /// Compact old messages when context is getting too large.
@@ -199,19 +283,51 @@ CRITICAL RULES FOR CONTEXT MANAGEMENT:
 4. NO WILD GUESSING: If a tool fails due to length or syntax, fix the command using a different approach (e.g. sed, awk, or writing a small python script) rather than repeating the same mistake.
 5. FILE INSPECTION: Before reading any unknown file, always check its size and line count first (e.g. using `wc -lc`). If it is large, do not output the entire file. Use `grep` to search, or `head`/`sed -n` to read only the specific parts you need.
 
+PHASE MANAGEMENT:
+Your skill instructions may contain sections tagged with phase names.
+When you finish a phase of work (e.g., XML model generation is done), output:
+<phase-complete>phase_name</phase-complete>
+This tells the system to discard the instructions for that phase, freeing context space for the next phase.
+Only declare a phase complete when you are CERTAIN you no longer need those instructions.
+
 If you have finished the task, output <done>summary of work</done>.";
                 self.messages.push(ChatMessage {
                     role: "system".to_string(),
                     content: system_prompt.to_string(),
                 });
                 
-                // Load optional skill
+                // Load optional skill — split by phase markers
                 if let Some(skill_path) = &self.skill_path {
                     if let Ok(skill_content) = std::fs::read_to_string(skill_path) {
-                        self.messages.push(ChatMessage {
-                            role: "system".to_string(),
-                            content: format!("Use the following skill instructions for this task:\n\n{}", skill_content),
-                        });
+                        let (general, phases) = Self::parse_skill_phases(&skill_content);
+                        
+                        // Always include the general (non-phase) portion
+                        if !general.trim().is_empty() {
+                            self.messages.push(ChatMessage {
+                                role: "system".to_string(),
+                                content: format!("Use the following skill instructions for this task:\n\n{}", general),
+                            });
+                        }
+                        
+                        // Add phase-specific sections as separate messages with markers
+                        for (phase_name, phase_content) in &phases {
+                            if !phase_content.trim().is_empty() {
+                                info!(phase = %phase_name, chars = phase_content.len(), "Loaded ephemeral phase skill section");
+                                self.messages.push(ChatMessage {
+                                    role: "system".to_string(),
+                                    content: format!(
+                                        "[PHASE:{}] The following instructions are for the '{}' phase. \
+                                         When you finish this phase, output <phase-complete>{}</phase-complete> \
+                                         to free context space.\n\n{}",
+                                        phase_name, phase_name, phase_name, phase_content
+                                    ),
+                                });
+                            }
+                        }
+                        
+                        if !phases.is_empty() {
+                            info!(phase_count = phases.len(), "Skill loaded with {} ephemeral phase sections", phases.len());
+                        }
                     }
                 }
                 
@@ -264,6 +380,14 @@ If you have finished the task, output <done>summary of work</done>.";
                             role: "assistant".to_string(),
                             content: stored_content,
                         });
+                        
+                        // Check for phase completion declarations
+                        let completed = Self::extract_completed_phases(&content);
+                        for phase in &completed {
+                            if self.completed_phases.insert(phase.clone()) {
+                                self.drop_phase(phase);
+                            }
+                        }
                         
                         // Parse ALL tool calls (multi-execute support)
                         let commands = parse_all_execute_tags(&content);
@@ -526,5 +650,57 @@ mod tests {
         let truncated = GenericPipelineExecutor::truncate_output(&long);
         assert!(truncated.len() < long.len());
         assert!(truncated.contains("[truncated:"));
+    }
+
+    // Phase parsing tests
+    #[test]
+    fn test_parse_skill_phases_no_phases() {
+        let (general, phases) = GenericPipelineExecutor::parse_skill_phases("Just regular content\nLine 2");
+        assert!(general.contains("Just regular content"));
+        assert!(phases.is_empty());
+    }
+
+    #[test]
+    fn test_parse_skill_phases_with_phases() {
+        let input = "General intro\n\
+            <!-- phase:model_gen -->\n\
+            XML syntax reference here\n\
+            More XML stuff\n\
+            <!-- /phase:model_gen -->\n\
+            General middle\n\
+            <!-- phase:rust_codegen -->\n\
+            Cargo teaql usage\n\
+            <!-- /phase:rust_codegen -->\n\
+            General outro";
+        let (general, phases) = GenericPipelineExecutor::parse_skill_phases(input);
+        assert!(general.contains("General intro"));
+        assert!(general.contains("General middle"));
+        assert!(general.contains("General outro"));
+        assert!(!general.contains("XML syntax"));
+        assert_eq!(phases.len(), 2);
+        assert_eq!(phases[0].0, "model_gen");
+        assert!(phases[0].1.contains("XML syntax reference"));
+        assert_eq!(phases[1].0, "rust_codegen");
+        assert!(phases[1].1.contains("Cargo teaql"));
+    }
+
+    #[test]
+    fn test_extract_completed_phases() {
+        let content = "I've finished the model. <phase-complete>model_gen</phase-complete>\nNow moving on.";
+        let phases = GenericPipelineExecutor::extract_completed_phases(content);
+        assert_eq!(phases, vec!["model_gen"]);
+    }
+
+    #[test]
+    fn test_extract_multiple_completed_phases() {
+        let content = "<phase-complete>phase_a</phase-complete> and <phase-complete>phase_b</phase-complete>";
+        let phases = GenericPipelineExecutor::extract_completed_phases(content);
+        assert_eq!(phases, vec!["phase_a", "phase_b"]);
+    }
+
+    #[test]
+    fn test_extract_no_completed_phases() {
+        let phases = GenericPipelineExecutor::extract_completed_phases("Just normal text");
+        assert!(phases.is_empty());
     }
 }

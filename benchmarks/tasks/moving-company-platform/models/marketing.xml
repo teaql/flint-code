@@ -42,7 +42,7 @@
         source="website"
         status="new"
         notes="Interested in moving services"
-        _audit_mask_fields="email phone"
+        _audit_mask_fields="email,phone"
         create_time="createTime()"
         update_time="updateTime()"/>
   

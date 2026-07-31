@@ -15,7 +15,7 @@
             hire_date="2023-01-15"
             position="Mover"
             is_active="true"
-            _audit_mask_fields="email phone first_name last_name"
+            _audit_mask_fields="email,phone,first_name,last_name"
             create_time="createTime()"
             update_time="updateTime()"/>
   

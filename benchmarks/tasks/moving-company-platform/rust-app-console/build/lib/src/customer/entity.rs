@@ -11,7 +11,7 @@ use teaql_macros::TeaqlEntity;
 /// If you encounter compilation errors (e.g., method not found), DO NOT guess another method name.
 /// Read the method signatures in this file before proceeding.
 #[derive(Clone, Debug, PartialEq, TeaqlEntity)]
-#[teaql(entity = "Customer", table = "customer_data", data_service = "sqlite", audit_mask_fields = "email phone first_name last_name company_name")]
+#[teaql(entity = "Customer", table = "customer_data", data_service = "sqlite", audit_mask_fields = "email,phone,first_name,last_name,company_name")]
 pub struct Customer {
 #[teaql(id)]
     id: u64,

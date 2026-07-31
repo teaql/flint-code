@@ -30,7 +30,7 @@
             email="jane.smith@example.com"
             phone="555-987-6543"
             company_name="Acme Corp"
-            _audit_mask_fields="email phone first_name last_name company_name"
+            _audit_mask_fields="email,phone,first_name,last_name,company_name"
             create_time="createTime()"
             update_time="updateTime()"/>
   
@@ -44,7 +44,7 @@
                     email="jane.smith@example.com"
                     phone="555-987-6543"
                     is_primary="true"
-                    _audit_mask_fields="email phone first_name last_name"
+                    _audit_mask_fields="email,phone,first_name,last_name"
                     create_time="createTime()"
                     update_time="updateTime()"/>
   
