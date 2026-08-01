@@ -1,4 +1,46 @@
 {
   "schema": "ksml-acceptance-v1",
-  "expected_objects": []
+  "min_object_count": 30,
+  "expected_objects": [
+    "move_order",
+    "route_plan",
+    "time_slot",
+    "fulfillment_event",
+    "address_record",
+    "employee",
+    "job_assignment",
+    "worked_hours",
+    "payroll_calculation",
+    "bonus_record",
+    "leave_request",
+    "customer",
+    "corporate_customer",
+    "customer_contact",
+    "billing_info",
+    "customer_history",
+    "service_catalog",
+    "service_config",
+    "box_rental",
+    "campaign",
+    "discount_code",
+    "lead_record",
+    "payment_record",
+    "invoice_record",
+    "expense_record",
+    "vehicle",
+    "equipment_item",
+    "maintenance_schedule",
+    "insurance_policy",
+    "document_storage",
+    "audit_log",
+    "user_account",
+    "role_definition"
+  ],
+  "forbidden_errors": [
+    "KSML-KEYWORD-002",
+    "KSML-DOMAIN-ROOT-002"
+  ],
+  "build_targets": [
+    "rust-lib-core"
+  ]
 }
