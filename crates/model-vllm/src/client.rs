@@ -93,14 +93,36 @@ impl VllmClient {
             })
     }
 
-    /// Build a ChatRequest from messages
+    /// Build a ChatRequest from messages.
+    /// `max_tokens` is computed dynamically:
+    ///   model_context_tokens - estimated_prompt_tokens - safety_tokens
+    /// so the model always gets the maximum possible output budget.
     fn build_request(&self, messages: Vec<ChatMessage>) -> ChatRequest {
+        // Rough estimate: 1 token ≈ 4 chars for English/code, 1.5 chars for CJK.
+        // We use a conservative 3 chars/token to avoid underestimating.
+        let estimated_prompt_tokens: u32 = messages
+            .iter()
+            .map(|m| (m.content.len() as u32) / 3 + 10) // +10 for role/overhead per message
+            .sum();
+
+        let dynamic_max = self
+            .profile
+            .context
+            .model_context_tokens
+            .saturating_sub(estimated_prompt_tokens)
+            .saturating_sub(self.profile.context.safety_tokens);
+
+        // Clamp: at least 1024, at most max_completion_tokens from profile
+        let max_tokens = dynamic_max
+            .max(1024)
+            .min(self.profile.context.max_completion_tokens);
+
         ChatRequest {
             model: self.profile.model.name.clone(),
             messages,
             temperature: self.profile.sampling.temperature,
             top_p: self.profile.sampling.top_p,
-            max_tokens: self.profile.context.max_completion_tokens,
+            max_tokens,
             stream: false,
             chat_template_kwargs: if !self.profile.thinking.enabled {
                 Some(ChatTemplateKwargs {
