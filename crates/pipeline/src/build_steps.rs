@@ -282,7 +282,7 @@ pub async fn step_fix_app_dependencies(ctx: &BuildContext) {
 // ── Step 6: Run assist commands ─────────────────────────────────────────
 
 /// Maximum number of entities to query via assist (context budget guard).
-const MAX_ASSIST_ENTITIES: usize = 8;
+const MAX_ASSIST_ENTITIES: usize = 200;
 
 pub async fn step_run_assist(
     ctx: &BuildContext,
@@ -328,8 +328,8 @@ pub async fn step_run_assist(
 
         if let Ok(output) = &assist_result {
             let stdout = String::from_utf8_lossy(&output.stdout);
-            let truncated = if stdout.len() > 1200 {
-                format!("{}...\n[truncated]", &stdout[..1200])
+            let truncated = if stdout.len() > 12000 {
+                format!("{}...\n[truncated]", &stdout[..12000])
             } else {
                 stdout.to_string()
             };
