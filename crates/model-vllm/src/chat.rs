@@ -15,6 +15,8 @@ pub struct ChatRequest {
     pub temperature: f32,
     pub top_p: f32,
     pub max_tokens: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_completion_tokens: Option<u32>,
     pub stream: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_template_kwargs: Option<ChatTemplateKwargs>,

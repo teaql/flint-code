@@ -26,6 +26,7 @@ pub enum StreamEvent {
 }
 
 /// vLLM client for DGX Spark
+#[derive(Clone)]
 pub struct VllmClient {
     client: Client,
     profile: ModelProfile,
@@ -123,6 +124,7 @@ impl VllmClient {
             temperature: self.profile.sampling.temperature,
             top_p: self.profile.sampling.top_p,
             max_tokens,
+            max_completion_tokens: Some(max_tokens),
             stream: false,
             chat_template_kwargs: if !self.profile.thinking.enabled {
                 Some(ChatTemplateKwargs {
@@ -138,6 +140,28 @@ impl VllmClient {
 
     /// Non-streaming chat completion. Returns ModelResult.
     pub async fn chat(
+        &self,
+        messages: Vec<ChatMessage>,
+    ) -> std::result::Result<ModelResult, AgentError> {
+        let max_attempts = 3;
+        let mut attempt = 1;
+
+        loop {
+            match self.chat_internal(messages.clone()).await {
+                Ok(res) => return Ok(res),
+                Err(e) => {
+                    if attempt >= max_attempts {
+                        return Err(e);
+                    }
+                    tracing::warn!("Model API error (attempt {}/{}): {}. Retrying in 2 seconds...", attempt, max_attempts, e);
+                    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                    attempt += 1;
+                }
+            }
+        }
+    }
+
+    async fn chat_internal(
         &self,
         messages: Vec<ChatMessage>,
     ) -> std::result::Result<ModelResult, AgentError> {
@@ -267,120 +291,155 @@ impl VllmClient {
         let mut request = self.build_request(messages);
         request.stream = true;
         let url = self.profile.chat_url();
+        let timeout_secs = self.profile.timeouts.model_secs;
 
         let (tx, rx) = mpsc::channel(256);
-
-        let response = self
-            .authorize(self.client.post(&url))
-            .json(&request)
-            .send()
-            .await
-            .map_err(|e| {
-                if e.is_timeout() {
-                    AgentError::Timeout {
-                        seconds: self.profile.timeouts.model_secs,
-                        state: "Generating".to_string(),
-                    }
-                } else {
-                    AgentError::InfrastructureError {
-                        detail: format!("HTTP request failed: {e}"),
-                    }
-                }
-            })?;
-
-        let status = response.status().as_u16();
-        if !response.status().is_success() {
-            let body = response.text().await.unwrap_or_default();
-            return Err(AgentError::TransportError { status, body });
-        }
+        let client_clone = self.clone();
 
         tokio::spawn(async move {
-            let mut stream = response.bytes_stream();
-            let mut buffer = String::new();
-            let mut full_content = String::new();
-            let mut full_reasoning = String::new();
-            let mut last_finish_reason = String::new();
-            let mut last_usage: Option<ChatUsage> = None;
+            let max_attempts = 3;
+            let mut attempt = 1;
 
-            while let Some(chunk_result) = stream.next().await {
-                match chunk_result {
-                    Ok(bytes) => {
-                        buffer.push_str(&String::from_utf8_lossy(&bytes));
+            loop {
+                let response = match client_clone
+                    .authorize(client_clone.client.post(&url))
+                    .json(&request)
+                    .send()
+                    .await
+                {
+                    Ok(res) => res,
+                    Err(e) => {
+                        let is_timeout = e.is_timeout();
+                        let error_msg = if is_timeout {
+                            format!("Timeout after {}s", timeout_secs)
+                        } else {
+                            format!("HTTP request failed: {}", e)
+                        };
 
-                        while let Some(pos) = buffer.find('\n') {
-                            let line = buffer[..pos].trim().to_string();
-                            buffer = buffer[pos + 1..].to_string();
+                        if attempt >= max_attempts {
+                            tx.send(StreamEvent::Error(error_msg)).await.ok();
+                            return;
+                        }
+                        tracing::warn!("Stream setup error (attempt {}/{}): {}. Retrying in 2 seconds...", attempt, max_attempts, error_msg);
+                        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                        attempt += 1;
+                        continue;
+                    }
+                };
 
-                            if line.is_empty() || line.starts_with(':') {
-                                continue;
-                            }
+                let status = response.status().as_u16();
+                if !response.status().is_success() {
+                    let body = response.text().await.unwrap_or_default();
+                    let error_msg = format!("HTTP {}: {}", status, body);
+                    if attempt >= max_attempts {
+                        tx.send(StreamEvent::Error(error_msg)).await.ok();
+                        return;
+                    }
+                    tracing::warn!("Stream setup error (attempt {}/{}): {}. Retrying in 2 seconds...", attempt, max_attempts, error_msg);
+                    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                    attempt += 1;
+                    continue;
+                }
 
-                            if let Some(data) = line.strip_prefix("data: ") {
-                                if data.trim() == "[DONE]" {
-                                    let reasoning = if full_reasoning.is_empty() {
-                                        None
-                                    } else {
-                                        Some(full_reasoning.clone())
-                                    };
-                                    tx.send(StreamEvent::Done {
-                                        content: full_content.clone(),
-                                        reasoning_content: reasoning,
-                                        finish_reason: last_finish_reason.clone(),
-                                        usage: last_usage.clone(),
-                                    })
-                                    .await
-                                    .ok();
-                                    return;
+                let mut stream = response.bytes_stream();
+                let mut buffer = String::new();
+                let mut full_content = String::new();
+                let mut full_reasoning = String::new();
+                let mut last_finish_reason = String::new();
+                let mut last_usage: Option<ChatUsage> = None;
+                let mut stream_failed = false;
+
+                while let Some(chunk_result) = stream.next().await {
+                    match chunk_result {
+                        Ok(bytes) => {
+                            buffer.push_str(&String::from_utf8_lossy(&bytes));
+
+                            while let Some(pos) = buffer.find('\n') {
+                                let line = buffer[..pos].trim().to_string();
+                                buffer = buffer[pos + 1..].to_string();
+
+                                if line.is_empty() || line.starts_with(':') {
+                                    continue;
                                 }
 
-                                if let Ok(chunk) = serde_json::from_str::<StreamChunk>(data) {
-                                    if let Some(usage) = chunk.usage {
-                                        last_usage = Some(usage);
+                                if let Some(data) = line.strip_prefix("data: ") {
+                                    if data.trim() == "[DONE]" {
+                                        let reasoning = if full_reasoning.is_empty() {
+                                            None
+                                        } else {
+                                            Some(full_reasoning.clone())
+                                        };
+                                        tx.send(StreamEvent::Done {
+                                            content: full_content.clone(),
+                                            reasoning_content: reasoning,
+                                            finish_reason: last_finish_reason.clone(),
+                                            usage: last_usage.clone(),
+                                        })
+                                        .await
+                                        .ok();
+                                        return;
                                     }
-                                    for choice in &chunk.choices {
-                                        if let Some(fr) = &choice.finish_reason {
-                                            last_finish_reason = fr.clone();
+
+                                    if let Ok(chunk) = serde_json::from_str::<StreamChunk>(data) {
+                                        if let Some(usage) = chunk.usage {
+                                            last_usage = Some(usage);
                                         }
-                                        if let Some(delta) = &choice.delta {
-                                            if let Some(c) = &delta.content {
-                                                full_content.push_str(c);
-                                                tx.send(StreamEvent::Token(c.clone())).await.ok();
+                                        for choice in &chunk.choices {
+                                            if let Some(fr) = &choice.finish_reason {
+                                                last_finish_reason = fr.clone();
                                             }
-                                            if let Some(r) = &delta.reasoning_content {
-                                                full_reasoning.push_str(r);
-                                                tx.send(StreamEvent::ReasoningToken(r.clone()))
-                                                    .await
-                                                    .ok();
+                                            if let Some(delta) = &choice.delta {
+                                                if let Some(c) = &delta.content {
+                                                    full_content.push_str(c);
+                                                    tx.send(StreamEvent::Token(c.clone())).await.ok();
+                                                }
+                                                if let Some(r) = &delta.reasoning_content {
+                                                    full_reasoning.push_str(r);
+                                                    tx.send(StreamEvent::ReasoningToken(r.clone()))
+                                                        .await
+                                                        .ok();
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                    Err(e) => {
-                        tx.send(StreamEvent::Error(format!("Stream error: {e}")))
-                            .await
-                            .ok();
-                        return;
+                        Err(e) => {
+                            let error_msg = format!("Stream error: {e}");
+                            if attempt >= max_attempts {
+                                tx.send(StreamEvent::Error(error_msg)).await.ok();
+                                return;
+                            }
+                            tracing::warn!("Stream read error (attempt {}/{}): {}. Retrying in 2 seconds...", attempt, max_attempts, error_msg);
+                            stream_failed = true;
+                            break;
+                        }
                     }
                 }
-            }
 
-            // Stream ended without [DONE]
-            let reasoning = if full_reasoning.is_empty() {
-                None
-            } else {
-                Some(full_reasoning)
-            };
-            tx.send(StreamEvent::Done {
-                content: full_content,
-                reasoning_content: reasoning,
-                finish_reason: last_finish_reason,
-                usage: last_usage,
-            })
-            .await
-            .ok();
+                if stream_failed {
+                    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                    attempt += 1;
+                    continue;
+                }
+
+                // Stream ended without [DONE]
+                let reasoning = if full_reasoning.is_empty() {
+                    None
+                } else {
+                    Some(full_reasoning)
+                };
+                tx.send(StreamEvent::Done {
+                    content: full_content,
+                    reasoning_content: reasoning,
+                    finish_reason: last_finish_reason,
+                    usage: last_usage,
+                })
+                .await
+                .ok();
+                return;
+            }
         });
 
         Ok(rx)

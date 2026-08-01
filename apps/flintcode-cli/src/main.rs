@@ -218,7 +218,7 @@ async fn main() -> Result<()> {
             tracing::info!(model = %model_profile.model.name, "Profile loaded");
 
             let max_repairs = model_profile.run.max_repairs;
-            let run_id = format!("run-{}", chrono::Utc::now().format("%Y%m%d-%H%M%S"));
+            let run_id = format!("run-{}-{}", chrono::Utc::now().format("%Y%m%d-%H%M%S"), std::process::id());
 
             let (side_effect_tx, mut side_effect_rx) = tokio::sync::mpsc::channel(32);
             let (mut controller, event_tx) = agent_core::run_controller::RunController::new(
@@ -287,7 +287,7 @@ async fn main() -> Result<()> {
             );
 
             let model_profile = model_vllm::profile::ModelProfile::load(&profile)?;
-            let run_id = format!("agent-{}", chrono::Utc::now().format("%Y%m%d-%H%M%S"));
+            let run_id = format!("run-{}-{}", chrono::Utc::now().format("%Y%m%d-%H%M%S"), std::process::id());
 
             let (side_effect_tx, mut side_effect_rx) = tokio::sync::mpsc::channel(32);
             let (mut controller, event_tx) = agent_core::generic_controller::GenericRunController::new(
