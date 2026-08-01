@@ -38,16 +38,16 @@ impl BuildContext {
     }
 
     /// Save a JSON artifact for this attempt.
-    pub fn save_attempt_file(&self, filename: &str, data: &impl serde::Serialize) {
+    pub async fn save_attempt_file(&self, filename: &str, data: &impl serde::Serialize) {
         if let Some(artifacts) = &self.artifacts {
-            artifacts.save_attempt_file(self.attempt, filename, data).ok();
+            artifacts.save_attempt_file(self.attempt, filename, data).await.ok();
         }
     }
 
     /// Save a raw text artifact for this attempt.
-    pub fn save_attempt_raw(&self, filename: &str, content: &str) {
+    pub async fn save_attempt_raw(&self, filename: &str, content: &str) {
         if let Some(artifacts) = &self.artifacts {
-            artifacts.save_attempt_raw(self.attempt, filename, content).ok();
+            artifacts.save_attempt_raw(self.attempt, filename, content).await.ok();
         }
     }
 }
@@ -101,7 +101,7 @@ pub async fn step_generate_code(
 
 // ── Step 2: Patch generated Cargo.toml ──────────────────────────────────
 
-pub fn step_patch_cargo_toml(ctx: &BuildContext) -> Result<(), ValidationResult> {
+pub async fn step_patch_cargo_toml(ctx: &BuildContext) -> Result<(), ValidationResult> {
     let cargo_toml_path = ctx.lib_dir().join("Cargo.toml");
     if cargo_toml_path.exists() {
         if let Ok(content) = std::fs::read_to_string(&cargo_toml_path) {
@@ -227,7 +227,7 @@ pub async fn step_generate_app(
                 attempt = ctx.attempt,
                 "{} generation failed, continuing with lib-only result", app_target
             );
-            ctx.save_attempt_raw("app-console-gen-error.txt", &stderr);
+            ctx.save_attempt_raw("app-console-gen-error.txt", &stderr).await;
             false
         }
         Err(e) => {
@@ -243,7 +243,7 @@ pub async fn step_generate_app(
 
 // ── Step 5: Fix dependency paths in app Cargo.toml ──────────────────────
 
-pub fn step_fix_app_dependencies(ctx: &BuildContext) {
+pub async fn step_fix_app_dependencies(ctx: &BuildContext) {
     let build_dir = ctx.build_dir();
 
     // Fix the path dependency to point to ./lib
@@ -349,7 +349,7 @@ pub async fn step_run_assist(
     }
 
     if !assist_outputs.is_empty() {
-        ctx.save_attempt_raw("assist-output.md", &assist_outputs);
+        ctx.save_attempt_raw("assist-output.md", &assist_outputs).await;
     }
 
     (entity_names, assist_outputs)
@@ -398,10 +398,7 @@ pub async fn step_generate_business_logic(
         }
     }
 
-    let template =
-        std::fs::read_to_string("prompts/business-logic.txt").unwrap_or_else(|_| {
-            "Please generate the business logic.".to_string()
-        });
+    let template = include_str!("../../../prompts/business-logic.txt").to_string();
 
     let biz_prompt = template
         .replace("{{agents_md}}", &agents_md)
@@ -437,7 +434,7 @@ pub async fn step_generate_business_logic(
 
             let lib_rs_path = build_dir.join("src/lib.rs");
             std::fs::write(&lib_rs_path, &biz_code).ok();
-            ctx.save_attempt_raw("business-logic.rs", &biz_code);
+            ctx.save_attempt_raw("business-logic.rs", &biz_code).await;
         }
         Err(e) => {
             warn!(
@@ -494,10 +491,7 @@ pub async fn step_final_compile(
                     "App workspace failed — attempting LLM repair"
                 );
 
-                let template =
-                    std::fs::read_to_string("prompts/repair.txt").unwrap_or_else(|_| {
-                        "Please fix the code: {{current_code}}\nErrors: {{stderr}}".to_string()
-                    });
+                let template = include_str!("../../../prompts/repair.txt").to_string();
 
                 let fix_prompt = template
                     .replace("{{current_code}}", &current_code)
@@ -529,7 +523,7 @@ pub async fn step_final_compile(
                             "LLM repair generated"
                         );
                         std::fs::write(&lib_rs_path, &fixed).ok();
-                        ctx.save_attempt_raw("business-logic-repaired.rs", &fixed);
+                        ctx.save_attempt_raw("business-logic-repaired.rs", &fixed).await;
                         // Loop will retry cargo check
                     }
                     Err(e) => {

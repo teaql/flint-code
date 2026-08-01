@@ -3,8 +3,7 @@ use crate::task_package::TaskPackageData;
 /// Build the core system prompt.
 /// Design doc target: < 2K tokens.
 pub fn build_system_prompt() -> String {
-    std::fs::read_to_string("prompts/system.txt")
-        .unwrap_or_else(|_| "You are an autonomous coding agent. Please follow the instructions.".to_string())
+    include_str!("../../../prompts/system.txt").to_string()
 }
 
 /// Build messages for a lightweight conversational request that must not enter
@@ -107,8 +106,7 @@ pub fn build_repair_messages(
     messages.push(("assistant".to_string(), rejected_candidate.to_string()));
 
     // Truncated diagnostic with actionable errors only
-    let template = std::fs::read_to_string("prompts/repair-domain.txt")
-        .unwrap_or_else(|_| "Fix the following errors. Read the diagnostic logs, do not filter them, and pay special attention to the first 30 lines (the head) to find and fix the root issues. CRITICAL: You MUST modify the code to fix the errors. DO NOT return the exact same code as your previous attempt:\n{{errors}}".to_string());
+    let template = include_str!("../../../prompts/repair-domain.txt").to_string();
     let mut errors_str = String::new();
     for err in actionable_errors {
         let truncated: String = err

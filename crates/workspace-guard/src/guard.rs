@@ -16,10 +16,8 @@ pub enum GuardError {
     FileTooLarge { size: u64, limit: u64 },
     #[error("Total read limit exceeded: {total} bytes > limit {limit}")]
     TotalReadExceeded { total: u64, limit: u64 },
-    #[error("Path not in readable set: {path}")]
-    NotReadable { path: String },
-    #[error("Path not in writable set: {path}")]
-    NotWritable { path: String },
+    #[error("Parent directory missing: {path}")]
+    ParentDirMissing { path: String },
 }
 
 /// Policy decision record for audit trail
@@ -93,8 +91,8 @@ impl WorkspaceGuard {
             self.record_decision("write", path, true, "allowed");
             Ok(canonical)
         } else {
-            let err = GuardError::EscapesRoot {
-                path: path.display().to_string(),
+            let err = GuardError::ParentDirMissing {
+                path: parent.display().to_string(),
             };
             self.record_decision("write", path, false, &err.to_string());
             Err(err)

@@ -1,4 +1,0 @@
-<root name="test-service" data_service="sqlite">
-  companyaaa _name="Company" _module_key="sample" name="string" founded="int" />
-  <department _name="Department" _module_key="sample" name="string" budget="money" company="Company" />
-</root>

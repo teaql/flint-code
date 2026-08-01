@@ -228,7 +228,7 @@ impl PipelineExecutor {
         }
 
         // Create run artifacts directory
-        match RunArtifacts::create(&self.runs_root, &self.run_id) {
+        match RunArtifacts::create(&self.runs_root, &self.run_id).await {
             Ok(artifacts) => {
                 self.artifacts = Some(artifacts);
             }
@@ -285,8 +285,7 @@ impl PipelineExecutor {
                         "model": self.profile.model.name,
                         "messages": messages,
                     }),
-                )
-                .ok();
+                ).await.ok();
         }
 
         // Use streaming to provide incremental progress feedback.
@@ -335,8 +334,7 @@ impl PipelineExecutor {
                                         attempt,
                                         "error.json",
                                         &serde_json::json!({ "error": e }),
-                                    )
-                                    .ok();
+                                    ).await.ok();
                             }
                             self.send(RunEvent::ModelFailed(
                                 AgentError::InfrastructureError { detail: e },
@@ -392,10 +390,9 @@ impl PipelineExecutor {
                 // Save candidate
                 self.candidate = Some(result.content.clone());
                 if let Some(artifacts) = &self.artifacts {
-                    artifacts.save_candidate(attempt, &result.content).ok();
+                    artifacts.save_candidate(attempt, &result.content).await.ok();
                     artifacts
-                        .save_attempt_file(attempt, "response.json", &result)
-                        .ok();
+                        .save_attempt_file(attempt, "response.json", &result).await.ok();
                 }
 
                 // MULTI-STEP LOOP: Generate included files
@@ -430,8 +427,7 @@ impl PipelineExecutor {
 
                             if let Some(artifacts) = &self.artifacts {
                                 artifacts
-                                    .save_attempt_raw(attempt, &file, &clean_content)
-                                    .ok();
+                                    .save_attempt_raw(attempt, &file, &clean_content).await.ok();
                             }
                         }
                         Err(e) => {
@@ -450,8 +446,7 @@ impl PipelineExecutor {
                             attempt,
                             "error.json",
                             &serde_json::json!({ "error": err.to_string() }),
-                        )
-                        .ok();
+                        ).await.ok();
                 }
                 self.send(RunEvent::ModelFailed(err)).await;
             }
@@ -474,8 +469,7 @@ impl PipelineExecutor {
         let parse_result = validation::validate_xml_parse(&candidate);
         if let Some(artifacts) = &self.artifacts {
             artifacts
-                .save_attempt_file(attempt, "local-validation.json", &parse_result)
-                .ok();
+                .save_attempt_file(attempt, "local-validation.json", &parse_result).await.ok();
         }
 
         if !parse_result.passed {
@@ -505,8 +499,7 @@ impl PipelineExecutor {
         let model_dir = if let Some(artifacts) = &self.artifacts {
             // Write the candidate to a temporary model.xml in the attempt dir
             let attempt_dir = artifacts
-                .create_attempt(attempt)
-                .unwrap_or_else(|_| artifacts.root.clone());
+                .create_attempt(attempt).await.unwrap_or_else(|_| artifacts.root.clone());
             let model_path = attempt_dir.join("main.xml");
             if let Some(c) = &self.candidate {
                 std::fs::write(&model_path, c).ok();
@@ -572,7 +565,7 @@ impl PipelineExecutor {
 
         if let Some(artifacts) = &self.artifacts {
             artifacts
-                .save_attempt_file(attempt, "domain-validation.json", &result)
+                .save_attempt_file(attempt, "domain-validation.json", &result).await
                 .ok();
         }
         if !result.passed {
@@ -599,7 +592,7 @@ impl PipelineExecutor {
         };
 
         let attempt_dir = match &self.artifacts {
-            Some(a) => match a.create_attempt(attempt) {
+            Some(a) => match a.create_attempt(attempt).await {
                 Ok(dir) => dir,
                 Err(e) => {
                     error!(attempt, %e, "Failed to create attempt directory");
@@ -640,7 +633,7 @@ impl PipelineExecutor {
         }
 
         // Step 2: Patch Cargo.toml
-        if let Err(r) = build_steps::step_patch_cargo_toml(&ctx) {
+        if let Err(r) = build_steps::step_patch_cargo_toml(&ctx).await {
             self.emit_build_result(attempt, r).await;
             return;
         }
@@ -663,7 +656,7 @@ impl PipelineExecutor {
         }
 
         // Step 5: Fix dependency paths
-        build_steps::step_fix_app_dependencies(&ctx);
+        build_steps::step_fix_app_dependencies(&ctx).await;
 
         // Step 6: Run assist commands
         let (entity_names, assist_outputs) =
@@ -689,7 +682,7 @@ impl PipelineExecutor {
     async fn emit_build_result(&mut self, attempt: u8, result: ValidationResult) {
         if let Some(artifacts) = &self.artifacts {
             artifacts
-                .save_attempt_file(attempt, "build-validation.json", &result)
+                .save_attempt_file(attempt, "build-validation.json", &result).await
                 .ok();
         }
         if !result.passed {
@@ -747,7 +740,7 @@ impl PipelineExecutor {
     async fn write_final(&mut self) {
         if let Some(candidate) = &self.candidate {
             if let Some(artifacts) = &self.artifacts {
-                match artifacts.save_final_artifact(candidate) {
+                match artifacts.save_final_artifact(candidate).await {
                     Ok(path) => {
                         info!(path = %path.display(), "Final artifact saved");
                         self.send(RunEvent::FinalArtifactWritten(path)).await;
@@ -781,8 +774,7 @@ impl PipelineExecutor {
                 .save_summary(&serde_json::json!({
                     "status": "failed",
                     "error": error,
-                }))
-                .ok();
+                })).await.ok();
         }
     }
 

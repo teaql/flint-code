@@ -268,7 +268,7 @@ async fn main() -> Result<()> {
             task,
             skill,
             profile,
-            output,
+            output: _output,
         } => {
             tracing::info!(
                 task = %task.display(),
@@ -290,8 +290,6 @@ async fn main() -> Result<()> {
             let mut executor = pipeline::generic_executor::GenericPipelineExecutor::new(
                 model_profile,
                 event_tx.clone(),
-                output.clone(),
-                run_id,
                 task_path,
                 skill,
                 task.clone(),

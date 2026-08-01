@@ -30,10 +30,6 @@ const KEEP_RECENT_MESSAGES: usize = 6;
 pub struct GenericPipelineExecutor {
     profile: ModelProfile,
     event_tx: mpsc::UnboundedSender<GenericRunEvent>,
-    #[allow(dead_code)]
-    output_root: PathBuf,
-    #[allow(dead_code)]
-    run_id: String,
     
     // Config
     task_path: PathBuf,
@@ -55,8 +51,7 @@ impl GenericPipelineExecutor {
     pub fn new(
         profile: ModelProfile,
         event_tx: mpsc::UnboundedSender<GenericRunEvent>,
-        output_root: PathBuf,
-        run_id: String,
+        
         task_path: PathBuf,
         skill_path: Option<PathBuf>,
         workspace_root: PathBuf,
@@ -70,8 +65,7 @@ impl GenericPipelineExecutor {
         Ok(Self {
             profile,
             event_tx,
-            output_root,
-            run_id,
+            
             task_path,
             skill_path,
             workspace_root,
@@ -602,56 +596,17 @@ fn parse_all_execute_tags(content: &str) -> Vec<String> {
     commands
 }
 
-/// Parse the first `<execute>...</execute>` block (convenience wrapper).
-#[allow(dead_code)]
-fn parse_execute_tag(content: &str) -> Option<String> {
-    parse_all_execute_tags(content).into_iter().next()
-}
+
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_basic_execute() {
-        assert_eq!(
-            parse_execute_tag("some text <execute>ls -la</execute> more text"),
-            Some("ls -la".to_string())
-        );
-    }
-
-    #[test]
+#[test]
     fn test_ephemeral_output_detection() {
         let raw_out = "STDOUT:\n<!-- ephemeral -->\nSome output\nSTDERR:\n";
         assert!(raw_out.contains("<!-- ephemeral -->"));
     }
 
-    #[test]
-    fn test_markdown_fenced() {
-        let input = "```bash\n<execute>cargo build</execute>\n```";
-        assert_eq!(parse_execute_tag(input), Some("cargo build".to_string()));
-    }
-
-    #[test]
-    fn test_unclosed_tag() {
-        assert_eq!(parse_execute_tag("<execute>ls -la"), None);
-    }
-
-    #[test]
-    fn test_empty_command() {
-        assert_eq!(parse_execute_tag("<execute>  </execute>"), None);
-    }
-
-    #[test]
-    fn test_multiline_command() {
-        let input = "<execute>\ncat << 'EOF' > test.txt\nhello\nEOF\n</execute>";
-        assert!(parse_execute_tag(input).unwrap().contains("cat << 'EOF'"));
-    }
-
-    #[test]
-    fn test_no_execute_tag() {
-        assert_eq!(parse_execute_tag("I will now do something"), None);
-    }
 
     // Multi-execute tests
     #[test]

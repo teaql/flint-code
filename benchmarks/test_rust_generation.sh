@@ -11,7 +11,7 @@ MODELS=(
 
 for model_path in "${MODELS[@]}"; do
     echo "Testing $model_path..."
-    ARTIFACT_DIR="/home/philip/workspace/C100/runs/availability-eval-$model_path"
+    ARTIFACT_DIR="${FLINT_RUNS_DIR:-../runs}/availability-eval-$model_path"
     
     if [ ! -d "$ARTIFACT_DIR" ]; then
         echo "Artifact dir $ARTIFACT_DIR not found, skipping."

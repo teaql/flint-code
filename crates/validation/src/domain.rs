@@ -1,11 +1,11 @@
 //! L3: Domain validation — TeaQL evaluate or other domain validators
 
 use agent_core::event::ValidationResult;
+use tokio::process::Command;
 use std::path::Path;
-use std::process::Command;
 
 /// Run cargo teaql evaluate on the given input file or directory
-pub fn validate_domain(input_path: &Path) -> ValidationResult {
+pub async fn validate_domain(input_path: &Path) -> ValidationResult {
     let start = std::time::Instant::now();
 
     let output = Command::new("cargo")
@@ -13,7 +13,8 @@ pub fn validate_domain(input_path: &Path) -> ValidationResult {
         .arg("--input")
         .arg(input_path)
         .arg("evaluate")
-        .output();
+        .output()
+        .await;
 
     let elapsed = start.elapsed().as_secs_f64();
 

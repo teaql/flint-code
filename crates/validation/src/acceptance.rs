@@ -31,14 +31,6 @@ pub fn validate_acceptance(content: &str, spec: &Value) -> ValidationResult {
                 errors.push(format!("Missing expected object: {name}"));
             }
         }
-
-        // Check for unexpected objects (extras)
-        let expected_set: HashSet<&str> = expected_names.iter().map(|s| s.as_str()).collect();
-        for found in &candidate_objects {
-            if !expected_set.contains(found.as_str()) {
-                // Not an error, but noteworthy — don't fail for extras
-            }
-        }
     }
 
     // Check expected_object_count

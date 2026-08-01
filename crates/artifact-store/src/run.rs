@@ -13,9 +13,9 @@ pub struct RunArtifacts {
 
 impl RunArtifacts {
     /// Create a new run directory under the given root.
-    pub fn create(runs_root: &Path, run_id: &str) -> Result<Self> {
+    pub async fn create(runs_root: &Path, run_id: &str) -> Result<Self> {
         let root = runs_root.join(run_id);
-        std::fs::create_dir_all(&root)?;
+        tokio::fs::create_dir_all(&root).await?;
         info!(run_id, path = %root.display(), "Run directory created");
         Ok(Self {
             run_id: run_id.to_string(),
@@ -24,83 +24,83 @@ impl RunArtifacts {
     }
 
     /// Save the run configuration.
-    pub fn save_config(&self, config: &impl Serialize) -> Result<()> {
+    pub async fn save_config(&self, config: &impl Serialize) -> Result<()> {
         let path = self.root.join("run-config.json");
         let json = serde_json::to_string_pretty(config)?;
-        std::fs::write(&path, &json)?;
+        tokio::fs::write(&path, &json).await?;
         Ok(())
     }
 
     /// Append an event to events.jsonl.
-    pub fn append_event(&self, event: &impl Serialize) -> Result<()> {
-        use std::io::Write;
+    pub async fn append_event(&self, event: &impl Serialize) -> Result<()> {
+        use tokio::io::AsyncWriteExt;
         let path = self.root.join("events.jsonl");
-        let mut file = std::fs::OpenOptions::new()
+        let mut file = tokio::fs::OpenOptions::new()
             .create(true)
             .append(true)
-            .open(&path)?;
+            .open(&path).await?;
         let json = serde_json::to_string(event)?;
-        writeln!(file, "{json}")?;
+        file.write_all(format!("{json}\n").as_bytes()).await?;
         Ok(())
     }
 
     /// Create an attempt directory and return the path.
-    pub fn create_attempt(&self, attempt: u8) -> Result<PathBuf> {
+    pub async fn create_attempt(&self, attempt: u8) -> Result<PathBuf> {
         let dir = self.root.join(format!("attempt-{attempt:02}"));
-        std::fs::create_dir_all(&dir)?;
+        tokio::fs::create_dir_all(&dir).await?;
         Ok(dir)
     }
 
     /// Save a candidate artifact for an attempt.
-    pub fn save_candidate(&self, attempt: u8, content: &str) -> Result<PathBuf> {
-        let dir = self.create_attempt(attempt)?;
+    pub async fn save_candidate(&self, attempt: u8, content: &str) -> Result<PathBuf> {
+        let dir = self.create_attempt(attempt).await?;
         let path = dir.join("candidate");
-        std::fs::write(&path, content)?;
+        tokio::fs::write(&path, content).await?;
         Ok(path)
     }
 
     /// Save the final artifact.
-    pub fn save_final_artifact(&self, content: &str) -> Result<PathBuf> {
+    pub async fn save_final_artifact(&self, content: &str) -> Result<PathBuf> {
         let path = self.root.join("final-artifact");
-        std::fs::write(&path, content)?;
+        tokio::fs::write(&path, content).await?;
 
         // Also save the hash
         let hash = sha256_hex(content.as_bytes());
-        std::fs::write(self.root.join("final-artifact.sha256"), &hash)?;
+        tokio::fs::write(self.root.join("final-artifact.sha256"), &hash).await?;
 
         Ok(path)
     }
 
     /// Save the run summary.
-    pub fn save_summary(&self, summary: &impl Serialize) -> Result<()> {
+    pub async fn save_summary(&self, summary: &impl Serialize) -> Result<()> {
         let path = self.root.join("summary.json");
         let json = serde_json::to_string_pretty(summary)?;
-        std::fs::write(&path, &json)?;
+        tokio::fs::write(&path, &json).await?;
         Ok(())
     }
 
     /// Save arbitrary JSON to an attempt directory.
-    pub fn save_attempt_file(
+    pub async fn save_attempt_file(
         &self,
         attempt: u8,
         filename: &str,
         content: &impl Serialize,
     ) -> Result<()> {
-        let dir = self.create_attempt(attempt)?;
+        let dir = self.create_attempt(attempt).await?;
         let path = dir.join(filename);
         let json = serde_json::to_string_pretty(content)?;
-        std::fs::write(&path, &json)?;
+        tokio::fs::write(&path, &json).await?;
         Ok(())
     }
 
     /// Save arbitrary string content to an attempt directory.
-    pub fn save_attempt_raw(&self, attempt: u8, filename: &str, content: &str) -> Result<PathBuf> {
-        let dir = self.create_attempt(attempt)?;
+    pub async fn save_attempt_raw(&self, attempt: u8, filename: &str, content: &str) -> Result<PathBuf> {
+        let dir = self.create_attempt(attempt).await?;
         let path = dir.join(filename);
         if let Some(p) = path.parent() {
-            std::fs::create_dir_all(p)?;
+            tokio::fs::create_dir_all(p).await?;
         }
-        std::fs::write(&path, content)?;
+        tokio::fs::write(&path, content).await?;
         Ok(path)
     }
 }

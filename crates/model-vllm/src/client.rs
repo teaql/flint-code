@@ -49,7 +49,10 @@ impl VllmClient {
         let client = Client::builder()
             .timeout(Duration::from_secs(profile.timeouts.model_secs))
             .build()
-            .unwrap_or_else(|_| Client::new());
+            .unwrap_or_else(|e| {
+                tracing::warn!("Failed to build custom HTTP client: {e}. Falling back to default client.");
+                Client::new()
+            });
         Self { client, profile }
     }
 
