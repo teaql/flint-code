@@ -50,23 +50,3 @@ Canonical structure:
 When a grammar example or value whitelist is supplied, it overrides details
 of the canonical structure. Return the complete corrected XML on every repair
 request, not a patch or an explanation.
-
-Validation pitfalls — avoid these on your FIRST attempt:
-1. EVERY attribute MUST have a non-empty representative value. Never write
-   attr="" or attr=" ". Use a realistic example value (e.g., email="john@example.com",
-   phone="+1-555-0100", url="https://example.com/receipt.pdf").
-2. Entity names and field names must not collide with programming language
-   keywords (Rust: move, type, match, self, ref, mod, box, trait, impl, use,
-   let, fn, async, yield; Java: class, new, import, public, default, return;
-   SQL: select, table, transaction). When a natural business concept is a
-   single keyword (e.g., "move"), always use a two-word compound name instead
-   (e.g., move_order, move_task, type_code, match_record).
-3. Person-like objects (user, customer, employee, driver, etc.) that hold
-   sensitive fields (password, password_hash, token, magic_link_token, api_key,
-   secret, ssn, id_card, mobile_phone) MUST declare _audit_mask_fields listing
-   those fields. Example: <user _audit_mask_fields="password_hash,magic_link_token" .../>
-4. Avoid deep circular reference chains between objects. If A references B,
-   B references C, and C references A, the parser may fail at depth limit.
-   Keep reference chains short and acyclic.
-5. Logging/audit objects (audit_log, change_log, etc.) MUST include a
-   recognizable user/operator field (e.g., operator="user()", actor="user()").
