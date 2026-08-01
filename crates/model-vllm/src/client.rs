@@ -100,10 +100,10 @@ impl VllmClient {
     /// so the model always gets the maximum possible output budget.
     fn build_request(&self, messages: Vec<ChatMessage>) -> ChatRequest {
         // Rough estimate: 1 token ≈ 4 chars for English/code, 1.5 chars for CJK.
-        // We use a conservative 3 chars/token to avoid underestimating.
+        // We use a conservative 4 chars/token to avoid severely overestimating XML/Code.
         let estimated_prompt_tokens: u32 = messages
             .iter()
-            .map(|m| (m.content.len() as u32) / 3 + 10) // +10 for role/overhead per message
+            .map(|m| (m.content.len() as u32) / 4 + 10) // +10 for role/overhead per message
             .sum();
 
         let dynamic_max = self
@@ -113,9 +113,9 @@ impl VllmClient {
             .saturating_sub(estimated_prompt_tokens)
             .saturating_sub(self.profile.context.safety_tokens);
 
-        // Clamp: at least 1024, at most max_completion_tokens from profile
+        // Clamp: at least 4096, at most max_completion_tokens from profile
         let max_tokens = dynamic_max
-            .max(1024)
+            .max(4096)
             .min(self.profile.context.max_completion_tokens);
 
         ChatRequest {
