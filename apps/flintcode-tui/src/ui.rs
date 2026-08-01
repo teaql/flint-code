@@ -18,7 +18,8 @@ use std::io;
 use std::time::Duration;
 
 use agent_core::event::ExportConsent;
-use agent_core::state::{PipelineState, PlanStepStatus, ToolProcessStatus};
+use agent_core::shared::{PlanStepStatus, ToolProcessStatus};
+use agent_core::state::PipelineState;
 
 use crate::app::{App, InputMode, ServiceHealth, TimelineRole, View};
 

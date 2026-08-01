@@ -549,7 +549,7 @@ impl App {
         let completed = run
             .plan
             .iter()
-            .filter(|step| matches!(step.status, agent_core::state::PlanStepStatus::Completed))
+            .filter(|step| matches!(step.status, agent_core::shared::PlanStepStatus::Completed))
             .count();
         (completed, run.plan.len())
     }

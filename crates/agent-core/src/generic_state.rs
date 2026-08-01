@@ -1,46 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub enum GenericPlanStepStatus {
-    Pending,
-    InProgress,
-    WaitingUser,
-    Completed,
-    Failed,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct GenericPlanStep {
-    pub id: String,
-    pub title: String,
-    pub status: GenericPlanStepStatus,
-}
-
-impl GenericPlanStep {
-    pub fn new(id: impl Into<String>, title: impl Into<String>) -> Self {
-        Self {
-            id: id.into(),
-            title: title.into(),
-            status: GenericPlanStepStatus::Pending,
-        }
-    }
-}
-
-/// A command launched by the agent as part of tool use.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub enum GenericToolProcessStatus {
-    Running,
-    Succeeded,
-    Failed,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct GenericToolProcess {
-    pub id: u64,
-    pub command: String,
-    pub status: GenericToolProcessStatus,
-    pub exit_code: Option<i32>,
-}
+use crate::shared::{PlanStep, PlanStepStatus, ToolProcess};
 
 /// State for the generic agent loop
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -83,9 +43,9 @@ impl GenericPipelineState {
 pub struct GenericRunState {
     pub run_id: String,
     pub state: GenericPipelineState,
-    pub steps: Vec<GenericPlanStep>,
+    pub steps: Vec<PlanStep>,
     pub current_step: Option<String>,
-    pub active_tools: Vec<GenericToolProcess>,
+    pub active_tools: Vec<ToolProcess>,
     pub tool_id_counter: u64,
 }
 
@@ -105,7 +65,7 @@ impl GenericRunState {
         self.state.is_active()
     }
 
-    pub fn mark_step(&mut self, status: GenericPlanStepStatus) {
+    pub fn mark_step(&mut self, status: PlanStepStatus) {
         if let Some(id) = &self.current_step {
             if let Some(step) = self.steps.iter_mut().find(|s| s.id == *id) {
                 step.status = status;

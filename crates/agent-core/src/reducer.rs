@@ -1,6 +1,7 @@
 use crate::error::AgentError;
 use crate::event::RunEvent;
-use crate::state::{PipelineState, PlanStepStatus, RunState};
+use crate::shared::PlanStepStatus;
+use crate::state::{PipelineState, RunState};
 use tracing::{error, info, warn};
 
 /// Side-effect commands emitted by the reducer.
@@ -687,7 +688,7 @@ mod tests {
         assert_eq!(run.tool_processes.len(), 1);
         assert_eq!(
             run.tool_processes[0].status,
-            crate::state::ToolProcessStatus::Succeeded
+            crate::shared::ToolProcessStatus::Succeeded
         );
     }
 }

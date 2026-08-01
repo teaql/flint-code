@@ -1,3 +1,4 @@
+pub mod shared;
 pub mod error;
 pub mod event;
 pub mod reducer;
@@ -5,6 +6,7 @@ pub mod run_controller;
 pub mod state;
 pub mod workflow;
 
+pub use shared::*;
 pub use error::*;
 pub use event::*;
 pub use reducer::*;

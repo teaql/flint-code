@@ -2,39 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::event::{ContextBudget, TokenUsage, ValidationResult};
-
-/// User-visible state of a plan step.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-pub enum PlanStepStatus {
-    Pending,
-    InProgress,
-    WaitingUser,
-    Blocked,
-    Completed,
-    Failed,
-    Skipped,
-    Cancelled,
-}
-
-/// A stable, user-visible unit in the run plan.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct PlanStep {
-    pub id: String,
-    pub title: String,
-    pub detail: Option<String>,
-    pub status: PlanStepStatus,
-}
-
-impl PlanStep {
-    fn new(id: impl Into<String>, title: impl Into<String>) -> Self {
-        Self {
-            id: id.into(),
-            title: title.into(),
-            detail: None,
-            status: PlanStepStatus::Pending,
-        }
-    }
-}
+use crate::shared::{PlanStep, PlanStepStatus, ToolProcess, ToolProcessStatus};
 
 /// Cumulative model usage for a run.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -54,22 +22,6 @@ impl TokenTotals {
     }
 }
 
-/// Lifecycle state for a process-backed tool invocation.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-pub enum ToolProcessStatus {
-    Running,
-    Succeeded,
-    Failed,
-}
-
-/// A command launched by the agent as part of tool use.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct ToolProcess {
-    pub id: u64,
-    pub command: String,
-    pub status: ToolProcessStatus,
-    pub exit_code: Option<i32>,
-}
 
 /// Pipeline state — must be an explicit enum, never inferred from log text.
 /// State transitions are handled exclusively by the reducer.

@@ -1,5 +1,6 @@
 use crate::generic_event::GenericRunEvent;
 use crate::generic_state::{GenericPipelineState, GenericRunState};
+use crate::shared::{ToolProcess, ToolProcessStatus};
 use tracing::{error, info, warn};
 
 #[derive(Debug, Clone)]
@@ -55,10 +56,10 @@ pub fn reduce(state: &mut GenericRunState, event: GenericRunEvent) -> GenericSid
             info!(%command, "Model requested tool call");
             state.tool_id_counter += 1;
             let tool_id = state.tool_id_counter;
-            state.active_tools.push(crate::generic_state::GenericToolProcess {
+            state.active_tools.push(ToolProcess {
                 id: tool_id,
                 command: command.clone(),
-                status: crate::generic_state::GenericToolProcessStatus::Running,
+                status: ToolProcessStatus::Running,
                 exit_code: None,
             });
             state.state = GenericPipelineState::ExecutingTool { tool_call: command.clone() };
@@ -73,12 +74,12 @@ pub fn reduce(state: &mut GenericRunState, event: GenericRunEvent) -> GenericSid
             info!(success, "Tool execution finished");
             // Update the tool process record
             if let Some(tool) = state.active_tools.iter_mut().rev().find(|t| {
-                matches!(t.status, crate::generic_state::GenericToolProcessStatus::Running)
+                matches!(t.status, ToolProcessStatus::Running)
             }) {
                 tool.status = if success {
-                    crate::generic_state::GenericToolProcessStatus::Succeeded
+                    ToolProcessStatus::Succeeded
                 } else {
-                    crate::generic_state::GenericToolProcessStatus::Failed
+                    ToolProcessStatus::Failed
                 };
                 tool.exit_code = exit_code;
             }
