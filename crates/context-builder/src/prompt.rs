@@ -53,6 +53,14 @@ pub fn build_classify_intent_messages(input: &str) -> Vec<(String, String)> {
 pub fn build_generation_messages(task: &TaskPackageData) -> Vec<(String, String)> {
     let mut messages = vec![("system".to_string(), build_system_prompt())];
 
+    // Add modeling skill if present (validation pitfalls, naming rules, etc.)
+    if let Some(skill) = &task.modeling_skill {
+        messages.push((
+            "system".to_string(),
+            format!("Modeling guidelines (follow these to pass validation on first attempt):\n\n{skill}"),
+        ));
+    }
+
     // Add grammar example if present
     if let Some(example) = &task.grammar_example {
         messages.push((
@@ -84,6 +92,14 @@ pub fn build_repair_messages(
     diagnostic_limit: usize,
 ) -> Vec<(String, String)> {
     let mut messages = vec![("system".to_string(), build_system_prompt())];
+
+    // Add modeling skill if present
+    if let Some(skill) = &task.modeling_skill {
+        messages.push((
+            "system".to_string(),
+            format!("Modeling guidelines:\n\n{skill}"),
+        ));
+    }
 
     if let Some(example) = &task.grammar_example {
         messages.push((

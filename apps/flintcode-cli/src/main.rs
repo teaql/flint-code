@@ -65,6 +65,10 @@ enum Commands {
         /// Build target for teaql generate/build testing
         #[arg(long)]
         build_target: Option<String>,
+
+        /// Path to a SKILL.md file for modeling skill injection
+        #[arg(long)]
+        skill: Option<PathBuf>,
     },
 
     /// Run the new generic autonomous agent
@@ -202,6 +206,7 @@ async fn main() -> Result<()> {
             profile,
             output,
             build_target,
+            skill,
         } => {
             tracing::info!(
                 task = %task.display(),
@@ -231,6 +236,11 @@ async fn main() -> Result<()> {
             
             if let Some(target) = build_target {
                 executor.set_build_target(target);
+            }
+
+            // Load modeling skill from explicit --skill path or auto-discover
+            if let Some(skill_path) = skill {
+                executor.set_skill_path(skill_path);
             }
             
             executor.load_task_from_path(&task).await;

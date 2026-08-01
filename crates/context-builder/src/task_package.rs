@@ -13,6 +13,11 @@ pub struct TaskPackageData {
     pub acceptance_spec: Option<serde_json::Value>,
     pub workspace_manifest: Option<WorkspaceManifest>,
     pub tool_policy: Option<ToolPolicy>,
+    /// Optional modeling skill content injected into generation/repair prompts.
+    /// Loaded from a SKILL.md file; only the `model_generation` phase section
+    /// is extracted and included. Automatically absent from post-modeling phases.
+    #[serde(default)]
+    pub modeling_skill: Option<String>,
 }
 
 /// Workspace manifest: controls which files the agent can access.
@@ -81,6 +86,7 @@ impl TaskPackageData {
             acceptance_spec: None,
             workspace_manifest: None,
             tool_policy: None,
+            modeling_skill: None,
         }
     }
 
@@ -119,6 +125,10 @@ impl TaskPackageData {
             None
         };
 
+        // Load modeling skill from skill.md in the task package directory
+        let modeling_skill = read_optional(dir, "skill.md")?
+            .and_then(|content| extract_phase_content(&content, "model_generation"));
+
         Ok(Self {
             name,
             root: dir.to_path_buf(),
@@ -128,6 +138,7 @@ impl TaskPackageData {
             acceptance_spec,
             workspace_manifest,
             tool_policy,
+            modeling_skill,
         })
     }
 
@@ -159,5 +170,43 @@ fn read_optional(dir: &Path, filename: &str) -> Result<Option<String>> {
         Ok(Some(std::fs::read_to_string(&path)?))
     } else {
         Ok(None)
+    }
+}
+
+/// Extract content from a `<!-- phase:NAME -->...<!-- /phase:NAME -->` block
+/// in a SKILL.md file. Returns the inner content if found.
+fn extract_phase_content(content: &str, phase_name: &str) -> Option<String> {
+    let start_tag = format!("<!-- phase:{} -->", phase_name);
+    let end_tag = format!("<!-- /phase:{} -->", phase_name);
+
+    let start = content.find(&start_tag)?;
+    let end = content.find(&end_tag)?;
+
+    if end <= start {
+        return None;
+    }
+
+    let inner = &content[start + start_tag.len()..end];
+    let trimmed = inner.trim();
+    if trimmed.is_empty() {
+        None
+    } else {
+        Some(trimmed.to_string())
+    }
+}
+
+impl TaskPackageData {
+    /// Load a modeling skill from an external SKILL.md file (e.g., from
+    /// teaql-agent-kit). Extracts only the `model_generation` phase section.
+    pub fn load_modeling_skill_from(&mut self, skill_path: &Path) -> Result<()> {
+        if skill_path.exists() {
+            let content = std::fs::read_to_string(skill_path)
+                .with_context(|| format!("Failed to read skill file: {}", skill_path.display()))?;
+            self.modeling_skill = extract_phase_content(&content, "model_generation");
+            if self.modeling_skill.is_some() {
+                tracing::info!(path = %skill_path.display(), "Loaded modeling skill");
+            }
+        }
+        Ok(())
     }
 }

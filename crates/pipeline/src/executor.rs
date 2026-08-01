@@ -39,6 +39,8 @@ pub struct PipelineExecutor {
     /// Workspace file-access guard — enforces read/write policies when a task
     /// ships a `workspace-manifest.toml`.
     workspace_guard: Option<workspace_guard::WorkspaceGuard>,
+    /// Optional path to a SKILL.md file for modeling skill injection.
+    skill_path: Option<PathBuf>,
 }
 
 impl PipelineExecutor {
@@ -65,6 +67,7 @@ impl PipelineExecutor {
             repair_messages: None,
             last_actionable_errors: Vec::new(),
             workspace_guard: None,
+            skill_path: None,
         })
     }
 
@@ -76,6 +79,11 @@ impl PipelineExecutor {
     /// Set patches for generated Cargo.toml files
     pub fn set_patches(&mut self, patches: std::collections::HashMap<String, String>) {
         self.patches = Some(patches);
+    }
+
+    /// Set the skill file path for modeling skill injection.
+    pub fn set_skill_path(&mut self, path: PathBuf) {
+        self.skill_path = Some(path);
     }
 
     /// Process a side effect. This is the main dispatch loop.
@@ -110,7 +118,15 @@ impl PipelineExecutor {
     /// Load a task package from disk.
     pub async fn load_task_from_path(&mut self, path: &Path) {
         match TaskPackageData::load(path) {
-            Ok(task) => self.load_task_data(task, false).await,
+            Ok(mut task) => {
+                // Inject modeling skill if a skill path is configured
+                if let Some(skill_path) = &self.skill_path {
+                    if let Err(e) = task.load_modeling_skill_from(skill_path) {
+                        warn!(error = %e, "Failed to load modeling skill, continuing without it");
+                    }
+                }
+                self.load_task_data(task, false).await
+            }
             Err(e) => {
                 self.send(RunEvent::TaskLoadFailed(format!(
                     "Failed to load task: {e}"
