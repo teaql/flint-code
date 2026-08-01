@@ -55,8 +55,7 @@ user-role assignments, and notification rules.
 
 - Root name: `moving-company-service`
 - Organization: `example`
-- Split into multiple XML module files by business domain.
-- Main entry file uses `<_include file="..." />` for each module.
+- Output all entities in a single XML file under one `<root>` element.
 - Every object must define `_name`, `_module`, and `_module_key`.
 - All entities must be connected via references — no isolated/orphaned entities.
 
