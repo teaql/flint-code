@@ -32,7 +32,7 @@ impl<'a> AuditLogExpression<'a> {
         crate::ValueExpression::new(next, self.root_desc.clone())
     }
 
-    pub fn get_log_timestamp(self) -> crate::ValueExpression<'a, chrono::DateTime<chrono::Utc>> {
+    pub fn get_log_timestamp(self) -> crate::ValueExpression<'a, teaql_core::time::Timestamp> {
         let next = self.result.and_then("log_timestamp", |entity| entity.eval_log_timestamp());
         crate::ValueExpression::new(next, self.root_desc.clone())
     }
@@ -42,7 +42,7 @@ impl<'a> AuditLogExpression<'a> {
         crate::ValueExpression::new(next, self.root_desc.clone())
     }
 
-    pub fn get_create_time(self) -> crate::ValueExpression<'a, chrono::DateTime<chrono::Utc>> {
+    pub fn get_create_time(self) -> crate::ValueExpression<'a, teaql_core::time::Timestamp> {
         let next = self.result.and_then("create_time", |entity| entity.eval_create_time());
         crate::ValueExpression::new(next, self.root_desc.clone())
     }

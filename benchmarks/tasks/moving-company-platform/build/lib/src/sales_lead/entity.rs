@@ -24,7 +24,7 @@ pub struct SalesLead {
     lead_status: String,
 
 // @source moving-company.xml:220
-    create_time: chrono::DateTime<chrono::Utc>,
+    create_time: teaql_core::time::Timestamp,
 #[teaql(version)]
     version: i64,
 // @source moving-company.xml:220
@@ -61,7 +61,7 @@ impl SalesLead {
             id: 0_u64,
             lead_source: String::new(),
             lead_status: String::new(),
-            create_time: chrono::Utc::now(),
+            create_time: teaql_core::time::Timestamp::now(),
             version: 0_i64,
             marketing_campaign_id: 0_u64,
             customer_profile_id: 0_u64,
@@ -165,7 +165,7 @@ impl SalesLead {
                     teaql_core::eval::EvalResult::Value(self.lead_status())
                 }}
 
-    pub fn create_time(&self) -> chrono::DateTime<chrono::Utc> {
+    pub fn create_time(&self) -> teaql_core::time::Timestamp {
         self.changed_create_time().and_then(|value| value.try_timestamp()).unwrap_or(self.create_time)
     }
 
@@ -180,7 +180,7 @@ impl SalesLead {
         self.root.get(&self.entity_key(), "create_time")
     }
 
-    pub fn eval_create_time(&self) -> teaql_core::eval::EvalResult<chrono::DateTime<chrono::Utc>> {
+    pub fn eval_create_time(&self) -> teaql_core::eval::EvalResult<teaql_core::time::Timestamp> {
         if !self.is_loaded("create_time") {
                     teaql_core::eval::EvalResult::NotLoaded { failed_node: "create_time".to_string(), attempted_path: "create_time".to_string() }
                 } else {

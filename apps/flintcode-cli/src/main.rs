@@ -128,6 +128,12 @@ async fn main() -> Result<()> {
                 system_prompt.push_str(&format!("\n\nYou must generate the `{}` target.", bt));
             }
 
+            // Inject global AGENTS.md rules
+            if let Ok(global_agents_md) = std::fs::read_to_string("AGENTS.md") {
+                system_prompt.push_str("\n\n--- GLOBAL AGENT RULES ---\n");
+                system_prompt.push_str(&global_agents_md);
+            }
+
             let mut messages = vec![
                 ChatMessage {
                     role: "system".to_string(),

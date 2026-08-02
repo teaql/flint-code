@@ -17,13 +17,13 @@ pub struct AuditLog {
     id: u64,
 
 // @source moving-company.xml:72
-    log_timestamp: chrono::DateTime<chrono::Utc>,
+    log_timestamp: teaql_core::time::Timestamp,
 
 // @source moving-company.xml:72
     action_type: String,
 
 // @source moving-company.xml:72
-    create_time: chrono::DateTime<chrono::Utc>,
+    create_time: teaql_core::time::Timestamp,
 #[teaql(version)]
     version: i64,
 // @source moving-company.xml:72
@@ -56,9 +56,9 @@ impl AuditLog {
     pub(crate) fn runtime_new(root: teaql_runtime::EntityRoot) -> Self {
         Self {
             id: 0_u64,
-            log_timestamp: chrono::Utc::now(),
+            log_timestamp: teaql_core::time::Timestamp::now(),
             action_type: String::new(),
-            create_time: chrono::Utc::now(),
+            create_time: teaql_core::time::Timestamp::now(),
             version: 0_i64,
             action_operator_id: 0_u64,
             entity_reference_id: 0_u64,
@@ -114,7 +114,7 @@ impl AuditLog {
                     teaql_core::eval::EvalResult::Value(self.id())
                 }}
 
-    pub fn log_timestamp(&self) -> chrono::DateTime<chrono::Utc> {
+    pub fn log_timestamp(&self) -> teaql_core::time::Timestamp {
         self.changed_log_timestamp().and_then(|value| value.try_timestamp()).unwrap_or(self.log_timestamp)
     }
 
@@ -129,7 +129,7 @@ impl AuditLog {
         self.root.get(&self.entity_key(), "log_timestamp")
     }
 
-    pub fn eval_log_timestamp(&self) -> teaql_core::eval::EvalResult<chrono::DateTime<chrono::Utc>> {
+    pub fn eval_log_timestamp(&self) -> teaql_core::eval::EvalResult<teaql_core::time::Timestamp> {
         if !self.is_loaded("log_timestamp") {
                     teaql_core::eval::EvalResult::NotLoaded { failed_node: "log_timestamp".to_string(), attempted_path: "log_timestamp".to_string() }
                 } else {
@@ -158,7 +158,7 @@ impl AuditLog {
                     teaql_core::eval::EvalResult::Value(self.action_type())
                 }}
 
-    pub fn create_time(&self) -> chrono::DateTime<chrono::Utc> {
+    pub fn create_time(&self) -> teaql_core::time::Timestamp {
         self.changed_create_time().and_then(|value| value.try_timestamp()).unwrap_or(self.create_time)
     }
 
@@ -173,7 +173,7 @@ impl AuditLog {
         self.root.get(&self.entity_key(), "create_time")
     }
 
-    pub fn eval_create_time(&self) -> teaql_core::eval::EvalResult<chrono::DateTime<chrono::Utc>> {
+    pub fn eval_create_time(&self) -> teaql_core::eval::EvalResult<teaql_core::time::Timestamp> {
         if !self.is_loaded("create_time") {
                     teaql_core::eval::EvalResult::NotLoaded { failed_node: "create_time".to_string(), attempted_path: "create_time".to_string() }
                 } else {

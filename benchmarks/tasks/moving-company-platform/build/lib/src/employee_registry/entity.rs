@@ -27,10 +27,10 @@ pub struct EmployeeRegistry {
     hire_date: chrono::NaiveDate,
 
 // @source moving-company.xml:110
-    create_time: chrono::DateTime<chrono::Utc>,
+    create_time: teaql_core::time::Timestamp,
 
 // @source moving-company.xml:110
-    update_time: chrono::DateTime<chrono::Utc>,
+    update_time: teaql_core::time::Timestamp,
 #[teaql(version)]
     version: i64,
 // @source moving-company.xml:110
@@ -60,8 +60,8 @@ impl EmployeeRegistry {
             employee_name: String::new(),
             job_title: String::new(),
             hire_date: chrono::NaiveDate::from_ymd_opt(1970, 1, 1).unwrap(),
-            create_time: chrono::Utc::now(),
-            update_time: chrono::Utc::now(),
+            create_time: teaql_core::time::Timestamp::now(),
+            update_time: teaql_core::time::Timestamp::now(),
             version: 0_i64,
             company_profile_id: 0_u64,
             company_profile: None,
@@ -180,7 +180,7 @@ impl EmployeeRegistry {
                     teaql_core::eval::EvalResult::Value(self.hire_date())
                 }}
 
-    pub fn create_time(&self) -> chrono::DateTime<chrono::Utc> {
+    pub fn create_time(&self) -> teaql_core::time::Timestamp {
         self.changed_create_time().and_then(|value| value.try_timestamp()).unwrap_or(self.create_time)
     }
 
@@ -195,14 +195,14 @@ impl EmployeeRegistry {
         self.root.get(&self.entity_key(), "create_time")
     }
 
-    pub fn eval_create_time(&self) -> teaql_core::eval::EvalResult<chrono::DateTime<chrono::Utc>> {
+    pub fn eval_create_time(&self) -> teaql_core::eval::EvalResult<teaql_core::time::Timestamp> {
         if !self.is_loaded("create_time") {
                     teaql_core::eval::EvalResult::NotLoaded { failed_node: "create_time".to_string(), attempted_path: "create_time".to_string() }
                 } else {
                     teaql_core::eval::EvalResult::Value(self.create_time())
                 }}
 
-    pub fn update_time(&self) -> chrono::DateTime<chrono::Utc> {
+    pub fn update_time(&self) -> teaql_core::time::Timestamp {
         self.changed_update_time().and_then(|value| value.try_timestamp()).unwrap_or(self.update_time)
     }
 
@@ -217,7 +217,7 @@ impl EmployeeRegistry {
         self.root.get(&self.entity_key(), "update_time")
     }
 
-    pub fn eval_update_time(&self) -> teaql_core::eval::EvalResult<chrono::DateTime<chrono::Utc>> {
+    pub fn eval_update_time(&self) -> teaql_core::eval::EvalResult<teaql_core::time::Timestamp> {
         if !self.is_loaded("update_time") {
                     teaql_core::eval::EvalResult::NotLoaded { failed_node: "update_time".to_string(), attempted_path: "update_time".to_string() }
                 } else {

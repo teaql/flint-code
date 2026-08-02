@@ -29,6 +29,10 @@ context windows (64K-128K tokens).
 
 7. **Version requirement**: `cargo-teaql` exactly `2.0.8`.
 
+8. **Diagnosing Errors**: When running commands (like `cargo run`, `mvn build`, etc.) and checking for errors, NEVER use strict case-sensitive tools like `grep "Error"`. Compilers and tools often output `error:`, `ERROR:`, `Exception`, or `Failed`. Instead, use case-insensitive searches (e.g. `grep -i "error"`) or pipe the entire output to a file and read it. If a command fails and your search returns nothing, stop blindly retrying with larger context bounds; dump the raw output instead.
+
+9. **Anti-Hallucination (Strict Copy)**: When implementing TeaQL logic based on `rust-assist-query`, `rust-assist-create`, or `AGENTS.md`, you MUST rigidly copy the syntax shown in the example code (e.g. `let mut entity = Q::xxx().new_entity(ctx)`). Do NOT invent or hallucinate standard Builder patterns (like `E::new_xxx()`) based on your prior knowledge of other frameworks. Trust the generated snippet completely and literally.
+
 ### Rust Code Style
 
 - Use `anyhow::Result` for error propagation in application code.

@@ -31,7 +31,7 @@ pub struct AgentConfig {
 impl Default for AgentConfig {
     fn default() -> Self {
         Self {
-            max_iterations: 150,
+            max_iterations: 100,
             max_tokens: 32000,
             trim_ratio: 0.25,
         }
