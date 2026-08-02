@@ -108,7 +108,16 @@ impl VllmClient {
         // We use a conservative 4 chars/token to avoid severely overestimating XML/Code.
         let estimated_prompt_tokens: u32 = messages
             .iter()
-            .map(|m| (m.content.as_deref().unwrap_or("").len() as u32) / 4 + 10) // +10 for role/overhead per message
+            .map(|m| {
+                let mut chars = m.content.as_deref().unwrap_or("").len();
+                if let Some(calls) = &m.tool_calls {
+                    for c in calls {
+                        chars += c.function.name.len();
+                        chars += c.function.arguments.len();
+                    }
+                }
+                (chars as u32) / 4 + 10 // +10 for role/overhead per message
+            })
             .sum();
 
         let dynamic_max = self

@@ -98,15 +98,56 @@ impl<M: ModelBackend, E: ToolExecutor> AgentLoop<M, E> {
             }
 
             // --- Ephemeral Cleanup (阅后即焚) ---
+            let safe_byte_limit = self.config.max_tokens * 3; // roughly 3 bytes per token
             let last_assistant_idx = messages.iter().rposition(|m| m.role == "assistant").unwrap_or(0);
+            
+            // 1. Explicitly marked ephemeral tools are always truncated
             for i in 0..last_assistant_idx {
                 if messages[i].role == "tool" {
                     if let Some(ref content) = messages[i].content {
-                        if content.len() > 1000 || content.contains("<!-- ephemeral -->") {
-                            tracing::info!("Truncating ephemeral tool output for tool_call_id: {:?}", messages[i].tool_call_id);
-                            messages[i].content = Some(format!("[EPHEMERAL: Output omitted for context limits (Original size: {} bytes)]", content.len()));
+                        if content.contains("<!-- ephemeral -->") {
+                            messages[i].content = Some(format!("[EPHEMERAL: Output omitted explicitly (Original size: {} bytes)]", content.len()));
                         }
                     }
+                }
+            }
+
+            // 2. Dynamically truncate historical tool outputs if we are over budget
+            loop {
+                let current_bytes: usize = messages.iter().map(|m| {
+                    let mut size = m.content.as_ref().map(|c| c.len()).unwrap_or(0);
+                    if let Some(calls) = &m.tool_calls {
+                        for c in calls {
+                            size += c.function.name.len();
+                            size += c.function.arguments.len();
+                        }
+                    }
+                    size
+                }).sum();
+                if current_bytes <= safe_byte_limit {
+                    break;
+                }
+                
+                let mut largest_idx = None;
+                let mut max_len = 1000;
+                
+                for i in 0..last_assistant_idx {
+                    if messages[i].role == "tool" {
+                        if let Some(ref content) = messages[i].content {
+                            if content.len() > max_len && !content.starts_with("[EPHEMERAL:") {
+                                max_len = content.len();
+                                largest_idx = Some(i);
+                            }
+                        }
+                    }
+                }
+                
+                if let Some(idx) = largest_idx {
+                    let original_size = messages[idx].content.as_ref().unwrap().len();
+                    tracing::info!("Dynamic Ephemeral: Truncating tool output at idx {} (size: {}) to save context", idx, original_size);
+                    messages[idx].content = Some(format!("[EPHEMERAL: Output omitted dynamically for context limits (Original size: {} bytes)]", original_size));
+                } else {
+                    break;
                 }
             }
 
@@ -175,7 +216,7 @@ impl<M: ModelBackend, E: ToolExecutor> AgentLoop<M, E> {
                 for call in calls {
                     tracing::info!("Executing Tool: {} with arguments: {}", call.name, call.arguments);
                     
-                    let tool_output = match self.executor.execute(&call.name, &call.arguments).await {
+                    let mut tool_output = match self.executor.execute(&call.name, &call.arguments).await {
                         Ok(output) => {
                             if call.name == "finish_task" {
                                 tracing::info!("Task finished by Agent: {}", call.arguments);
@@ -185,6 +226,35 @@ impl<M: ModelBackend, E: ToolExecutor> AgentLoop<M, E> {
                         }
                         Err(e) => format!("Error executing tool: {}", e),
                     };
+
+                    // --- Dynamic Tool Output Truncation ---
+                    let current_bytes: usize = messages.iter().map(|m| {
+                        let mut size = m.content.as_ref().map(|c| c.len()).unwrap_or(0);
+                        if let Some(calls) = &m.tool_calls {
+                            for c in calls {
+                                size += c.function.name.len();
+                                size += c.function.arguments.len();
+                            }
+                        }
+                        size
+                    }).sum();
+                    let safe_byte_limit = self.config.max_tokens * 3;
+                    // Cap the maximum tool output so it doesn't eat up the LLM's budget
+                    let mut allowed_bytes = safe_byte_limit.saturating_sub(current_bytes).saturating_sub(4000);
+                    allowed_bytes = allowed_bytes.min(16000).max(2000);
+                    
+                    if tool_output.len() > allowed_bytes {
+                        tracing::warn!("Tool output too large ({}), dynamically truncating to {} bytes", tool_output.len(), allowed_bytes);
+                        let truncated_msg = format!("\n...[TRUNCATED: Output exceeded dynamic context limit. Original size: {} bytes]", tool_output.len());
+                        let keep_len = allowed_bytes.saturating_sub(truncated_msg.len());
+                        
+                        let mut boundary = keep_len;
+                        while boundary > 0 && !tool_output.is_char_boundary(boundary) {
+                            boundary -= 1;
+                        }
+                        tool_output.truncate(boundary);
+                        tool_output.push_str(&truncated_msg);
+                    }
 
                     messages.push(ChatMessage {
                         role: "tool".to_string(),
