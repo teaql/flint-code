@@ -14,7 +14,7 @@ use tokio::sync::mpsc;
 use agent_core::error::AgentError;
 use agent_core::event::{ModelResult, TokenUsage};
 
-use crate::chat::{ChatMessage, ChatUsage};
+use crate::chat::{ChatMessage, ChatUsage, Tool, ToolChoice};
 use crate::client::StreamEvent;
 use crate::profile::ModelProfile;
 use crate::tokenizer::{estimate_messages_tokens, estimate_tokens};
@@ -173,7 +173,12 @@ impl SimulatorClient {
     }
 
     /// Execute one deterministic non-streaming model call.
-    pub async fn chat(&self, messages: Vec<ChatMessage>) -> Result<ModelResult, AgentError> {
+    pub async fn chat(
+        &self,
+        messages: Vec<ChatMessage>,
+        _tools: Option<Vec<Tool>>,
+        _tool_choice: Option<ToolChoice>,
+    ) -> Result<ModelResult, AgentError> {
         let response = self.take_response(&messages)?;
         let latency_ms = response
             .latency_ms
@@ -208,6 +213,7 @@ impl SimulatorClient {
         Ok(ModelResult {
             content,
             reasoning_content: response.reasoning_content,
+            tool_calls: None,
             finish_reason: response.finish_reason,
             usage,
             elapsed_secs: latency_ms as f64 / 1_000.0,
@@ -220,7 +226,7 @@ impl SimulatorClient {
         &self,
         messages: Vec<ChatMessage>,
     ) -> Result<mpsc::Receiver<StreamEvent>, AgentError> {
-        let result = self.chat(messages).await?;
+        let result = self.chat(messages, None, None).await?;
         let chunk_chars = self.scenario.stream_chunk_chars;
         let delay_ms = self.scenario.stream_delay_ms;
         let (tx, rx) = mpsc::channel(256);
@@ -284,7 +290,7 @@ impl SimulatorClient {
     fn take_response(&self, messages: &[ChatMessage]) -> Result<SimulatorResponse, AgentError> {
         let combined_prompt = messages
             .iter()
-            .map(|message| message.content.as_str())
+            .map(|message| message.content.as_deref().unwrap_or(""))
             .collect::<Vec<_>>()
             .join("\n");
         let mut state = self
@@ -338,7 +344,7 @@ fn calculate_usage(
 ) -> TokenUsage {
     let message_pairs = messages
         .iter()
-        .map(|message| (message.role.clone(), message.content.clone()))
+        .map(|message| (message.role.clone(), message.content.clone().unwrap_or_default()))
         .collect::<Vec<_>>();
     let estimated_prompt = estimate_messages_tokens(&message_pairs);
     let estimated_completion = estimate_tokens(content);
@@ -414,7 +420,10 @@ mod tests {
     fn messages(content: &str) -> Vec<ChatMessage> {
         vec![ChatMessage {
             role: "user".to_string(),
-            content: content.to_string(),
+            content: Some(content.to_string()),
+            name: None,
+            tool_calls: None,
+            tool_call_id: None,
         }]
     }
 
@@ -440,11 +449,11 @@ content = "<root repaired=\"true\"/>"
         );
 
         let first = client
-            .chat(messages("create model"))
+            .chat(messages("create model"), None, None)
             .await
             .expect("first response");
         let second = client
-            .chat(messages("repair"))
+            .chat(messages("repair"), None, None)
             .await
             .expect("second response");
 
@@ -474,15 +483,15 @@ content = "done"
 "#,
         );
 
-        let mismatch = client.chat(messages("wrong")).await.unwrap_err();
+        let mismatch = client.chat(messages("wrong"), None, None).await.unwrap_err();
         assert!(mismatch.to_string().contains("expected request containing"));
         assert!(client.calls().is_empty());
 
         client
-            .chat(messages("expected"))
+            .chat(messages("expected"), None, None)
             .await
             .expect("matching response");
-        let exhausted = client.chat(messages("expected")).await.unwrap_err();
+        let exhausted = client.chat(messages("expected"), None, None).await.unwrap_err();
         assert!(exhausted.to_string().contains("exhausted"));
     }
 
@@ -502,7 +511,7 @@ body = "offline"
 "#,
         );
 
-        let error = client.chat(messages("test")).await.unwrap_err();
+        let error = client.chat(messages("test"), None, None).await.unwrap_err();
         assert!(matches!(
             error,
             AgentError::TransportError { status: 503, .. }

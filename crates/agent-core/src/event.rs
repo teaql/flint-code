@@ -43,11 +43,20 @@ pub struct TaskPackage {
     pub acceptance_spec: Option<serde_json::Value>,
 }
 
+/// Generic Tool Call structure emitted by models
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ModelToolCall {
+    pub id: String,
+    pub name: String,
+    pub arguments: String, // JSON arguments
+}
+
 /// Result from model inference
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModelResult {
     pub content: String,
     pub reasoning_content: Option<String>,
+    pub tool_calls: Option<Vec<ModelToolCall>>,
     pub finish_reason: String,
     pub usage: TokenUsage,
     pub elapsed_secs: f64,

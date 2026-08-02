@@ -98,12 +98,17 @@ impl VllmClient {
     /// `max_tokens` is computed dynamically:
     ///   model_context_tokens - estimated_prompt_tokens - safety_tokens
     /// so the model always gets the maximum possible output budget.
-    fn build_request(&self, messages: Vec<ChatMessage>) -> ChatRequest {
+    fn build_request(
+        &self,
+        messages: Vec<ChatMessage>,
+        tools: Option<Vec<Tool>>,
+        tool_choice: Option<ToolChoice>,
+    ) -> ChatRequest {
         // Rough estimate: 1 token ≈ 4 chars for English/code, 1.5 chars for CJK.
         // We use a conservative 4 chars/token to avoid severely overestimating XML/Code.
         let estimated_prompt_tokens: u32 = messages
             .iter()
-            .map(|m| (m.content.len() as u32) / 4 + 10) // +10 for role/overhead per message
+            .map(|m| (m.content.as_deref().unwrap_or("").len() as u32) / 4 + 10) // +10 for role/overhead per message
             .sum();
 
         let dynamic_max = self
@@ -126,6 +131,8 @@ impl VllmClient {
             max_tokens,
             max_completion_tokens: Some(max_tokens),
             stream: false,
+            tools,
+            tool_choice,
             chat_template_kwargs: if !self.profile.thinking.enabled {
                 Some(ChatTemplateKwargs {
                     enable_thinking: false,
@@ -142,12 +149,14 @@ impl VllmClient {
     pub async fn chat(
         &self,
         messages: Vec<ChatMessage>,
+        tools: Option<Vec<Tool>>,
+        tool_choice: Option<ToolChoice>,
     ) -> std::result::Result<ModelResult, AgentError> {
         let max_attempts = 3;
         let mut attempt = 1;
 
         loop {
-            match self.chat_internal(messages.clone()).await {
+            match self.chat_internal(messages.clone(), tools.clone(), tool_choice.clone()).await {
                 Ok(res) => return Ok(res),
                 Err(e) => {
                     if attempt >= max_attempts {
@@ -164,8 +173,10 @@ impl VllmClient {
     async fn chat_internal(
         &self,
         messages: Vec<ChatMessage>,
+        tools: Option<Vec<Tool>>,
+        tool_choice: Option<ToolChoice>,
     ) -> std::result::Result<ModelResult, AgentError> {
-        let request = self.build_request(messages);
+        let request = self.build_request(messages, tools, tool_choice);
         let url = self.profile.chat_url();
         let start = Instant::now();
 
@@ -220,6 +231,16 @@ impl VllmClient {
 
         let content = message.content.clone().unwrap_or_default();
         let reasoning_content = message.reasoning_content.clone();
+        let tool_calls = message.tool_calls.clone().map(|calls| {
+            calls
+                .into_iter()
+                .map(|tc| agent_core::event::ModelToolCall {
+                    id: tc.id,
+                    name: tc.function.name,
+                    arguments: tc.function.arguments,
+                })
+                .collect()
+        });
         let finish_reason = choice
             .finish_reason
             .clone()
@@ -247,11 +268,9 @@ impl VllmClient {
             "Model response received"
         );
 
-        // finish_reason=stop is ideal; finish_reason=length means the model hit
-        // max_completion_tokens but may have produced usable partial output.
-        // We accept both and let the executor decide what to do with the content.
+        // finish_reason=tool_calls means the model wants to call tools.
         match finish_reason.as_str() {
-            "stop" | "length" => {}
+            "stop" | "length" | "tool_calls" => {}
             other => {
                 return Err(AgentError::IncompleteGeneration {
                     reason: other.to_string(),
@@ -259,9 +278,9 @@ impl VllmClient {
             }
         }
 
-        if content.trim().is_empty() {
+        if content.trim().is_empty() && tool_calls.is_none() {
             return Err(AgentError::IncompleteGeneration {
-                reason: format!("empty content with finish_reason={}", finish_reason),
+                reason: format!("empty content and no tools with finish_reason={}", finish_reason),
             });
         }
 
@@ -276,6 +295,7 @@ impl VllmClient {
         Ok(ModelResult {
             content,
             reasoning_content,
+            tool_calls,
             finish_reason,
             usage,
             elapsed_secs: elapsed,
@@ -288,7 +308,7 @@ impl VllmClient {
         &self,
         messages: Vec<ChatMessage>,
     ) -> std::result::Result<mpsc::Receiver<StreamEvent>, AgentError> {
-        let mut request = self.build_request(messages);
+        let mut request = self.build_request(messages, None, None);
         request.stream = true;
         let url = self.profile.chat_url();
         let timeout_secs = self.profile.timeouts.model_secs;

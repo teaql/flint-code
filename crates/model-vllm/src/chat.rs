@@ -1,11 +1,5 @@
 use serde::{Deserialize, Serialize};
-
-/// Chat message for API requests
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatMessage {
-    pub role: String,
-    pub content: String,
-}
+pub use agent_core::chat::*;
 
 /// Chat completion request
 #[derive(Debug, Clone, Serialize)]
@@ -18,6 +12,10 @@ pub struct ChatRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_completion_tokens: Option<u32>,
     pub stream: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tools: Option<Vec<Tool>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tool_choice: Option<ToolChoice>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_template_kwargs: Option<ChatTemplateKwargs>,
 }
@@ -47,8 +45,8 @@ pub struct ChatChoice {
 pub struct ChatMessageContent {
     pub role: Option<String>,
     pub content: Option<String>,
-    /// Reasoning content (for thinking mode)
     pub reasoning_content: Option<String>,
+    pub tool_calls: Option<Vec<ToolCall>>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -56,6 +54,21 @@ pub struct ChatDelta {
     pub role: Option<String>,
     pub content: Option<String>,
     pub reasoning_content: Option<String>,
+    pub tool_calls: Option<Vec<ToolCallDelta>>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ToolCallDelta {
+    pub index: u32,
+    pub id: Option<String>,
+    pub r#type: Option<String>,
+    pub function: Option<FunctionCallDelta>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct FunctionCallDelta {
+    pub name: Option<String>,
+    pub arguments: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

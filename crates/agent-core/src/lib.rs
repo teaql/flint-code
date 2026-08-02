@@ -1,6 +1,9 @@
 pub mod shared;
+pub mod context;
 pub mod error;
 pub mod event;
+pub mod agent_loop;
+pub mod chat;
 pub mod reducer;
 pub mod run_controller;
 pub mod state;
@@ -9,6 +12,8 @@ pub mod workflow;
 pub use shared::*;
 pub use error::*;
 pub use event::*;
+pub use agent_loop::*;
+pub use chat::*;
 pub use reducer::*;
 pub use run_controller::*;
 pub use state::*;

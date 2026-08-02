@@ -15,9 +15,7 @@ model-vllm = { workspace = true }
 context-builder = { workspace = true }
 workspace-guard = { workspace = true }
 tool-runner = { workspace = true }
-validation = { workspace = true }
 artifact-store = { workspace = true }
-pipeline = { workspace = true }
 clap = { workspace = true }
 chrono = { workspace = true }
 tokio = { workspace = true }

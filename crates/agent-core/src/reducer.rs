@@ -422,6 +422,7 @@ mod tests {
             content: "<root>...</root>".to_string(),
             reasoning_content: None,
             finish_reason: "stop".to_string(),
+            tool_calls: None,
             usage: TokenUsage {
                 prompt_tokens: 3000,
                 completion_tokens: 2000,
@@ -527,6 +528,7 @@ mod tests {
             content: "bad xml".to_string(),
             reasoning_content: None,
             finish_reason: "stop".to_string(),
+            tool_calls: None,
             usage: TokenUsage {
                 prompt_tokens: 3000,
                 completion_tokens: 500,

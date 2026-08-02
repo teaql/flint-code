@@ -6,7 +6,8 @@ use tokio::sync::mpsc;
 use agent_core::error::AgentError;
 use agent_core::event::ModelResult;
 
-use crate::chat::ChatMessage;
+use agent_core::agent_loop::ModelBackend;
+use agent_core::chat::{ChatMessage, Tool, ToolChoice};
 use crate::client::{AvailableModel, StreamEvent, VllmClient};
 use crate::profile::ModelProfile;
 use crate::simulator::SimulatorClient;
@@ -52,13 +53,27 @@ impl ModelClient {
     pub async fn chat(
         &self,
         messages: Vec<ChatMessage>,
+        tools: Option<Vec<Tool>>,
+        tool_choice: Option<ToolChoice>,
     ) -> std::result::Result<ModelResult, AgentError> {
         match self {
-            Self::Vllm(client) => client.chat(messages).await,
-            Self::Simulator(client) => client.chat(messages).await,
+            Self::Vllm(client) => client.chat(messages, tools, tool_choice).await,
+            Self::Simulator(client) => client.chat(messages, tools, tool_choice).await,
         }
     }
+}
 
+impl ModelBackend for ModelClient {
+    async fn chat(
+        &self,
+        messages: Vec<ChatMessage>,
+        tools: Option<Vec<Tool>>,
+    ) -> Result<ModelResult, AgentError> {
+        self.chat(messages, tools, None).await
+    }
+}
+
+impl ModelClient {
     pub async fn chat_stream(
         &self,
         messages: Vec<ChatMessage>,

@@ -1,20 +1,14 @@
-//! FlintCode CLI — AI coding agent for air-gapped environments.
-//!
-//! Usage:
-//!   flintcode evaluate --plan <plan.toml> --profile <profile.toml> --output <dir>
-//!   flintcode health --profile <profile.toml>
-
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
-use tracing_subscriber::{EnvFilter, fmt, prelude::*};
+use tracing_subscriber::{EnvFilter, FmtSubscriber};
+use agent_core::chat::{ChatMessage, Tool, Function};
+use agent_core::agent_loop::AgentLoop;
+
+mod executor;
 
 #[derive(Parser)]
-#[command(
-    name = "flintcode",
-    about = "FlintCode — AI coding agent for air-gapped environments",
-    version
-)]
+#[command(author, version, about = "Flint Code - Agentic Workflow V2")]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -22,329 +16,136 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Run an evaluation suite against a local model
-    Evaluate {
-        /// Path to the evaluation plan (TOML)
-        #[arg(long)]
-        plan: PathBuf,
-
-        /// Path to the model profile (TOML)
-        #[arg(long, default_value = "profiles/dgx-spark-nemotron-3-super-64k.toml")]
-        profile: PathBuf,
-
-        /// Output directory for run artifacts
-        #[arg(long, default_value = "runs")]
-        output: PathBuf,
-
-        /// Report formats (comma-separated: json,junit,markdown)
-        #[arg(long, default_value = "json,markdown")]
-        report: String,
-    },
-
-    /// Check if the model service is healthy
     Health {
-        /// Path to the model profile (TOML)
-        #[arg(long, default_value = "profiles/dgx-spark-nemotron-3-super-64k.toml")]
+        #[arg(long, default_value = "profiles/default.toml")]
         profile: PathBuf,
     },
-
-    /// Run a single task package
     Run {
-        /// Path to the task package directory
         #[arg(long)]
         task: PathBuf,
-
-        /// Path to the model profile (TOML)
-        #[arg(long, default_value = "profiles/dgx-spark-nemotron-3-super-64k.toml")]
+        #[arg(long, default_value = "profiles/default.toml")]
         profile: PathBuf,
-
-        /// Output directory
         #[arg(long, default_value = "runs")]
         output: PathBuf,
-
-        /// Build target for teaql generate/build testing
+        #[arg(long)]
+        skill: Option<PathBuf>,
         #[arg(long)]
         build_target: Option<String>,
-
-        /// Path to a SKILL.md file for modeling skill injection
-        #[arg(long)]
-        skill: Option<PathBuf>,
     },
+}
 
-    /// Run the new generic autonomous agent
-    Agent {
-        /// Path to the task package directory
-        #[arg(long)]
-        task: PathBuf,
-        
-        /// Path to the skill instructions (optional)
-        #[arg(long)]
-        skill: Option<PathBuf>,
-
-        /// Path to the model profile (TOML)
-        #[arg(long, default_value = "profiles/dgx-spark-nemotron-3-super-64k.toml")]
-        profile: PathBuf,
-
-        /// Output directory
-        #[arg(long, default_value = "runs")]
-        output: PathBuf,
-    },
+fn build_tools() -> Vec<Tool> {
+    vec![
+        Tool {
+            r#type: "function".to_string(),
+            function: Function {
+                name: "read_file".to_string(),
+                description: Some("Read the contents of a file".to_string()),
+                parameters: Some(serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        "path": { "type": "string", "description": "Absolute or relative path to file" }
+                    },
+                    "required": ["path"]
+                })),
+            },
+        },
+        Tool {
+            r#type: "function".to_string(),
+            function: Function {
+                name: "write_file".to_string(),
+                description: Some("Write content to a file".to_string()),
+                parameters: Some(serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        "path": { "type": "string", "description": "Path to file" },
+                        "content": { "type": "string", "description": "Content to write" }
+                    },
+                    "required": ["path", "content"]
+                })),
+            },
+        },
+        Tool {
+            r#type: "function".to_string(),
+            function: Function {
+                name: "run_command".to_string(),
+                description: Some("Run a shell command (e.g. cargo check, ls, etc.)".to_string()),
+                parameters: Some(serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        "command": { "type": "string", "description": "The bash command to run" }
+                    },
+                    "required": ["command"]
+                })),
+            },
+        },
+        Tool {
+            r#type: "function".to_string(),
+            function: Function {
+                name: "finish_task".to_string(),
+                description: Some("Call this tool when the task is fully completed".to_string()),
+                parameters: Some(serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        "summary": { "type": "string", "description": "Summary of what was done" }
+                    },
+                    "required": ["summary"]
+                })),
+            },
+        }
+    ]
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    tracing_subscriber::registry()
-        .with(fmt::layer().with_ansi(true))
-        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")))
-        .init();
+    let subscriber = FmtSubscriber::builder()
+        .with_env_filter(EnvFilter::from_default_env().add_directive(tracing::Level::INFO.into()))
+        .with_target(true)
+        .with_file(false)
+        .with_line_number(false)
+        .finish();
 
+    tracing::subscriber::set_global_default(subscriber).expect("Failed to set tracing subscriber");
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Evaluate {
-            plan,
-            profile,
-            output,
-            report,
-        } => {
-            tracing::info!(
-                plan = %plan.display(),
-                profile = %profile.display(),
-                output = %output.display(),
-                "Starting evaluation suite"
-            );
-
-            let model_profile = model_vllm::profile::ModelProfile::load(&profile)?;
-            tracing::info!(
-                model = %model_profile.model.name,
-                context = model_profile.context.model_context_tokens,
-                "Profile loaded"
-            );
-
-            // Load evaluation plan, iterate test cases, run pipeline
-            let suite_plan = pipeline::suite::SuitePlan::load(&plan)?;
-            let base_dir = plan.parent().unwrap_or(std::path::Path::new("."));
-
-            let result =
-                pipeline::suite::run_suite(&suite_plan, &model_profile, &output, base_dir).await?;
-
-            std::fs::create_dir_all(&output)?;
-            let run_id = format!(
-                "{}-{}",
-                result.suite_name,
-                chrono::Utc::now().format("%Y%m%d-%H%M%S")
-            );
-
-            let report_types: Vec<&str> = report.split(',').collect();
-            if report_types.contains(&"json") {
-                let json_path = output.join(format!("{}.json", run_id));
-                std::fs::write(&json_path, serde_json::to_string_pretty(&result)?)?;
-            }
-            if report_types.contains(&"markdown") {
-                let md_path = output.join(format!("{}.md", run_id));
-                std::fs::write(&md_path, pipeline::suite::format_suite_markdown(&result))?;
-            }
-
-            if result.failed > 0 {
-                std::process::exit(1);
-            }
-        }
-
         Commands::Health { profile } => {
+            let model_profile = model_vllm::profile::ModelProfile::load(&profile)?;
+            let _client = model_vllm::backend::ModelClient::from_profile(model_profile)?;
+            eprintln!("Checking healthy... (Mock implementation for now)");
+        }
+        Commands::Run { task, profile, output: _, skill, build_target } => {
+            tracing::info!("Agentic PoC Loop starting for task: {:?}", task);
+            
             let model_profile = model_vllm::profile::ModelProfile::load(&profile)?;
             let client = model_vllm::backend::ModelClient::from_profile(model_profile.clone())?;
 
-            eprint!(
-                "Checking {} at {} ... ",
-                model_profile.model.name,
-                model_profile.resolve_endpoint()
-            );
-
-            match client.health_check().await {
-                Ok(true) => {
-                    eprintln!("✓ healthy");
-                    eprintln!("  Model: {}", model_profile.model.name);
-                    eprintln!(
-                        "  Context: {} tokens",
-                        model_profile.context.model_context_tokens
-                    );
-                    eprintln!(
-                        "  Prompt limit: {} tokens",
-                        model_profile.context.max_prompt_tokens
-                    );
-                    eprintln!(
-                        "  Completion limit: {} tokens",
-                        model_profile.context.max_completion_tokens
-                    );
-                    eprintln!(
-                        "  Safety reserve: {} tokens",
-                        model_profile.context.safety_tokens
-                    );
-                    eprintln!("  Concurrency: {}", model_profile.concurrency.max_in_flight);
-                    eprintln!(
-                        "  Thinking: {}",
-                        if model_profile.thinking.enabled {
-                            "on"
-                        } else {
-                            "off"
-                        }
-                    );
-                }
-                Ok(false) => {
-                    eprintln!("✗ unhealthy");
-                    std::process::exit(1);
-                }
-                Err(e) => {
-                    eprintln!("✗ error: {e}");
-                    std::process::exit(1);
-                }
+            let mut system_prompt = format!("You are an autonomous coding agent. Your goal is to complete the task defined in {:?}. Use tools to read files, edit code, and run terminal commands to verify your work. Once all checks pass, call finish_task.", task);
+            if let Some(s) = skill {
+                system_prompt.push_str(&format!("\n\nCRITICAL INSTRUCTION: You MUST strictly follow the skill guide at {:?}. Open and read it first.", s));
             }
-        }
+            if let Some(bt) = build_target {
+                system_prompt.push_str(&format!("\n\nYou must generate the `{}` target.", bt));
+            }
 
-        Commands::Run {
-            task,
-            profile,
-            output,
-            build_target,
-            skill,
-        } => {
-            tracing::info!(
-                task = %task.display(),
-                profile = %profile.display(),
-                "Running single task"
-            );
+            let mut messages = vec![
+                ChatMessage {
+                    role: "system".to_string(),
+                    content: Some(system_prompt),
+                    name: None,
+                    tool_calls: None,
+                    tool_call_id: None,
+                }
+            ];
 
-            let model_profile = model_vllm::profile::ModelProfile::load(&profile)?;
-            tracing::info!(model = %model_profile.model.name, "Profile loaded");
+            let tools = build_tools();
+            let executor = executor::StandardToolExecutor;
+            let agent = AgentLoop::new(client, executor, tools);
 
-            let max_repairs = model_profile.run.max_repairs;
-            let run_id = format!("run-{}-{}", chrono::Utc::now().format("%Y%m%d-%H%M%S"), std::process::id());
-
-            let (side_effect_tx, mut side_effect_rx) = tokio::sync::mpsc::channel(32);
-            let (mut controller, event_tx) = agent_core::run_controller::RunController::new(
-                run_id.clone(),
-                max_repairs,
-                side_effect_tx,
-            );
-
-            let mut executor = pipeline::executor::PipelineExecutor::new(
-                model_profile,
-                event_tx,
-                output.clone(),
-                run_id,
-            )?;
+            agent.run(messages).await?;
             
-            if let Some(target) = build_target {
-                executor.set_build_target(target);
-            }
-
-            // Load modeling skill from explicit --skill path or auto-discover
-            if let Some(skill_path) = skill {
-                executor.set_skill_path(skill_path);
-            }
-            
-            executor.load_task_from_path(&task).await;
-
-            let mut controller_task = tokio::spawn(async move {
-                controller.run_to_completion().await;
-                controller
-            });
-
-            let controller = loop {
-                tokio::select! {
-                    Some(effect) = side_effect_rx.recv() => {
-                        executor.handle(effect).await;
-                    }
-                    result = &mut controller_task => {
-                        let controller = result?;
-                        side_effect_rx.close();
-                        while let Some(effect) = side_effect_rx.recv().await {
-                            executor.handle(effect).await;
-                        }
-                        break controller;
-                    }
-                }
-            };
-
-            if let agent_core::state::PipelineState::Completed = controller.state.state {
-                eprintln!("✓ Task completed successfully.");
-                std::process::exit(0);
-            } else {
-                eprintln!("✗ Task failed.");
-                std::process::exit(1);
-            }
-        }
-        Commands::Agent {
-            task,
-            skill,
-            profile,
-            output: _output,
-        } => {
-            tracing::info!(
-                task = %task.display(),
-                profile = %profile.display(),
-                "Running generic agent loop"
-            );
-
-            let model_profile = model_vllm::profile::ModelProfile::load(&profile)?;
-            let run_id = format!("run-{}-{}", chrono::Utc::now().format("%Y%m%d-%H%M%S"), std::process::id());
-
-            let (side_effect_tx, mut side_effect_rx) = tokio::sync::mpsc::channel(32);
-            let (mut controller, event_tx) = agent_core::generic_controller::GenericRunController::new(
-                run_id.clone(),
-                side_effect_tx,
-            );
-
-            // Pass the paths down
-            let task_path = task.join("task.md");
-            let mut executor = pipeline::generic_executor::GenericPipelineExecutor::new(
-                model_profile,
-                event_tx.clone(),
-                task_path,
-                skill,
-                task.clone(),
-            )?;
-
-            // Kick off the loop by simulating a task load
-            event_tx.send(agent_core::generic_event::GenericRunEvent::ContextLoaded(
-                agent_core::event::TaskPackage {
-                    name: "moving-company-platform".to_string(),
-                    task_file: task.clone(),
-                    files: vec![],
-                    acceptance_spec: None,
-                }
-            )).ok();
-
-            let mut controller_task = tokio::spawn(async move {
-                controller.run_to_completion().await;
-                controller
-            });
-
-            let controller = loop {
-                tokio::select! {
-                    Some(effect) = side_effect_rx.recv() => {
-                        executor.handle(effect).await;
-                    }
-                    result = &mut controller_task => {
-                        let controller = result?;
-                        side_effect_rx.close();
-                        while let Some(effect) = side_effect_rx.recv().await {
-                            executor.handle(effect).await;
-                        }
-                        break controller;
-                    }
-                }
-            };
-
-            if let agent_core::generic_state::GenericPipelineState::Completed = controller.state.state {
-                eprintln!("✓ Agent completed successfully.");
-                std::process::exit(0);
-            } else {
-                eprintln!("✗ Agent failed.");
-                std::process::exit(1);
-            }
+            eprintln!("✓ PoC Loop finished.");
         }
     }
-
     Ok(())
 }
