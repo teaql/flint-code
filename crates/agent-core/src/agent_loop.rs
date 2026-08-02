@@ -102,9 +102,9 @@ impl<M: ModelBackend, E: ToolExecutor> AgentLoop<M, E> {
             for i in 0..last_assistant_idx {
                 if messages[i].role == "tool" {
                     if let Some(ref content) = messages[i].content {
-                        if content.contains("<!-- ephemeral -->") {
+                        if content.len() > 1000 || content.contains("<!-- ephemeral -->") {
                             tracing::info!("Truncating ephemeral tool output for tool_call_id: {:?}", messages[i].tool_call_id);
-                            messages[i].content = Some("[EPHEMERAL: Output omitted for context limits]".to_string());
+                            messages[i].content = Some(format!("[EPHEMERAL: Output omitted for context limits (Original size: {} bytes)]", content.len()));
                         }
                     }
                 }
