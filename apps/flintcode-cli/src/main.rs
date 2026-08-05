@@ -153,7 +153,9 @@ async fn main() -> Result<()> {
 
             let tools = build_tools();
             let executor = executor::StandardToolExecutor;
-            let agent = AgentLoop::new(client, executor, tools);
+            let mut agent_config = agent_core::agent_loop::AgentConfig::default();
+            agent_config.max_tokens = model_profile.context.max_prompt_tokens as usize;
+            let agent = AgentLoop::with_config(client, executor, tools, agent_config);
 
             agent.run(messages).await?;
             
