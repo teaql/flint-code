@@ -1,6 +1,8 @@
 use crate::chat::{ChatMessage, Tool, ToolCall, FunctionCall};
 use crate::event::ModelResult;
 use crate::error::AgentError;
+use crate::loop_guard::LoopGuard;
+use crate::exit_strategy::{ExitAction, ExitStrategyKind, LoopContext};
 use std::future::Future;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -26,14 +28,24 @@ pub struct AgentConfig {
     pub max_iterations: usize,
     pub max_tokens: usize,
     pub trim_ratio: f32,
+    /// Number of consecutive identical calls/prompts before loop detection triggers
+    pub loop_threshold: usize,
+    /// Strategy to use when a loop is detected
+    pub exit_strategy: ExitStrategyKind,
+    /// Maximum total tokens (prompt + completion) across the entire run.
+    /// 0 means unlimited.
+    pub max_total_tokens: u64,
 }
 
 impl Default for AgentConfig {
     fn default() -> Self {
         Self {
-            max_iterations: 100,
+            max_iterations: 1000,
             max_tokens: 32000,
             trim_ratio: 0.25,
+            loop_threshold: 10,
+            exit_strategy: ExitStrategyKind::default(),
+            max_total_tokens: 0,
         }
     }
 }
@@ -56,13 +68,14 @@ impl<M: ModelBackend, E: ToolExecutor> AgentLoop<M, E> {
 
     /// Helper to trim context while avoiding orphaning tool messages
     fn trim_messages(messages: &mut Vec<ChatMessage>, trim_ratio: f32) {
-        if messages.len() <= 2 {
+        let preserve_count = if messages.len() > 1 && messages[1].role == "user" { 2 } else { 1 };
+        if messages.len() <= preserve_count + 1 {
             return;
         }
         let target_drop = ((messages.len() as f32) * trim_ratio) as usize;
         if target_drop == 0 { return; }
 
-        let mut drop_end = 1 + target_drop;
+        let mut drop_end = preserve_count + target_drop;
         while drop_end < messages.len() {
             if messages[drop_end].role != "tool" {
                 break;
@@ -71,12 +84,15 @@ impl<M: ModelBackend, E: ToolExecutor> AgentLoop<M, E> {
         }
 
         if drop_end < messages.len() {
-            messages.drain(1..drop_end);
+            messages.drain(preserve_count..drop_end);
         }
     }
 
     pub async fn run(&self, mut messages: Vec<ChatMessage>) -> Result<(), AgentError> {
         let mut iterations = 0;
+        let mut total_tokens_used: u64 = 0;
+        let mut guard = LoopGuard::new(self.config.loop_threshold);
+        let strategy = self.config.exit_strategy.build();
 
         let context = Arc::new(Mutex::new(ContextManager::new()));
         
@@ -184,9 +200,64 @@ impl<M: ModelBackend, E: ToolExecutor> AgentLoop<M, E> {
             }
             // ------------------------------------
 
+            // --- Prompt Repeat Detection ---
+            if let Some(detection) = guard.record_prompt(&messages) {
+                let ctx = LoopContext {
+                    detection: &detection,
+                    iteration: iterations,
+                    max_iterations: self.config.max_iterations,
+                    messages: &messages,
+                };
+                match strategy.on_loop_detected(&ctx) {
+                    ExitAction::Abort { reason } => {
+                        tracing::error!("Loop guard abort (prompt): {}", reason);
+                        return Err(AgentError::LoopDetected {
+                            pattern: detection.to_string(),
+                            iterations,
+                        });
+                    }
+                    ExitAction::Intervene { message } => {
+                        tracing::warn!("Loop guard intervention (prompt): {}", message);
+                        messages.push(ChatMessage {
+                            role: "user".to_string(),
+                            content: Some(message),
+                            name: None,
+                            tool_calls: None,
+                            tool_call_id: None,
+                        });
+                        guard.reset();
+                    }
+                    ExitAction::Ignore => {}
+                }
+            }
+
             tracing::info!("Querying LLM (Messages: {})...", messages.len());
             
             let result = self.model.chat(messages.clone(), Some(self.tools.clone())).await?;
+
+            // --- Token Budget Tracking ---
+            total_tokens_used += result.usage.total_tokens as u64;
+            if self.config.max_total_tokens > 0 && total_tokens_used > self.config.max_total_tokens {
+                tracing::error!(
+                    "Token budget exhausted: used {} > limit {}",
+                    total_tokens_used, self.config.max_total_tokens
+                );
+                return Err(AgentError::BudgetExceeded {
+                    estimated: total_tokens_used as u32,
+                    limit: self.config.max_total_tokens as u32,
+                });
+            }
+            tracing::debug!(
+                "Token usage: iteration={}, this_call={}, cumulative={}{}",
+                iterations,
+                result.usage.total_tokens,
+                total_tokens_used,
+                if self.config.max_total_tokens > 0 {
+                    format!("/{}", self.config.max_total_tokens)
+                } else {
+                    String::new()
+                }
+            );
             
             if result.usage.prompt_tokens > self.config.max_tokens as u32 {
                 tracing::warn!("Context size {} exceeds max tokens {}. Trimming context...", result.usage.prompt_tokens, self.config.max_tokens);
@@ -227,6 +298,33 @@ impl<M: ModelBackend, E: ToolExecutor> AgentLoop<M, E> {
                         Err(e) => format!("Error executing tool: {}", e),
                     };
 
+                    // --- Tool Repeat Detection ---
+                    if let Some(detection) = guard.record_tool_call(
+                        &call.name, &call.arguments, &tool_output,
+                    ) {
+                        let ctx = LoopContext {
+                            detection: &detection,
+                            iteration: iterations,
+                            max_iterations: self.config.max_iterations,
+                            messages: &messages,
+                        };
+                        match strategy.on_loop_detected(&ctx) {
+                            ExitAction::Abort { reason } => {
+                                tracing::error!("Loop guard abort (tool): {}", reason);
+                                return Err(AgentError::LoopDetected {
+                                    pattern: detection.to_string(),
+                                    iterations,
+                                });
+                            }
+                            ExitAction::Intervene { message } => {
+                                tracing::warn!("Loop guard intervention (tool): {}", message);
+                                tool_output = format!("{}\n\n{}", tool_output, message);
+                                guard.reset();
+                            }
+                            ExitAction::Ignore => {}
+                        }
+                    }
+
                     // --- Dynamic Tool Output Truncation ---
                     let current_bytes: usize = messages.iter().map(|m| {
                         let mut size = m.content.as_ref().map(|c| c.len()).unwrap_or(0);
@@ -244,16 +342,43 @@ impl<M: ModelBackend, E: ToolExecutor> AgentLoop<M, E> {
                     allowed_bytes = allowed_bytes.min(16000).max(2000);
                     
                     if tool_output.len() > allowed_bytes {
-                        tracing::warn!("Tool output too large ({}), dynamically truncating to {} bytes", tool_output.len(), allowed_bytes);
-                        let truncated_msg = format!("\n...[TRUNCATED: Output exceeded dynamic context limit. Original size: {} bytes]", tool_output.len());
-                        let keep_len = allowed_bytes.saturating_sub(truncated_msg.len());
-                        
-                        let mut boundary = keep_len;
-                        while boundary > 0 && !tool_output.is_char_boundary(boundary) {
-                            boundary -= 1;
+                        tracing::warn!("Tool output too large ({}), applying head/tail truncation", tool_output.len());
+                        let lines: Vec<&str> = tool_output.lines().collect();
+                        if lines.len() > 40 {
+                            let head_10 = lines[..10].join("\n");
+                            let tail_10 = lines[lines.len() - 10..].join("\n");
+                            
+                            let mut final_head = head_10.clone();
+                            let mut final_tail = tail_10.clone();
+                            
+                            if head_10.len() + tail_10.len() < 1000 {
+                                let head_20 = lines[..20].join("\n");
+                                let tail_20 = lines[lines.len() - 20..].join("\n");
+                                if head_20.len() + tail_20.len() <= 2000 {
+                                    final_head = head_20;
+                                    final_tail = tail_20;
+                                }
+                            }
+                            
+                            let truncated_msg = format!("\n\n...[TRUNCATED: Middle omitted. Original size: {} bytes, {} lines]...\n\n", tool_output.len(), lines.len());
+                            tool_output = format!("{}{}{}", final_head, truncated_msg, final_tail);
+                            
+                            // Last resort fallback if individual lines are massively long
+                            if tool_output.len() > allowed_bytes {
+                                let mut boundary = allowed_bytes.saturating_sub(truncated_msg.len());
+                                while boundary > 0 && !tool_output.is_char_boundary(boundary) { boundary -= 1; }
+                                tool_output.truncate(boundary);
+                                tool_output.push_str(&truncated_msg);
+                            }
+                        } else {
+                            let truncated_msg = format!("\n...[TRUNCATED: Original size: {} bytes]", tool_output.len());
+                            let mut boundary = allowed_bytes.saturating_sub(truncated_msg.len());
+                            while boundary > 0 && !tool_output.is_char_boundary(boundary) {
+                                boundary -= 1;
+                            }
+                            tool_output.truncate(boundary);
+                            tool_output.push_str(&truncated_msg);
                         }
-                        tool_output.truncate(boundary);
-                        tool_output.push_str(&truncated_msg);
                     }
 
                     messages.push(ChatMessage {

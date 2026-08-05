@@ -40,6 +40,9 @@ pub enum AgentError {
     #[error("Timeout after {seconds}s in state {state}")]
     Timeout { seconds: u64, state: String },
 
+    #[error("Loop detected: {pattern} after {iterations} iterations")]
+    LoopDetected { pattern: String, iterations: usize },
+
     #[error("{0}")]
     Other(#[from] anyhow::Error),
 }
@@ -58,5 +61,9 @@ impl AgentError {
             self,
             AgentError::InfrastructureError { .. } | AgentError::Timeout { .. }
         )
+    }
+
+    pub fn is_loop(&self) -> bool {
+        matches!(self, AgentError::LoopDetected { .. })
     }
 }

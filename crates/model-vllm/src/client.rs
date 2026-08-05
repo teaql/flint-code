@@ -161,7 +161,7 @@ impl VllmClient {
         tools: Option<Vec<Tool>>,
         tool_choice: Option<ToolChoice>,
     ) -> std::result::Result<ModelResult, AgentError> {
-        let max_attempts = 3;
+        let max_attempts = self.profile.run.retry_http_5xx_count.max(1) as u32;
         let mut attempt = 1;
 
         loop {
@@ -326,7 +326,7 @@ impl VllmClient {
         let client_clone = self.clone();
 
         tokio::spawn(async move {
-            let max_attempts = 3;
+            let max_attempts = client_clone.profile.run.retry_http_5xx_count.max(1) as u32;
             let mut attempt = 1;
 
             loop {
