@@ -49,9 +49,12 @@ impl VllmClient {
     pub fn new(profile: ModelProfile) -> Self {
         let client = Client::builder()
             .timeout(Duration::from_secs(profile.timeouts.model_secs))
+            .pool_max_idle_per_host(0)
             .build()
             .unwrap_or_else(|e| {
-                tracing::warn!("Failed to build custom HTTP client: {e}. Falling back to default client.");
+                tracing::warn!(
+                    "Failed to build custom HTTP client: {e}. Falling back to default client."
+                );
                 Client::new()
             });
         Self { client, profile }
@@ -165,13 +168,21 @@ impl VllmClient {
         let mut attempt = 1;
 
         loop {
-            match self.chat_internal(messages.clone(), tools.clone(), tool_choice.clone()).await {
+            match self
+                .chat_internal(messages.clone(), tools.clone(), tool_choice.clone())
+                .await
+            {
                 Ok(res) => return Ok(res),
                 Err(e) => {
                     if attempt >= max_attempts {
                         return Err(e);
                     }
-                    tracing::warn!("Model API error (attempt {}/{}): {}. Retrying in 2 seconds...", attempt, max_attempts, e);
+                    tracing::warn!(
+                        "Model API error (attempt {}/{}): {}. Retrying in 2 seconds...",
+                        attempt,
+                        max_attempts,
+                        e
+                    );
                     tokio::time::sleep(std::time::Duration::from_secs(2)).await;
                     attempt += 1;
                 }
@@ -289,7 +300,10 @@ impl VllmClient {
 
         if content.trim().is_empty() && tool_calls.is_none() {
             return Err(AgentError::IncompleteGeneration {
-                reason: format!("empty content and no tools with finish_reason={}", finish_reason),
+                reason: format!(
+                    "empty content and no tools with finish_reason={}",
+                    finish_reason
+                ),
             });
         }
 
@@ -349,7 +363,12 @@ impl VllmClient {
                             tx.send(StreamEvent::Error(error_msg)).await.ok();
                             return;
                         }
-                        tracing::warn!("Stream setup error (attempt {}/{}): {}. Retrying in 2 seconds...", attempt, max_attempts, error_msg);
+                        tracing::warn!(
+                            "Stream setup error (attempt {}/{}): {}. Retrying in 2 seconds...",
+                            attempt,
+                            max_attempts,
+                            error_msg
+                        );
                         tokio::time::sleep(std::time::Duration::from_secs(2)).await;
                         attempt += 1;
                         continue;
@@ -364,7 +383,12 @@ impl VllmClient {
                         tx.send(StreamEvent::Error(error_msg)).await.ok();
                         return;
                     }
-                    tracing::warn!("Stream setup error (attempt {}/{}): {}. Retrying in 2 seconds...", attempt, max_attempts, error_msg);
+                    tracing::warn!(
+                        "Stream setup error (attempt {}/{}): {}. Retrying in 2 seconds...",
+                        attempt,
+                        max_attempts,
+                        error_msg
+                    );
                     tokio::time::sleep(std::time::Duration::from_secs(2)).await;
                     attempt += 1;
                     continue;
@@ -420,7 +444,9 @@ impl VllmClient {
                                             if let Some(delta) = &choice.delta {
                                                 if let Some(c) = &delta.content {
                                                     full_content.push_str(c);
-                                                    tx.send(StreamEvent::Token(c.clone())).await.ok();
+                                                    tx.send(StreamEvent::Token(c.clone()))
+                                                        .await
+                                                        .ok();
                                                 }
                                                 if let Some(r) = &delta.reasoning_content {
                                                     full_reasoning.push_str(r);
@@ -440,7 +466,12 @@ impl VllmClient {
                                 tx.send(StreamEvent::Error(error_msg)).await.ok();
                                 return;
                             }
-                            tracing::warn!("Stream read error (attempt {}/{}): {}. Retrying in 2 seconds...", attempt, max_attempts, error_msg);
+                            tracing::warn!(
+                                "Stream read error (attempt {}/{}): {}. Retrying in 2 seconds...",
+                                attempt,
+                                max_attempts,
+                                error_msg
+                            );
                             stream_failed = true;
                             break;
                         }

@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 pub use agent_core::chat::*;
+use serde::{Deserialize, Serialize};
 
 /// Chat completion request
 #[derive(Debug, Clone, Serialize)]

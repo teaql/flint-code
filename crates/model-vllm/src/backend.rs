@@ -6,11 +6,11 @@ use tokio::sync::mpsc;
 use agent_core::error::AgentError;
 use agent_core::event::ModelResult;
 
-use agent_core::agent_loop::ModelBackend;
-use agent_core::chat::{ChatMessage, Tool, ToolChoice};
 use crate::client::{AvailableModel, StreamEvent, VllmClient};
 use crate::profile::ModelProfile;
 use crate::simulator::SimulatorClient;
+use agent_core::agent_loop::ModelBackend;
+use agent_core::chat::{ChatMessage, Tool, ToolChoice};
 
 /// Runtime model backend used by Pipeline, CLI, and TUI.
 pub enum ModelClient {

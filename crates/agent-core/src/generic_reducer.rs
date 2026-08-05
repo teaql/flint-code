@@ -15,9 +15,13 @@ pub enum GenericSideEffect {
     /// Ask model to think and optionally emit tool calls
     Reason,
     /// Execute the requested tool
-    ExecuteTool { command: String },
+    ExecuteTool {
+        command: String,
+    },
     WriteFinalArtifact,
-    RecordFailure { error: String },
+    RecordFailure {
+        error: String,
+    },
     None,
 }
 
@@ -30,7 +34,9 @@ pub fn reduce(state: &mut GenericRunState, event: GenericRunEvent) -> GenericSid
         }
         (GenericPipelineState::Idle, GenericRunEvent::ContextLoadFailed(reason)) => {
             error!(%reason, "Context load failed");
-            state.state = GenericPipelineState::Failed { error: reason.clone() };
+            state.state = GenericPipelineState::Failed {
+                error: reason.clone(),
+            };
             GenericSideEffect::RecordFailure { error: reason }
         }
         (GenericPipelineState::Preflight, GenericRunEvent::PreflightPassed(_budget)) => {
@@ -40,7 +46,9 @@ pub fn reduce(state: &mut GenericRunState, event: GenericRunEvent) -> GenericSid
         }
         (GenericPipelineState::Preflight, GenericRunEvent::PreflightFailed(reason)) => {
             warn!(%reason, "Preflight failed");
-            state.state = GenericPipelineState::Failed { error: reason.clone() };
+            state.state = GenericPipelineState::Failed {
+                error: reason.clone(),
+            };
             GenericSideEffect::RecordFailure { error: reason }
         }
         (GenericPipelineState::Reasoning, GenericRunEvent::ModelCompleted(_result)) => {
@@ -49,8 +57,12 @@ pub fn reduce(state: &mut GenericRunState, event: GenericRunEvent) -> GenericSid
         }
         (GenericPipelineState::Reasoning, GenericRunEvent::ModelFailed(err)) => {
             error!(%err, "Model failed during reasoning");
-            state.state = GenericPipelineState::Failed { error: err.to_string() };
-            GenericSideEffect::RecordFailure { error: err.to_string() }
+            state.state = GenericPipelineState::Failed {
+                error: err.to_string(),
+            };
+            GenericSideEffect::RecordFailure {
+                error: err.to_string(),
+            }
         }
         (GenericPipelineState::Reasoning, GenericRunEvent::ToolCallRequested { command }) => {
             info!(%command, "Model requested tool call");
@@ -62,7 +74,9 @@ pub fn reduce(state: &mut GenericRunState, event: GenericRunEvent) -> GenericSid
                 status: ToolProcessStatus::Running,
                 exit_code: None,
             });
-            state.state = GenericPipelineState::ExecutingTool { tool_call: command.clone() };
+            state.state = GenericPipelineState::ExecutingTool {
+                tool_call: command.clone(),
+            };
             GenericSideEffect::ExecuteTool { command }
         }
         (GenericPipelineState::Reasoning, GenericRunEvent::TaskCompleted { summary: _ }) => {
@@ -70,12 +84,23 @@ pub fn reduce(state: &mut GenericRunState, event: GenericRunEvent) -> GenericSid
             state.state = GenericPipelineState::Finalizing;
             GenericSideEffect::WriteFinalArtifact
         }
-        (GenericPipelineState::ExecutingTool { .. }, GenericRunEvent::ToolExecutionFinished { success, output: _, id: _, exit_code }) => {
+        (
+            GenericPipelineState::ExecutingTool { .. },
+            GenericRunEvent::ToolExecutionFinished {
+                success,
+                output: _,
+                id: _,
+                exit_code,
+            },
+        ) => {
             info!(success, "Tool execution finished");
             // Update the tool process record
-            if let Some(tool) = state.active_tools.iter_mut().rev().find(|t| {
-                matches!(t.status, ToolProcessStatus::Running)
-            }) {
+            if let Some(tool) = state
+                .active_tools
+                .iter_mut()
+                .rev()
+                .find(|t| matches!(t.status, ToolProcessStatus::Running))
+            {
                 tool.status = if success {
                     ToolProcessStatus::Succeeded
                 } else {
@@ -93,8 +118,12 @@ pub fn reduce(state: &mut GenericRunState, event: GenericRunEvent) -> GenericSid
         }
         (current, GenericRunEvent::Failed(err)) if current.is_active() => {
             error!(%err, "Pipeline failed");
-            state.state = GenericPipelineState::Failed { error: err.to_string() };
-            GenericSideEffect::RecordFailure { error: err.to_string() }
+            state.state = GenericPipelineState::Failed {
+                error: err.to_string(),
+            };
+            GenericSideEffect::RecordFailure {
+                error: err.to_string(),
+            }
         }
         (current, GenericRunEvent::CancelRequested) if current.is_active() => {
             warn!("Run cancelled by user");

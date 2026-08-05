@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
     "apps/flintcode-cli",
+    "apps/flintcode-tui",
     "apps/moving-company-platform/rust-lib-core/lib",
     "crates/agent-core",
     "crates/model-vllm",
@@ -9,6 +10,8 @@ members = [
     "crates/workspace-guard",
     "crates/tool-runner",
     "crates/artifact-store",
+    "crates/pipeline",
+    "crates/validation",
 ]
 
 [workspace.package]
@@ -25,6 +28,8 @@ context-builder = { path = "crates/context-builder" }
 workspace-guard = { path = "crates/workspace-guard" }
 tool-runner = { path = "crates/tool-runner" }
 artifact-store = { path = "crates/artifact-store" }
+pipeline = { path = "crates/pipeline" }
+validation = { path = "crates/validation" }
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }
@@ -74,6 +79,10 @@ glob = "0.3"
 
 # Dirs
 dirs = "6"
+
+# Terminal UI
+ratatui = "0.29"
+crossterm = { version = "0.28", features = ["event-stream"] }
 
 [profile.release]
 opt-level = "z"

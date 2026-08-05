@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+
+  <!-- Finance & Accounting (5 objects) -->
+
+  <invoice _name="Invoice" _module="Finance" _module_key="finance"
+           id="id()" name="string()" code="string()"
+           amount="5000.00" currency="USD"
+           status="status()"
+           issue_date="2023-10-01"
+           due_date="2023-10-31"
+           moving_order="moving_order()"
+           customer="customer()">
+    <_value id="1" name="Draft" code="DRAFT"/>
+    <_value id="2" name="Issued" code="ISSUED"/>
+    <_value id="3" name="Paid" code="PAID"/>
+    <_value id="4" name="Overdue" code="OVERDUE"/>
+  </invoice>
+
+  <payment_record _name="Payment Record" _module="Finance" _module_key="finance"
+                  id="id()" name="string()" reference_code="string()"
+                  amount="5000.00" currency="USD"
+                  payment_method="string()"
+                  payment_date="2023-10-15"
+                  status="status()"
+                  invoice="invoice()">
+    <_value id="1" name="Pending" code="PENDING"/>
+    <_value id="2" name="Completed" code="COMPLETED"/>
+    <_value id="3" name="Failed" code="FAILED"/>
+  </payment_record>
+
+  <expense_item _name="Expense Item" _module="Finance" _module_key="finance"
+                id="id()" name="string()" description="string()"
+                amount="150.00" currency="USD"
+                expense_type="string()"
+                expense_date="2023-10-05"
+                employee="employee()"
+                status="status()">
+    <_value id="1" name="Travel" code="TRAVEL"/>
+    <_value id="2" name="Fuel" code="FUEL"/>
+    <_value id="3" name="Maintenance" code="MAINTENANCE"/>
+    <_value id="4" name="Office Supplies" code="OFFICE"/>
+  </expense_item>
+
+  <tax_record _name="Tax Record" _module="Finance" _module_key="finance"
+              id="id()" name="string()" tax_code="string()"
+              tax_amount="500.00" currency="USD"
+              tax_rate="10.00"
+              tax_period="2023-Q3"
+              filing_status="status()"
+              invoice="invoice()">
+    <_value id="1" name="VAT" code="VAT"/>
+    <_value id="2" name="Income Tax" code="INCOME_TAX"/>
+    <_value id="3" name="Sales Tax" code="SALES_TAX"/>
+  </tax_record>
+
+  <financial_report _name="Financial Report" _module="Finance" _module_key="finance"
+                    id="id()" name="string()" report_type="string()"
+                    total_revenue="100000.00" currency="USD"
+                    total_expenses="80000.00" currency="USD"
+                    net_profit="20000.00" currency="USD"
+                    report_date="2023-10-31"
+                    generated_by="employee()">
+    <_value id="1" name="Monthly" code="MONTHLY"/>
+    <_value id="2" name="Quarterly" code="QUARTERLY"/>
+    <_value id="3" name="Annual" code="ANNUAL"/>
+  </financial_report>
+
+</root>

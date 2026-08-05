@@ -1,7 +1,7 @@
-use std::collections::VecDeque;
-use std::hash::{Hash, Hasher};
-use std::collections::hash_map::DefaultHasher;
 use crate::chat::ChatMessage;
+use std::collections::VecDeque;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
 /// Detected loop pattern
 #[derive(Debug, Clone)]
@@ -12,16 +12,18 @@ pub enum LoopDetection {
         consecutive_count: usize,
     },
     /// Identical prompt sent to the model N times consecutively
-    PromptRepeat {
-        consecutive_count: usize,
-    },
+    PromptRepeat { consecutive_count: usize },
 }
 
 impl LoopDetection {
     pub fn consecutive_count(&self) -> usize {
         match self {
-            LoopDetection::ToolRepeat { consecutive_count, .. } => *consecutive_count,
-            LoopDetection::PromptRepeat { consecutive_count, .. } => *consecutive_count,
+            LoopDetection::ToolRepeat {
+                consecutive_count, ..
+            } => *consecutive_count,
+            LoopDetection::PromptRepeat {
+                consecutive_count, ..
+            } => *consecutive_count,
         }
     }
 }
@@ -29,7 +31,10 @@ impl LoopDetection {
 impl std::fmt::Display for LoopDetection {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            LoopDetection::ToolRepeat { tool_name, consecutive_count } => {
+            LoopDetection::ToolRepeat {
+                tool_name,
+                consecutive_count,
+            } => {
                 write!(f, "ToolRepeat({}, {}x)", tool_name, consecutive_count)
             }
             LoopDetection::PromptRepeat { consecutive_count } => {
@@ -87,7 +92,9 @@ impl LoopGuard {
         // Check if all entries in the window are identical
         if self.recent_tool_calls.len() >= self.threshold {
             let reference = &self.recent_tool_calls[self.recent_tool_calls.len() - 1];
-            let all_same = self.recent_tool_calls.iter()
+            let all_same = self
+                .recent_tool_calls
+                .iter()
                 .rev()
                 .take(self.threshold)
                 .all(|fp| fp == reference);
@@ -105,10 +112,7 @@ impl LoopGuard {
 
     /// Record a prompt (the full message list sent to the model).
     /// Returns `Some(LoopDetection)` if the last `threshold` prompts are identical.
-    pub fn record_prompt(
-        &mut self,
-        messages: &[ChatMessage],
-    ) -> Option<LoopDetection> {
+    pub fn record_prompt(&mut self, messages: &[ChatMessage]) -> Option<LoopDetection> {
         let h = hash_messages(messages);
 
         self.recent_prompt_hashes.push_back(h);
@@ -118,7 +122,9 @@ impl LoopGuard {
 
         if self.recent_prompt_hashes.len() >= self.threshold {
             let reference = self.recent_prompt_hashes[self.recent_prompt_hashes.len() - 1];
-            let all_same = self.recent_prompt_hashes.iter()
+            let all_same = self
+                .recent_prompt_hashes
+                .iter()
                 .rev()
                 .take(self.threshold)
                 .all(|&h| h == reference);
@@ -178,26 +184,62 @@ mod tests {
     fn test_no_false_positive_under_threshold() {
         let mut guard = LoopGuard::new(3);
         // Two identical calls should not trigger (threshold is 3)
-        assert!(guard.record_tool_call("run_command", "ls", "output").is_none());
-        assert!(guard.record_tool_call("run_command", "ls", "output").is_none());
+        assert!(
+            guard
+                .record_tool_call("run_command", "ls", "output")
+                .is_none()
+        );
+        assert!(
+            guard
+                .record_tool_call("run_command", "ls", "output")
+                .is_none()
+        );
         // Third identical call should trigger
-        assert!(guard.record_tool_call("run_command", "ls", "output").is_some());
+        assert!(
+            guard
+                .record_tool_call("run_command", "ls", "output")
+                .is_some()
+        );
     }
 
     #[test]
     fn test_different_calls_no_trigger() {
         let mut guard = LoopGuard::new(3);
-        assert!(guard.record_tool_call("run_command", "ls", "output1").is_none());
-        assert!(guard.record_tool_call("run_command", "ls", "output2").is_none());
-        assert!(guard.record_tool_call("run_command", "ls", "output3").is_none());
+        assert!(
+            guard
+                .record_tool_call("run_command", "ls", "output1")
+                .is_none()
+        );
+        assert!(
+            guard
+                .record_tool_call("run_command", "ls", "output2")
+                .is_none()
+        );
+        assert!(
+            guard
+                .record_tool_call("run_command", "ls", "output3")
+                .is_none()
+        );
     }
 
     #[test]
     fn test_mixed_tools_no_trigger() {
         let mut guard = LoopGuard::new(3);
-        assert!(guard.record_tool_call("run_command", "ls", "output").is_none());
-        assert!(guard.record_tool_call("read_file", "foo", "content").is_none());
-        assert!(guard.record_tool_call("run_command", "ls", "output").is_none());
+        assert!(
+            guard
+                .record_tool_call("run_command", "ls", "output")
+                .is_none()
+        );
+        assert!(
+            guard
+                .record_tool_call("read_file", "foo", "content")
+                .is_none()
+        );
+        assert!(
+            guard
+                .record_tool_call("run_command", "ls", "output")
+                .is_none()
+        );
     }
 
     #[test]
@@ -207,6 +249,10 @@ mod tests {
         guard.record_tool_call("run_command", "ls", "output");
         guard.reset();
         // After reset, should not trigger even with one more identical call
-        assert!(guard.record_tool_call("run_command", "ls", "output").is_none());
+        assert!(
+            guard
+                .record_tool_call("run_command", "ls", "output")
+                .is_none()
+        );
     }
 }

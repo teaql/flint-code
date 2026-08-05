@@ -13,6 +13,66 @@ pub struct ChatMessage {
     pub tool_call_id: Option<String>,
 }
 
+impl Default for ChatMessage {
+    fn default() -> Self {
+        Self {
+            role: String::new(),
+            content: None,
+            name: None,
+            tool_calls: None,
+            tool_call_id: None,
+        }
+    }
+}
+
+impl ChatMessage {
+    pub fn system(content: impl Into<String>) -> Self {
+        Self {
+            role: "system".to_string(),
+            content: Some(content.into()),
+            ..Self::default()
+        }
+    }
+
+    pub fn user(content: impl Into<String>) -> Self {
+        Self {
+            role: "user".to_string(),
+            content: Some(content.into()),
+            ..Self::default()
+        }
+    }
+
+    pub fn assistant(content: impl Into<String>) -> Self {
+        Self {
+            role: "assistant".to_string(),
+            content: Some(content.into()),
+            ..Self::default()
+        }
+    }
+
+    pub fn assistant_with_tool_calls(content: &str, tool_calls: Vec<ToolCall>) -> Self {
+        Self {
+            role: "assistant".to_string(),
+            content: if content.is_empty() {
+                None
+            } else {
+                Some(content.to_string())
+            },
+            tool_calls: Some(tool_calls),
+            ..Self::default()
+        }
+    }
+
+    pub fn tool_result(tool_call_id: impl Into<String>, content: impl Into<String>) -> Self {
+        Self {
+            role: "tool".to_string(),
+            content: Some(content.into()),
+            tool_call_id: Some(tool_call_id.into()),
+            ..Self::default()
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ToolCall {
     pub id: String,

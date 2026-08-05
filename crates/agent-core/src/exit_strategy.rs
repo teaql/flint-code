@@ -73,7 +73,10 @@ impl ExitStrategy for InterventionStrategy {
         }
 
         let hint = match ctx.detection {
-            LoopDetection::ToolRepeat { tool_name, consecutive_count } => format!(
+            LoopDetection::ToolRepeat {
+                tool_name,
+                consecutive_count,
+            } => format!(
                 "[LOOP GUARD] You have called `{}` {} times consecutively with identical \
                  arguments and gotten identical results. This approach is NOT working. \
                  You MUST try a fundamentally different strategy, or call `finish_task` \

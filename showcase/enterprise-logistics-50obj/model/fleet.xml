@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <!-- 1. Vehicle -->
+  <vehicle _name="Vehicle"
+           _module="Fleet" _module_key="fleet"
+           plate_number="string()"
+           vin="string()"
+           make="string()"
+           model="string()"
+           year="2023"
+           capacity_kg="5000"
+           status="active"
+           created_at="createTime()"
+           updated_at="updateTime()">
+    <_audit_mask_fields />
+  </vehicle>
+
+  <!-- 2. Telematics Device -->
+  <telematics_device _name="Telematics Device"
+                     _module="Fleet" _module_key="fleet"
+                     device_id="string()"
+                     imei="string()"
+                     status="active"
+                     vehicle="vehicle()"
+                     created_at="createTime()"
+                     updated_at="updateTime()">
+    <_audit_mask_fields />
+  </telematics_device>
+
+  <!-- 3. GPS Log -->
+  <gps_log _name="GPS Log"
+           _module="Fleet" _module_key="fleet"
+           latitude="0.000000"
+           longitude="0.000000"
+           speed_kmh="0"
+           heading="0"
+           timestamp="createTime()"
+           device="telematics_device()">
+    <_audit_mask_fields />
+  </gps_log>
+
+  <!-- 4. Fuel Log -->
+  <fuel_log _name="Fuel Log"
+            _module="Fleet" _module_key="fleet"
+            liters="100.00"
+            cost="150.00"
+            odometer_km="10000"
+            station_name="Shell"
+            date="2023-10-01"
+            vehicle="vehicle()">
+    <_audit_mask_fields />
+  </fuel_log>
+
+  <!-- 5. Vehicle Maintenance -->
+  <vehicle_maintenance _name="Vehicle Maintenance"
+                       _module="Fleet" _module_key="fleet"
+                       service_type="oil_change"
+                       description="string()"
+                       cost="200.00"
+                       scheduled_date="2023-11-01"
+                       completed_date="2023-11-02"
+                       status="completed"
+                       vehicle="vehicle()">
+    <_audit_mask_fields />
+  </vehicle_maintenance>
+
+  <!-- 6. Driver Assignment -->
+  <driver_assignment _name="Driver Assignment"
+                     _module="Fleet" _module_key="fleet"
+                     start_time="createTime()"
+                     end_time="updateTime()"
+                     status="active"
+                     vehicle="vehicle()"
+                     driver="employee()">
+    <_audit_mask_fields />
+  </driver_assignment>
+</root>

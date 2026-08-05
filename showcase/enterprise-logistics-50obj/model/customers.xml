@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <!-- Private Customer -->
+  <private_customer _name="Private Customer"
+                    _module="CRM" _module_key="crm"
+                    id="id()" name="string()" phone="string()" email="string()"
+                    address_line1="string()" address_line2="string()"
+                    city="string()" state="string()" zip_code="string()"
+                    country="string()"
+                    customer_type="private"
+                    created_at="createTime()" updated_at="updateTime()">
+    <_audit_mask_fields>
+      <field name="email" />
+      <field name="phone" />
+    </_audit_mask_fields>
+  </private_customer>
+
+  <!-- Corporate Customer -->
+  <corporate_customer _name="Corporate Customer"
+                      _module="CRM" _module_key="crm"
+                      id="id()" name="string()" registration_number="string()"
+                      industry="string()" employee_count="100"
+                      billing_address="string()"
+                      contact_email="string()" contact_phone="string()"
+                      customer_type="corporate"
+                      created_at="createTime()" updated_at="updateTime()">
+    <_audit_mask_fields>
+      <field name="contact_email" />
+      <field name="contact_phone" />
+    </_audit_mask_fields>
+  </corporate_customer>
+
+  <!-- Customer Contact -->
+  <customer_contact _name="Customer Contact"
+                    _module="CRM" _module_key="crm"
+                    id="id()" first_name="string()" last_name="string()"
+                    email="string()" phone="string()"
+                    is_primary="true"
+                    private_customer="private_customer()"
+                    corporate_customer="corporate_customer()"
+                    created_at="createTime()" updated_at="updateTime()">
+    <_audit_mask_fields>
+      <field name="email" />
+      <field name="phone" />
+    </_audit_mask_fields>
+  </customer_contact>
+
+  <!-- Service Quote -->
+  <service_quote _name="Service Quote"
+                 _module="CRM" _module_key="crm"
+                 id="id()" quote_number="string()"
+                 estimated_cost="5000.00" currency="USD"
+                 valid_until="2024-12-31"
+                 status="draft"
+                 private_customer="private_customer()"
+                 corporate_customer="corporate_customer()"
+                 created_at="createTime()" updated_at="updateTime()">
+    <_audit_mask_fields />
+  </service_quote>
+
+  <!-- Feedback Review -->
+  <feedback_review _name="Feedback Review"
+                   _module="CRM" _module_key="crm"
+                   id="id()" rating="5" title="string()" comment="string()"
+                   moving_order="moving_order()"
+                   created_at="createTime()" updated_at="updateTime()">
+    <_audit_mask_fields />
+  </feedback_review>
+
+  <!-- Customer Loyalty -->
+  <customer_loyalty _name="Customer Loyalty"
+                    _module="CRM" _module_key="crm"
+                    id="id()" points="1000" tier="gold"
+                    private_customer="private_customer()"
+                    created_at="createTime()" updated_at="updateTime()">
+    <_audit_mask_fields />
+  </customer_loyalty>
+</root>

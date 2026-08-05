@@ -77,7 +77,7 @@ pub struct CompilerError {
     pub file: Option<String>,
     pub line: Option<u32>,
     pub column: Option<u32>,
-    pub code: Option<String>,   // e.g. "E0308"
+    pub code: Option<String>, // e.g. "E0308"
     pub message: String,
     pub severity: ErrorSeverity,
 }

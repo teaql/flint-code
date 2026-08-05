@@ -1,5 +1,5 @@
 use crate::generic_event::GenericRunEvent;
-use crate::generic_reducer::{reduce, GenericSideEffect};
+use crate::generic_reducer::{GenericSideEffect, reduce};
 use crate::generic_state::{GenericPipelineState, GenericRunState};
 use tokio::sync::mpsc;
 use tracing::{debug, error, info};

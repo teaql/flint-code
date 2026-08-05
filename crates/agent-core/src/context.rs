@@ -1,9 +1,9 @@
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::sync::Arc;
-use serde::{Serialize, Deserialize};
-use tokio::sync::Mutex;
-use tokio::net::TcpListener;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpListener;
+use tokio::sync::Mutex;
 
 /// A single block of context (prompt) that can be dynamically loaded or discarded.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -34,7 +34,7 @@ impl ContextManager {
         let mut global_counter = 0;
         let mut current_block_id = format!("_global_{}_{}", source_name, global_counter);
         let mut current_content = String::new();
-        
+
         for line in content.lines() {
             if let Some(start_idx) = line.find("<!-- BLOCK_ID: ") {
                 if let Some(end_idx) = line[start_idx..].find(" -->") {
@@ -42,15 +42,19 @@ impl ContextManager {
                     if !current_content.trim().is_empty() {
                         self.add_block(&current_block_id, source_name, current_content.trim());
                     }
-                    
-                    let id = line[start_idx + "<!-- BLOCK_ID: ".len()..start_idx + end_idx].trim().to_string();
+
+                    let id = line[start_idx + "<!-- BLOCK_ID: ".len()..start_idx + end_idx]
+                        .trim()
+                        .to_string();
                     current_block_id = id;
                     current_content.clear();
                     continue;
                 }
             } else if let Some(start_idx) = line.find("<!-- /BLOCK_ID: ") {
                 if let Some(end_idx) = line[start_idx..].find(" -->") {
-                    let id = line[start_idx + "<!-- /BLOCK_ID: ".len()..start_idx + end_idx].trim().to_string();
+                    let id = line[start_idx + "<!-- /BLOCK_ID: ".len()..start_idx + end_idx]
+                        .trim()
+                        .to_string();
                     if id == current_block_id {
                         // Flush the current block
                         self.add_block(&current_block_id, source_name, current_content.trim());
@@ -64,7 +68,7 @@ impl ContextManager {
             current_content.push_str(line);
             current_content.push('\n');
         }
-        
+
         if !current_content.trim().is_empty() {
             self.add_block(&current_block_id, source_name, current_content.trim());
         }
@@ -74,12 +78,15 @@ impl ContextManager {
         if !self.blocks.contains_key(id) {
             self.order.push(id.to_string());
         }
-        self.blocks.insert(id.to_string(), SkillBlock {
-            id: id.to_string(),
-            source: source.to_string(),
-            content: content.to_string(),
-            is_active: true,
-        });
+        self.blocks.insert(
+            id.to_string(),
+            SkillBlock {
+                id: id.to_string(),
+                source: source.to_string(),
+                content: content.to_string(),
+                is_active: true,
+            },
+        );
     }
 
     /// Sets the block to inactive. Returns true if it was actually changed.
@@ -115,13 +122,16 @@ pub fn start_debug_server(context: Arc<Mutex<ContextManager>>) {
         let listener = match TcpListener::bind("127.0.0.1:8888").await {
             Ok(l) => l,
             Err(e) => {
-                tracing::debug!("Could not start debug server on 8888 (probably already running): {}", e);
+                tracing::debug!(
+                    "Could not start debug server on 8888 (probably already running): {}",
+                    e
+                );
                 return;
             }
         };
-        
+
         tracing::info!("Context debug server listening on http://127.0.0.1:8888/context");
-        
+
         loop {
             if let Ok((mut stream, _)) = listener.accept().await {
                 let context = context.clone();
@@ -129,7 +139,8 @@ pub fn start_debug_server(context: Arc<Mutex<ContextManager>>) {
                     let mut buffer = [0; 1024];
                     if stream.read(&mut buffer).await.is_ok() {
                         let ctx = context.lock().await;
-                        let json = serde_json::to_string_pretty(&ctx.blocks).unwrap_or_else(|_| "{}".to_string());
+                        let json = serde_json::to_string_pretty(&ctx.blocks)
+                            .unwrap_or_else(|_| "{}".to_string());
                         let response = format!(
                             "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{}",
                             json.len(),
@@ -158,25 +169,25 @@ Intermediate text.
 <!-- BLOCK_ID: phase2 -->
 Phase 2 instructions.
 <!-- /BLOCK_ID: phase2 -->";
-        
+
         ctx.load_from_str("SKILL.md", markdown);
         assert_eq!(ctx.blocks.len(), 4); // global before phase1, phase1, global before phase2, phase2
-        
+
         assert!(ctx.blocks.contains_key("_global_SKILL.md_0"));
         assert!(ctx.blocks.contains_key("_global_SKILL.md_1"));
         assert!(ctx.blocks.contains_key("phase1"));
         assert!(ctx.blocks.contains_key("phase2"));
-        
+
         let rendered = ctx.render_active_prompt();
         assert!(rendered.contains("This is a global intro."));
         assert!(rendered.contains("Phase 1 instructions."));
-        
+
         // Assert the order is correct
         assert!(rendered.find("global intro").unwrap() < rendered.find("Phase 1").unwrap());
-        
+
         let changed = ctx.discard_block("phase1");
         assert!(changed);
-        
+
         let rendered_after = ctx.render_active_prompt();
         assert!(!rendered_after.contains("Phase 1 instructions."));
         assert!(rendered_after.contains("Phase 2 instructions."));

@@ -344,7 +344,12 @@ fn calculate_usage(
 ) -> TokenUsage {
     let message_pairs = messages
         .iter()
-        .map(|message| (message.role.clone(), message.content.clone().unwrap_or_default()))
+        .map(|message| {
+            (
+                message.role.clone(),
+                message.content.clone().unwrap_or_default(),
+            )
+        })
         .collect::<Vec<_>>();
     let estimated_prompt = estimate_messages_tokens(&message_pairs);
     let estimated_completion = estimate_tokens(content);
@@ -483,7 +488,10 @@ content = "done"
 "#,
         );
 
-        let mismatch = client.chat(messages("wrong"), None, None).await.unwrap_err();
+        let mismatch = client
+            .chat(messages("wrong"), None, None)
+            .await
+            .unwrap_err();
         assert!(mismatch.to_string().contains("expected request containing"));
         assert!(client.calls().is_empty());
 
@@ -491,7 +499,10 @@ content = "done"
             .chat(messages("expected"), None, None)
             .await
             .expect("matching response");
-        let exhausted = client.chat(messages("expected"), None, None).await.unwrap_err();
+        let exhausted = client
+            .chat(messages("expected"), None, None)
+            .await
+            .unwrap_err();
         assert!(exhausted.to_string().contains("exhausted"));
     }
 

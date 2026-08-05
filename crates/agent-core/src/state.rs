@@ -22,7 +22,6 @@ impl TokenTotals {
     }
 }
 
-
 /// Pipeline state — must be an explicit enum, never inferred from log text.
 /// State transitions are handled exclusively by the reducer.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
