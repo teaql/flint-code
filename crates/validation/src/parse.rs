@@ -20,6 +20,7 @@ pub fn validate_xml_parse(content: &str) -> ValidationResult {
                     "XML parse error at position {}: {e}",
                     reader.error_position()
                 ));
+                break;
             }
         }
         buf.clear();
@@ -31,5 +32,17 @@ pub fn validate_xml_parse(content: &str) -> ValidationResult {
     } else {
         let diagnostic = errors.join("\n");
         super::fail(1, "parse", errors, diagnostic, elapsed)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn malformed_xml_returns_one_error_instead_of_looping() {
+        let result = validate_xml_parse("<root><child></root>");
+        assert!(!result.passed);
+        assert_eq!(result.error_count, 1);
     }
 }

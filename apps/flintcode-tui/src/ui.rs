@@ -134,14 +134,14 @@ async fn event_loop(
                     std::future::pending().await
                 }
             } => {
-                let candidate_path = if let Some(exec) = app.executor.as_mut() {
+                let candidate_files = if let Some(exec) = app.executor.as_mut() {
                     exec.handle(effect).await;
-                    exec.candidate().map(|c| c.to_string())
+                    exec.candidate_files().to_vec()
                 } else {
-                    None
+                    Vec::new()
                 };
-                if let Some(cand) = candidate_path {
-                    app.refresh_candidate_files(Path::new(&cand));
+                if !candidate_files.is_empty() {
+                    app.set_candidate_files(candidate_files);
                 }
             }
         }

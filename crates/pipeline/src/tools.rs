@@ -249,12 +249,28 @@ fn is_within_sandbox(path: &Path, sandbox: &Path) -> bool {
 /// Truncate output to avoid blowing the context window
 fn truncate_output(text: &str, max_len: usize) -> String {
     if text.len() > max_len {
+        let mut boundary = max_len;
+        while boundary > 0 && !text.is_char_boundary(boundary) {
+            boundary -= 1;
+        }
         format!(
             "{}...\n[truncated, {} total bytes]",
-            &text[..max_len],
+            &text[..boundary],
             text.len()
         )
     } else {
         text.to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn truncation_respects_utf8_boundaries() {
+        let text = "你".repeat(2_000);
+        let truncated = truncate_output(&text, MAX_OUTPUT_LEN);
+        assert!(truncated.contains("[truncated"));
     }
 }

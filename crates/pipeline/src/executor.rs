@@ -22,6 +22,7 @@ pub struct PipelineExecutor {
     event_tx: mpsc::Sender<RunEvent>,
     task: Option<TaskPackageData>,
     candidate: Option<String>, // current candidate output
+    candidate_files: Vec<(String, String)>,
     artifacts: Option<RunArtifacts>,
     runs_root: PathBuf,
     run_id: String,
@@ -45,6 +46,7 @@ impl PipelineExecutor {
             event_tx,
             task: None,
             candidate: None,
+            candidate_files: Vec::new(),
             artifacts: None,
             runs_root,
             run_id,
@@ -217,6 +219,7 @@ impl PipelineExecutor {
             Ok(result) => {
                 // Save candidate
                 self.candidate = Some(result.content.clone());
+                self.candidate_files = vec![("main.xml".to_string(), result.content.clone())];
                 if let Some(artifacts) = &self.artifacts {
                     artifacts
                         .save_candidate(attempt, &result.content)
@@ -239,6 +242,8 @@ impl PipelineExecutor {
                     match self.client.chat(sub_messages, None, None).await {
                         Ok(sub_result) => {
                             let clean_content = strip_markdown_fences(&sub_result.content);
+                            self.candidate_files
+                                .push((file.clone(), clean_content.clone()));
 
                             if let Some(artifacts) = &self.artifacts {
                                 artifacts
@@ -605,7 +610,11 @@ impl PipelineExecutor {
             if let Ok(output) = &assist_result {
                 let stdout = String::from_utf8_lossy(&output.stdout);
                 let truncated = if stdout.len() > 1200 {
-                    format!("{}...\n[truncated]", &stdout[..1200])
+                    let mut boundary = 1200;
+                    while boundary > 0 && !stdout.is_char_boundary(boundary) {
+                        boundary -= 1;
+                    }
+                    format!("{}...\n[truncated]", &stdout[..boundary])
                 } else {
                     stdout.to_string()
                 };
@@ -683,6 +692,18 @@ impl PipelineExecutor {
                     total_tool_calls,
                 } => {
                     let total_elapsed = start.elapsed().as_secs_f64();
+                    if let Err(diagnostic) = verify_generated_build(&build_dir, &build_target).await
+                    {
+                        let result = validation::fail(
+                            5,
+                            "build",
+                            vec!["Deterministic build verification failed".to_string()],
+                            diagnostic,
+                            total_elapsed,
+                        );
+                        self.send(RunEvent::ValidationCompleted(result)).await;
+                        return;
+                    }
                     info!(
                         attempt,
                         iterations,
@@ -774,13 +795,26 @@ impl PipelineExecutor {
             }
         }
 
-        // Fallback: no entities found, just check if lib compiles
+        // Fallback: no entities found, verify the generated project directly.
         let total_elapsed = start.elapsed().as_secs_f64();
         info!(
             attempt,
             total_elapsed, "No entities for agentic build; lib-only validation"
         );
-        let r = validation::pass(5, "build", total_elapsed);
+        let r = match verify_generated_build(&build_dir, &build_target).await {
+            Ok(diagnostic) => {
+                let mut result = validation::pass(5, "build", total_elapsed);
+                result.diagnostic = diagnostic;
+                result
+            }
+            Err(diagnostic) => validation::fail(
+                5,
+                "build",
+                vec!["Generated project failed deterministic build verification".to_string()],
+                diagnostic,
+                total_elapsed,
+            ),
+        };
         if let Some(artifacts) = &self.artifacts {
             artifacts
                 .save_attempt_file(attempt, "build-validation.json", &r)
@@ -902,10 +936,47 @@ impl PipelineExecutor {
         self.candidate.as_deref()
     }
 
+    /// Get all generated candidate files for interactive previews.
+    pub fn candidate_files(&self) -> &[(String, String)] {
+        &self.candidate_files
+    }
+
     /// Store actionable errors for repair context
     pub fn set_last_errors(&mut self, _errors: Vec<String>) {
         // Will be used when building repair messages
         // For now this is a placeholder for richer repair context
+    }
+}
+
+async fn verify_generated_build(build_dir: &Path, build_target: &str) -> Result<String, String> {
+    let mut command = if build_target.starts_with("java") {
+        let mut command = tokio::process::Command::new("mvn");
+        command.args(["compile", "-f", "pom.xml"]);
+        command
+    } else {
+        let mut command = tokio::process::Command::new("cargo");
+        command.arg("check");
+        command
+    };
+
+    let output = command
+        .current_dir(build_dir)
+        .env("PAGER", "cat")
+        .output()
+        .await
+        .map_err(|error| format!("Failed to start deterministic build verification: {error}"))?;
+
+    let diagnostic = format!(
+        "Exit status: {}\nSTDOUT:\n{}\nSTDERR:\n{}",
+        output.status,
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    if output.status.success() {
+        Ok(diagnostic)
+    } else {
+        Err(diagnostic)
     }
 }
 
@@ -938,7 +1009,7 @@ fn extract_includes(content: &str) -> Vec<String> {
 /// Parse entity names from the generated AGENTS.md.
 ///
 /// The generated AGENTS.md contains a markdown table like:
-/// ```
+/// ```text
 /// | entity-name | display-name |
 /// |-------------|--------------|
 /// | school | School |

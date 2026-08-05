@@ -193,6 +193,13 @@ impl App {
         }
     }
 
+    pub fn set_candidate_files(&mut self, files: Vec<(String, String)>) {
+        self.candidate_files = files;
+        if self.active_candidate_idx >= self.candidate_files.len() {
+            self.active_candidate_idx = 0;
+        }
+    }
+
     pub async fn start_task(&mut self, task_path: &Path) -> Result<()> {
         let max_repairs = self.profile.run.max_repairs;
         let run_id = format!("run-{}", chrono::Utc::now().format("%Y%m%d-%H%M%S"));
