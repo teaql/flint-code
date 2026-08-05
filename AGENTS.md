@@ -15,8 +15,7 @@ context windows (64K-128K tokens).
 2. **Never guess method names**: Use the generated local `AGENTS.md` and
    object-specific assist output before writing TeaQL business code.
 
-3. **Never edit generated files**: Do not manually modify files under
-   `rust-lib-core/`, `java-lib-core/`, `java-web-spring-boot/`, or `bizcore/`.
+3. **Never read or edit generated library source code**: Do not read, search, or modify any generated library source files (e.g., source files inside `rust-lib-core/lib/src/`, `java-lib-core/`, or `java-web-spring-boot/`). To understand APIs or verify correctness, strictly rely on compiler output (like `cargo check`) and `cargo teaql assist` output. You are free to read and edit workspace configuration files (like `Cargo.toml`) and the application business logic you write.
 
 4. **Query constraints**: Every query using `execute_for_list()` or `execute()`
    must be preceded by `.purpose("why")` and `.comment("what")`.
@@ -32,6 +31,8 @@ context windows (64K-128K tokens).
 8. **Diagnosing Errors**: When running commands (like `cargo run`, `mvn build`, etc.) and checking for errors, NEVER use strict case-sensitive tools like `grep "Error"`. Compilers and tools often output `error:`, `ERROR:`, `Exception`, or `Failed`. Instead, use case-insensitive searches (e.g. `grep -i "error"`) or pipe the entire output to a file and read it. If a command fails and your search returns nothing, stop blindly retrying with larger context bounds; dump the raw output instead.
 
 9. **Anti-Hallucination (Strict Copy)**: When implementing TeaQL logic based on `rust-assist-query`, `rust-assist-create`, or `AGENTS.md`, you MUST rigidly copy the syntax shown in the example code (e.g. `let mut entity = Q::xxx().new_entity(ctx)`). Do NOT invent or hallucinate standard Builder patterns (like `E::new_xxx()`) based on your prior knowledge of other frameworks. Trust the generated snippet completely and literally.
+
+10. **Finish Promptly**: Once you have run the required validation commands (e.g. `cargo check` or `cargo test`) and they pass, you MUST immediately call the `finish_task` tool. Do NOT continue to endlessly read files or explore the directory tree.
 
 ### Rust Code Style
 

@@ -141,6 +141,13 @@ async fn main() -> Result<()> {
                     name: None,
                     tool_calls: None,
                     tool_call_id: None,
+                },
+                ChatMessage {
+                    role: "user".to_string(),
+                    content: Some("Please start the task now.".to_string()),
+                    name: None,
+                    tool_calls: None,
+                    tool_call_id: None,
                 }
             ];
 
