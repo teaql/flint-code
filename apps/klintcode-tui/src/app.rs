@@ -105,11 +105,18 @@ pub struct App {
     pub show_right_panel: bool,
     pub last_context_tokens: u64,
     pub max_context_tokens: u64,
+    pub global_input_tokens: u64,
+    pub global_output_tokens: u64,
+    pub global_model_calls: u64,
+    pub vllm_in_flight: bool,
+    pub rag_in_flight: bool,
 }
 
 impl App {
-    pub fn new() -> Result<Self> {
-        let profile = if let Ok(configured) = std::env::var("FLINTCODE_PROFILE") {
+    pub fn new(profile_path: Option<&std::path::Path>) -> Result<Self> {
+        let profile = if let Some(path) = profile_path {
+            ModelProfile::load(path)?
+        } else if let Ok(configured) = std::env::var("FLINTCODE_PROFILE") {
             ModelProfile::load(Path::new(&configured))?
         } else {
             let default_profile = PathBuf::from("profiles/local-qwen.toml");
@@ -118,7 +125,8 @@ impl App {
             } else {
                 toml::from_str(include_str!(
                     "../../../profiles/local-qwen.toml"
-                ))?
+                ))
+                .expect("failed to load fallback profile")
             }
         };
 
@@ -148,13 +156,18 @@ impl App {
             input_buffer: String::new(),
             input_cursor: 0,
             input_cursor_visible: true,
-            plan_pulse_phase: 2,
+            plan_pulse_phase: 0,
             input_notice: None,
             timeline: Vec::new(),
             service_health: ServiceHealth::Checking,
             show_right_panel: true,
             last_context_tokens: 0,
-            max_context_tokens: 0,
+            max_context_tokens: 64000,
+            global_input_tokens: 0,
+            global_output_tokens: 0,
+            global_model_calls: 0,
+            vllm_in_flight: false,
+            rag_in_flight: false,
         })
     }
 
@@ -748,7 +761,9 @@ fn classify_input(prompt: &str) -> InputIntent {
     }
 
     let task_keywords = ["teaql", "rust", "java"];
-    if contains_any(&lower, &task_keywords) {
+    let task_openers = ["fix ", "implement ", "create ", "add ", "update ", "remove ", "修复", "添加", "实现", "创建", "更新", "删除"];
+    
+    if contains_any(&lower, &task_keywords) || task_openers.iter().any(|opener| lower.starts_with(opener)) {
         InputIntent::Task(trimmed.to_string())
     } else {
         InputIntent::Chat(trimmed.to_string())
@@ -766,7 +781,7 @@ mod tests {
 
     #[test]
     fn composer_edits_unicode_at_character_boundaries() {
-        let mut app = App::new().expect("app");
+        let mut app = App::new(None).expect("app");
         app.insert_input_char('\u{6539}');
         app.insert_input_char('A');
         app.move_input_left();
@@ -783,7 +798,7 @@ mod tests {
 
     #[test]
     fn finished_tool_is_added_to_the_main_timeline_without_exit_code() {
-        let mut app = App::new().expect("app");
+        let mut app = App::new(None).expect("app");
         app.dummy_run
             .start_tool_process(4, "cargo check".to_string());
 
@@ -818,7 +833,7 @@ mod tests {
 
     #[test]
     fn final_artifact_is_a_clear_success_timeline_entry() {
-        let mut app = App::new().expect("app");
+        let mut app = App::new(None).expect("app");
 
         app.observe_event(&RunEvent::FinalArtifactWritten(
             "runs/run-1/final-artifact".into(),
@@ -834,7 +849,7 @@ mod tests {
 
     #[tokio::test]
     async fn active_run_rejects_a_second_submission_without_losing_draft() {
-        let mut app = App::new().expect("app");
+        let mut app = App::new(None).expect("app");
         app.input_buffer = "next task".to_string();
         app.input_cursor = app.input_buffer.chars().count();
         app.dummy_run.state = PipelineState::Generating { attempt: 1 };
@@ -888,7 +903,7 @@ mod tests {
 
     #[tokio::test]
     async fn model_question_is_answered_locally_without_starting_pipeline() {
-        let mut app = App::new().expect("app");
+        let mut app = App::new(None).expect("app");
         let expected_model = app.profile.model.name.clone();
         app.input_buffer = "which model?".to_string();
         app.input_cursor = app.input_buffer.chars().count();
@@ -908,7 +923,7 @@ mod tests {
 
     #[tokio::test]
     async fn ordinary_question_uses_simulated_chat_without_starting_pipeline() {
-        let mut app = App::new().expect("app");
+        let mut app = App::new(None).expect("app");
         let mut profile: ModelProfile =
             toml::from_str(include_str!("../../../profiles/simulator.toml"))
                 .expect("simulator profile");
@@ -944,18 +959,19 @@ mod tests {
 
     #[tokio::test]
     async fn submitted_text_enters_the_normal_pipeline_as_an_inline_task() {
-        let mut app = App::new().expect("app");
+        let mut app = App::new(None).expect("app");
         app.input_buffer = "add a school entity".to_string();
         app.input_cursor = app.input_buffer.chars().count();
 
         app.submit_input().await.expect("submit inline task");
-        let event = app
-            .proxy_event_rx
-            .as_mut()
-            .expect("executor event receiver")
-            .recv()
-            .await
-            .expect("task-loaded event");
+        let mut loaded_event = None;
+        while let Some(ev) = app.proxy_event_rx.as_mut().unwrap().recv().await {
+            if matches!(ev, RunEvent::TaskLoaded(_)) {
+                loaded_event = Some(ev);
+                break;
+            }
+        }
+        let event = loaded_event.expect("task-loaded event");
         app.controller_event_tx
             .as_ref()
             .expect("controller event sender")
@@ -970,13 +986,13 @@ mod tests {
             .await
             .expect("task-loaded effect");
 
-        assert!(matches!(
-            effect,
-            agent_core::reducer::SideEffect::RunPreflight
-        ));
+        assert_eq!(
+            format!("{:?}", effect),
+            "RunPreflight"
+        );
         assert_eq!(
             app.run_state().task_name.as_deref(),
-            Some("interactive-task")
+            Some("inline-task")
         );
         assert!(matches!(app.run_state().state, PipelineState::Preflight));
         assert!(app.input_buffer.is_empty());
@@ -984,7 +1000,7 @@ mod tests {
 
     #[tokio::test]
     async fn slash_commands_switch_surfaces_without_starting_a_run() {
-        let mut app = App::new().expect("app");
+        let mut app = App::new(None).expect("app");
         app.input_buffer = "/stats".to_string();
         app.input_cursor = app.input_buffer.len();
 

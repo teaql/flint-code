@@ -24,6 +24,7 @@ pub use state::*;
 pub use workflow::*;
 
 pub mod generic_controller;
+pub mod rag;
 pub mod generic_event;
 pub mod generic_reducer;
 pub mod generic_state;

@@ -3,6 +3,8 @@
 mod app;
 mod input;
 mod ui;
+mod ui_components;
+mod widgets;
 
 use anyhow::Result;
 use clap::Parser;
@@ -48,7 +50,7 @@ async fn main() -> Result<()> {
         args.profile
     );
 
-    let mut app = app::App::new()?;
+    let mut app = app::App::new(args.profile.as_deref())?;
 
     if let Some(task_path) = args.task {
         if task_path.exists() {

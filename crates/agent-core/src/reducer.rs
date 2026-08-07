@@ -33,6 +33,8 @@ pub enum SideEffect {
     WriteFinalArtifact,
     /// Record failure and clean up
     RecordFailure { error: String },
+    /// Run a follow up task on the existing workspace
+    RunFollowUp { task: String, attempt: u8 },
     /// No side effect
     None,
 }
@@ -51,7 +53,7 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
             state.state = PipelineState::Preflight;
             state.start_stage("preflight");
             state.activate_plan_step(
-                "preflight",
+                "modeling_draft",
                 "Check context budget and workspace permissions",
             );
             SideEffect::RunPreflight
@@ -62,7 +64,7 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
             state.state = PipelineState::Failed {
                 error: reason.clone(),
             };
-            state.activate_plan_step("preflight", "Task loading failed");
+            state.activate_plan_step("modeling_draft", "Task loading failed");
             state.mark_current_plan_step(PlanStepStatus::Failed, reason.clone());
             SideEffect::RecordFailure { error: reason }
         }
@@ -76,11 +78,11 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
             );
             state.context_budget = Some(budget);
             state.complete_current_stage();
-            state.complete_plan_step("preflight");
+            // Do NOT complete modeling_draft yet, generating continues it
             state.current_attempt = 1;
             state.state = PipelineState::Generating { attempt: 1 };
             state.start_stage("generate_1");
-            state.activate_plan_step("generate", "Ask the local model to generate a candidate");
+            state.activate_plan_step("modeling_draft", "Ask the local model to generate a candidate");
             SideEffect::Generate { attempt: 1 }
         }
 
@@ -106,7 +108,7 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
         (PipelineState::AwaitingConsent { .. }, RunEvent::ConsentGranted(_)) => {
             info!("Consent granted, proceeding to preflight");
             state.state = PipelineState::Preflight;
-            state.activate_plan_step("preflight", "Consent granted; inspect the task again");
+            state.activate_plan_step("modeling_draft", "Consent granted; inspect the task again");
             SideEffect::RunPreflight
         }
 
@@ -130,20 +132,22 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
             );
             state.record_model_usage(result.usage.clone());
             state.complete_current_stage();
-            state.complete_plan_step("generate");
+            state.complete_plan_step("modeling_draft");
             state.state = PipelineState::LocalValidation { attempt };
             state.start_stage(format!("local_validation_{attempt}"));
-            state.activate_plan_step("local_validation", "Parse and inspect the candidate");
+            state.activate_plan_step("model_evaluation", "Parse and inspect the candidate");
             SideEffect::RunLocalValidation { attempt }
         }
 
-        (PipelineState::Generating { .. }, RunEvent::ModelFailed(err)) => {
+        (PipelineState::Generating { attempt }, RunEvent::ModelFailed(err)) => {
+            let attempt = *attempt;
             error!(%err, "Model failed");
             state.complete_current_stage();
-            state.mark_current_plan_step(PlanStepStatus::Failed, err.to_string());
+            
             // HTTP 4xx: do NOT retry
             if let AgentError::TransportError { status, .. } = &err {
                 if *status >= 400 && *status < 500 {
+                    state.mark_current_plan_step(PlanStepStatus::Failed, err.to_string());
                     state.state = PipelineState::Failed {
                         error: format!("HTTP {status} — not retryable"),
                     };
@@ -152,11 +156,22 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
                     };
                 }
             }
-            state.state = PipelineState::Failed {
-                error: err.to_string(),
-            };
-            SideEffect::RecordFailure {
-                error: err.to_string(),
+
+            if attempt <= state.max_repairs {
+                let next = attempt + 1;
+                warn!(next, "Infrastructure error, retrying generation");
+                state.state = PipelineState::Generating { attempt: next };
+                state.start_stage(format!("generate_{next}"));
+                state.activate_plan_step("modeling_draft", format!("Retry generation (attempt {next})"));
+                SideEffect::Generate { attempt: next }
+            } else {
+                state.mark_current_plan_step(PlanStepStatus::Failed, err.to_string());
+                state.state = PipelineState::Failed {
+                    error: format!("Infrastructure error limit reached: {}", err),
+                };
+                SideEffect::RecordFailure {
+                    error: format!("Infrastructure error limit reached: {}", err),
+                }
             }
         }
 
@@ -194,11 +209,11 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
             if result.passed {
                 info!("Local validation passed, proceeding to domain validation");
                 state.complete_current_stage();
-                state.complete_plan_step("local_validation");
+                // We keep model_evaluation active
                 state.state = PipelineState::DomainValidation { attempt };
                 state.start_stage(format!("domain_validation_{attempt}"));
                 state.activate_plan_step(
-                    "domain_validation",
+                    "model_evaluation",
                     "Run TeaQL domain semantic validation",
                 );
                 SideEffect::RunDomainValidation { attempt }
@@ -211,7 +226,7 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
                 let next = attempt + 1;
                 state.state = PipelineState::Repairing { attempt: next };
                 state.activate_plan_step(
-                    "generate",
+                    "modeling_draft",
                     format!("L1–L2 validation failed; prepare automatic repair {next}"),
                 );
                 SideEffect::Repair { attempt: next }
@@ -248,11 +263,11 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
                     "Domain validation passed"
                 );
                 state.complete_current_stage();
-                state.complete_plan_step("domain_validation");
+                state.complete_plan_step("model_evaluation");
                 state.state = PipelineState::BuildValidation { attempt };
                 state.start_stage(format!("build_validation_{attempt}"));
                 state.activate_plan_step(
-                    "build_validation",
+                    "generate_library",
                     "Generate code and run cargo check/test",
                 );
                 SideEffect::RunBuildValidation { attempt }
@@ -265,7 +280,7 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
                 let next = attempt + 1;
                 state.state = PipelineState::Repairing { attempt: next };
                 state.activate_plan_step(
-                    "generate",
+                    "modeling_draft",
                     format!("L3 validation failed; prepare automatic repair {next}"),
                 );
                 SideEffect::Repair { attempt: next }
@@ -292,21 +307,38 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
             if result.passed {
                 info!("Build validation passed — finalizing");
                 state.complete_current_stage();
-                state.complete_plan_step("build_validation");
+                state.complete_plan_step("generate_workspace");
                 state.state = PipelineState::Finalizing;
                 state.start_stage("finalizing");
                 state.activate_plan_step("finalize", "Write the final result and run artifact");
                 SideEffect::WriteFinalArtifact
             } else if attempt <= state.max_repairs {
-                warn!("Build validation failed — scheduling repair");
-                state.complete_current_stage();
-                let next = attempt + 1;
-                state.state = PipelineState::Repairing { attempt: next };
-                state.activate_plan_step(
-                    "generate",
-                    format!("Build validation failed; prepare automatic repair {next}"),
-                );
-                SideEffect::Repair { attempt: next }
+                let is_infra_error = result.actionable_errors.iter().any(|e| e.contains("Agent loop exhausted"));
+                
+                if is_infra_error {
+                    error!("Build failed due to infrastructure timeout, aborting repair");
+                    state.complete_current_stage();
+                    state.state = PipelineState::Failed {
+                        error: format!("Build timed out: {}", result.actionable_errors.first().unwrap_or(&String::new())),
+                    };
+                    state.mark_current_plan_step(
+                        PlanStepStatus::Failed,
+                        "Build agent loop exhausted".to_string(),
+                    );
+                    SideEffect::RecordFailure {
+                        error: "Build agent loop exhausted (repair aborted)".to_string(),
+                    }
+                } else {
+                    warn!("Build validation failed — scheduling repair");
+                    state.complete_current_stage();
+                    let next = attempt + 1;
+                    state.state = PipelineState::Repairing { attempt: next };
+                    state.activate_plan_step(
+                        "modeling_draft",
+                        format!("Build validation failed; prepare automatic repair {next}"),
+                    );
+                    SideEffect::Repair { attempt: next }
+                }
             } else {
                 error!("Build failed and repair limit reached");
                 state.complete_current_stage();
@@ -330,8 +362,15 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
             state.current_attempt = attempt;
             state.state = PipelineState::Generating { attempt };
             state.start_stage(format!("generate_{attempt}"));
-            state.activate_plan_step("generate", format!("Run automatic repair {attempt}"));
+            state.activate_plan_step("modeling_draft", format!("Run automatic repair {attempt}"));
             SideEffect::Generate { attempt }
+        }
+
+        // ── WorkspaceGenerationStarted ──
+        (PipelineState::BuildValidation { .. }, RunEvent::WorkspaceGenerationStarted) => {
+            state.complete_plan_step("generate_library");
+            state.activate_plan_step("generate_workspace", "Generating application workspace targets");
+            SideEffect::None
         }
 
         // ── Finalizing → Completed ──
@@ -364,13 +403,36 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
                 error: err.to_string(),
             }
         }
+        // ── Sub-agent model completion ──
+        (current_state, RunEvent::ModelCompleted(result)) if current_state.is_active() => {
+            state.record_model_usage(result.usage.clone());
+            SideEffect::None
+        }
+
+        // ── Terminal Completed → Resume BuildValidation ──
+        (PipelineState::Completed, RunEvent::ContinueTask(task)) => {
+            info!("Resuming workspace with follow-up task");
+            // Add a new plan step
+            state.plan.push(crate::shared::PlanStep {
+                id: format!("follow_up_{}", state.current_attempt + 1),
+                title: "Follow-up Task".to_string(),
+                status: PlanStepStatus::Pending,
+                detail: None,
+            });
+            let next = state.current_attempt + 1;
+            state.current_attempt = next;
+            state.state = PipelineState::BuildValidation { attempt: next };
+            state.start_stage(format!("followup_{next}"));
+            state.activate_plan_step(&format!("follow_up_{next}"), format!("Continuing: {}", task));
+            SideEffect::RunFollowUp { task, attempt: next }
+        }
 
         // ── Unhandled transitions ──
-        (current_state, event) => {
+        (current, event) => {
             warn!(
-                state = %current_state,
-                event = ?std::mem::discriminant(&event),
-                "Unhandled event in current state"
+                ?current,
+                ?event,
+                "Unhandled state transition (ignored)"
             );
             SideEffect::None
         }
@@ -414,7 +476,7 @@ mod tests {
         assert!(matches!(effect, SideEffect::Generate { attempt: 1 }));
         assert_eq!(
             run.current_plan_step().map(|(_, step)| step.id.as_str()),
-            Some("generate")
+            Some("modeling_draft")
         );
 
         // Generating → LocalValidation
@@ -476,6 +538,10 @@ mod tests {
             effect,
             SideEffect::RunBuildValidation { attempt: 1 }
         ));
+
+        // BuildValidation (Library -> Workspace)
+        let effect = reduce(&mut run, RunEvent::WorkspaceGenerationStarted);
+        assert!(matches!(effect, SideEffect::None));
 
         // BuildValidation → Finalizing → Completed
         let val_result = ValidationResult {

@@ -80,6 +80,9 @@ async fn main() -> Result<()> {
             // Load task
             if task.exists() && task.is_dir() {
                 executor.load_task_from_path(&task).await;
+            } else if task.exists() && task.is_file() {
+                let text = std::fs::read_to_string(&task).unwrap_or_else(|_| task.to_string_lossy().into_owned());
+                executor.load_task_from_text(&text).await;
             } else {
                 let text = task.to_string_lossy().into_owned();
                 executor.load_task_from_text(&text).await;
@@ -134,9 +137,13 @@ async fn main() -> Result<()> {
                                 eprintln!("✓ Task complete. Final artifact: {}", path.display());
                                 break;
                             }
-                            agent_core::event::RunEvent::Failed(err) | agent_core::event::RunEvent::ModelFailed(err) => {
+                            agent_core::event::RunEvent::Failed(err) => {
                                 eprintln!("✗ Run failed: {}", err);
                                 break;
+                            }
+                            agent_core::event::RunEvent::ModelFailed(err) => {
+                                eprintln!("⚠ Model attempt failed: {}", err);
+                                // Do not break here; let the reducer decide if it should retry
                             }
                             agent_core::event::RunEvent::ConsentRequired { action } => {
                                 eprintln!("⚠ Awaiting consent: {}", action);

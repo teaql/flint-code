@@ -72,6 +72,10 @@ pub async fn run_agent_loop(
             "Agent loop iteration"
         );
 
+        if let Some(tx) = &event_tx {
+            let _ = tx.send(agent_core::RunEvent::ModelStarted { attempt: (iteration + 1) as u8 }).await;
+        }
+
         // Call the model with tool definitions
         let result = client
             .chat(messages.clone(), Some(tools.clone()), None)
@@ -79,6 +83,10 @@ pub async fn run_agent_loop(
 
         match result {
             Ok(model_result) => {
+                if let Some(tx) = &event_tx {
+                    let _ = tx.send(agent_core::RunEvent::ModelCompleted(model_result.clone())).await;
+                }
+                
                 let tool_calls = model_result.tool_calls.map(|calls| {
                     calls
                         .into_iter()
@@ -197,6 +205,11 @@ pub async fn run_agent_loop(
                 }
             }
             Err(e) => {
+                if let Some(tx) = &event_tx {
+                    let _ = tx.send(agent_core::RunEvent::ModelFailed(
+                        agent_core::error::AgentError::InfrastructureError { detail: e.to_string() }
+                    )).await;
+                }
                 error!(iteration, %e, "Model call failed in agent loop");
                 return AgentLoopResult::Failed {
                     error: e.to_string(),

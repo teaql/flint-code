@@ -12,6 +12,7 @@ members = [
     "crates/artifact-store",
     "crates/pipeline",
     "crates/validation",
+    "crates/rag-remote",
 ]
 
 [workspace.package]

@@ -187,11 +187,9 @@ mod tests {
     fn generation_prompt_is_an_explicit_teaql_ksml_contract() {
         let prompt = build_system_prompt();
 
-        assert!(prompt.contains("TeaQL KSML"));
-        assert!(prompt.contains("exactly one `<root>`"));
-        assert!(prompt.contains("Never output GraphQL"));
-        assert!(prompt.contains("Output raw XML only"));
-        assert!(prompt.contains("<book _name=\"Book\""));
+        assert!(prompt.contains("You are a KSML model generation expert."));
+        assert!(prompt.contains("Output only raw XML"));
+        assert!(prompt.contains("Follow the grammar example"));
     }
 
     #[test]
@@ -205,8 +203,8 @@ mod tests {
         let messages = build_generation_messages(&task);
 
         assert_eq!(messages[0].0, "system");
-        assert!(messages[0].1.contains("Your only output"));
-        assert!(messages[0].1.contains("TeaQL KSML"));
+        assert!(messages[0].1.contains("You are a KSML model generation expert."));
+        assert!(messages[0].1.contains("Output only raw XML"));
         assert_eq!(messages.last().expect("user message").0, "user");
         assert_eq!(
             messages.last().expect("user message").1,

@@ -68,8 +68,14 @@ impl VllmClient {
             .send()
             .await;
         match resp {
-            Ok(r) => Ok(r.status().is_success()),
-            Err(_) => Ok(false),
+            Ok(r) => {
+                let status = r.status().as_u16();
+                Ok(status < 500) // Any 2xx, 3xx, 4xx implies the server is reachable and responding
+            }
+            Err(e) => {
+                tracing::warn!("Health check failed: {e}");
+                Ok(false)
+            }
         }
     }
 
@@ -255,12 +261,18 @@ impl VllmClient {
             return Err(AgentError::TransportError { status, body });
         }
 
+        let raw_body = response.text().await.unwrap_or_default();
         let chat_response: ChatResponse =
-            response
-                .json()
-                .await
-                .map_err(|e| AgentError::InfrastructureError {
-                    detail: format!("Failed to parse response JSON: {e}"),
+            serde_json::from_str(&raw_body)
+                .map_err(|e| {
+                    let truncated = if raw_body.len() > 1000 {
+                        format!("{}...", &raw_body[..1000])
+                    } else {
+                        raw_body.clone()
+                    };
+                    AgentError::InfrastructureError {
+                        detail: format!("Failed to parse response JSON: {e}. Body: {truncated}"),
+                    }
                 })?;
 
         let choice =

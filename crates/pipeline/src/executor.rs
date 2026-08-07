@@ -13,6 +13,9 @@ use std::path::{Path, PathBuf};
 use tokio::sync::mpsc;
 use tracing::{error, info, warn};
 use validation;
+use agent_core::rag::KnowledgeRetriever;
+use rag_remote::WeaviateRetriever;
+use std::sync::Arc;
 
 /// PipelineExecutor processes SideEffects and sends RunEvents back.
 /// Both TUI and headless CLI create one of these.
@@ -32,6 +35,8 @@ pub struct PipelineExecutor {
     patches: Option<std::collections::HashMap<String, String>>,
     /// Actionable errors from the most recent failed validation, fed into repair prompts.
     last_actionable_errors: Vec<String>,
+    /// RAG retriever for skills and error troubleshooting.
+    retriever: Option<Arc<dyn KnowledgeRetriever>>,
 }
 
 impl PipelineExecutor {
@@ -55,6 +60,16 @@ impl PipelineExecutor {
             build_target: None,
             patches: None,
             last_actionable_errors: Vec::new(),
+            retriever: None,
+        }
+    }
+
+    /// Asynchronously initialize the local RAG retriever if it hasn't been initialized yet.
+    async fn init_retriever(&mut self) {
+        if self.retriever.is_none() {
+            let r = WeaviateRetriever::new("http://localhost:8085/v1/graphql");
+            info!("Remote Weaviate RAG Retriever initialized on port 8085");
+            self.retriever = Some(Arc::new(r));
         }
     }
 
@@ -79,9 +94,9 @@ impl PipelineExecutor {
             SideEffect::Repair { attempt } => self.repair(attempt).await,
             SideEffect::WriteFinalArtifact => self.write_final().await,
             SideEffect::RecordFailure { error } => self.record_failure(&error).await,
+            SideEffect::RunFollowUp { task, attempt } => self.run_followup(task, attempt).await,
             SideEffect::LoadTask { path } => self.load_task(&path).await,
             SideEffect::RequestConsent { action, .. } => {
-                // In headless mode: auto-deny
                 // In TUI mode: the TUI will handle this
                 self.send(RunEvent::ConsentDenied(format!(
                     "Auto-denied in headless: {action}"
@@ -91,6 +106,74 @@ impl PipelineExecutor {
             SideEffect::None => {}
         }
     }
+
+    /// Run follow-up task on the existing workspace
+    async fn run_followup(&mut self, task: String, attempt: u8) {
+        let attempt_dir = self.runs_root.join(&self.run_id).join(format!("attempt-{:02}", attempt - 1)); // We use attempt-1 because that was the latest successful run! Wait, if we use the old one, we should probably copy it or just run in it.
+        // Actually, we should just run agent_loop in the latest available attempt_dir.
+        
+        let build_dir = if attempt_dir.exists() {
+            attempt_dir
+        } else {
+            self.runs_root.join(&self.run_id).join("attempt-01") // fallback
+        };
+
+        info!(?build_dir, "Launching agentic build loop for follow-up task");
+
+        let system_prompt = std::fs::read_to_string("prompts/agentic-build.txt")
+            .unwrap_or_else(|_| include_str!("../../../prompts/agentic-build.txt").to_string())
+            .replace("{{project_dir}}", &build_dir.display().to_string())
+            .replace("{{#if assist_outputs}}", "")
+            .replace("{{/if}}", "")
+            .replace("{{assist_outputs}}", "");
+
+        let user_prompt = format!(
+            "The project is at `{dir}`.\n\n\
+             Follow-up instruction from user: {task}\n\n\
+             Inspect the codebase, apply the requested changes using write_file/run_command, and ensure it still compiles.\n\
+             If the compile command's Exit code is 0, it succeeded (ignore warnings) and you should respond with a summary of your changes (no more tool calls).",
+            dir = build_dir.display(),
+            task = task
+        );
+
+        let max_iterations = 20;
+
+        let start = std::time::Instant::now();
+        let loop_result = crate::agent_loop::run_agent_loop(
+            &self.client,
+            &build_dir,
+            &system_prompt,
+            &user_prompt,
+            max_iterations,
+            Some(self.event_tx.clone()),
+        )
+        .await;
+
+        match &loop_result {
+            crate::agent_loop::AgentLoopResult::Completed { summary, iterations, total_tool_calls } => {
+                let total_elapsed = start.elapsed().as_secs_f64();
+                info!(attempt, iterations, total_tool_calls, total_elapsed, "Agentic build loop completed successfully");
+                let mut r = validation::pass(5, "build", total_elapsed);
+                r.diagnostic = format!("Follow-up: ✓ ({} iterations, {} tool calls)\n\nAgent summary: {}", iterations, total_tool_calls, summary);
+                self.send(RunEvent::ValidationCompleted(r)).await;
+            }
+            crate::agent_loop::AgentLoopResult::Failed { error, iterations } => {
+                let total_elapsed = start.elapsed().as_secs_f64();
+                warn!(attempt, iterations, %error, "Agentic build loop failed");
+                let mut r = validation::fail(5, "build", vec!["Agent loop failed".to_string()], error.clone(), total_elapsed);
+                r.diagnostic = format!("Agentic follow-up failed after {} iterations: {}", iterations, error);
+                self.send(RunEvent::ValidationCompleted(r)).await;
+            }
+            crate::agent_loop::AgentLoopResult::MaxIterationsReached { iterations, total_tool_calls } => {
+                let total_elapsed = start.elapsed().as_secs_f64();
+                warn!(attempt, iterations, total_tool_calls, "Agentic build loop hit max iterations");
+                let mut r = validation::fail(5, "build", vec![format!("Agent loop exhausted {} iterations", iterations)], "".to_string(), total_elapsed);
+                r.diagnostic = format!("Agentic follow-up did not complete within {} iterations ({} tool calls)", iterations, total_tool_calls);
+                self.send(RunEvent::ValidationCompleted(r)).await;
+            }
+        }
+    }
+
 
     /// Load a task package from disk.
     pub async fn load_task_from_path(&mut self, path: &Path) {
@@ -118,25 +201,20 @@ impl PipelineExecutor {
     pub async fn load_task_from_text(&mut self, text: &str) {
         let mut task = TaskPackageData::from_inline_text(text);
 
-        // Try to load modeling skill from teaql-agent-kit
-        let home = std::env::var("HOME").unwrap_or_default();
-        let skill_path = Path::new(&home)
-            .join("githome/teaql-agent-kit/skills/build-teaql-app/SKILL.md");
+        // Dynamically retrieve skills based on the user's input text (intent)
+        self.init_retriever().await;
         let mut skill_content = String::new();
-        if skill_path.exists() {
-            if let Ok(content) = tokio::fs::read_to_string(&skill_path).await {
-                skill_content.push_str(&content);
-                info!(path = %skill_path.display(), "Loaded modeling skill for inline task");
-            }
-        }
-
-        let error_fix_path = Path::new(&home)
-            .join("githome/teaql-agent-kit/skills/build-teaql-app/agents/ERROR-FIX.md");
-        if error_fix_path.exists() {
-            if let Ok(content) = tokio::fs::read_to_string(&error_fix_path).await {
-                skill_content.push_str("\n\n# Error Troubleshooting Guide\n");
-                skill_content.push_str(&content);
-                info!(path = %error_fix_path.display(), "Loaded ERROR-FIX.md for inline task");
+        if let Some(retriever) = &self.retriever {
+            let _ = self.event_tx.send(RunEvent::RagStarted).await;
+            if let Ok(docs) = retriever.search_by_intent(text).await {
+                let _ = self.event_tx.send(RunEvent::RagCompleted(docs.len())).await;
+                if !docs.is_empty() {
+                    info!(count = docs.len(), "Loaded intent-driven skills from RAG");
+                    for doc in docs {
+                        skill_content.push_str(&doc.content);
+                        skill_content.push_str("\n\n");
+                    }
+                }
             }
         }
 
@@ -214,6 +292,8 @@ impl PipelineExecutor {
     }
 
     async fn generate(&mut self, attempt: u8) {
+        self.init_retriever().await;
+        
         let task = match &self.task {
             Some(t) => t,
             None => {
@@ -228,11 +308,30 @@ impl PipelineExecutor {
         // Build messages — fresh for first attempt, repair-aware for retries
         let message_pairs = if attempt > 1 {
             let rejected = self.candidate.clone().unwrap_or_default();
-            let errors = if self.last_actionable_errors.is_empty() {
+            let mut errors = if self.last_actionable_errors.is_empty() {
                 vec!["Validation failed. Please fix all errors.".to_string()]
             } else {
                 self.last_actionable_errors.clone()
             };
+
+            // RAG Retrieval for error diagnosis
+            if let Some(retriever) = &self.retriever {
+                let _ = self.event_tx.send(RunEvent::RagStarted).await;
+                if let Some(first_err) = errors.first() {
+                    if let Ok(docs) = retriever.retrieve_for_error(first_err).await {
+                        let _ = self.event_tx.send(RunEvent::RagCompleted(docs.len())).await;
+                        if !docs.is_empty() {
+                            info!(count = docs.len(), error = %first_err, "Injected RAG context for repair");
+                            let mut rag_context = String::from("\n\n# Relevant Context/Guidelines to Fix This:\n");
+                            for doc in docs {
+                                rag_context.push_str(&doc.content);
+                                rag_context.push_str("\n\n");
+                            }
+                            errors[0].push_str(&rag_context);
+                        }
+                    }
+                }
+            }
             build_repair_messages(
                 task,
                 &rejected,
@@ -283,6 +382,7 @@ impl PipelineExecutor {
             info!(attempt, temp = new_temp, "Applying dynamic temperature for repair");
         }
 
+        self.send(RunEvent::ModelStarted { attempt: attempt as u8 }).await;
         match request_client.chat(messages.clone(), None, None).await {
             Ok(result) => {
                 // Save candidate
@@ -571,6 +671,7 @@ impl PipelineExecutor {
         }
 
         // ── Step 2: Run additional generation targets ──
+        self.send(agent_core::event::RunEvent::WorkspaceGenerationStarted).await;
         // Derive the app target from the build target (e.g. rust-lib-core → rust-app-console)
         let app_target = if build_target.contains("-lib-core") {
             let app = if build_target.starts_with("java") {
@@ -606,18 +707,19 @@ impl PipelineExecutor {
 
         // ── Step 3: Apply patches to generated files ──
         let build_dir = attempt_dir.join("build");
-        if let Some(patches) = &self.patches {
-            // Apply patches to any Cargo.toml or pom.xml files found
-            for entry in walkdir_toml_xml(&build_dir) {
-                if let Ok(content) = std::fs::read_to_string(&entry) {
-                    let mut fixed = content.clone();
+        // Apply patches to any Cargo.toml or pom.xml files found
+        for entry in walkdir_toml_xml(&build_dir) {
+            if let Ok(content) = std::fs::read_to_string(&entry) {
+                let mut fixed = content.clone();
+                
+                if let Some(patches) = &self.patches {
                     for (find, replace) in patches {
                         fixed = fixed.replace(find, replace);
                     }
-                    if fixed != content {
-                        info!(attempt, file = %entry.display(), "Applied patches");
-                        std::fs::write(&entry, &fixed).ok();
-                    }
+                }
+                if fixed != content {
+                    info!(attempt, file = %entry.display(), "Applied patches");
+                    std::fs::write(&entry, &fixed).ok();
                 }
             }
         }
@@ -734,8 +836,8 @@ impl PipelineExecutor {
             let user_prompt = format!(
                 "The project is at `{dir}`. {hint}\n\n\
                  After seeing the compile output:\n\
-                 - If it succeeds, respond with a summary (no more tool calls).\n\
-                 - If it fails, read the relevant source files, fix the errors using write_file, and recompile.\n\
+                 - If the Exit code is 0, it succeeded. Ignore warnings and respond with a summary (no more tool calls).\n\
+                 - If the Exit code is non-zero, it failed. Read the relevant source files, fix the errors using write_file, and recompile.\n\
                  - Write business logic code (one query function per entity) if the src/ files are empty stubs.\n\n\
                  Do NOT spend time exploring the directory tree. Compile first, fix errors after.",
                 dir = build_dir.display(),
