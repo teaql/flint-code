@@ -154,6 +154,19 @@ impl VllmClient {
                     enable_thinking: true,
                 })
             },
+            thinking: if self.profile.thinking.supported {
+                if !self.profile.thinking.enabled {
+                    Some(ThinkingParam {
+                        r#type: "disabled".to_string(),
+                    })
+                } else {
+                    Some(ThinkingParam {
+                        r#type: "enabled".to_string(),
+                    })
+                }
+            } else {
+                None
+            },
         }
     }
 

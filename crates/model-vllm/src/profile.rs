@@ -71,6 +71,8 @@ pub struct SamplingConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ThinkingConfig {
+    #[serde(default)]
+    pub supported: bool,
     pub enabled: bool,
 }
 
