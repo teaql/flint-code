@@ -1,9 +1,9 @@
-# FlintCode TUI 人机交互设计
+# KlintCode TUI 人机交互设计
 
 ## 1. 文档目的
 
-本文档定义 FlintCode 交互式 TUI 的产品与交互基线。设计参考了
-OpenCode 等 Coding Agent 的优点，但针对 FlintCode 的特点做了调整：
+本文档定义 KlintCode 交互式 TUI 的产品与交互基线。设计参考了
+OpenCode 等 Coding Agent 的优点，但针对 KlintCode 的特点做了调整：
 
 - 完全离线、面向隔离网络环境；
 - 使用 64K–128K 上下文窗口的本地模型；
@@ -40,7 +40,7 @@ TUI 应持续、明确地回答用户以下问题：
 
 ### 2.4 验证过程可见
 
-FlintCode 的核心价值是确定性验证。L1–L8 的执行状态、失败原因、修复次数和最终
+KlintCode 的核心价值是确定性验证。L1–L8 的执行状态、失败原因、修复次数和最终
 结论不能隐藏在日志中。
 
 ### 2.5 复杂内容结构化渲染
@@ -58,7 +58,7 @@ FlintCode 的核心价值是确定性验证。L1–L8 的执行状态、失败�
 默认主界面采用内容流优先的极简布局。统计组件不常驻，不使用边框切割整个画面：
 
 ```text
- FlintCode  coding agent                              ┌───────────────┐
+ KlintCode  coding agent                              ┌───────────────┐
  local-model · /workspace                            │ ● GENERATING  │
                                                      │ Plan 2/6      │
  ❯ 用户消息                                          │ 生成领域模型  │
@@ -95,7 +95,7 @@ FlintCode 的核心价值是确定性验证。L1–L8 的执行状态、失败�
 交互输入必须在创建 Run 之前完成路由：
 
 - 模型名称、Endpoint 和服务健康状态从本地配置直接回答；
-- 普通问题使用轻量 Flint 问答，不创建计划、Artifact 或 TeaQL 验证任务；
+- 普通问题使用轻量 Klint 问答，不创建计划、Artifact 或 TeaQL 验证任务；
 - 只有带明确执行动作的开发请求进入完整计划和验证流水线；
 - `/task <request>` 强制进入任务流水线，`/ask <question>` 强制进入轻量问答。
 
@@ -442,7 +442,7 @@ Context 31.8K/48K · ↑84K ↓7.2K
 [允许一次] [本任务允许] [拒绝]
 ```
 
-### 8.2 FlintCode 验证流水线
+### 8.2 KlintCode 验证流水线
 
 L1–L8 应作为专用 Progress/Timeline 组件呈现：
 
@@ -615,7 +615,7 @@ Chart 必须可以切换为 Table，以便查看精确数据和兼容低能力�
 
 不能只检查最终回复。安装被禁止依赖、修改生成目录等行为必须在工具执行前阻止。
 
-### 10.2 FlintCode 强制规则
+### 10.2 KlintCode 强制规则
 
 至少内置以下不可绕过规则：
 
@@ -768,7 +768,7 @@ teaql.query-requires-purpose · 计划 4/6 · 已自动修复
 - 保存计划版本、规则命中、验证报告、Chart/Table 原始数据和导出文件；
 - 支持从 UI 结果定位到可复现 Artifact。
 
-### `apps/flintcode-tui`
+### `apps/klintcode-tui`
 
 - 只消费结构化状态与事件；
 - 实现 Plan、Context、Token、Validation 和 Rich Block Widget；

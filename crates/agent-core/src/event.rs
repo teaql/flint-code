@@ -131,6 +131,10 @@ pub enum RunEvent {
     ConsentGranted(ExportConsent),
     /// User denied consent
     ConsentDenied(String),
+    /// RAG context retrieval started
+    RagStarted,
+    /// RAG context retrieval completed
+    RagCompleted(usize),
     /// Model generation request started
     ModelStarted { attempt: u8 },
     /// Incremental token from a streaming generation request (display-only).
@@ -149,6 +153,8 @@ pub enum RunEvent {
         success: bool,
         exit_code: Option<i32>,
     },
+    /// Emitted when library generation finishes and workspace app generation begins
+    WorkspaceGenerationStarted,
     /// Validation gate completed
     ValidationCompleted(ValidationResult),
     /// Repair cycle scheduled
@@ -159,6 +165,8 @@ pub enum RunEvent {
     CancelRequested,
     /// Unrecoverable error
     Failed(AgentError),
+    /// Follow up instruction to continue on the current workspace
+    ContinueTask(String),
 }
 
 #[cfg(test)]

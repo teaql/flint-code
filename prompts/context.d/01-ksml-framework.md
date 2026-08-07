@@ -10,8 +10,7 @@ For models with more than 10 objects, ALWAYS split into multiple files to avoid 
 ```xml
 <!-- main.xml — entry point, contains ONLY root + includes -->
 <?xml version="1.0" encoding="UTF-8"?>
-<root alias_model_name="example_service"
-      name="example-service"
+<root name="example-service"
       data_service="sqlite"
       org="doublechaintech"
       _module_key="root">

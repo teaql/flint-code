@@ -19,6 +19,7 @@ temperature = 0.0
 top_p = 1.0
 
 [thinking]
+supported = true
 enabled = true
 # MiMo v2.5 Pro has native reasoning/thinking support
 

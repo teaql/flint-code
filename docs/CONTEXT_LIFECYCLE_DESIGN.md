@@ -1,12 +1,12 @@
 # Context Lifecycle & Memory Management
 
-This document outlines the lifecycle control and context memory management strategies implemented in the Flint framework, ensuring that language models do not suffer from context bloat or "infinite snowballing" of diagnostic logs during complex task execution.
+This document outlines the lifecycle control and context memory management strategies implemented in the Klint framework, ensuring that language models do not suffer from context bloat or "infinite snowballing" of diagnostic logs during complex task execution.
 
 ## 1. Domain Validation Phase: Stateless Memory
 
 During the initial XML domain modeling phase (`executor.rs`), the framework employs a **Stateless Context Design**.
 
-When generating the initial `main.xml` and validating it against TeaQL's rules (e.g., privacy rules like `KSML-PRIVACY-001-WARN`), the evaluation report can be extremely lengthy. To prevent context overflow, Flint avoids appending each new attempt to a long-running chat history.
+When generating the initial `main.xml` and validating it against TeaQL's rules (e.g., privacy rules like `KSML-PRIVACY-001-WARN`), the evaluation report can be extremely lengthy. To prevent context overflow, Klint avoids appending each new attempt to a long-running chat history.
 
 Instead, every repair attempt receives a freshly constructed, stateless prompt array consisting of exactly:
 1. **System Prompt**: Base instructions.
@@ -21,7 +21,7 @@ When Attempt N fails, Attempt N+1 completely discards Attempt N's evaluation rep
 
 During the Assist phase (`generic_executor.rs`), where the agent writes, compiles, and tests custom Rust business logic, the framework must maintain a **Stateful Conversation History** to allow for multi-step reasoning and terminal interactions.
 
-However, long-running terminal outputs (such as `cargo teaql evaluate` or massive `cargo check` logs) can quickly exhaust the LLM's context window. To solve this, Flint implements an **Ephemeral Cleanup Mechanism** ("阅后即焚").
+However, long-running terminal outputs (such as `cargo teaql evaluate` or massive `cargo check` logs) can quickly exhaust the LLM's context window. To solve this, Klint implements an **Ephemeral Cleanup Mechanism** ("阅后即焚").
 
 ### How it works:
 1. **Tagging**: When the agent executes a command that produces massive but transient diagnostic output (e.g., the KSML evaluation report), the underlying engine tags its standard output with an `<!-- ephemeral -->` marker.

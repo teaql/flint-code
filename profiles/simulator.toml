@@ -1,8 +1,8 @@
-# FlintCode in-process simulator profile.
+# KlintCode in-process simulator profile.
 # No model HTTP service is contacted while simulator.enabled is true.
 
 [model]
-name = "flintcode-simulator"
+name = "klintcode-simulator"
 endpoint_env = "FLINTCODE_UNUSED_SIMULATOR_ENDPOINT"
 default_endpoint = "simulator://in-process"
 api_path = "/v1/chat/completions"

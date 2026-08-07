@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root alias_model_name="enterprise_logistics_service"
-      chinese_name="企业级物流搬家服务"
-      english_name="Enterprise Logistics Service"
+<root
+
+
       name="enterprise-logistics-service"
       data_service="sqlite"
       org="doublechaintech"

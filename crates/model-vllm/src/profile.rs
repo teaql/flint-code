@@ -26,7 +26,7 @@ pub struct SimulatorConfig {
     #[serde(default)]
     pub enabled: bool,
     /// Scripted scenario file. Relative paths are resolved from the current
-    /// FlintCode workspace.
+    /// KlintCode workspace.
     pub scenario: Option<std::path::PathBuf>,
 }
 
@@ -71,6 +71,8 @@ pub struct SamplingConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ThinkingConfig {
+    #[serde(default)]
+    pub supported: bool,
     pub enabled: bool,
 }
 

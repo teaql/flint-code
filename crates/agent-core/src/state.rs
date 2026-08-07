@@ -300,12 +300,11 @@ impl RunState {
 
 fn default_pipeline_plan() -> Vec<PlanStep> {
     vec![
-        PlanStep::new("preflight", "Inspect task and workspace"),
-        PlanStep::new("generate", "Generate candidate"),
-        PlanStep::new("local_validation", "Run L1–L2 validation"),
-        PlanStep::new("domain_validation", "Run L3 TeaQL validation"),
-        PlanStep::new("build_validation", "Generate and compile code"),
-        PlanStep::new("finalize", "Save final Artifact"),
+        PlanStep::new("modeling_draft", "modeling draft"),
+        PlanStep::new("model_evaluation", "model evaluation"),
+        PlanStep::new("generate_library", "generate library"),
+        PlanStep::new("generate_workspace", "generate workspace"),
+        PlanStep::new("finalize", "finish and report"),
     ]
 }
 
@@ -336,13 +335,13 @@ mod tests {
     #[test]
     fn activating_a_step_keeps_only_one_current_step() {
         let mut run = RunState::new("run-1".to_string(), 2);
-        run.activate_plan_step("preflight", "checking");
-        run.complete_plan_step("preflight");
-        run.activate_plan_step("generate", "generating");
+        run.activate_plan_step("modeling_draft", "checking");
+        run.complete_plan_step("modeling_draft");
+        run.activate_plan_step("model_evaluation", "generating");
 
         let (position, step) = run.current_plan_step().expect("current plan step");
         assert_eq!(position, 2);
-        assert_eq!(step.id, "generate");
+        assert_eq!(step.id, "model_evaluation");
         assert_eq!(
             run.plan
                 .iter()

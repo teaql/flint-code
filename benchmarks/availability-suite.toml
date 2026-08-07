@@ -1,9 +1,9 @@
-# FlintCode Model Availability Evaluation Suite
+# KlintCode Model Availability Evaluation Suite
 # Tests nemotron-3-super on core Coding Agent workflows
 
 [suite]
 name = "availability-eval"
-description = "FlintCode model availability evaluation"
+description = "KlintCode model availability evaluation"
 version = "1.0"
 
 [[cases]]

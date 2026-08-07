@@ -1,4 +1,4 @@
-# Flint Code V2: Phase 1 (Context Management Architecture) Summary Report
+# Klint Code V2: Phase 1 (Context Management Architecture) Summary Report
 
 **Generation Time**: 2026-08-02
 **Phase Status**: ✅ Phase 1 core architecture and mechanisms verified, ready to open a new session for the next phase.
@@ -7,7 +7,7 @@
 
 ## 1. Current Status
 
-At present, we have successfully completed a deep refactoring of the core Agent engine (`agent-core`) in `flint-code`. We abandoned the traditional "pipeline/history-appending" context management, and shifted towards dynamic knowledge management centered on an **AST (Abstract Syntax Tree)**, combined with an extremely aggressive **"Ephemeral (Burn After Reading)"** mechanism.
+At present, we have successfully completed a deep refactoring of the core Agent engine (`agent-core`) in `klint-code`. We abandoned the traditional "pipeline/history-appending" context management, and shifted towards dynamic knowledge management centered on an **AST (Abstract Syntax Tree)**, combined with an extremely aggressive **"Ephemeral (Burn After Reading)"** mechanism.
 
 In coordination with this, we merged the workflow diagrams on the business side (`teaql-agent-kit` and `teaql-code-gen`), consolidating the cumbersome "Model Generation" and "Evaluate/Repair" into a single lifecycle `phase_modeling`. This enables precise context trimming at the end of the lifecycle.
 

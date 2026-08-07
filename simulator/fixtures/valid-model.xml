@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root alias_model_name="simulated_greeting"
-      chinese_name="Simulated Greeting"
-      english_name="Simulated Greeting"
+<root
+
+
       name="simulated-greeting-service"
       cfg_mask_china_mobile="false"
       data_service="sqlite"

@@ -1948,7 +1948,11 @@ impl<R: teaql_core::Entity> crate::PurposedQuery<RoleDefinitionRequest<R>> {
     where
         C: crate::TeaqlRuntime + ?Sized,
     {
-        crate::RoleDefinition::runtime_new(ctx.user_context().entity_root())
+        let mut entity = crate::RoleDefinition::runtime_new(ctx.user_context().entity_root());
+        if let Ok(id) = ctx.user_context().next_id(crate::RoleDefinition::ENTITY_NAME) {
+            entity.update_id(id);
+        }
+        entity
     }
 
     fn into_inner_with_trace(mut self) -> RoleDefinitionRequest<R> {

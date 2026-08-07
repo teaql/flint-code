@@ -397,7 +397,7 @@ where
 {
     let list = Q::companies().purpose("Init Sample Data").execute_for_list(ctx).await.unwrap_or_default();
     for item in list {
-        state.add_reference("Company", item.id().into_u64());
+        state.add_reference(crate::Company::ENTITY_NAME, item.id().into_u64());
     }
     Ok(())
 }
@@ -411,7 +411,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Company").is_empty() {
-            state.record_skipped("Address Record", "Required dependency Company is missing in reference pool".to_string());
+            state.record_skipped(crate::AddressRecord::ENTITY_NAME, "Required dependency Company is missing in reference pool".to_string());
             log::info!("Skipped generating Address Record: Required dependency Company is missing in reference pool.");
             return Ok(());
         }
@@ -464,13 +464,13 @@ where
 
         let entity = entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Address Record");
+        state.record_generated(crate::AddressRecord::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Address Record: {}/{}", i, fanout);
         }
 
-        state.add_reference("Address Record", entity.id().into_u64());
+        state.add_reference(crate::AddressRecord::ENTITY_NAME, entity.id().into_u64());
     }
 
     log::info!("Successfully generated sample records for Address Record.");
@@ -486,7 +486,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Company").is_empty() {
-            state.record_skipped("Consumable Item", "Required dependency Company is missing in reference pool".to_string());
+            state.record_skipped(crate::ConsumableItem::ENTITY_NAME, "Required dependency Company is missing in reference pool".to_string());
             log::info!("Skipped generating Consumable Item: Required dependency Company is missing in reference pool.");
             return Ok(());
         }
@@ -537,13 +537,13 @@ where
 
         let entity = entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Consumable Item");
+        state.record_generated(crate::ConsumableItem::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Consumable Item: {}/{}", i, fanout);
         }
 
-        state.add_reference("Consumable Item", entity.id().into_u64());
+        state.add_reference(crate::ConsumableItem::ENTITY_NAME, entity.id().into_u64());
     }
 
     log::info!("Successfully generated sample records for Consumable Item.");
@@ -559,7 +559,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Company").is_empty() {
-            state.record_skipped("Marketing Campaign", "Required dependency Company is missing in reference pool".to_string());
+            state.record_skipped(crate::MarketingCampaign::ENTITY_NAME, "Required dependency Company is missing in reference pool".to_string());
             log::info!("Skipped generating Marketing Campaign: Required dependency Company is missing in reference pool.");
             return Ok(());
         }
@@ -610,13 +610,13 @@ where
 
         let entity = entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Marketing Campaign");
+        state.record_generated(crate::MarketingCampaign::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Marketing Campaign: {}/{}", i, fanout);
         }
 
-        state.add_reference("Marketing Campaign", entity.id().into_u64());
+        state.add_reference(crate::MarketingCampaign::ENTITY_NAME, entity.id().into_u64());
     }
 
     log::info!("Successfully generated sample records for Marketing Campaign.");
@@ -632,7 +632,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Company").is_empty() {
-            state.record_skipped("Private Customer", "Required dependency Company is missing in reference pool".to_string());
+            state.record_skipped(crate::PrivateCustomer::ENTITY_NAME, "Required dependency Company is missing in reference pool".to_string());
             log::info!("Skipped generating Private Customer: Required dependency Company is missing in reference pool.");
             return Ok(());
         }
@@ -681,13 +681,13 @@ where
 
         let entity = entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Private Customer");
+        state.record_generated(crate::PrivateCustomer::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Private Customer: {}/{}", i, fanout);
         }
 
-        state.add_reference("Private Customer", entity.id().into_u64());
+        state.add_reference(crate::PrivateCustomer::ENTITY_NAME, entity.id().into_u64());
     }
 
     log::info!("Successfully generated sample records for Private Customer.");
@@ -703,7 +703,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Company").is_empty() {
-            state.record_skipped("Role Definition", "Required dependency Company is missing in reference pool".to_string());
+            state.record_skipped(crate::RoleDefinition::ENTITY_NAME, "Required dependency Company is missing in reference pool".to_string());
             log::info!("Skipped generating Role Definition: Required dependency Company is missing in reference pool.");
             return Ok(());
         }
@@ -748,13 +748,13 @@ where
 
         let entity = entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Role Definition");
+        state.record_generated(crate::RoleDefinition::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Role Definition: {}/{}", i, fanout);
         }
 
-        state.add_reference("Role Definition", entity.id().into_u64());
+        state.add_reference(crate::RoleDefinition::ENTITY_NAME, entity.id().into_u64());
     }
 
     log::info!("Successfully generated sample records for Role Definition.");
@@ -770,7 +770,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Company").is_empty() {
-            state.record_skipped("Service Catalog", "Required dependency Company is missing in reference pool".to_string());
+            state.record_skipped(crate::ServiceCatalog::ENTITY_NAME, "Required dependency Company is missing in reference pool".to_string());
             log::info!("Skipped generating Service Catalog: Required dependency Company is missing in reference pool.");
             return Ok(());
         }
@@ -821,13 +821,13 @@ where
 
         let entity = entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Service Catalog");
+        state.record_generated(crate::ServiceCatalog::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Service Catalog: {}/{}", i, fanout);
         }
 
-        state.add_reference("Service Catalog", entity.id().into_u64());
+        state.add_reference(crate::ServiceCatalog::ENTITY_NAME, entity.id().into_u64());
     }
 
     log::info!("Successfully generated sample records for Service Catalog.");
@@ -843,7 +843,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Company").is_empty() {
-            state.record_skipped("User Account", "Required dependency Company is missing in reference pool".to_string());
+            state.record_skipped(crate::UserAccount::ENTITY_NAME, "Required dependency Company is missing in reference pool".to_string());
             log::info!("Skipped generating User Account: Required dependency Company is missing in reference pool.");
             return Ok(());
         }
@@ -892,13 +892,13 @@ where
 
         let entity = entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("User Account");
+        state.record_generated(crate::UserAccount::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating User Account: {}/{}", i, fanout);
         }
 
-        state.add_reference("User Account", entity.id().into_u64());
+        state.add_reference(crate::UserAccount::ENTITY_NAME, entity.id().into_u64());
     }
 
     log::info!("Successfully generated sample records for User Account.");
@@ -914,7 +914,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Company").is_empty() {
-            state.record_skipped("Vehicle Asset", "Required dependency Company is missing in reference pool".to_string());
+            state.record_skipped(crate::VehicleAsset::ENTITY_NAME, "Required dependency Company is missing in reference pool".to_string());
             log::info!("Skipped generating Vehicle Asset: Required dependency Company is missing in reference pool.");
             return Ok(());
         }
@@ -961,13 +961,13 @@ where
 
         let entity = entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Vehicle Asset");
+        state.record_generated(crate::VehicleAsset::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Vehicle Asset: {}/{}", i, fanout);
         }
 
-        state.add_reference("Vehicle Asset", entity.id().into_u64());
+        state.add_reference(crate::VehicleAsset::ENTITY_NAME, entity.id().into_u64());
     }
 
     log::info!("Successfully generated sample records for Vehicle Asset.");
@@ -983,7 +983,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("User Account").is_empty() {
-            state.record_skipped("Audit Log", "Required dependency User Account is missing in reference pool".to_string());
+            state.record_skipped(crate::AuditLog::ENTITY_NAME, "Required dependency User Account is missing in reference pool".to_string());
             log::info!("Skipped generating Audit Log: Required dependency User Account is missing in reference pool.");
             return Ok(());
         }
@@ -1024,7 +1024,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Audit Log");
+        state.record_generated(crate::AuditLog::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Audit Log: {}/{}", i, fanout);
@@ -1045,7 +1045,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Marketing Campaign").is_empty() {
-            state.record_skipped("Discount Code", "Required dependency Marketing Campaign is missing in reference pool".to_string());
+            state.record_skipped(crate::DiscountCode::ENTITY_NAME, "Required dependency Marketing Campaign is missing in reference pool".to_string());
             log::info!("Skipped generating Discount Code: Required dependency Marketing Campaign is missing in reference pool.");
             return Ok(());
         }
@@ -1096,7 +1096,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Discount Code");
+        state.record_generated(crate::DiscountCode::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Discount Code: {}/{}", i, fanout);
@@ -1117,7 +1117,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("User Account").is_empty() {
-            state.record_skipped("Document Storage", "Required dependency User Account is missing in reference pool".to_string());
+            state.record_skipped(crate::DocumentStorage::ENTITY_NAME, "Required dependency User Account is missing in reference pool".to_string());
             log::info!("Skipped generating Document Storage: Required dependency User Account is missing in reference pool.");
             return Ok(());
         }
@@ -1164,7 +1164,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Document Storage");
+        state.record_generated(crate::DocumentStorage::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Document Storage: {}/{}", i, fanout);
@@ -1185,7 +1185,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("User Account").is_empty() {
-            state.record_skipped("Employee Record", "Required dependency User Account is missing in reference pool".to_string());
+            state.record_skipped(crate::EmployeeRecord::ENTITY_NAME, "Required dependency User Account is missing in reference pool".to_string());
             log::info!("Skipped generating Employee Record: Required dependency User Account is missing in reference pool.");
             return Ok(());
         }
@@ -1236,13 +1236,13 @@ where
 
         let entity = entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Employee Record");
+        state.record_generated(crate::EmployeeRecord::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Employee Record: {}/{}", i, fanout);
         }
 
-        state.add_reference("Employee Record", entity.id().into_u64());
+        state.add_reference(crate::EmployeeRecord::ENTITY_NAME, entity.id().into_u64());
     }
 
     log::info!("Successfully generated sample records for Employee Record.");
@@ -1258,7 +1258,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Vehicle Asset").is_empty() {
-            state.record_skipped("Equipment Item", "Required dependency Vehicle Asset is missing in reference pool".to_string());
+            state.record_skipped(crate::EquipmentItem::ENTITY_NAME, "Required dependency Vehicle Asset is missing in reference pool".to_string());
             log::info!("Skipped generating Equipment Item: Required dependency Vehicle Asset is missing in reference pool.");
             return Ok(());
         }
@@ -1305,7 +1305,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Equipment Item");
+        state.record_generated(crate::EquipmentItem::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Equipment Item: {}/{}", i, fanout);
@@ -1326,7 +1326,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Vehicle Asset").is_empty() {
-            state.record_skipped("Insurance Policy", "Required dependency Vehicle Asset is missing in reference pool".to_string());
+            state.record_skipped(crate::InsurancePolicy::ENTITY_NAME, "Required dependency Vehicle Asset is missing in reference pool".to_string());
             log::info!("Skipped generating Insurance Policy: Required dependency Vehicle Asset is missing in reference pool.");
             return Ok(());
         }
@@ -1377,7 +1377,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Insurance Policy");
+        state.record_generated(crate::InsurancePolicy::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Insurance Policy: {}/{}", i, fanout);
@@ -1398,7 +1398,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Marketing Campaign").is_empty() {
-            state.record_skipped("Lead Tracking", "Required dependency Marketing Campaign is missing in reference pool".to_string());
+            state.record_skipped(crate::LeadTracking::ENTITY_NAME, "Required dependency Marketing Campaign is missing in reference pool".to_string());
             log::info!("Skipped generating Lead Tracking: Required dependency Marketing Campaign is missing in reference pool.");
             return Ok(());
         }
@@ -1445,7 +1445,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Lead Tracking");
+        state.record_generated(crate::LeadTracking::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Lead Tracking: {}/{}", i, fanout);
@@ -1466,7 +1466,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Vehicle Asset").is_empty() {
-            state.record_skipped("Maintenance Schedule", "Required dependency Vehicle Asset is missing in reference pool".to_string());
+            state.record_skipped(crate::MaintenanceSchedule::ENTITY_NAME, "Required dependency Vehicle Asset is missing in reference pool".to_string());
             log::info!("Skipped generating Maintenance Schedule: Required dependency Vehicle Asset is missing in reference pool.");
             return Ok(());
         }
@@ -1517,7 +1517,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Maintenance Schedule");
+        state.record_generated(crate::MaintenanceSchedule::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Maintenance Schedule: {}/{}", i, fanout);
@@ -1538,7 +1538,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("User Account").is_empty() {
-            state.record_skipped("Notification Rule", "Required dependency User Account is missing in reference pool".to_string());
+            state.record_skipped(crate::NotificationRule::ENTITY_NAME, "Required dependency User Account is missing in reference pool".to_string());
             log::info!("Skipped generating Notification Rule: Required dependency User Account is missing in reference pool.");
             return Ok(());
         }
@@ -1584,7 +1584,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Notification Rule");
+        state.record_generated(crate::NotificationRule::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Notification Rule: {}/{}", i, fanout);
@@ -1605,13 +1605,13 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("User Account").is_empty() {
-            state.record_skipped("User Role", "Required dependency User Account is missing in reference pool".to_string());
+            state.record_skipped(crate::UserRole::ENTITY_NAME, "Required dependency User Account is missing in reference pool".to_string());
             log::info!("Skipped generating User Role: Required dependency User Account is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Role Definition").is_empty() {
-            state.record_skipped("User Role", "Required dependency Role Definition is missing in reference pool".to_string());
+            state.record_skipped(crate::UserRole::ENTITY_NAME, "Required dependency Role Definition is missing in reference pool".to_string());
             log::info!("Skipped generating User Role: Required dependency Role Definition is missing in reference pool.");
             return Ok(());
         }
@@ -1660,7 +1660,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("User Role");
+        state.record_generated(crate::UserRole::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating User Role: {}/{}", i, fanout);
@@ -1681,13 +1681,13 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Company").is_empty() {
-            state.record_skipped("Corporate Customer", "Required dependency Company is missing in reference pool".to_string());
+            state.record_skipped(crate::CorporateCustomer::ENTITY_NAME, "Required dependency Company is missing in reference pool".to_string());
             log::info!("Skipped generating Corporate Customer: Required dependency Company is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Employee Record").is_empty() {
-            state.record_skipped("Corporate Customer", "Required dependency Employee Record is missing in reference pool".to_string());
+            state.record_skipped(crate::CorporateCustomer::ENTITY_NAME, "Required dependency Employee Record is missing in reference pool".to_string());
             log::info!("Skipped generating Corporate Customer: Required dependency Employee Record is missing in reference pool.");
             return Ok(());
         }
@@ -1744,13 +1744,13 @@ where
 
         let entity = entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Corporate Customer");
+        state.record_generated(crate::CorporateCustomer::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Corporate Customer: {}/{}", i, fanout);
         }
 
-        state.add_reference("Corporate Customer", entity.id().into_u64());
+        state.add_reference(crate::CorporateCustomer::ENTITY_NAME, entity.id().into_u64());
     }
 
     log::info!("Successfully generated sample records for Corporate Customer.");
@@ -1766,7 +1766,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Employee Record").is_empty() {
-            state.record_skipped("Expense Record", "Required dependency Employee Record is missing in reference pool".to_string());
+            state.record_skipped(crate::ExpenseRecord::ENTITY_NAME, "Required dependency Employee Record is missing in reference pool".to_string());
             log::info!("Skipped generating Expense Record: Required dependency Employee Record is missing in reference pool.");
             return Ok(());
         }
@@ -1817,7 +1817,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Expense Record");
+        state.record_generated(crate::ExpenseRecord::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Expense Record: {}/{}", i, fanout);
@@ -1838,7 +1838,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Employee Record").is_empty() {
-            state.record_skipped("Financial Summary", "Required dependency Employee Record is missing in reference pool".to_string());
+            state.record_skipped(crate::FinancialSummary::ENTITY_NAME, "Required dependency Employee Record is missing in reference pool".to_string());
             log::info!("Skipped generating Financial Summary: Required dependency Employee Record is missing in reference pool.");
             return Ok(());
         }
@@ -1895,7 +1895,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Financial Summary");
+        state.record_generated(crate::FinancialSummary::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Financial Summary: {}/{}", i, fanout);
@@ -1916,13 +1916,13 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Consumable Item").is_empty() {
-            state.record_skipped("Inventory Tracking", "Required dependency Consumable Item is missing in reference pool".to_string());
+            state.record_skipped(crate::InventoryTracking::ENTITY_NAME, "Required dependency Consumable Item is missing in reference pool".to_string());
             log::info!("Skipped generating Inventory Tracking: Required dependency Consumable Item is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Employee Record").is_empty() {
-            state.record_skipped("Inventory Tracking", "Required dependency Employee Record is missing in reference pool".to_string());
+            state.record_skipped(crate::InventoryTracking::ENTITY_NAME, "Required dependency Employee Record is missing in reference pool".to_string());
             log::info!("Skipped generating Inventory Tracking: Required dependency Employee Record is missing in reference pool.");
             return Ok(());
         }
@@ -1983,7 +1983,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Inventory Tracking");
+        state.record_generated(crate::InventoryTracking::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Inventory Tracking: {}/{}", i, fanout);
@@ -2004,7 +2004,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Employee Record").is_empty() {
-            state.record_skipped("Leave Request", "Required dependency Employee Record is missing in reference pool".to_string());
+            state.record_skipped(crate::LeaveRequest::ENTITY_NAME, "Required dependency Employee Record is missing in reference pool".to_string());
             log::info!("Skipped generating Leave Request: Required dependency Employee Record is missing in reference pool.");
             return Ok(());
         }
@@ -2061,7 +2061,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Leave Request");
+        state.record_generated(crate::LeaveRequest::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Leave Request: {}/{}", i, fanout);
@@ -2082,7 +2082,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Employee Record").is_empty() {
-            state.record_skipped("Payroll Calculation", "Required dependency Employee Record is missing in reference pool".to_string());
+            state.record_skipped(crate::PayrollCalculation::ENTITY_NAME, "Required dependency Employee Record is missing in reference pool".to_string());
             log::info!("Skipped generating Payroll Calculation: Required dependency Employee Record is missing in reference pool.");
             return Ok(());
         }
@@ -2143,13 +2143,13 @@ where
 
         let entity = entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Payroll Calculation");
+        state.record_generated(crate::PayrollCalculation::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Payroll Calculation: {}/{}", i, fanout);
         }
 
-        state.add_reference("Payroll Calculation", entity.id().into_u64());
+        state.add_reference(crate::PayrollCalculation::ENTITY_NAME, entity.id().into_u64());
     }
 
     log::info!("Successfully generated sample records for Payroll Calculation.");
@@ -2165,13 +2165,13 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Corporate Customer").is_empty() {
-            state.record_skipped("Billing Info", "Required dependency Corporate Customer is missing in reference pool".to_string());
+            state.record_skipped(crate::BillingInfo::ENTITY_NAME, "Required dependency Corporate Customer is missing in reference pool".to_string());
             log::info!("Skipped generating Billing Info: Required dependency Corporate Customer is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Private Customer").is_empty() {
-            state.record_skipped("Billing Info", "Required dependency Private Customer is missing in reference pool".to_string());
+            state.record_skipped(crate::BillingInfo::ENTITY_NAME, "Required dependency Private Customer is missing in reference pool".to_string());
             log::info!("Skipped generating Billing Info: Required dependency Private Customer is missing in reference pool.");
             return Ok(());
         }
@@ -2222,7 +2222,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Billing Info");
+        state.record_generated(crate::BillingInfo::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Billing Info: {}/{}", i, fanout);
@@ -2243,7 +2243,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Payroll Calculation").is_empty() {
-            state.record_skipped("Bonus Record", "Required dependency Payroll Calculation is missing in reference pool".to_string());
+            state.record_skipped(crate::BonusRecord::ENTITY_NAME, "Required dependency Payroll Calculation is missing in reference pool".to_string());
             log::info!("Skipped generating Bonus Record: Required dependency Payroll Calculation is missing in reference pool.");
             return Ok(());
         }
@@ -2294,7 +2294,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Bonus Record");
+        state.record_generated(crate::BonusRecord::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Bonus Record: {}/{}", i, fanout);
@@ -2315,13 +2315,13 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Private Customer").is_empty() {
-            state.record_skipped("Interaction History", "Required dependency Private Customer is missing in reference pool".to_string());
+            state.record_skipped(crate::InteractionHistory::ENTITY_NAME, "Required dependency Private Customer is missing in reference pool".to_string());
             log::info!("Skipped generating Interaction History: Required dependency Private Customer is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Corporate Customer").is_empty() {
-            state.record_skipped("Interaction History", "Required dependency Corporate Customer is missing in reference pool".to_string());
+            state.record_skipped(crate::InteractionHistory::ENTITY_NAME, "Required dependency Corporate Customer is missing in reference pool".to_string());
             log::info!("Skipped generating Interaction History: Required dependency Corporate Customer is missing in reference pool.");
             return Ok(());
         }
@@ -2374,7 +2374,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Interaction History");
+        state.record_generated(crate::InteractionHistory::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Interaction History: {}/{}", i, fanout);
@@ -2395,7 +2395,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Corporate Customer").is_empty() {
-            state.record_skipped("Linked Contact", "Required dependency Corporate Customer is missing in reference pool".to_string());
+            state.record_skipped(crate::LinkedContact::ENTITY_NAME, "Required dependency Corporate Customer is missing in reference pool".to_string());
             log::info!("Skipped generating Linked Contact: Required dependency Corporate Customer is missing in reference pool.");
             return Ok(());
         }
@@ -2442,7 +2442,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Linked Contact");
+        state.record_generated(crate::LinkedContact::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Linked Contact: {}/{}", i, fanout);
@@ -2463,31 +2463,31 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Private Customer").is_empty() {
-            state.record_skipped("Move Order", "Required dependency Private Customer is missing in reference pool".to_string());
+            state.record_skipped(crate::MoveOrder::ENTITY_NAME, "Required dependency Private Customer is missing in reference pool".to_string());
             log::info!("Skipped generating Move Order: Required dependency Private Customer is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Corporate Customer").is_empty() {
-            state.record_skipped("Move Order", "Required dependency Corporate Customer is missing in reference pool".to_string());
+            state.record_skipped(crate::MoveOrder::ENTITY_NAME, "Required dependency Corporate Customer is missing in reference pool".to_string());
             log::info!("Skipped generating Move Order: Required dependency Corporate Customer is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Address Record").is_empty() {
-            state.record_skipped("Move Order", "Required dependency Address Record is missing in reference pool".to_string());
+            state.record_skipped(crate::MoveOrder::ENTITY_NAME, "Required dependency Address Record is missing in reference pool".to_string());
             log::info!("Skipped generating Move Order: Required dependency Address Record is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Address Record").is_empty() {
-            state.record_skipped("Move Order", "Required dependency Address Record is missing in reference pool".to_string());
+            state.record_skipped(crate::MoveOrder::ENTITY_NAME, "Required dependency Address Record is missing in reference pool".to_string());
             log::info!("Skipped generating Move Order: Required dependency Address Record is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Vehicle Asset").is_empty() {
-            state.record_skipped("Move Order", "Required dependency Vehicle Asset is missing in reference pool".to_string());
+            state.record_skipped(crate::MoveOrder::ENTITY_NAME, "Required dependency Vehicle Asset is missing in reference pool".to_string());
             log::info!("Skipped generating Move Order: Required dependency Vehicle Asset is missing in reference pool.");
             return Ok(());
         }
@@ -2556,13 +2556,13 @@ where
 
         let entity = entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Move Order");
+        state.record_generated(crate::MoveOrder::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Move Order: {}/{}", i, fanout);
         }
 
-        state.add_reference("Move Order", entity.id().into_u64());
+        state.add_reference(crate::MoveOrder::ENTITY_NAME, entity.id().into_u64());
     }
 
     log::info!("Successfully generated sample records for Move Order.");
@@ -2578,7 +2578,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Corporate Customer").is_empty() {
-            state.record_skipped("Service Contract", "Required dependency Corporate Customer is missing in reference pool".to_string());
+            state.record_skipped(crate::ServiceContract::ENTITY_NAME, "Required dependency Corporate Customer is missing in reference pool".to_string());
             log::info!("Skipped generating Service Contract: Required dependency Corporate Customer is missing in reference pool.");
             return Ok(());
         }
@@ -2629,7 +2629,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Service Contract");
+        state.record_generated(crate::ServiceContract::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Service Contract: {}/{}", i, fanout);
@@ -2650,13 +2650,13 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Payroll Calculation").is_empty() {
-            state.record_skipped("Worked Hours", "Required dependency Payroll Calculation is missing in reference pool".to_string());
+            state.record_skipped(crate::WorkedHours::ENTITY_NAME, "Required dependency Payroll Calculation is missing in reference pool".to_string());
             log::info!("Skipped generating Worked Hours: Required dependency Payroll Calculation is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Employee Record").is_empty() {
-            state.record_skipped("Worked Hours", "Required dependency Employee Record is missing in reference pool".to_string());
+            state.record_skipped(crate::WorkedHours::ENTITY_NAME, "Required dependency Employee Record is missing in reference pool".to_string());
             log::info!("Skipped generating Worked Hours: Required dependency Employee Record is missing in reference pool.");
             return Ok(());
         }
@@ -2717,7 +2717,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Worked Hours");
+        state.record_generated(crate::WorkedHours::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Worked Hours: {}/{}", i, fanout);
@@ -2738,7 +2738,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Move Order").is_empty() {
-            state.record_skipped("Box Rental", "Required dependency Move Order is missing in reference pool".to_string());
+            state.record_skipped(crate::BoxRental::ENTITY_NAME, "Required dependency Move Order is missing in reference pool".to_string());
             log::info!("Skipped generating Box Rental: Required dependency Move Order is missing in reference pool.");
             return Ok(());
         }
@@ -2793,7 +2793,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Box Rental");
+        state.record_generated(crate::BoxRental::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Box Rental: {}/{}", i, fanout);
@@ -2814,13 +2814,13 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Marketing Campaign").is_empty() {
-            state.record_skipped("Conversion Metric", "Required dependency Marketing Campaign is missing in reference pool".to_string());
+            state.record_skipped(crate::ConversionMetric::ENTITY_NAME, "Required dependency Marketing Campaign is missing in reference pool".to_string());
             log::info!("Skipped generating Conversion Metric: Required dependency Marketing Campaign is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Move Order").is_empty() {
-            state.record_skipped("Conversion Metric", "Required dependency Move Order is missing in reference pool".to_string());
+            state.record_skipped(crate::ConversionMetric::ENTITY_NAME, "Required dependency Move Order is missing in reference pool".to_string());
             log::info!("Skipped generating Conversion Metric: Required dependency Move Order is missing in reference pool.");
             return Ok(());
         }
@@ -2875,7 +2875,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Conversion Metric");
+        state.record_generated(crate::ConversionMetric::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Conversion Metric: {}/{}", i, fanout);
@@ -2896,7 +2896,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Move Order").is_empty() {
-            state.record_skipped("Fulfillment Event", "Required dependency Move Order is missing in reference pool".to_string());
+            state.record_skipped(crate::FulfillmentEvent::ENTITY_NAME, "Required dependency Move Order is missing in reference pool".to_string());
             log::info!("Skipped generating Fulfillment Event: Required dependency Move Order is missing in reference pool.");
             return Ok(());
         }
@@ -2943,7 +2943,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Fulfillment Event");
+        state.record_generated(crate::FulfillmentEvent::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Fulfillment Event: {}/{}", i, fanout);
@@ -2964,19 +2964,19 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Move Order").is_empty() {
-            state.record_skipped("Invoice Document", "Required dependency Move Order is missing in reference pool".to_string());
+            state.record_skipped(crate::InvoiceDocument::ENTITY_NAME, "Required dependency Move Order is missing in reference pool".to_string());
             log::info!("Skipped generating Invoice Document: Required dependency Move Order is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Private Customer").is_empty() {
-            state.record_skipped("Invoice Document", "Required dependency Private Customer is missing in reference pool".to_string());
+            state.record_skipped(crate::InvoiceDocument::ENTITY_NAME, "Required dependency Private Customer is missing in reference pool".to_string());
             log::info!("Skipped generating Invoice Document: Required dependency Private Customer is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Corporate Customer").is_empty() {
-            state.record_skipped("Invoice Document", "Required dependency Corporate Customer is missing in reference pool".to_string());
+            state.record_skipped(crate::InvoiceDocument::ENTITY_NAME, "Required dependency Corporate Customer is missing in reference pool".to_string());
             log::info!("Skipped generating Invoice Document: Required dependency Corporate Customer is missing in reference pool.");
             return Ok(());
         }
@@ -3043,13 +3043,13 @@ where
 
         let entity = entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Invoice Document");
+        state.record_generated(crate::InvoiceDocument::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Invoice Document: {}/{}", i, fanout);
         }
 
-        state.add_reference("Invoice Document", entity.id().into_u64());
+        state.add_reference(crate::InvoiceDocument::ENTITY_NAME, entity.id().into_u64());
     }
 
     log::info!("Successfully generated sample records for Invoice Document.");
@@ -3065,13 +3065,13 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Employee Record").is_empty() {
-            state.record_skipped("Job Assignment", "Required dependency Employee Record is missing in reference pool".to_string());
+            state.record_skipped(crate::JobAssignment::ENTITY_NAME, "Required dependency Employee Record is missing in reference pool".to_string());
             log::info!("Skipped generating Job Assignment: Required dependency Employee Record is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Move Order").is_empty() {
-            state.record_skipped("Job Assignment", "Required dependency Move Order is missing in reference pool".to_string());
+            state.record_skipped(crate::JobAssignment::ENTITY_NAME, "Required dependency Move Order is missing in reference pool".to_string());
             log::info!("Skipped generating Job Assignment: Required dependency Move Order is missing in reference pool.");
             return Ok(());
         }
@@ -3122,7 +3122,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Job Assignment");
+        state.record_generated(crate::JobAssignment::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Job Assignment: {}/{}", i, fanout);
@@ -3143,7 +3143,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Move Order").is_empty() {
-            state.record_skipped("Route Plan", "Required dependency Move Order is missing in reference pool".to_string());
+            state.record_skipped(crate::RoutePlan::ENTITY_NAME, "Required dependency Move Order is missing in reference pool".to_string());
             log::info!("Skipped generating Route Plan: Required dependency Move Order is missing in reference pool.");
             return Ok(());
         }
@@ -3194,7 +3194,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Route Plan");
+        state.record_generated(crate::RoutePlan::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Route Plan: {}/{}", i, fanout);
@@ -3215,13 +3215,13 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Service Catalog").is_empty() {
-            state.record_skipped("Service Config", "Required dependency Service Catalog is missing in reference pool".to_string());
+            state.record_skipped(crate::ServiceConfig::ENTITY_NAME, "Required dependency Service Catalog is missing in reference pool".to_string());
             log::info!("Skipped generating Service Config: Required dependency Service Catalog is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Move Order").is_empty() {
-            state.record_skipped("Service Config", "Required dependency Move Order is missing in reference pool".to_string());
+            state.record_skipped(crate::ServiceConfig::ENTITY_NAME, "Required dependency Move Order is missing in reference pool".to_string());
             log::info!("Skipped generating Service Config: Required dependency Move Order is missing in reference pool.");
             return Ok(());
         }
@@ -3276,7 +3276,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Service Config");
+        state.record_generated(crate::ServiceConfig::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Service Config: {}/{}", i, fanout);
@@ -3297,7 +3297,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Move Order").is_empty() {
-            state.record_skipped("Time Slot", "Required dependency Move Order is missing in reference pool".to_string());
+            state.record_skipped(crate::TimeSlot::ENTITY_NAME, "Required dependency Move Order is missing in reference pool".to_string());
             log::info!("Skipped generating Time Slot: Required dependency Move Order is missing in reference pool.");
             return Ok(());
         }
@@ -3344,7 +3344,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Time Slot");
+        state.record_generated(crate::TimeSlot::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Time Slot: {}/{}", i, fanout);
@@ -3365,25 +3365,25 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Invoice Document").is_empty() {
-            state.record_skipped("Payment Record", "Required dependency Invoice Document is missing in reference pool".to_string());
+            state.record_skipped(crate::PaymentRecord::ENTITY_NAME, "Required dependency Invoice Document is missing in reference pool".to_string());
             log::info!("Skipped generating Payment Record: Required dependency Invoice Document is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Private Customer").is_empty() {
-            state.record_skipped("Payment Record", "Required dependency Private Customer is missing in reference pool".to_string());
+            state.record_skipped(crate::PaymentRecord::ENTITY_NAME, "Required dependency Private Customer is missing in reference pool".to_string());
             log::info!("Skipped generating Payment Record: Required dependency Private Customer is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Corporate Customer").is_empty() {
-            state.record_skipped("Payment Record", "Required dependency Corporate Customer is missing in reference pool".to_string());
+            state.record_skipped(crate::PaymentRecord::ENTITY_NAME, "Required dependency Corporate Customer is missing in reference pool".to_string());
             log::info!("Skipped generating Payment Record: Required dependency Corporate Customer is missing in reference pool.");
             return Ok(());
         }
 
         if state.ids("Move Order").is_empty() {
-            state.record_skipped("Payment Record", "Required dependency Move Order is missing in reference pool".to_string());
+            state.record_skipped(crate::PaymentRecord::ENTITY_NAME, "Required dependency Move Order is missing in reference pool".to_string());
             log::info!("Skipped generating Payment Record: Required dependency Move Order is missing in reference pool.");
             return Ok(());
         }
@@ -3456,7 +3456,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("Payment Record");
+        state.record_generated(crate::PaymentRecord::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating Payment Record: {}/{}", i, fanout);
@@ -3477,7 +3477,7 @@ where
     C: TeaqlRuntime + ?Sized + crate::TeaqlRepositoryProvider,
 {
         if state.ids("Invoice Document").is_empty() {
-            state.record_skipped("VAT Record", "Required dependency Invoice Document is missing in reference pool".to_string());
+            state.record_skipped(crate::VatRecord::ENTITY_NAME, "Required dependency Invoice Document is missing in reference pool".to_string());
             log::info!("Skipped generating VAT Record: Required dependency Invoice Document is missing in reference pool.");
             return Ok(());
         }
@@ -3532,7 +3532,7 @@ where
 
 entity.audit_as("Init Sample Data").save(ctx).await.map_err(|e| e.to_string())?;
 
-        state.record_generated("VAT Record");
+        state.record_generated(crate::VatRecord::ENTITY_NAME);
 
         if i % 20 == 0 {
             log::info!("Generating VAT Record: {}/{}", i, fanout);

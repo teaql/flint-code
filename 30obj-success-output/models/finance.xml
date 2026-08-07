@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root alias_model_name="finance"
-      chinese_name="财务管理"
-      english_name="Finance"
+<root
+
+
       name="finance"
       _module_key="finance">
   <payment _name="Payment"

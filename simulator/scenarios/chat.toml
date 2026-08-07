@@ -4,9 +4,9 @@ repeat_last = true
 default_latency_ms = 5
 
 [[responses]]
-id = "flint-identity"
-when_contains = "You are Flint"
-content = "I am Flint, an isolated-environment coding agent built by TeaQL."
+id = "klint-identity"
+when_contains = "You are Klint"
+content = "I am Klint, an isolated-environment coding agent built by TeaQL."
 
 [responses.usage]
 prompt_tokens = 80

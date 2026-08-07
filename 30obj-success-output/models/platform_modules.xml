@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root alias_model_name="platform_modules"
-      chinese_name="平台模块"
-      english_name="Platform Modules"
+<root
+
+
       name="platform-modules"
       cfg_mask_china_mobile="false"
       data_service="sqlite"

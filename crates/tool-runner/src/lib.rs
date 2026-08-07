@@ -2,8 +2,10 @@
 //! The model cannot execute arbitrary commands.
 
 mod policy;
+mod provider;
 
 pub use policy::*;
+pub use provider::*;
 
 use anyhow::Result;
 use std::time::Duration;

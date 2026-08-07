@@ -13,6 +13,9 @@ use std::path::{Path, PathBuf};
 use tokio::sync::mpsc;
 use tracing::{error, info, warn};
 use validation;
+use agent_core::rag::KnowledgeRetriever;
+use rag_remote::WeaviateRetriever;
+use std::sync::Arc;
 
 /// PipelineExecutor processes SideEffects and sends RunEvents back.
 /// Both TUI and headless CLI create one of these.
@@ -30,6 +33,10 @@ pub struct PipelineExecutor {
     build_target: Option<String>,
     /// Optional patches to apply to generated Cargo.toml files
     patches: Option<std::collections::HashMap<String, String>>,
+    /// Actionable errors from the most recent failed validation, fed into repair prompts.
+    last_actionable_errors: Vec<String>,
+    /// RAG retriever for skills and error troubleshooting.
+    retriever: Option<Arc<dyn KnowledgeRetriever>>,
 }
 
 impl PipelineExecutor {
@@ -52,6 +59,17 @@ impl PipelineExecutor {
             run_id,
             build_target: None,
             patches: None,
+            last_actionable_errors: Vec::new(),
+            retriever: None,
+        }
+    }
+
+    /// Asynchronously initialize the local RAG retriever if it hasn't been initialized yet.
+    async fn init_retriever(&mut self) {
+        if self.retriever.is_none() {
+            let r = WeaviateRetriever::new("http://localhost:8085/v1/graphql");
+            info!("Remote Weaviate RAG Retriever initialized on port 8085");
+            self.retriever = Some(Arc::new(r));
         }
     }
 
@@ -76,9 +94,9 @@ impl PipelineExecutor {
             SideEffect::Repair { attempt } => self.repair(attempt).await,
             SideEffect::WriteFinalArtifact => self.write_final().await,
             SideEffect::RecordFailure { error } => self.record_failure(&error).await,
+            SideEffect::RunFollowUp { task, attempt } => self.run_followup(task, attempt).await,
             SideEffect::LoadTask { path } => self.load_task(&path).await,
             SideEffect::RequestConsent { action, .. } => {
-                // In headless mode: auto-deny
                 // In TUI mode: the TUI will handle this
                 self.send(RunEvent::ConsentDenied(format!(
                     "Auto-denied in headless: {action}"
@@ -88,6 +106,74 @@ impl PipelineExecutor {
             SideEffect::None => {}
         }
     }
+
+    /// Run follow-up task on the existing workspace
+    async fn run_followup(&mut self, task: String, attempt: u8) {
+        let attempt_dir = self.runs_root.join(&self.run_id).join(format!("attempt-{:02}", attempt - 1)); // We use attempt-1 because that was the latest successful run! Wait, if we use the old one, we should probably copy it or just run in it.
+        // Actually, we should just run agent_loop in the latest available attempt_dir.
+        
+        let build_dir = if attempt_dir.exists() {
+            attempt_dir
+        } else {
+            self.runs_root.join(&self.run_id).join("attempt-01") // fallback
+        };
+
+        info!(?build_dir, "Launching agentic build loop for follow-up task");
+
+        let system_prompt = std::fs::read_to_string("prompts/agentic-build.txt")
+            .unwrap_or_else(|_| include_str!("../../../prompts/agentic-build.txt").to_string())
+            .replace("{{project_dir}}", &build_dir.display().to_string())
+            .replace("{{#if assist_outputs}}", "")
+            .replace("{{/if}}", "")
+            .replace("{{assist_outputs}}", "");
+
+        let user_prompt = format!(
+            "The project is at `{dir}`.\n\n\
+             Follow-up instruction from user: {task}\n\n\
+             Inspect the codebase, apply the requested changes using write_file/run_command, and ensure it still compiles.\n\
+             If the compile command's Exit code is 0, it succeeded (ignore warnings) and you should respond with a summary of your changes (no more tool calls).",
+            dir = build_dir.display(),
+            task = task
+        );
+
+        let max_iterations = 20;
+
+        let start = std::time::Instant::now();
+        let loop_result = crate::agent_loop::run_agent_loop(
+            &self.client,
+            &build_dir,
+            &system_prompt,
+            &user_prompt,
+            max_iterations,
+            Some(self.event_tx.clone()),
+        )
+        .await;
+
+        match &loop_result {
+            crate::agent_loop::AgentLoopResult::Completed { summary, iterations, total_tool_calls } => {
+                let total_elapsed = start.elapsed().as_secs_f64();
+                info!(attempt, iterations, total_tool_calls, total_elapsed, "Agentic build loop completed successfully");
+                let mut r = validation::pass(5, "build", total_elapsed);
+                r.diagnostic = format!("Follow-up: ✓ ({} iterations, {} tool calls)\n\nAgent summary: {}", iterations, total_tool_calls, summary);
+                self.send(RunEvent::ValidationCompleted(r)).await;
+            }
+            crate::agent_loop::AgentLoopResult::Failed { error, iterations } => {
+                let total_elapsed = start.elapsed().as_secs_f64();
+                warn!(attempt, iterations, %error, "Agentic build loop failed");
+                let mut r = validation::fail(5, "build", vec!["Agent loop failed".to_string()], error.clone(), total_elapsed);
+                r.diagnostic = format!("Agentic follow-up failed after {} iterations: {}", iterations, error);
+                self.send(RunEvent::ValidationCompleted(r)).await;
+            }
+            crate::agent_loop::AgentLoopResult::MaxIterationsReached { iterations, total_tool_calls } => {
+                let total_elapsed = start.elapsed().as_secs_f64();
+                warn!(attempt, iterations, total_tool_calls, "Agentic build loop hit max iterations");
+                let mut r = validation::fail(5, "build", vec![format!("Agent loop exhausted {} iterations", iterations)], "".to_string(), total_elapsed);
+                r.diagnostic = format!("Agentic follow-up did not complete within {} iterations ({} tool calls)", iterations, total_tool_calls);
+                self.send(RunEvent::ValidationCompleted(r)).await;
+            }
+        }
+    }
+
 
     /// Load a task package from disk.
     pub async fn load_task_from_path(&mut self, path: &Path) {
@@ -109,6 +195,41 @@ impl PipelineExecutor {
                 .await;
             }
         }
+    }
+
+    /// Create a task from inline text (typed in TUI).
+    pub async fn load_task_from_text(&mut self, text: &str) {
+        let mut task = TaskPackageData::from_inline_text(text);
+
+        // Dynamically retrieve skills based on the user's input text (intent)
+        self.init_retriever().await;
+        let mut skill_content = String::new();
+        if let Some(retriever) = &self.retriever {
+            let _ = self.event_tx.send(RunEvent::RagStarted).await;
+            if let Ok(docs) = retriever.search_by_intent(text).await {
+                let _ = self.event_tx.send(RunEvent::RagCompleted(docs.len())).await;
+                if !docs.is_empty() {
+                    info!(count = docs.len(), "Loaded intent-driven skills from RAG");
+                    for doc in docs {
+                        skill_content.push_str(&doc.content);
+                        skill_content.push_str("\n\n");
+                    }
+                }
+            }
+        }
+
+        if !skill_content.is_empty() {
+            task.modeling_skill = Some(skill_content);
+        }
+
+        let pkg = TaskPackage {
+            name: task.name.clone(),
+            task_file: task.root.join("task.md"),
+            files: vec![],
+            acceptance_spec: None,
+        };
+        self.task = Some(task);
+        self.send(RunEvent::TaskLoaded(pkg)).await;
     }
 
     async fn load_task(&mut self, path: &Path) {
@@ -171,6 +292,8 @@ impl PipelineExecutor {
     }
 
     async fn generate(&mut self, attempt: u8) {
+        self.init_retriever().await;
+        
         let task = match &self.task {
             Some(t) => t,
             None => {
@@ -182,8 +305,42 @@ impl PipelineExecutor {
             }
         };
 
-        // Build messages — fresh each time (stateless)
-        let message_pairs = build_generation_messages(task);
+        // Build messages — fresh for first attempt, repair-aware for retries
+        let message_pairs = if attempt > 1 {
+            let rejected = self.candidate.clone().unwrap_or_default();
+            let mut errors = if self.last_actionable_errors.is_empty() {
+                vec!["Validation failed. Please fix all errors.".to_string()]
+            } else {
+                self.last_actionable_errors.clone()
+            };
+
+            // RAG Retrieval for error diagnosis
+            if let Some(retriever) = &self.retriever {
+                let _ = self.event_tx.send(RunEvent::RagStarted).await;
+                if let Some(first_err) = errors.first() {
+                    if let Ok(docs) = retriever.retrieve_for_error(first_err).await {
+                        let _ = self.event_tx.send(RunEvent::RagCompleted(docs.len())).await;
+                        if !docs.is_empty() {
+                            info!(count = docs.len(), error = %first_err, "Injected RAG context for repair");
+                            let mut rag_context = String::from("\n\n# Relevant Context/Guidelines to Fix This:\n");
+                            for doc in docs {
+                                rag_context.push_str(&doc.content);
+                                rag_context.push_str("\n\n");
+                            }
+                            errors[0].push_str(&rag_context);
+                        }
+                    }
+                }
+            }
+            build_repair_messages(
+                task,
+                &rejected,
+                &errors,
+                self.profile.run.diagnostic_character_limit,
+            )
+        } else {
+            build_generation_messages(task)
+        };
         let messages: Vec<ChatMessage> = message_pairs
             .into_iter()
             .map(|(role, content)| ChatMessage {
@@ -215,7 +372,18 @@ impl PipelineExecutor {
                 .ok();
         }
 
-        match self.client.chat(messages.clone(), None, None).await {
+        let mut request_client = self.client.clone();
+        if attempt > 1 {
+            let mut dynamic_profile = self.profile.clone();
+            let base_temp = dynamic_profile.sampling.temperature;
+            let new_temp = (base_temp + (attempt as f32 - 1.0) * 0.15).min(0.8);
+            dynamic_profile.sampling.temperature = new_temp;
+            request_client = model_vllm::client::VllmClient::new(dynamic_profile);
+            info!(attempt, temp = new_temp, "Applying dynamic temperature for repair");
+        }
+
+        self.send(RunEvent::ModelStarted { attempt: attempt as u8 }).await;
+        match request_client.chat(messages.clone(), None, None).await {
             Ok(result) => {
                 // Save candidate
                 self.candidate = Some(result.content.clone());
@@ -503,6 +671,7 @@ impl PipelineExecutor {
         }
 
         // ── Step 2: Run additional generation targets ──
+        self.send(agent_core::event::RunEvent::WorkspaceGenerationStarted).await;
         // Derive the app target from the build target (e.g. rust-lib-core → rust-app-console)
         let app_target = if build_target.contains("-lib-core") {
             let app = if build_target.starts_with("java") {
@@ -538,18 +707,19 @@ impl PipelineExecutor {
 
         // ── Step 3: Apply patches to generated files ──
         let build_dir = attempt_dir.join("build");
-        if let Some(patches) = &self.patches {
-            // Apply patches to any Cargo.toml or pom.xml files found
-            for entry in walkdir_toml_xml(&build_dir) {
-                if let Ok(content) = std::fs::read_to_string(&entry) {
-                    let mut fixed = content.clone();
+        // Apply patches to any Cargo.toml or pom.xml files found
+        for entry in walkdir_toml_xml(&build_dir) {
+            if let Ok(content) = std::fs::read_to_string(&entry) {
+                let mut fixed = content.clone();
+                
+                if let Some(patches) = &self.patches {
                     for (find, replace) in patches {
                         fixed = fixed.replace(find, replace);
                     }
-                    if fixed != content {
-                        info!(attempt, file = %entry.display(), "Applied patches");
-                        std::fs::write(&entry, &fixed).ok();
-                    }
+                }
+                if fixed != content {
+                    info!(attempt, file = %entry.display(), "Applied patches");
+                    std::fs::write(&entry, &fixed).ok();
                 }
             }
         }
@@ -666,8 +836,8 @@ impl PipelineExecutor {
             let user_prompt = format!(
                 "The project is at `{dir}`. {hint}\n\n\
                  After seeing the compile output:\n\
-                 - If it succeeds, respond with a summary (no more tool calls).\n\
-                 - If it fails, read the relevant source files, fix the errors using write_file, and recompile.\n\
+                 - If the Exit code is 0, it succeeded. Ignore warnings and respond with a summary (no more tool calls).\n\
+                 - If the Exit code is non-zero, it failed. Read the relevant source files, fix the errors using write_file, and recompile.\n\
                  - Write business logic code (one query function per entity) if the src/ files are empty stubs.\n\n\
                  Do NOT spend time exploring the directory tree. Compile first, fix errors after.",
                 dir = build_dir.display(),
@@ -682,6 +852,7 @@ impl PipelineExecutor {
                 &system_prompt,
                 &user_prompt,
                 max_iterations,
+                Some(self.event_tx.clone()),
             )
             .await;
 
@@ -915,7 +1086,13 @@ impl PipelineExecutor {
         }
     }
 
-    async fn send(&self, event: RunEvent) {
+    async fn send(&mut self, event: RunEvent) {
+        // Capture validation errors for repair prompts
+        if let RunEvent::ValidationCompleted(ref result) = event {
+            if !result.passed {
+                self.last_actionable_errors = result.actionable_errors.clone();
+            }
+        }
         if self.event_tx.send(event).await.is_err() {
             error!("Failed to send event — channel closed");
         }
@@ -1075,21 +1252,31 @@ fn walkdir_toml_xml(dir: &Path) -> Vec<PathBuf> {
 /// Strip markdown code fences from LLM output (e.g. ```xml ... ```)
 fn strip_markdown_fences(content: &str) -> String {
     let trimmed = content.trim();
-    // Handle ```xml or ```ksml prefix
-    let stripped = if trimmed.starts_with("```xml") {
-        &trimmed[6..]
-    } else if trimmed.starts_with("```ksml") {
-        &trimmed[7..]
-    } else if trimmed.starts_with("```") {
-        &trimmed[3..]
-    } else {
-        return trimmed.to_string();
-    };
-    // Remove trailing ```
-    let stripped = stripped.trim();
-    if stripped.ends_with("```") {
-        stripped[..stripped.len() - 3].trim().to_string()
-    } else {
-        stripped.to_string()
+    
+    // Find the first occurrence of ```
+    if let Some(start_idx) = trimmed.find("```") {
+        let after_start = &trimmed[start_idx + 3..];
+        
+        // Skip the optional language identifier (e.g., xml or ksml)
+        let content_start = if after_start.to_lowercase().starts_with("xml") {
+            after_start[3..].trim_start()
+        } else if after_start.to_lowercase().starts_with("ksml") {
+            after_start[4..].trim_start()
+        } else {
+            // Just skip to the next newline if there's any text on the same line
+            if let Some(newline_idx) = after_start.find('\n') {
+                &after_start[newline_idx + 1..]
+            } else {
+                after_start
+            }
+        };
+        
+        // Find the matching end fence
+        if let Some(end_idx) = content_start.rfind("```") {
+            return content_start[..end_idx].trim().to_string();
+        }
     }
+    
+    // If no markdown fences are found, return the trimmed content
+    trimmed.to_string()
 }

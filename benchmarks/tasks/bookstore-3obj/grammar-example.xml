@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root alias_model_name="online_bookstore_service"
-      chinese_name="在线书店服务"
-      english_name="Online Bookstore Service"
+<root
+
+
       name="online-bookstore-service"
       data_service="sqlite"
       org="doublechaintech"

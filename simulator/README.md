@@ -1,4 +1,4 @@
-# FlintCode Model Simulator
+# KlintCode Model Simulator
 
 The simulator is a persistent, in-process model backend for development,
 testing, demos, and air-gapped environments where vLLM is unavailable. It is
@@ -9,13 +9,13 @@ selected through a normal model profile and never opens a network connection.
 Check the simulator profile:
 
 ```bash
-cargo run -p flintcode-cli -- health --profile profiles/simulator.toml
+cargo run -p klintcode-cli -- health --profile profiles/simulator.toml
 ```
 
 Run a task through the normal Pipeline:
 
 ```bash
-cargo run -p flintcode-cli -- run \
+cargo run -p klintcode-cli -- run \
   --task benchmarks/tasks/simple-greeting \
   --profile profiles/simulator.toml \
   --output runs/simulator
@@ -26,7 +26,7 @@ Run the TUI with the simulator and automatically load a task:
 ```bash
 FLINTCODE_PROFILE=profiles/simulator.toml \
 FLINTCODE_TASK=benchmarks/tasks/simple-greeting \
-cargo run -p flintcode-tui
+cargo run -p klintcode-tui
 ```
 
 Omit `FLINTCODE_TASK` to start with the interactive prompt composer. Type a

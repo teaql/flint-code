@@ -13,7 +13,7 @@ pub fn build_chat_messages(question: &str, model_name: &str) -> Vec<(String, Str
         (
             "system".to_string(),
             format!(
-                "You are Flint, an AI coding agent built by TeaQL for isolated and \
+                "You are Klint, an AI coding agent built by TeaQL for isolated and \
 air-gapped development environments. The configured model backend is \
 {model_name}. Never claim to be a Xiaomi assistant, MiMo assistant, or a \
 product-support bot. Answer the user's question directly and concisely. This \
@@ -100,21 +100,18 @@ fn build_context_block(task: &TaskPackageData) -> String {
 pub fn build_generation_messages(task: &TaskPackageData) -> Vec<(String, String)> {
     let mut messages = vec![("system".to_string(), build_system_prompt())];
 
-    // Add modeling skill if present (validation pitfalls, naming rules, etc.)
-    if let Some(skill) = &task.modeling_skill {
-        messages.push((
-            "system".to_string(),
-            format!("Modeling guidelines (follow these to pass validation on first attempt):\n\n{skill}"),
-        ));
-    }
-
-    // Build the user message: context block + task
+    // Build the user message: context block + task + skill
     let context = build_context_block(task);
-    let user_message = if context.is_empty() {
+    let mut user_message = if context.is_empty() {
         task.task_content.clone()
     } else {
         format!("{context}\n\n---\n\n# Task\n\n{}", task.task_content)
     };
+
+    if let Some(skill) = &task.modeling_skill {
+        user_message.push_str("\n\n---\n\n# Modeling guidelines (follow these to pass validation on first attempt):\n\n");
+        user_message.push_str(skill);
+    }
 
     messages.push(("user".to_string(), user_message));
 
@@ -131,21 +128,18 @@ pub fn build_repair_messages(
 ) -> Vec<(String, String)> {
     let mut messages = vec![("system".to_string(), build_system_prompt())];
 
-    // Add modeling skill if present
-    if let Some(skill) = &task.modeling_skill {
-        messages.push((
-            "system".to_string(),
-            format!("Modeling guidelines:\n\n{skill}"),
-        ));
-    }
-
     // Same context block for repair
     let context = build_context_block(task);
-    let user_message = if context.is_empty() {
+    let mut user_message = if context.is_empty() {
         task.task_content.clone()
     } else {
         format!("{context}\n\n---\n\n# Task\n\n{}", task.task_content)
     };
+
+    if let Some(skill) = &task.modeling_skill {
+        user_message.push_str("\n\n---\n\n# Modeling guidelines:\n\n");
+        user_message.push_str(skill);
+    }
 
     messages.push(("user".to_string(), user_message));
 
@@ -176,11 +170,11 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    fn chat_prompt_pins_flint_identity_and_disables_artifact_output() {
+    fn chat_prompt_pins_klint_identity_and_disables_artifact_output() {
         let messages = build_chat_messages("Who are you?", "mimo-v2.5-pro");
 
         assert_eq!(messages.len(), 2);
-        assert!(messages[0].1.contains("You are Flint"));
+        assert!(messages[0].1.contains("You are Klint"));
         assert!(messages[0].1.contains("mimo-v2.5-pro"));
         assert!(messages[0].1.contains("do not emit a TeaQL artifact"));
         assert_eq!(
@@ -193,11 +187,9 @@ mod tests {
     fn generation_prompt_is_an_explicit_teaql_ksml_contract() {
         let prompt = build_system_prompt();
 
-        assert!(prompt.contains("TeaQL KSML"));
-        assert!(prompt.contains("exactly one `<root>`"));
-        assert!(prompt.contains("Never output GraphQL"));
-        assert!(prompt.contains("Output raw XML only"));
-        assert!(prompt.contains("<book _name=\"Book\""));
+        assert!(prompt.contains("You are a KSML model generation expert."));
+        assert!(prompt.contains("Output only raw XML"));
+        assert!(prompt.contains("Follow the grammar example"));
     }
 
     #[test]
@@ -211,8 +203,8 @@ mod tests {
         let messages = build_generation_messages(&task);
 
         assert_eq!(messages[0].0, "system");
-        assert!(messages[0].1.contains("Your only output"));
-        assert!(messages[0].1.contains("TeaQL KSML"));
+        assert!(messages[0].1.contains("You are a KSML model generation expert."));
+        assert!(messages[0].1.contains("Output only raw XML"));
         assert_eq!(messages.last().expect("user message").0, "user");
         assert_eq!(
             messages.last().expect("user message").1,

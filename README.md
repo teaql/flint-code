@@ -1,27 +1,27 @@
-# FlintCode
+# KlintCode
 
 > [!WARNING]
-> **Active development:** FlintCode is under active development. APIs,
+> **Active development:** KlintCode is under active development. APIs,
 > configuration, workflows, and the TUI may change without notice. It is not
 > yet recommended for production use.
 
 > *Strike code without the cloud.* — 燧石取火，离线生码。
 
-**FlintCode** is an AI coding agent designed for **air-gapped and compliance-restricted environments**. It runs entirely on local hardware (NVIDIA DGX Spark / DGX Station), requires no internet connection, and produces **compiler-verified** production code.
+**KlintCode** is an AI coding agent designed for **air-gapped and compliance-restricted environments**. It runs entirely on local hardware (NVIDIA DGX Spark / DGX Station), requires no internet connection, and produces **compiler-verified** production code.
 
 Built with Rust. Powered by [TeaQL](https://teaql.io).
 
 ## TUI Preview
 
-![FlintCode interactive TUI showing the validated execution plan](docs/images/flintcode-tui.png)
+![KlintCode interactive TUI showing the validated execution plan](docs/images/klintcode-tui.png)
 
-## Why FlintCode?
+## Why KlintCode?
 
 Every major AI coding tool today — Cursor, Copilot, Devin, Windsurf — requires cloud connectivity. For organizations bound by regulatory, security, or data sovereignty constraints, **none of them are usable**.
 
-FlintCode fills this gap:
+KlintCode fills this gap:
 
-| | Cloud Coding Agents | FlintCode |
+| | Cloud Coding Agents | KlintCode |
 |--|---------------------|-----------|
 | **Network** | Requires internet | Air-gapped / offline |
 | **Data privacy** | Code sent to cloud | Data never leaves premises |
@@ -31,7 +31,7 @@ FlintCode fills this gap:
 
 ## How It Works
 
-FlintCode doesn't try to be a general-purpose coding agent. Instead, it combines a **small local model** with a **deterministic validation pipeline** to guarantee correct output:
+KlintCode doesn't try to be a general-purpose coding agent. Instead, it combines a **small local model** with a **deterministic validation pipeline** to guarantee correct output:
 
 ```
 Business Requirements
@@ -88,20 +88,20 @@ Business Requirements
 ### Build & Run
 
 ```bash
-git clone https://github.com/teaql/flint-code.git
-cd flint-code
+git clone https://github.com/teaql/klint-code.git
+cd klint-code
 
 # Build
 cargo build --release
 
 # Run evaluation suite
 FLINTCODE_BASE_URL="http://localhost:8000" \
-  ./target/release/flintcode evaluate \
+  ./target/release/klintcode evaluate \
     --plan benchmarks/rust-build-suite.toml \
     --output runs/
 
 # Interactive TUI
-./target/release/flintcode-tui
+./target/release/klintcode-tui
 ```
 
 The TUI opens with its prompt composer focused. Type a task and press `Enter`
@@ -173,10 +173,10 @@ temperature = 0.1
 ## Project Structure
 
 ```
-flintcode/
+klintcode/
 ├── apps/
-│   ├── flintcode-cli/        # Headless CLI for batch evaluation
-│   └── flintcode-tui/        # Interactive TUI (ratatui)
+│   ├── klintcode-cli/        # Headless CLI for batch evaluation
+│   └── klintcode-tui/        # Interactive TUI (ratatui)
 ├── crates/
 │   ├── agent-core/           # State machine, reducer, event loop
 │   ├── pipeline/             # Evaluation suite runner, build validation
@@ -195,7 +195,7 @@ flintcode/
 
 ## Validation Pipeline
 
-FlintCode's multi-level validation is what makes small models reliable:
+KlintCode's multi-level validation is what makes small models reliable:
 
 | Level | What | How |
 |-------|------|-----|
@@ -212,7 +212,7 @@ If any level fails, the pipeline triggers an automatic **repair loop** — the L
 
 ## Target Hardware
 
-FlintCode is hardware-agnostic but optimized for local inference:
+KlintCode is hardware-agnostic but optimized for local inference:
 
 | Device | Model Size | Speed | Context |
 |--------|-----------|-------|---------|
@@ -222,7 +222,7 @@ FlintCode is hardware-agnostic but optimized for local inference:
 
 ## TeaQL Integration
 
-FlintCode follows the [TeaQL Agent Kit](https://github.com/teaql/teaql-agent-kit) rules:
+KlintCode follows the [TeaQL Agent Kit](https://github.com/teaql/teaql-agent-kit) rules:
 
 - Never guess method names — use `assist` output
 - Never edit generated files in `rust-lib-core/`

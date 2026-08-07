@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root alias_model_name="asset_management"
-      chinese_name="资产管理"
-      english_name="Asset Management"
+<root
+
+
       name="asset-management"
       cfg_mask_china_mobile="false"
       data_service="sqlite"

@@ -307,15 +307,30 @@ impl<'a, T: Clone> ValueExpression<'a, T> {
         self.resolve().expect("Value was legitimately null in database!")
     }
 
-    pub fn or_else(self, default_value: T) -> T {
+    /// Returns `default_value` only when the expression is loaded and null.
+    ///
+    /// # Panics
+    ///
+    /// Panics when a required field or relation is `NotLoaded`.
+    pub fn or_if_null(self, default_value: T) -> T {
         self.eval().unwrap_or(default_value)
     }
 
-    pub fn or_else_with(self, default_fn: impl FnOnce() -> T) -> T {
+    /// Lazily computes a fallback only when the expression is loaded and null.
+    ///
+    /// # Panics
+    ///
+    /// Panics when a required field or relation is `NotLoaded`.
+    pub fn or_else_if_null(self, default_fn: impl FnOnce() -> T) -> T {
         self.eval().unwrap_or_else(default_fn)
     }
 
-    pub fn or_default(self) -> T where T: Default {
+    /// Returns `T::default()` only when the expression is loaded and null.
+    ///
+    /// # Panics
+    ///
+    /// Panics when a required field or relation is `NotLoaded`.
+    pub fn or_default_if_null(self) -> T where T: Default {
         self.eval().unwrap_or_default()
     }
 }
