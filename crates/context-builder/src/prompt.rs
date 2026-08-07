@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::task_package::TaskPackageData;
 
 /// Build the core system prompt — kept minimal.

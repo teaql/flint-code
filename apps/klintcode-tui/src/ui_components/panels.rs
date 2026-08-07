@@ -1,15 +1,15 @@
-use crate::ui_components::*;
+#![allow(dead_code)]
 use crate::ui_components::helpers::*;
 use ratatui::{
     Frame,
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    layout::Rect,
     style::{Color, Modifier, Style},
-    text::{Line, Span, Text},
-    widgets::{Block, Borders, Clear, List, ListItem, Padding, Paragraph, Wrap},
+    text::{Line, Span},
+    widgets::{Block, Borders, List, ListItem, Padding, Paragraph, Wrap},
 };
 use agent_core::state::PipelineState;
-use agent_core::shared::{PlanStepStatus, ToolProcessStatus};
-use crate::app::{App, InputMode, ServiceHealth, TimelineRole, View};
+use agent_core::shared::ToolProcessStatus;
+use crate::app::{App, View};
 use crate::widgets::*;
 
 pub fn draw_plan(f: &mut Frame, app: &App, area: Rect) {

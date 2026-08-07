@@ -1,16 +1,13 @@
-use crate::ui_components::*;
 use crate::ui_components::helpers::*;
 use ratatui::{
     Frame,
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    layout::{Alignment, Rect},
     style::{Color, Modifier, Style},
-    text::{Line, Span, Text},
-    widgets::{Block, Borders, Clear, List, ListItem, Padding, Paragraph, Wrap},
+    text::{Line, Span},
+    widgets::{Clear, Paragraph, Wrap},
 };
 use agent_core::state::PipelineState;
-use agent_core::shared::{PlanStepStatus, ToolProcessStatus};
-use crate::app::{App, InputMode, ServiceHealth, TimelineRole, View};
-use crate::widgets::*;
+use crate::app::{App, TimelineRole};
 
 pub const KLINT_TEXT_MARK: [&str; 3] = [
     " ██▀ █   █ █▄ █ ▀█▀",

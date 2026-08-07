@@ -1,16 +1,11 @@
-use crate::ui_components::*;
+#![allow(dead_code)]
 
 use ratatui::{
-    Frame,
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Color, Modifier, Style},
-    text::{Line, Span, Text},
-    widgets::{Block, Borders, Clear, List, ListItem, Padding, Paragraph, Wrap},
+    style::{Color, Style},
+    text::{Line, Span},
 };
 use agent_core::state::PipelineState;
-use agent_core::shared::{PlanStepStatus, ToolProcessStatus};
-use crate::app::{App, InputMode, ServiceHealth, TimelineRole, View};
-use crate::widgets::*;
+use crate::app::{App, ServiceHealth};
 
 pub const HELP_TEXT: &str = r#"KlintCode TUI — Keyboard Shortcuts
 

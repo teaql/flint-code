@@ -2,30 +2,26 @@
 
 use crate::ui_components::*;
 use crate::widgets::*;
-use crate::app::*;
 
 use anyhow::Result;
 use crossterm::{
-    event::{Event, KeyCode, KeyModifiers, EnableBracketedPaste, DisableBracketedPaste, EnableMouseCapture, DisableMouseCapture},
+    event::{Event, KeyCode, KeyModifiers, EnableBracketedPaste, DisableBracketedPaste},
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
 use ratatui::{
     Frame, Terminal,
     backend::CrosstermBackend,
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Color, Modifier, Style},
-    text::{Line, Span, Text},
-    widgets::{Block, Borders, Clear, List, ListItem, Padding, Paragraph, Wrap},
+    layout::{Constraint, Direction, Layout, Rect},
 };
 use std::io;
 use std::time::Duration;
 
 use agent_core::event::ExportConsent;
 use agent_core::state::PipelineState;
-use agent_core::shared::{PlanStepStatus, ToolProcessStatus};
+use agent_core::shared::ToolProcessStatus;
 
-use crate::app::{App, InputMode, ServiceHealth, TimelineRole, View};
+use crate::app::{App, InputMode, View};
 
 
 /// Run the TUI event loop.

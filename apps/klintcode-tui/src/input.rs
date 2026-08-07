@@ -1,6 +1,7 @@
 //! Input handling for the TUI.
 //! TUI does not directly modify state — it sends RunEvents.
 
+#![allow(dead_code)]
 use agent_core::event::RunEvent;
 use tokio::sync::mpsc;
 

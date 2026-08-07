@@ -5,7 +5,6 @@
 
 use serde_json::json;
 use std::path::{Path, PathBuf};
-use tokio::process::Command;
 use tracing::{info, warn};
 
 use model_vllm::chat::{Function, Tool};
