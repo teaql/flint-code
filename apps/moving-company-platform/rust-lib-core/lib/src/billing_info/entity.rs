@@ -20,10 +20,10 @@ pub struct BillingInfo {
     billing_address: String,
 
 // @source moving-company.xml:110
-    create_time: chrono::DateTime<chrono::Utc>,
+    create_time: teaql_core::time::Timestamp,
 
 // @source moving-company.xml:110
-    update_time: chrono::DateTime<chrono::Utc>,
+    update_time: teaql_core::time::Timestamp,
 #[teaql(version)]
     version: i64,
 // @source moving-company.xml:110
@@ -49,6 +49,8 @@ pub struct BillingInfo {
 }
 
 impl BillingInfo {
+    pub const ENTITY_NAME: &'static str = "Billing Info";
+
     pub fn with_id(id: u64) -> teaql_core::Value {
         teaql_core::Value::U64(id)
     }
@@ -57,8 +59,8 @@ impl BillingInfo {
         Self {
             id: 0_u64,
             billing_address: String::new(),
-            create_time: chrono::Utc::now(),
-            update_time: chrono::Utc::now(),
+            create_time: teaql_core::time::Timestamp::now(),
+            update_time: teaql_core::time::Timestamp::now(),
             version: 0_i64,
             corporate_customer_id: 0_u64,
             private_customer_id: 0_u64,
@@ -136,7 +138,7 @@ impl BillingInfo {
                     teaql_core::eval::EvalResult::Value(self.billing_address())
                 }}
 
-    pub fn create_time(&self) -> chrono::DateTime<chrono::Utc> {
+    pub fn create_time(&self) -> teaql_core::time::Timestamp {
         self.changed_create_time().and_then(|value| value.try_timestamp()).unwrap_or(self.create_time)
     }
 
@@ -151,14 +153,14 @@ impl BillingInfo {
         self.root.get(&self.entity_key(), "create_time")
     }
 
-    pub fn eval_create_time(&self) -> teaql_core::eval::EvalResult<chrono::DateTime<chrono::Utc>> {
+    pub fn eval_create_time(&self) -> teaql_core::eval::EvalResult<teaql_core::time::Timestamp> {
         if !self.is_loaded("create_time") {
                     teaql_core::eval::EvalResult::NotLoaded { failed_node: "create_time".to_string(), attempted_path: "create_time".to_string() }
                 } else {
                     teaql_core::eval::EvalResult::Value(self.create_time())
                 }}
 
-    pub fn update_time(&self) -> chrono::DateTime<chrono::Utc> {
+    pub fn update_time(&self) -> teaql_core::time::Timestamp {
         self.changed_update_time().and_then(|value| value.try_timestamp()).unwrap_or(self.update_time)
     }
 
@@ -173,7 +175,7 @@ impl BillingInfo {
         self.root.get(&self.entity_key(), "update_time")
     }
 
-    pub fn eval_update_time(&self) -> teaql_core::eval::EvalResult<chrono::DateTime<chrono::Utc>> {
+    pub fn eval_update_time(&self) -> teaql_core::eval::EvalResult<teaql_core::time::Timestamp> {
         if !self.is_loaded("update_time") {
                     teaql_core::eval::EvalResult::NotLoaded { failed_node: "update_time".to_string(), attempted_path: "update_time".to_string() }
                 } else {

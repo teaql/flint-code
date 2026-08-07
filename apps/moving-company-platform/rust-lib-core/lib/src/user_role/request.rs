@@ -1710,7 +1710,11 @@ impl<R: teaql_core::Entity> crate::PurposedQuery<UserRoleRequest<R>> {
     where
         C: crate::TeaqlRuntime + ?Sized,
     {
-        crate::UserRole::runtime_new(ctx.user_context().entity_root())
+        let mut entity = crate::UserRole::runtime_new(ctx.user_context().entity_root());
+        if let Ok(id) = ctx.user_context().next_id(crate::UserRole::ENTITY_NAME) {
+            entity.update_id(id);
+        }
+        entity
     }
 
     fn into_inner_with_trace(mut self) -> UserRoleRequest<R> {

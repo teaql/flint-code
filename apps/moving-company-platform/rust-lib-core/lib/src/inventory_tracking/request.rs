@@ -2222,7 +2222,11 @@ impl<R: teaql_core::Entity> crate::PurposedQuery<InventoryTrackingRequest<R>> {
     where
         C: crate::TeaqlRuntime + ?Sized,
     {
-        crate::InventoryTracking::runtime_new(ctx.user_context().entity_root())
+        let mut entity = crate::InventoryTracking::runtime_new(ctx.user_context().entity_root());
+        if let Ok(id) = ctx.user_context().next_id(crate::InventoryTracking::ENTITY_NAME) {
+            entity.update_id(id);
+        }
+        entity
     }
 
     fn into_inner_with_trace(mut self) -> InventoryTrackingRequest<R> {

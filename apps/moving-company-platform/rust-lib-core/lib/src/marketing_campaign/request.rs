@@ -2490,7 +2490,11 @@ impl<R: teaql_core::Entity> crate::PurposedQuery<MarketingCampaignRequest<R>> {
     where
         C: crate::TeaqlRuntime + ?Sized,
     {
-        crate::MarketingCampaign::runtime_new(ctx.user_context().entity_root())
+        let mut entity = crate::MarketingCampaign::runtime_new(ctx.user_context().entity_root());
+        if let Ok(id) = ctx.user_context().next_id(crate::MarketingCampaign::ENTITY_NAME) {
+            entity.update_id(id);
+        }
+        entity
     }
 
     fn into_inner_with_trace(mut self) -> MarketingCampaignRequest<R> {

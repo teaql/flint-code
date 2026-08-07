@@ -2601,7 +2601,11 @@ impl<R: teaql_core::Entity> crate::PurposedQuery<VehicleAssetRequest<R>> {
     where
         C: crate::TeaqlRuntime + ?Sized,
     {
-        crate::VehicleAsset::runtime_new(ctx.user_context().entity_root())
+        let mut entity = crate::VehicleAsset::runtime_new(ctx.user_context().entity_root());
+        if let Ok(id) = ctx.user_context().next_id(crate::VehicleAsset::ENTITY_NAME) {
+            entity.update_id(id);
+        }
+        entity
     }
 
     fn into_inner_with_trace(mut self) -> VehicleAssetRequest<R> {

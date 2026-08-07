@@ -2246,7 +2246,11 @@ impl<R: teaql_core::Entity> crate::PurposedQuery<InteractionHistoryRequest<R>> {
     where
         C: crate::TeaqlRuntime + ?Sized,
     {
-        crate::InteractionHistory::runtime_new(ctx.user_context().entity_root())
+        let mut entity = crate::InteractionHistory::runtime_new(ctx.user_context().entity_root());
+        if let Ok(id) = ctx.user_context().next_id(crate::InteractionHistory::ENTITY_NAME) {
+            entity.update_id(id);
+        }
+        entity
     }
 
     fn into_inner_with_trace(mut self) -> InteractionHistoryRequest<R> {

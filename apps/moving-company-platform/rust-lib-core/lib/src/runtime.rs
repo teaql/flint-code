@@ -423,8 +423,8 @@ pub fn module() -> teaql_runtime::RuntimeModule {
             .value("id", 1_u64)
             .value("company_name", "Fast Movers Inc")
             .value("founded_year", 1998_i64)
-            .value("create_time", chrono::Utc::now())
-            .value("update_time", chrono::Utc::now())
+            .value("create_time", teaql_core::time::Timestamp::now())
+            .value("update_time", teaql_core::time::Timestamp::now())
             .value("version", 1_i64))
 }
 
@@ -518,8 +518,8 @@ pub fn module_with_checkers() -> teaql_runtime::RuntimeModule {
             .value("id", 1_u64)
             .value("company_name", "Fast Movers Inc")
             .value("founded_year", 1998_i64)
-            .value("create_time", chrono::Utc::now())
-            .value("update_time", chrono::Utc::now())
+            .value("create_time", teaql_core::time::Timestamp::now())
+            .value("update_time", teaql_core::time::Timestamp::now())
             .value("version", 1_i64))
 }
 
@@ -571,8 +571,8 @@ pub fn module_with_behaviors() -> teaql_runtime::RuntimeModule {
             .value("id", 1_u64)
             .value("company_name", "Fast Movers Inc")
             .value("founded_year", 1998_i64)
-            .value("create_time", chrono::Utc::now())
-            .value("update_time", chrono::Utc::now())
+            .value("create_time", teaql_core::time::Timestamp::now())
+            .value("update_time", teaql_core::time::Timestamp::now())
             .value("version", 1_i64))
 }
 
@@ -666,7 +666,7 @@ pub fn module_with_behaviors_and_checkers() -> teaql_runtime::RuntimeModule {
             .value("id", 1_u64)
             .value("company_name", "Fast Movers Inc")
             .value("founded_year", 1998_i64)
-            .value("create_time", chrono::Utc::now())
-            .value("update_time", chrono::Utc::now())
+            .value("create_time", teaql_core::time::Timestamp::now())
+            .value("update_time", teaql_core::time::Timestamp::now())
             .value("version", 1_i64))
 }
