@@ -2,7 +2,7 @@
 
 ## READ THIS BEFORE CODING
 
-This is **FlintCode**, a Rust-based AI coding agent for air-gapped environments.
+This is **KlintCode**, a Rust-based AI coding agent for air-gapped environments.
 It uses ratatui for TUI and targets local inference hardware with constrained
 context windows (64K-128K tokens).
 
@@ -44,8 +44,8 @@ context windows (64K-128K tokens).
 
 ### Project Layout
 
-- `apps/flintcode-cli/` — Headless CLI for batch evaluation
-- `apps/flintcode-tui/` — Interactive TUI (ratatui)
+- `apps/klintcode-cli/` — Headless CLI for batch evaluation
+- `apps/klintcode-tui/` — Interactive TUI (ratatui)
 - `crates/agent-core/` — State machine (reducer.rs), events, run controller
 - `crates/pipeline/` — Evaluation suite runner (suite.rs), build validation (executor.rs)
 - `crates/model-vllm/` — LLM client (OpenAI-compatible API)

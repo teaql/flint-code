@@ -52,6 +52,7 @@ pub async fn run_agent_loop(
     system_prompt: &str,
     user_prompt: &str,
     max_iterations: usize,
+    event_tx: Option<tokio::sync::mpsc::Sender<agent_core::RunEvent>>,
 ) -> AgentLoopResult {
     let tools = build_tool_definitions();
 
@@ -127,12 +128,39 @@ pub async fn run_agent_loop(
                                 "Executing tool call"
                             );
 
+                            let command_str = if tc.function.name == "run_command" {
+                                if let Ok(args) = serde_json::from_str::<serde_json::Value>(&tc.function.arguments) {
+                                    args.get("command").and_then(|c| c.as_str()).unwrap_or(&tc.function.arguments).to_string()
+                                } else {
+                                    tc.function.arguments.clone()
+                                }
+                            } else {
+                                format!("{} {}", tc.function.name, tc.function.arguments)
+                            };
+
+                            let cmd_id = total_tool_calls as u64;
+
+                            if let Some(tx) = &event_tx {
+                                tx.send(agent_core::RunEvent::ToolProcessStarted {
+                                    id: cmd_id,
+                                    command: command_str,
+                                }).await.ok();
+                            }
+
                             let tool_result = execute_tool(
                                 &tc.function.name,
                                 &tc.function.arguments,
                                 sandbox_dir,
                             )
                             .await;
+
+                            if let Some(tx) = &event_tx {
+                                tx.send(agent_core::RunEvent::ToolProcessFinished {
+                                    id: cmd_id,
+                                    success: !tool_result.to_lowercase().contains("error"),
+                                    exit_code: None,
+                                }).await.ok();
+                            }
 
                             messages.push(ChatMessage::tool_result(&tc.id, &tool_result));
                         }

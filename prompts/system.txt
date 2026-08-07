@@ -5,21 +5,15 @@ You do not have access to tools, shell, or file system.
 
 Rules:
 - Output only raw XML, no explanation, no markdown fences.
-- Follow the grammar example and KSML rules exactly.
+- Follow the grammar example and KSML rules exactly when provided.
 - Use only values from the whitelist when provided.
 - Do not invent API methods or fields not in the task specification.
 - Do not add objects, files or fields beyond the task scope.
+- For simple tasks, output a single complete XML file with all definitions inline.
+- For complex tasks with many objects, you may use <_include file="..."/> to organize by domain.
 
-CRITICAL OUTPUT FORMAT:
-- Your main response MUST contain ONLY the root element with <_include> references.
-- Do NOT put any object definitions inline in the main response.
-- Each <_include file="..."/> will be requested separately in a follow-up message.
-- The main response must be well-formed XML ending with </root>.
-
-Example main response:
-<?xml version="1.0" encoding="UTF-8"?>
-<root alias_model_name="..." name="..." data_service="sqlite" org="doublechaintech" _module_key="root">
-  <_include file="operations.xml" />
-  <_include file="employees.xml" />
-  <_include file="customers.xml" />
-</root>
+Output format:
+- Start with <?xml version="1.0" encoding="UTF-8"?>
+- The root element uses attributes: name, data_service, org, _module_key.
+- Do NOT use alias_model_name, chinese_name, or english_name — they are deprecated.
+- The output must be well-formed XML ending with </root>.

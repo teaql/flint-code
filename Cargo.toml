@@ -1,8 +1,8 @@
 [workspace]
 resolver = "3"
 members = [
-    "apps/flintcode-cli",
-    "apps/flintcode-tui",
+    "apps/klintcode-cli",
+    "apps/klintcode-tui",
     "apps/moving-company-platform/rust-lib-core/lib",
     "crates/agent-core",
     "crates/model-vllm",
@@ -18,7 +18,7 @@ members = [
 version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/teaql/flint-code"
+repository = "https://github.com/teaql/klint-code"
 
 [workspace.dependencies]
 # Internal crates

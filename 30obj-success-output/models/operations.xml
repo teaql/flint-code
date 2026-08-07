@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root alias_model_name="moving_company_management"
-      chinese_name="搬家公司管理"
-      english_name="Moving Company Management"
+<root
+
+
       name="moving-company-service"
       cfg_mask_china_mobile="false"
       data_service="sqlite"

@@ -118,29 +118,33 @@ async fn execute_run_command(args: &serde_json::Value, sandbox_dir: &Path) -> St
 
     info!(command, dir = %sandbox_dir.display(), "Agent executing command");
 
-    let result = Command::new("bash")
-        .args(["-c", command])
-        .current_dir(sandbox_dir)
-        .env("PAGER", "cat")
-        .output()
-        .await;
+    let result = tokio::time::timeout(
+        std::time::Duration::from_secs(60),
+        tokio::process::Command::new("bash")
+            .args(["-c", command])
+            .current_dir(sandbox_dir)
+            .env("PAGER", "cat")
+            .output()
+    )
+    .await;
 
-    match result {
-        Ok(output) => {
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            let status = output.status.code().unwrap_or(-1);
+    let output = match result {
+        Ok(Ok(out)) => out,
+        Ok(Err(e)) => return format!("Command execution failed: {}", e),
+        Err(_) => return "Error: Command timed out after 60 seconds".to_string(),
+    };
 
-            let stdout_trunc = truncate_output(&stdout, MAX_OUTPUT_LEN);
-            let stderr_trunc = truncate_output(&stderr, MAX_OUTPUT_LEN);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let status = output.status.code().unwrap_or(-1);
 
-            format!(
-                "Exit code: {}\nStdout:\n{}\nStderr:\n{}",
-                status, stdout_trunc, stderr_trunc
-            )
-        }
-        Err(e) => format!("Error executing command: {}", e),
-    }
+    let stdout_trunc = truncate_output(&stdout, MAX_OUTPUT_LEN);
+    let stderr_trunc = truncate_output(&stderr, MAX_OUTPUT_LEN);
+
+    format!(
+        "Exit code: {}\nStdout:\n{}\nStderr:\n{}",
+        status, stdout_trunc, stderr_trunc
+    )
 }
 
 fn execute_read_file(args: &serde_json::Value, sandbox_dir: &Path) -> String {

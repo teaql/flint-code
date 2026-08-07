@@ -142,6 +142,22 @@ impl TaskPackageData {
         })
     }
 
+    /// Create a minimal task package from inline text (typed in TUI).
+    pub fn from_inline_text(text: &str) -> Self {
+        let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+        Self {
+            name: "inline-task".to_string(),
+            root: cwd,
+            task_content: text.to_string(),
+            grammar_example: None,
+            value_whitelist: None,
+            acceptance_spec: None,
+            workspace_manifest: None,
+            tool_policy: None,
+            modeling_skill: None,
+        }
+    }
+
     /// List all files present in this task package
     pub fn files(&self) -> Vec<PathBuf> {
         let mut files = vec![self.root.join("task.md")];

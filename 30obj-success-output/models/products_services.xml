@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root alias_model_name="products_services"
-      chinese_name="产品与服务"
-      english_name="Products and Services"
+<root
+
+
       name="products-services"
       cfg_mask_china_mobile="false"
       data_service="sqlite"

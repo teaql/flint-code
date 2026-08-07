@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root alias_model_name="administration_compliance"
-      chinese_name="管理与合规"
-      english_name="Administration & Compliance"
+<root
+
+
       name="administration-compliance"
       cfg_mask_china_mobile="false"
       data_service="sqlite"

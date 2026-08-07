@@ -30,6 +30,8 @@ pub struct PipelineExecutor {
     build_target: Option<String>,
     /// Optional patches to apply to generated Cargo.toml files
     patches: Option<std::collections::HashMap<String, String>>,
+    /// Actionable errors from the most recent failed validation, fed into repair prompts.
+    last_actionable_errors: Vec<String>,
 }
 
 impl PipelineExecutor {
@@ -52,6 +54,7 @@ impl PipelineExecutor {
             run_id,
             build_target: None,
             patches: None,
+            last_actionable_errors: Vec::new(),
         }
     }
 
@@ -109,6 +112,46 @@ impl PipelineExecutor {
                 .await;
             }
         }
+    }
+
+    /// Create a task from inline text (typed in TUI).
+    pub async fn load_task_from_text(&mut self, text: &str) {
+        let mut task = TaskPackageData::from_inline_text(text);
+
+        // Try to load modeling skill from teaql-agent-kit
+        let home = std::env::var("HOME").unwrap_or_default();
+        let skill_path = Path::new(&home)
+            .join("githome/teaql-agent-kit/skills/build-teaql-app/SKILL.md");
+        let mut skill_content = String::new();
+        if skill_path.exists() {
+            if let Ok(content) = std::fs::read_to_string(&skill_path) {
+                skill_content.push_str(&content);
+                info!(path = %skill_path.display(), "Loaded modeling skill for inline task");
+            }
+        }
+
+        let error_fix_path = Path::new(&home)
+            .join("githome/teaql-agent-kit/skills/build-teaql-app/agents/ERROR-FIX.md");
+        if error_fix_path.exists() {
+            if let Ok(content) = std::fs::read_to_string(&error_fix_path) {
+                skill_content.push_str("\n\n# Error Troubleshooting Guide\n");
+                skill_content.push_str(&content);
+                info!(path = %error_fix_path.display(), "Loaded ERROR-FIX.md for inline task");
+            }
+        }
+
+        if !skill_content.is_empty() {
+            task.modeling_skill = Some(skill_content);
+        }
+
+        let pkg = TaskPackage {
+            name: task.name.clone(),
+            task_file: task.root.join("task.md"),
+            files: vec![],
+            acceptance_spec: None,
+        };
+        self.task = Some(task);
+        self.send(RunEvent::TaskLoaded(pkg)).await;
     }
 
     async fn load_task(&mut self, path: &Path) {
@@ -182,8 +225,23 @@ impl PipelineExecutor {
             }
         };
 
-        // Build messages — fresh each time (stateless)
-        let message_pairs = build_generation_messages(task);
+        // Build messages — fresh for first attempt, repair-aware for retries
+        let message_pairs = if attempt > 1 {
+            let rejected = self.candidate.clone().unwrap_or_default();
+            let errors = if self.last_actionable_errors.is_empty() {
+                vec!["Validation failed. Please fix all errors.".to_string()]
+            } else {
+                self.last_actionable_errors.clone()
+            };
+            build_repair_messages(
+                task,
+                &rejected,
+                &errors,
+                self.profile.run.diagnostic_character_limit,
+            )
+        } else {
+            build_generation_messages(task)
+        };
         let messages: Vec<ChatMessage> = message_pairs
             .into_iter()
             .map(|(role, content)| ChatMessage {
@@ -215,7 +273,17 @@ impl PipelineExecutor {
                 .ok();
         }
 
-        match self.client.chat(messages.clone(), None, None).await {
+        let mut request_client = self.client.clone();
+        if attempt > 1 {
+            let mut dynamic_profile = self.profile.clone();
+            let base_temp = dynamic_profile.sampling.temperature;
+            let new_temp = (base_temp + (attempt as f32 - 1.0) * 0.15).min(0.8);
+            dynamic_profile.sampling.temperature = new_temp;
+            request_client = model_vllm::client::VllmClient::new(dynamic_profile);
+            info!(attempt, temp = new_temp, "Applying dynamic temperature for repair");
+        }
+
+        match request_client.chat(messages.clone(), None, None).await {
             Ok(result) => {
                 // Save candidate
                 self.candidate = Some(result.content.clone());
@@ -682,6 +750,7 @@ impl PipelineExecutor {
                 &system_prompt,
                 &user_prompt,
                 max_iterations,
+                Some(self.event_tx.clone()),
             )
             .await;
 
@@ -915,7 +984,13 @@ impl PipelineExecutor {
         }
     }
 
-    async fn send(&self, event: RunEvent) {
+    async fn send(&mut self, event: RunEvent) {
+        // Capture validation errors for repair prompts
+        if let RunEvent::ValidationCompleted(ref result) = event {
+            if !result.passed {
+                self.last_actionable_errors = result.actionable_errors.clone();
+            }
+        }
         if self.event_tx.send(event).await.is_err() {
             error!("Failed to send event — channel closed");
         }
@@ -1075,21 +1150,31 @@ fn walkdir_toml_xml(dir: &Path) -> Vec<PathBuf> {
 /// Strip markdown code fences from LLM output (e.g. ```xml ... ```)
 fn strip_markdown_fences(content: &str) -> String {
     let trimmed = content.trim();
-    // Handle ```xml or ```ksml prefix
-    let stripped = if trimmed.starts_with("```xml") {
-        &trimmed[6..]
-    } else if trimmed.starts_with("```ksml") {
-        &trimmed[7..]
-    } else if trimmed.starts_with("```") {
-        &trimmed[3..]
-    } else {
-        return trimmed.to_string();
-    };
-    // Remove trailing ```
-    let stripped = stripped.trim();
-    if stripped.ends_with("```") {
-        stripped[..stripped.len() - 3].trim().to_string()
-    } else {
-        stripped.to_string()
+    
+    // Find the first occurrence of ```
+    if let Some(start_idx) = trimmed.find("```") {
+        let after_start = &trimmed[start_idx + 3..];
+        
+        // Skip the optional language identifier (e.g., xml or ksml)
+        let content_start = if after_start.to_lowercase().starts_with("xml") {
+            after_start[3..].trim_start()
+        } else if after_start.to_lowercase().starts_with("ksml") {
+            after_start[4..].trim_start()
+        } else {
+            // Just skip to the next newline if there's any text on the same line
+            if let Some(newline_idx) = after_start.find('\n') {
+                &after_start[newline_idx + 1..]
+            } else {
+                after_start
+            }
+        };
+        
+        // Find the matching end fence
+        if let Some(end_idx) = content_start.rfind("```") {
+            return content_start[..end_idx].trim().to_string();
+        }
     }
+    
+    // If no markdown fences are found, return the trimmed content
+    trimmed.to_string()
 }

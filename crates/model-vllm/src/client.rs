@@ -177,6 +177,22 @@ impl VllmClient {
                     if attempt >= max_attempts {
                         return Err(e);
                     }
+                    
+                    // Check if we should actually retry this error
+                    let should_retry = if let agent_core::error::AgentError::TransportError { status, .. } = e {
+                        if status >= 400 && status < 500 {
+                            self.profile.run.retry_http_4xx
+                        } else {
+                            true
+                        }
+                    } else {
+                        true
+                    };
+
+                    if !should_retry {
+                        return Err(e);
+                    }
+
                     tracing::warn!(
                         "Model API error (attempt {}/{}): {}. Retrying in 2 seconds...",
                         attempt,

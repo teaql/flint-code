@@ -230,7 +230,7 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
                 );
                 SideEffect::RecordFailure {
                     error: format!(
-                        "Validation L{}: {} errors",
+                        "Validation L{}: {} errors (repair limit reached)",
                         result.level, result.error_count
                     ),
                 }
@@ -280,7 +280,7 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
                     format!("{} errors; repair limit reached", result.error_count),
                 );
                 SideEffect::RecordFailure {
-                    error: format!("TeaQL: {} errors", result.error_count),
+                    error: format!("TeaQL: {} errors (repair limit reached)", result.error_count),
                 }
             }
         }
@@ -318,7 +318,7 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
                     format!("{} errors; repair limit reached", result.error_count),
                 );
                 SideEffect::RecordFailure {
-                    error: format!("Build L{}: {} errors", result.level, result.error_count),
+                    error: format!("Build L{}: {} errors (repair limit reached)", result.level, result.error_count),
                 }
             }
         }
