@@ -111,15 +111,13 @@ async fn event_loop(
                                         approved_by: Some("tui-user".to_string()),
                                     };
                                     let _ = tx
-                                        .send(agent_core::event::RunEvent::ConsentGranted(consent))
-                                        .await;
+                                        .try_send(agent_core::event::RunEvent::ConsentGranted(consent));
                                 }
                                 KeyCode::Char('n') => {
                                     let _ = tx
-                                        .send(agent_core::event::RunEvent::ConsentDenied(
+                                        .try_send(agent_core::event::RunEvent::ConsentDenied(
                                             "User denied the requested action".to_string(),
-                                        ))
-                                        .await;
+                                        ));
                                 }
                                 _ => {}
                             }
@@ -163,7 +161,7 @@ async fn event_loop(
                             KeyCode::Char('q') => app.should_quit = true,
                             KeyCode::Char('c') => {
                                 if let Some(tx) = app.controller_event_tx.as_ref() {
-                                    let _ = tx.send(agent_core::event::RunEvent::CancelRequested).await;
+                                    let _ = tx.try_send(agent_core::event::RunEvent::CancelRequested);
                                 }
                             }
                             KeyCode::Char('g') => app.view = View::Main,
@@ -239,7 +237,7 @@ async fn event_loop(
                         app.observe_event(&event);
 
                         if let Some(tx) = app.controller_event_tx.as_mut() {
-                            let _ = tx.send(event).await;
+                            let _ = tx.try_send(event);
                         }
                     }
                     None => {
@@ -287,13 +285,12 @@ async fn event_loop(
                             agent_core::reducer::SideEffect::RequestConsent { action, .. } => {
                                 if let Some(tx) = app.controller_event_tx.as_ref() {
                                     let _ = tx
-                                        .send(agent_core::event::RunEvent::ConsentRequired { action })
-                                        .await;
+                                        .try_send(agent_core::event::RunEvent::ConsentRequired { action });
                                 }
                             }
                             effect => {
                                 if let Some(tx) = app.executor_effect_tx.as_ref() {
-                                    let _ = tx.send(effect).await;
+                                    let _ = tx.try_send(effect);
                                 }
                             }
                         }

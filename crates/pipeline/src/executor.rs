@@ -124,7 +124,7 @@ impl PipelineExecutor {
             .join("githome/teaql-agent-kit/skills/build-teaql-app/SKILL.md");
         let mut skill_content = String::new();
         if skill_path.exists() {
-            if let Ok(content) = std::fs::read_to_string(&skill_path) {
+            if let Ok(content) = tokio::fs::read_to_string(&skill_path).await {
                 skill_content.push_str(&content);
                 info!(path = %skill_path.display(), "Loaded modeling skill for inline task");
             }
@@ -133,7 +133,7 @@ impl PipelineExecutor {
         let error_fix_path = Path::new(&home)
             .join("githome/teaql-agent-kit/skills/build-teaql-app/agents/ERROR-FIX.md");
         if error_fix_path.exists() {
-            if let Ok(content) = std::fs::read_to_string(&error_fix_path) {
+            if let Ok(content) = tokio::fs::read_to_string(&error_fix_path).await {
                 skill_content.push_str("\n\n# Error Troubleshooting Guide\n");
                 skill_content.push_str(&content);
                 info!(path = %error_fix_path.display(), "Loaded ERROR-FIX.md for inline task");

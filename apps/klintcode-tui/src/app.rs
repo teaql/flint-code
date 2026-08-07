@@ -188,7 +188,11 @@ impl App {
         let max_repairs = self.profile.run.max_repairs;
         let run_id = format!("run-{}", chrono::Utc::now().format("%Y%m%d-%H%M%S"));
 
-        let (side_effect_tx, _side_effect_rx) = mpsc::channel(32);
+        // Receiver is intentionally dropped: the TUI event loop re-dispatches
+        // side effects from the controller itself (select! branch 3), so the
+        // controller's internal side_effect_tx.send() returns Err immediately
+        // and is harmlessly ignored via .ok().
+        let (side_effect_tx, _) = mpsc::channel(32);
         let (controller, controller_event_tx) =
             RunController::new(run_id.clone(), max_repairs, side_effect_tx);
 
