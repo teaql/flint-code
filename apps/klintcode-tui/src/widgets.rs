@@ -38,7 +38,7 @@ pub fn draw_system_status(f: &mut Frame, app: &App, area: Rect) {
         Line::from(vec![]),
     ];
     let block = Block::default()
-        .title(Span::styled(" System ", Style::default().fg(Color::DarkGray)))
+        .title(Span::styled(" Flint ", Style::default().fg(Color::DarkGray)))
         .title_alignment(Alignment::Center)
         .borders(Borders::TOP)
         .border_style(Style::default().fg(Color::DarkGray))

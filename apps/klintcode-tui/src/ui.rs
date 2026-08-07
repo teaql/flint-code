@@ -165,6 +165,7 @@ async fn event_loop(
                             KeyCode::Char('g') => app.view = View::Main,
                             KeyCode::Char('v') => app.view = View::Stats,
                             KeyCode::Char('d') => app.view = View::Candidate,
+                            KeyCode::Esc => app.view = View::Main,
 
                         KeyCode::Char('?') => {
                                 app.view = if app.view == View::Help { View::Main } else { View::Help };
@@ -205,6 +206,21 @@ async fn event_loop(
                                         app.transcript_scroll_back.saturating_sub(3);
                                 } else {
                                     app.scroll_offset = app.scroll_offset.saturating_add(3);
+                                }
+                            }
+                            crossterm::event::MouseEventKind::Down(crossterm::event::MouseButton::Left) => {
+                                if app.view == View::Main {
+                                    let layout = app.transcript_layout.borrow();
+                                    for &(start_y, end_y, id) in layout.iter() {
+                                        if mouse.row >= start_y && mouse.row < end_y {
+                                            app.detail_entry_id = Some(id);
+                                            app.view = View::TranscriptDetail;
+                                            app.input_notice = Some("Opened detail view via click".to_string());
+                                            app.input_mode = InputMode::Navigation;
+                                            app.input_cursor_visible = false;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                             _ => {}
@@ -347,6 +363,7 @@ fn draw(f: &mut Frame, app: &App) {
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Min(8),
+            Constraint::Length(1), // Spacer between main surface and composer
             Constraint::Length(composer_height),
             Constraint::Length(1),
         ])
@@ -357,12 +374,38 @@ fn draw(f: &mut Frame, app: &App) {
         View::Candidate => draw_plain_screen(f, "Candidate", &app.candidate, chunks[0]),
         View::Diagnostics => draw_plain_screen(f, "Diagnostics", &app.diagnostics, chunks[0]),
         View::Help => draw_plain_screen(f, "Help", HELP_TEXT, chunks[0]),
+        View::RagSearch => {
+            let content = if app.rag_search_results.is_empty() {
+                "Type a query and press Enter to search.".to_string()
+            } else {
+                app.rag_search_results.join("\n\n")
+            };
+            draw_plain_screen(f, "RAG Search (Test) - Esc to return", &content, chunks[0])
+        }
+        View::ModelEval => {
+            draw_plain_screen(f, "Model Evaluation Report - Esc to return", "Latest evaluation results would be here.", chunks[0])
+        }
+        View::VllmTest => {
+            let content = if app.vllm_test_output.is_empty() {
+                "Type a prompt and press Enter to test remote VLLM.".to_string()
+            } else {
+                app.vllm_test_output.clone()
+            };
+            draw_plain_screen(f, "VLLM Remote Manual Test - Esc to return", &content, chunks[0])
+        }
+        View::TranscriptDetail => {
+            let content = app.detail_entry_id
+                .and_then(|id| app.timeline.get(id))
+                .map(|e| e.content.as_str())
+                .unwrap_or("No detail available.");
+            draw_plain_screen(f, "Transcript Detail - Esc to return", content, chunks[0])
+        }
         _ => draw_main_surface(f, app, chunks[0]),
     }
 
 
-    draw_composer(f, app, chunks[1]);
-    draw_bottom_hint(f, app, chunks[2]);
+    draw_composer(f, app, chunks[2]);
+    draw_bottom_hint(f, app, chunks[3]);
 }
 
 fn draw_main_surface(f: &mut Frame, app: &App, area: Rect) {
@@ -385,24 +428,24 @@ fn draw_main_surface(f: &mut Frame, app: &App, area: Rect) {
             let status_rows = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([
-                    Constraint::Length(5),
+                    Constraint::Length(6),
                     Constraint::Length(3),
                     Constraint::Length(3),
-                    Constraint::Length(tools_height),
                     Constraint::Length(status_panel_height(app) + 1),
+                    Constraint::Length(tools_height),
                     Constraint::Min(0),
                 ])
                 .split(columns[1]);
             draw_system_status(f, app, status_rows[0]);
             draw_context_metrics(f, app, status_rows[1]);
             draw_context_size(f, app, status_rows[2]);
-            draw_tool_commands(f, app, status_rows[3]);
-            draw_compact_status(f, app, status_rows[4]);
+            draw_compact_status(f, app, status_rows[3]);
+            draw_tool_commands(f, app, status_rows[4]);
         } else {
             let status_rows = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([
-                    Constraint::Length(5),
+                    Constraint::Length(6),
                     Constraint::Length(3),
                     Constraint::Length(3),
                     Constraint::Length(tools_height),
@@ -439,5 +482,30 @@ pub mod tests {
             rendered.push('\n');
         }
         rendered
+    }
+
+    #[test]
+    fn right_sidebar_layout_order_is_fixed() {
+        let mut app = crate::app::App::new(None).unwrap();
+        app.task_surface_active = true;
+        // Mock a plan so the Plan panel renders
+        app.dummy_run.state = agent_core::state::PipelineState::Generating { attempt: 1 };
+        
+        let screen = rendered_screen(&app, 120, 40);
+        
+        let flint_idx = screen.find("Flint").unwrap_or(0);
+        let tokens_idx = screen.find("Tokens").unwrap_or(0);
+        let context_idx = screen.find("Context").unwrap_or(0);
+        let plan_idx = screen.find("Plan").unwrap_or(0);
+        let tools_idx = screen.find("Active Tools").unwrap_or(0);
+        
+        // Assert the vertical stacking order
+        assert!(flint_idx > 0, "Flint panel missing");
+        assert!(tokens_idx > flint_idx, "Tokens panel should be below Flint panel");
+        assert!(context_idx > tokens_idx, "Context panel should be below Tokens panel");
+        // We might not render Plan if there are no steps, but let's assume Plan renders if task_surface_active.
+        // Even if empty, the title is " Plan 0/0 ".
+        assert!(plan_idx > context_idx, "Plan panel should be below Context panel");
+        assert!(tools_idx > plan_idx, "Active Tools panel should be at the very bottom, below Plan panel");
     }
 }

@@ -20,6 +20,10 @@ pub enum View {
     Candidate,
     Diagnostics,
     Help,
+    RagSearch,
+    ModelEval,
+    VllmTest,
+    TranscriptDetail,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -110,6 +114,13 @@ pub struct App {
     pub global_model_calls: u64,
     pub vllm_in_flight: bool,
     pub rag_in_flight: bool,
+    // New testing tool states
+    pub detail_entry_id: Option<usize>,
+    pub rag_search_results: Vec<String>,
+    pub vllm_test_output: String,
+    
+    // Layout for mouse interaction
+    pub transcript_layout: std::cell::RefCell<Vec<(u16, u16, usize)>>,
 }
 
 impl App {
@@ -168,6 +179,10 @@ impl App {
             global_model_calls: 0,
             vllm_in_flight: false,
             rag_in_flight: false,
+            detail_entry_id: None,
+            rag_search_results: Vec::new(),
+            vllm_test_output: String::new(),
+            transcript_layout: std::cell::RefCell::new(Vec::new()),
         })
     }
 
@@ -247,6 +262,22 @@ impl App {
             self.execute_slash_command(&prompt);
             return Ok(());
         }
+
+        // Intercept testing tool inputs
+        if self.view == View::RagSearch {
+            self.rag_search_results = vec![
+                format!("Mock RAG result 1 for: {}", prompt),
+                format!("Mock RAG result 2 for: {}", prompt),
+                format!("Mock RAG result 3 for: {}", prompt),
+            ];
+            self.clear_input("Search executed");
+            return Ok(());
+        } else if self.view == View::VllmTest {
+            self.vllm_test_output = format!("Mock VLLM response for: {}\nLatency: 120ms", prompt);
+            self.clear_input("VLLM call executed");
+            return Ok(());
+        }
+
         let intent = classify_input(&prompt);
         if matches!(intent, InputIntent::Task(_) | InputIntent::Chat(_))
             && (self.run_state().state.is_active() || self.chat_in_flight)
@@ -391,64 +422,103 @@ impl App {
 
     fn execute_slash_command(&mut self, command: &str) {
         let normalized = command.trim().to_ascii_lowercase();
-        let notice = match normalized.as_str() {
-            "/q" | "/exit" => {
-                self.should_quit = true;
-                return;
+        
+        let notice = if normalized.starts_with("/detail ") || normalized.starts_with("/id ") {
+            let prefix_len = if normalized.starts_with("/detail ") { "/detail ".len() } else { "/id ".len() };
+            if let Ok(id) = normalized[prefix_len..].trim().parse::<usize>() {
+                if id < self.timeline.len() {
+                    self.detail_entry_id = Some(id);
+                    self.view = View::TranscriptDetail;
+                    "Opened detail view".to_string()
+                } else {
+                    "Invalid timeline ID".to_string()
+                }
+            } else {
+                "Invalid ID format".to_string()
             }
-            "/stats" | "/plan" => {
-                self.view = View::Stats;
-                "Opened stats"
-            }
-            "/main" | "/chat" => {
-                self.view = View::Main;
-                "Returned to main"
-            }
-            "/candidate" => {
-                self.view = View::Candidate;
-                "Opened candidate"
-            }
-            "/diagnostics" => {
-                self.view = View::Diagnostics;
-                "Opened diagnostics"
-            }
-            "/help" => {
-                self.view = View::Help;
-                "Opened help"
-            }
-            "/clear" => {
-                self.timeline.clear();
-                self.transcript_scroll_back = 0;
-                "Main timeline cleared"
-            }
-            "/panel" => {
-                self.show_right_panel = !self.show_right_panel;
-                if self.show_right_panel { "Panel opened" } else { "Panel closed" }
-            }
-            _ => {
-                self.input_notice = Some(
-                    "Unknown command; use /task … /ask … /main /stats /panel /candidate /diagnostics /help"
-                        .to_string(),
-                );
-                return;
+        } else {
+            match normalized.as_str() {
+                "/q" | "/exit" => {
+                    self.should_quit = true;
+                    return;
+                }
+                "/stats" | "/plan" => {
+                    self.view = View::Stats;
+                    "Opened stats".to_string()
+                }
+                "/main" | "/chat" => {
+                    self.view = View::Main;
+                    "Returned to main".to_string()
+                }
+                "/candidate" => {
+                    self.view = View::Candidate;
+                    "Opened candidate".to_string()
+                }
+                "/diagnostics" => {
+                    self.view = View::Diagnostics;
+                    "Opened diagnostics".to_string()
+                }
+                "/help" => {
+                    self.view = View::Help;
+                    "Opened help".to_string()
+                }
+                "/rag" => {
+                    self.view = View::RagSearch;
+                    "Opened RAG search".to_string()
+                }
+                "/eval" => {
+                    self.view = View::ModelEval;
+                    "Opened model eval".to_string()
+                }
+                "/vllm" => {
+                    self.view = View::VllmTest;
+                    "Opened VLLM test".to_string()
+                }
+                "/clear" => {
+                    self.timeline.clear();
+                    self.transcript_scroll_back = 0;
+                    "Main timeline cleared".to_string()
+                }
+                "/panel" => {
+                    self.show_right_panel = !self.show_right_panel;
+                    if self.show_right_panel { "Panel opened".to_string() } else { "Panel closed".to_string() }
+                }
+                _ => {
+                    self.input_notice = Some(
+                        "Unknown command; use /task /ask /main /stats /panel /rag /eval /vllm /detail"
+                            .to_string(),
+                    );
+                    return;
+                }
             }
         };
         self.input_buffer.clear();
         self.input_cursor = 0;
         self.input_cursor_visible = true;
-        self.input_notice = Some(notice.to_string());
+        self.input_notice = Some(notice);
     }
 
     /// Add durable, compact activity to the main conversation surface.
     pub fn observe_event(&mut self, event: &RunEvent) {
-        if let RunEvent::ModelCompleted(result) = event {
-            self.candidate = result.content.clone();
-            // Track per-call context window size
-            let prompt = u64::from(result.usage.prompt_tokens);
-            self.last_context_tokens = prompt;
-            if prompt > self.max_context_tokens {
-                self.max_context_tokens = prompt;
+        match event {
+            RunEvent::ModelCompleted(result) => {
+                self.candidate = result.content.clone();
+                let prompt = u64::from(result.usage.prompt_tokens);
+                let completion = u64::from(result.usage.completion_tokens);
+                self.last_context_tokens = prompt;
+                if prompt > self.max_context_tokens {
+                    self.max_context_tokens = prompt;
+                }
+                self.global_input_tokens += prompt;
+                self.global_output_tokens += completion;
+                self.global_model_calls += 1;
             }
+            RunEvent::ModelUsageRecorded(usage) => {
+                self.global_input_tokens += u64::from(usage.prompt_tokens);
+                self.global_output_tokens += u64::from(usage.completion_tokens);
+                self.global_model_calls += 1;
+            }
+            _ => {}
         }
         let entry = match event {
             RunEvent::TaskLoaded(task) => {
@@ -845,6 +915,72 @@ mod tests {
             entry.content,
             "Task complete · Artifact runs/run-1/final-artifact"
         );
+    }
+
+    #[test]
+    fn global_token_metrics_accumulate_across_model_events() {
+        let mut app = App::new(None).expect("app");
+        assert_eq!(app.global_input_tokens, 0);
+        assert_eq!(app.global_output_tokens, 0);
+        assert_eq!(app.global_model_calls, 0);
+        assert_eq!(app.max_context_tokens, 64000); // from default initialization
+
+        // Simulate a main model completion
+        let result1 = agent_core::event::ModelResult {
+            content: "response 1".to_string(),
+            reasoning_content: None,
+            tool_calls: None,
+            finish_reason: "stop".to_string(),
+            usage: agent_core::event::TokenUsage {
+                prompt_tokens: 100,
+                completion_tokens: 50,
+                total_tokens: 150,
+            },
+            elapsed_secs: 1.0,
+            http_status: 200,
+        };
+        app.observe_event(&RunEvent::ModelCompleted(result1));
+
+        assert_eq!(app.global_input_tokens, 100);
+        assert_eq!(app.global_output_tokens, 50);
+        assert_eq!(app.global_model_calls, 1);
+        // max_context_tokens shouldn't drop below default
+        assert_eq!(app.max_context_tokens, 64000);
+
+        // Simulate an auxiliary model call usage
+        let usage = agent_core::event::TokenUsage {
+            prompt_tokens: 200,
+            completion_tokens: 10,
+            total_tokens: 210,
+        };
+        app.observe_event(&RunEvent::ModelUsageRecorded(usage));
+
+        // Ensure both get accumulated
+        assert_eq!(app.global_input_tokens, 300); // 100 + 200
+        assert_eq!(app.global_output_tokens, 60); // 50 + 10
+        assert_eq!(app.global_model_calls, 2);
+    }
+
+    #[test]
+    fn slash_command_id_and_detail_open_detail_view() {
+        let mut app = App::new(None).expect("app");
+        // Push some dummy timeline entries
+        app.timeline.push(TimelineEntry { role: TimelineRole::User, content: "First".to_string() });
+        app.timeline.push(TimelineEntry { role: TimelineRole::Agent, content: "Second".to_string() });
+        
+        app.execute_slash_command("/detail 0");
+        assert_eq!(app.view, View::TranscriptDetail);
+        assert_eq!(app.detail_entry_id, Some(0));
+
+        app.view = View::Main;
+        app.detail_entry_id = None;
+
+        app.execute_slash_command("/id 1");
+        assert_eq!(app.view, View::TranscriptDetail);
+        assert_eq!(app.detail_entry_id, Some(1));
+
+        app.execute_slash_command("/id 999"); // invalid id
+        assert_ne!(app.detail_entry_id, Some(999));
     }
 
     #[tokio::test]

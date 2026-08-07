@@ -63,8 +63,12 @@ pub fn draw_transcript(f: &mut Frame, app: &App, area: Rect) {
             "  Use /stats to inspect the plan, validation, and tokens.",
             Style::default().fg(Color::DarkGray),
         )));
-    } else {
+    }
+    let mut line_to_entry: Vec<Option<usize>> = vec![None; lines.len()];
+
+    if !app.timeline.is_empty() {
         for (i, entry) in app.timeline.iter().enumerate() {
+            let start_len = lines.len();
             if i > 0 {
                 match entry.role {
                     TimelineRole::User | TimelineRole::Agent => {
@@ -81,14 +85,35 @@ pub fn draw_transcript(f: &mut Frame, app: &App, area: Rect) {
                 TimelineRole::Error => ("✗", Color::Red),
             };
             let content_lines: Vec<&str> = entry.content.lines().collect();
-            let mut display_lines = content_lines.clone();
+            let mut display_lines: Vec<String> = content_lines.into_iter().map(|s| s.to_string()).collect();
+            let mut remaining_chars = 0;
             let mut truncated = false;
             
             match entry.role {
                 TimelineRole::Activity | TimelineRole::Success | TimelineRole::Error => {
-                    if display_lines.len() > 3 {
-                        display_lines.truncate(3);
+                    let total_chars = entry.content.chars().count();
+                    if display_lines.len() > 1 {
+                        display_lines.truncate(1);
                         truncated = true;
+                    }
+                    if let Some(line) = display_lines.first_mut() {
+                        if line.chars().count() > 188 {
+                            if let Some((byte_idx, _)) = line.char_indices().nth(185) {
+                                line.truncate(byte_idx);
+                                line.push_str("...");
+                                truncated = true;
+                            }
+                        }
+                    }
+                    if truncated {
+                        let displayed_chars = display_lines.first().map(|s| {
+                            if s.ends_with("...") {
+                                s.chars().count().saturating_sub(3)
+                            } else {
+                                s.chars().count()
+                            }
+                        }).unwrap_or(0);
+                        remaining_chars = total_chars.saturating_sub(displayed_chars);
                     }
                 }
                 _ => {}
@@ -125,8 +150,14 @@ pub fn draw_transcript(f: &mut Frame, app: &App, area: Rect) {
             if truncated {
                 lines.push(Line::from(vec![
                     Span::styled("     ", Style::default().fg(color)),
-                    Span::styled("...", Style::default().fg(color).add_modifier(Modifier::DIM)),
+                    Span::styled(format!("... <truncated {} chars>", remaining_chars), Style::default().fg(color).add_modifier(Modifier::DIM)),
+                    Span::styled(format!(" [/detail {}]", i), Style::default().fg(Color::DarkGray)),
                 ]));
+            }
+            
+            let end_len = lines.len();
+            for _ in start_len..end_len {
+                line_to_entry.push(Some(i));
             }
         }
     }
@@ -160,7 +191,20 @@ pub fn draw_transcript(f: &mut Frame, app: &App, area: Rect) {
 
     let transcript_area = area;
 
-    let rendered_line_count = wrapped_line_count(&lines, transcript_area.width);
+    let mut current_y = 0;
+    let mut entry_spans: std::collections::BTreeMap<usize, (u16, u16)> = std::collections::BTreeMap::new();
+
+    for (idx, line) in lines.iter().enumerate() {
+        let height = wrapped_line_count(std::slice::from_ref(line), transcript_area.width) as u16;
+        let entry_id = line_to_entry.get(idx).copied().flatten();
+        if let Some(id) = entry_id {
+            let span = entry_spans.entry(id).or_insert((current_y, current_y));
+            span.1 = current_y + height;
+        }
+        current_y += height;
+    }
+
+    let rendered_line_count = current_y as usize;
     let paragraph = Paragraph::new(lines).wrap(Wrap { trim: false });
     let max_scroll = rendered_line_count
         .saturating_sub(usize::from(transcript_area.height))
@@ -168,6 +212,16 @@ pub fn draw_transcript(f: &mut Frame, app: &App, area: Rect) {
     let browse_back = app.transcript_scroll_back.min(max_scroll);
     let scroll = max_scroll.saturating_sub(browse_back);
     f.render_widget(paragraph.scroll((scroll, 0)), transcript_area);
+
+    let mut layout = Vec::new();
+    for (id, (start_y, end_y)) in entry_spans {
+        if end_y > scroll && start_y < scroll + transcript_area.height {
+            let screen_start = transcript_area.y + start_y.saturating_sub(scroll);
+            let screen_end = transcript_area.y + end_y.saturating_sub(scroll);
+            layout.push((screen_start, screen_end, id));
+        }
+    }
+    *app.transcript_layout.borrow_mut() = layout;
 
     if browse_back > 0 && transcript_area.height > 0 {
         let indicator_width = transcript_area.width.min(30);
