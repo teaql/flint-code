@@ -11,6 +11,8 @@ Rules:
 - Do not add objects, files or fields beyond the task scope.
 - For simple tasks, output a single complete XML file with all definitions inline.
 - For complex tasks with many objects, you may use <_include file="..."/> to organize by domain.
+- Never use basic types (like 'date', 'decimal', 'integer', 'string') in a relation `target` attribute. The `target` attribute MUST point to another business object's `_name`.
+- To avoid KSML-GRAPH-001 (Reference cycle detected), do not create bidirectional object relationships. Only one object should define the relationship pointing to the other. If a relationship only stores descriptive data, use basic types instead of `target`.
 
 Output format:
 - Start with <?xml version="1.0" encoding="UTF-8"?>
