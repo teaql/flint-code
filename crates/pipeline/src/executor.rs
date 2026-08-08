@@ -17,6 +17,13 @@ use agent_core::rag::KnowledgeRetriever;
 use rag_remote::WeaviateRetriever;
 use std::sync::Arc;
 
+#[derive(Debug, Clone, serde::Serialize)]
+struct FollowUpRecord {
+    attempt: u8,
+    instruction: String,
+    summary: String,
+}
+
 /// PipelineExecutor processes SideEffects and sends RunEvents back.
 /// Both TUI and headless CLI create one of these.
 pub struct PipelineExecutor {
@@ -35,6 +42,10 @@ pub struct PipelineExecutor {
     patches: Option<std::collections::HashMap<String, String>>,
     /// Exact application workspace generated for build and follow-up coding.
     workspace_dir: Option<PathBuf>,
+    /// Bounded TeaQL API examples gathered during initial workspace generation.
+    assist_context: String,
+    /// Compact summaries of deterministically verified continuation turns.
+    followup_history: Vec<FollowUpRecord>,
     /// Actionable errors from the most recent failed validation, fed into repair prompts.
     last_actionable_errors: Vec<String>,
     /// RAG retriever for skills and error troubleshooting.
@@ -62,6 +73,8 @@ impl PipelineExecutor {
             build_target: None,
             patches: None,
             workspace_dir: None,
+            assist_context: String::new(),
+            followup_history: Vec::new(),
             last_actionable_errors: Vec::new(),
             retriever: None,
         }
@@ -130,20 +143,24 @@ impl PipelineExecutor {
 
         info!(?build_dir, "Launching agentic build loop for follow-up task");
 
-        let system_prompt = std::fs::read_to_string("prompts/agentic-build.txt")
-            .unwrap_or_else(|_| include_str!("../../../prompts/agentic-build.txt").to_string())
-            .replace("{{project_dir}}", &build_dir.display().to_string())
-            .replace("{{#if assist_outputs}}", "")
-            .replace("{{/if}}", "")
-            .replace("{{assist_outputs}}", "");
+        let system_template = std::fs::read_to_string("prompts/agentic-build.txt")
+            .unwrap_or_else(|_| include_str!("../../../prompts/agentic-build.txt").to_string());
+        let system_prompt = render_agentic_system_prompt(
+            &system_template,
+            &build_dir,
+            &self.assist_context,
+        );
 
-        let user_prompt = format!(
-            "The project is at `{dir}`.\n\n\
-             Follow-up instruction from user: {task}\n\n\
-             Inspect the codebase, apply the requested changes using write_file/run_command, and ensure it still compiles.\n\
-             If the compile command's Exit code is 0, it succeeded (ignore warnings) and you should respond with a summary of your changes (no more tool calls).",
-            dir = build_dir.display(),
-            task = task
+        let original_task = self
+            .task
+            .as_ref()
+            .map(|task| task.task_content.as_str())
+            .unwrap_or("");
+        let user_prompt = build_followup_prompt(
+            &build_dir,
+            &task,
+            original_task,
+            &self.followup_history,
         );
 
         let max_iterations = 20;
@@ -182,6 +199,17 @@ impl PipelineExecutor {
                         return;
                     }
                 };
+                self.followup_history.push(FollowUpRecord {
+                    attempt,
+                    instruction: bounded_text(&task, 4_000),
+                    summary: bounded_text(summary, 2_000),
+                });
+                if let Some(artifacts) = &self.artifacts {
+                    artifacts
+                        .save_attempt_file(attempt, "session-ledger.json", &self.followup_history)
+                        .await
+                        .ok();
+                }
                 info!(attempt, iterations, total_tool_calls, total_elapsed, "Agentic build loop completed successfully");
                 let mut r = validation::pass(5, "build", total_elapsed);
                 r.diagnostic = format!(
@@ -839,6 +867,7 @@ impl PipelineExecutor {
         }
 
         if !assist_outputs.is_empty() {
+            self.assist_context = bounded_text(&assist_outputs, 16_000);
             if let Some(artifacts) = &self.artifacts {
                 artifacts
                     .save_attempt_raw(attempt, "assist-output.md", &assist_outputs)
@@ -853,12 +882,13 @@ impl PipelineExecutor {
         if !entity_names.is_empty() && !assist_outputs.is_empty() {
             info!(attempt, "Launching agentic build loop");
 
-            let system_prompt = std::fs::read_to_string("prompts/agentic-build.txt")
-                .unwrap_or_else(|_| include_str!("../../../prompts/agentic-build.txt").to_string())
-                .replace("{{project_dir}}", &build_dir.display().to_string())
-                .replace("{{#if assist_outputs}}", "")
-                .replace("{{/if}}", "")
-                .replace("{{assist_outputs}}", &assist_outputs);
+            let system_template = std::fs::read_to_string("prompts/agentic-build.txt")
+                .unwrap_or_else(|_| include_str!("../../../prompts/agentic-build.txt").to_string());
+            let system_prompt = render_agentic_system_prompt(
+                &system_template,
+                &build_dir,
+                &assist_outputs,
+            );
 
             // Give the agent specific first-step instructions based on detected build system
             let compile_hint = if build_target.starts_with("java") {
@@ -1301,6 +1331,66 @@ fn walkdir_toml_xml(dir: &Path) -> Vec<PathBuf> {
     results
 }
 
+fn bounded_text(text: &str, max_bytes: usize) -> String {
+    if text.len() <= max_bytes {
+        return text.to_string();
+    }
+    let suffix = "\n[context truncated]";
+    let mut boundary = max_bytes.saturating_sub(suffix.len());
+    while boundary > 0 && !text.is_char_boundary(boundary) {
+        boundary -= 1;
+    }
+    format!("{}{}", &text[..boundary], suffix)
+}
+
+fn render_agentic_system_prompt(template: &str, workspace: &Path, assist: &str) -> String {
+    template
+        .replace("{{project_dir}}", &workspace.display().to_string())
+        .replace("{{#if assist_outputs}}", "")
+        .replace("{{/if}}", "")
+        .replace("{{assist_outputs}}", assist)
+}
+
+fn build_followup_prompt(
+    workspace: &Path,
+    instruction: &str,
+    original_task: &str,
+    history: &[FollowUpRecord],
+) -> String {
+    let previous_changes = history
+        .iter()
+        .rev()
+        .take(5)
+        .rev()
+        .map(|record| {
+            format!(
+                "- Attempt {}: {}\n  Result: {}",
+                record.attempt,
+                bounded_text(&record.instruction, 1_000),
+                bounded_text(&record.summary, 2_000)
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    let previous_changes = if previous_changes.is_empty() {
+        "- No previous follow-up changes.".to_string()
+    } else {
+        previous_changes
+    };
+
+    format!(
+        "The project is at `{workspace}`.\n\n\
+         # Original Task\n{original_task}\n\n\
+         # Previously Verified Follow-ups\n{previous_changes}\n\n\
+         # Current Follow-up\n{instruction}\n\n\
+         Inspect the codebase, apply the requested changes using write_file/run_command, and ensure it still compiles.\n\
+         If the compile command's Exit code is 0, respond with a concise summary (no more tool calls).",
+        workspace = workspace.display(),
+        original_task = bounded_text(original_task, 6_000),
+        instruction = bounded_text(instruction, 6_000),
+    )
+}
+
 /// Strip markdown code fences from LLM output (e.g. ```xml ... ```)
 fn strip_markdown_fences(content: &str) -> String {
     let trimmed = content.trim();
@@ -1390,5 +1480,40 @@ mod tests {
         let diagnostic = result.unwrap_err().to_lowercase();
         assert!(diagnostic.contains("error"));
         std::fs::remove_dir_all(workspace).expect("remove test workspace");
+    }
+
+    #[test]
+    fn followup_prompt_carries_original_intent_and_bounded_history() {
+        let history = vec![FollowUpRecord {
+            attempt: 2,
+            instruction: "add a query".to_string(),
+            summary: "implemented the query".to_string(),
+        }];
+
+        let prompt = build_followup_prompt(
+            Path::new("/workspace/build"),
+            &"修".repeat(4_000),
+            "build a school service",
+            &history,
+        );
+
+        assert!(prompt.contains("build a school service"));
+        assert!(prompt.contains("implemented the query"));
+        assert!(prompt.contains("/workspace/build"));
+        assert!(prompt.contains("[context truncated]"));
+        assert!(prompt.len() < 16_000);
+    }
+
+    #[test]
+    fn followup_system_prompt_includes_saved_assist_context() {
+        let rendered = render_agentic_system_prompt(
+            "workspace={{project_dir}}\n{{#if assist_outputs}}{{assist_outputs}}{{/if}}",
+            Path::new("/workspace/build"),
+            "Q::school().new_entity(ctx)",
+        );
+
+        assert!(rendered.contains("workspace=/workspace/build"));
+        assert!(rendered.contains("Q::school().new_entity(ctx)"));
+        assert!(!rendered.contains("{{"));
     }
 }
