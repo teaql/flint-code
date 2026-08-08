@@ -33,6 +33,8 @@ pub struct PipelineExecutor {
     build_target: Option<String>,
     /// Optional patches to apply to generated Cargo.toml files
     patches: Option<std::collections::HashMap<String, String>>,
+    /// Exact application workspace generated for build and follow-up coding.
+    workspace_dir: Option<PathBuf>,
     /// Actionable errors from the most recent failed validation, fed into repair prompts.
     last_actionable_errors: Vec<String>,
     /// RAG retriever for skills and error troubleshooting.
@@ -59,6 +61,7 @@ impl PipelineExecutor {
             run_id,
             build_target: None,
             patches: None,
+            workspace_dir: None,
             last_actionable_errors: Vec::new(),
             retriever: None,
         }
@@ -109,13 +112,20 @@ impl PipelineExecutor {
 
     /// Run follow-up task on the existing workspace
     async fn run_followup(&mut self, task: String, attempt: u8) {
-        let attempt_dir = self.runs_root.join(&self.run_id).join(format!("attempt-{:02}", attempt - 1)); // We use attempt-1 because that was the latest successful run! Wait, if we use the old one, we should probably copy it or just run in it.
-        // Actually, we should just run agent_loop in the latest available attempt_dir.
-        
-        let build_dir = if attempt_dir.exists() {
-            attempt_dir
-        } else {
-            self.runs_root.join(&self.run_id).join("attempt-01") // fallback
+        let build_dir = match self.followup_workspace() {
+            Ok(path) => path,
+            Err(error) => {
+                warn!(attempt, %error, "Cannot launch follow-up without a workspace");
+                let result = validation::fail(
+                    5,
+                    "build",
+                    vec![error.clone()],
+                    error,
+                    0.0,
+                );
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
         };
 
         info!(?build_dir, "Launching agentic build loop for follow-up task");
@@ -707,6 +717,7 @@ impl PipelineExecutor {
 
         // ── Step 3: Apply patches to generated files ──
         let build_dir = attempt_dir.join("build");
+        self.workspace_dir = Some(build_dir.clone());
         // Apply patches to any Cargo.toml or pom.xml files found
         for entry in walkdir_toml_xml(&build_dir) {
             if let Ok(content) = std::fs::read_to_string(&entry) {
@@ -1118,6 +1129,24 @@ impl PipelineExecutor {
         &self.candidate_files
     }
 
+    /// Return the generated application workspace used for follow-up coding.
+    pub fn workspace_dir(&self) -> Option<&Path> {
+        self.workspace_dir.as_deref()
+    }
+
+    fn followup_workspace(&self) -> Result<PathBuf, String> {
+        let path = self.workspace_dir.as_ref().ok_or_else(|| {
+            "No generated workspace is available for follow-up coding".to_string()
+        })?;
+        if !path.is_dir() {
+            return Err(format!(
+                "Generated workspace no longer exists: {}",
+                path.display()
+            ));
+        }
+        Ok(path.clone())
+    }
+
     /// Store actionable errors for repair context
     pub fn set_last_errors(&mut self, _errors: Vec<String>) {
         // Will be used when building repair messages
@@ -1279,4 +1308,41 @@ fn strip_markdown_fences(content: &str) -> String {
     
     // If no markdown fences are found, return the trimmed content
     trimmed.to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_executor() -> PipelineExecutor {
+        let profile: ModelProfile = toml::from_str(include_str!(
+            "../../../profiles/simulator.toml"
+        ))
+        .expect("simulator profile");
+        let (event_tx, _event_rx) = mpsc::channel(4);
+        PipelineExecutor::new(
+            profile,
+            event_tx,
+            PathBuf::from("runs"),
+            "test-run".to_string(),
+        )
+    }
+
+    #[test]
+    fn followups_reuse_the_recorded_generated_workspace() {
+        let mut executor = test_executor();
+        assert!(executor.followup_workspace().is_err());
+
+        let workspace = std::env::temp_dir().join(format!(
+            "klintcode-followup-workspace-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&workspace).expect("create test workspace");
+        executor.workspace_dir = Some(workspace.clone());
+
+        assert_eq!(executor.followup_workspace().unwrap(), workspace);
+        assert_eq!(executor.followup_workspace().unwrap(), workspace);
+
+        std::fs::remove_dir_all(workspace).expect("remove test workspace");
+    }
 }
