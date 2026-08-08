@@ -12,6 +12,7 @@
 //! │   ├── local-validation.json
 //! │   └── domain-validation.log
 //! ├── final-artifact
+//! ├── final-workspace/        # verified generated code snapshot
 //! └── summary.json
 //! ```
 

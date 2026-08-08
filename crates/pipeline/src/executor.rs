@@ -1111,9 +1111,27 @@ impl PipelineExecutor {
         if let Some(candidate) = &self.candidate {
             if let Some(artifacts) = &self.artifacts {
                 match artifacts.save_final_artifact(candidate).await {
-                    Ok(path) => {
-                        info!(path = %path.display(), "Final artifact saved");
-                        self.send(RunEvent::FinalArtifactWritten(path)).await;
+                    Ok(model_path) => {
+                        let final_path = if let Some(workspace) = &self.workspace_dir {
+                            match artifacts.save_final_workspace(workspace).await {
+                                Ok(path) => path,
+                                Err(error) => {
+                                    self.send(RunEvent::Failed(
+                                        AgentError::InfrastructureError {
+                                            detail: format!(
+                                                "Failed to snapshot final workspace: {error}"
+                                            ),
+                                        },
+                                    ))
+                                    .await;
+                                    return;
+                                }
+                            }
+                        } else {
+                            model_path
+                        };
+                        info!(path = %final_path.display(), "Final artifact saved");
+                        self.send(RunEvent::FinalArtifactWritten(final_path)).await;
                     }
                     Err(e) => {
                         self.send(RunEvent::Failed(AgentError::InfrastructureError {
