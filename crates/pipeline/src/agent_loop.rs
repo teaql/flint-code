@@ -9,6 +9,7 @@ use std::path::Path;
 use tracing::{error, info, warn};
 
 use crate::tools::{build_tool_definitions, execute_tool};
+use agent_core::loop_guard::LoopGuard;
 use model_vllm::chat::{ChatMessage, FunctionCall, ToolCall};
 use model_vllm::client::VllmClient;
 
@@ -63,8 +64,17 @@ pub async fn run_agent_loop(
 
     let mut total_tool_calls = 0usize;
     let mut iters_without_action = 0usize; // Track iterations without run_command or write_file
+    let mut loop_guard = LoopGuard::new(3);
+    let max_prompt_bytes = (client.profile().context.max_prompt_tokens as usize).saturating_mul(3);
 
     for iteration in 0..max_iterations {
+        compact_messages(&mut messages, max_prompt_bytes);
+        if let Some(detection) = loop_guard.record_prompt(&messages) {
+            return AgentLoopResult::Failed {
+                error: format!("Agent conversation loop detected: {detection}"),
+                iterations: iteration + 1,
+            };
+        }
         info!(
             iteration,
             total_tool_calls,
@@ -162,15 +172,26 @@ pub async fn run_agent_loop(
                             )
                             .await;
 
+                            if let Some(detection) = loop_guard.record_tool_call(
+                                &tc.function.name,
+                                &tc.function.arguments,
+                                &tool_result.output,
+                            ) {
+                                return AgentLoopResult::Failed {
+                                    error: format!("Repeated tool loop detected: {detection}"),
+                                    iterations: iteration + 1,
+                                };
+                            }
+
                             if let Some(tx) = &event_tx {
                                 tx.send(agent_core::RunEvent::ToolProcessFinished {
                                     id: cmd_id,
-                                    success: !tool_result.to_lowercase().contains("error"),
-                                    exit_code: None,
+                                    success: tool_result.success,
+                                    exit_code: tool_result.exit_code,
                                 }).await.ok();
                             }
 
-                            messages.push(ChatMessage::tool_result(&tc.id, &tool_result));
+                            messages.push(ChatMessage::tool_result(&tc.id, &tool_result.output));
                         }
 
                         // Nudge: if the agent has been exploring without acting, prod it
@@ -226,5 +247,105 @@ pub async fn run_agent_loop(
     AgentLoopResult::MaxIterationsReached {
         iterations: max_iterations,
         total_tool_calls,
+    }
+}
+
+fn message_bytes(message: &ChatMessage) -> usize {
+    let content = message.content.as_ref().map_or(0, String::len);
+    let calls = message.tool_calls.as_ref().map_or(0, |calls| {
+        calls
+            .iter()
+            .map(|call| call.function.name.len() + call.function.arguments.len())
+            .sum()
+    });
+    content + calls
+}
+
+fn total_message_bytes(messages: &[ChatMessage]) -> usize {
+    messages.iter().map(message_bytes).sum()
+}
+
+/// Bound historical context while retaining the system prompt, initial task, and
+/// complete assistant/tool turn boundaries required by tool-calling APIs.
+fn compact_messages(messages: &mut Vec<ChatMessage>, max_bytes: usize) {
+    if total_message_bytes(messages) <= max_bytes || messages.len() <= 2 {
+        return;
+    }
+
+    for message in messages.iter_mut().skip(2) {
+        if let Some(calls) = message.tool_calls.as_mut() {
+            for call in calls {
+                if call.function.arguments.len() > 512 {
+                    call.function.arguments = r#"{"context_compacted":true}"#.to_string();
+                }
+            }
+        }
+        if message.role == "tool" {
+            if let Some(content) = message.content.as_mut() {
+                if content.len() > 2_000 {
+                    *content = format!(
+                        "[Historical tool output compacted; original size: {} bytes]",
+                        content.len()
+                    );
+                }
+            }
+        }
+    }
+
+    while total_message_bytes(messages) > max_bytes && messages.len() > 4 {
+        let start = 2;
+        let mut end = start + 1;
+        if messages[start].role == "assistant" {
+            while end < messages.len() && messages[end].role == "tool" {
+                end += 1;
+            }
+        }
+        if end >= messages.len() {
+            break;
+        }
+        messages.drain(start..end);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn tool_turn(id: &str, payload: &str) -> Vec<ChatMessage> {
+        vec![
+            ChatMessage::assistant_with_tool_calls(
+                "",
+                vec![ToolCall {
+                    id: id.to_string(),
+                    r#type: "function".to_string(),
+                    function: FunctionCall {
+                        name: "write_file".to_string(),
+                        arguments: payload.to_string(),
+                    },
+                }],
+            ),
+            ChatMessage::tool_result(id, payload),
+        ]
+    }
+
+    #[test]
+    fn context_compaction_keeps_complete_tool_turns() {
+        let mut messages = vec![ChatMessage::system("system"), ChatMessage::user("task")];
+        messages.extend(tool_turn("old", &"x".repeat(10_000)));
+        messages.extend(tool_turn("new", &"y".repeat(10_000)));
+
+        compact_messages(&mut messages, 1_000);
+
+        assert_eq!(messages[0].role, "system");
+        assert_eq!(messages[1].role, "user");
+        assert!(total_message_bytes(&messages) <= 1_000);
+        for tool in messages.iter().filter(|message| message.role == "tool") {
+            let id = tool.tool_call_id.as_deref().expect("tool call id");
+            assert!(messages.iter().any(|message| {
+                message.tool_calls.as_ref().is_some_and(|calls| {
+                    calls.iter().any(|call| call.id == id)
+                })
+            }));
+        }
     }
 }

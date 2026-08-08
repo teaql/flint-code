@@ -71,6 +71,22 @@ impl RunArtifacts {
         Ok(path)
     }
 
+    /// Refresh the final snapshot of a deterministically verified code workspace.
+    pub async fn save_final_workspace(&self, source: &Path) -> Result<PathBuf> {
+        let source = source.to_path_buf();
+        let target = self.root.join("final-workspace");
+        let copy_target = target.clone();
+        tokio::task::spawn_blocking(move || -> Result<()> {
+            if copy_target.exists() {
+                std::fs::remove_dir_all(&copy_target)?;
+            }
+            std::fs::create_dir_all(&copy_target)?;
+            copy_workspace_directory(&source, &copy_target)
+        })
+        .await??;
+        Ok(target)
+    }
+
     /// Save the run summary.
     pub async fn save_summary(&self, summary: &impl Serialize) -> Result<()> {
         let path = self.root.join("summary.json");
@@ -105,9 +121,77 @@ impl RunArtifacts {
     }
 }
 
+fn copy_workspace_directory(source: &Path, target: &Path) -> Result<()> {
+    for entry in std::fs::read_dir(source)? {
+        let entry = entry?;
+        let name = entry.file_name();
+        let name_text = name.to_string_lossy();
+        if matches!(name_text.as_ref(), ".git" | "target" | "node_modules") {
+            continue;
+        }
+        let metadata = std::fs::symlink_metadata(entry.path())?;
+        if metadata.file_type().is_symlink() {
+            continue;
+        }
+        let destination = target.join(&name);
+        if metadata.is_dir() {
+            std::fs::create_dir_all(&destination)?;
+            copy_workspace_directory(&entry.path(), &destination)?;
+        } else if metadata.is_file() {
+            std::fs::copy(entry.path(), destination)?;
+        }
+    }
+    Ok(())
+}
+
 /// Compute SHA-256 hex digest of bytes.
 pub fn sha256_hex(data: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(data);
     format!("{:x}", hasher.finalize())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn workspace_snapshot_refreshes_and_excludes_build_cache() {
+        let test_root = std::env::temp_dir().join(format!(
+            "klintcode-artifact-test-{}-{}",
+            std::process::id(),
+            chrono::Utc::now().timestamp_micros()
+        ));
+        let source = test_root.join("source");
+        std::fs::create_dir_all(source.join("src")).expect("create source");
+        std::fs::create_dir_all(source.join("target")).expect("create cache");
+        std::fs::write(source.join("src/main.rs"), "fn main() {}\n").expect("write source");
+        std::fs::write(source.join("target/cache"), "cache").expect("write cache");
+        let artifacts = RunArtifacts::create(&test_root.join("runs"), "run-1")
+            .await
+            .expect("create artifacts");
+
+        let snapshot = artifacts
+            .save_final_workspace(&source)
+            .await
+            .expect("first snapshot");
+        assert!(snapshot.join("src/main.rs").is_file());
+        assert!(!snapshot.join("target").exists());
+
+        std::fs::write(snapshot.join("stale.rs"), "stale").expect("write stale file");
+        std::fs::write(source.join("src/main.rs"), "fn main() { println!(\"new\"); }\n")
+            .expect("update source");
+        artifacts
+            .save_final_workspace(&source)
+            .await
+            .expect("refresh snapshot");
+
+        assert!(!snapshot.join("stale.rs").exists());
+        assert!(
+            std::fs::read_to_string(snapshot.join("src/main.rs"))
+                .expect("read snapshot")
+                .contains("println!")
+        );
+        std::fs::remove_dir_all(test_root).expect("remove test data");
+    }
 }

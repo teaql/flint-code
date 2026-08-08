@@ -279,6 +279,20 @@ impl App {
             }
             InputIntent::Task(task) => {
                 self.task_surface_active = true;
+
+                // Preserve the completed run so follow-up tasks keep editing its workspace.
+                if matches!(
+                    self.run_state().state,
+                    agent_core::state::PipelineState::Completed
+                ) && self.executor_effect_tx.is_some()
+                {
+                    if let Some(event_tx) = self.controller_event_tx.clone() {
+                        event_tx.send(RunEvent::ContinueTask(task)).await?;
+                        self.clear_input("Follow-up submitted");
+                        return Ok(());
+                    }
+                }
+
                 let mut executor = self.initialize_run().await?;
                 
                 // Determine build target from user intent
@@ -421,13 +435,24 @@ impl App {
                 self.transcript_scroll_back = 0;
                 "Main timeline cleared"
             }
+            "/new" => {
+                if let Some(worker) = self.executor_worker.take() {
+                    worker.abort();
+                }
+                self.executor_effect_tx = None;
+                self.proxy_event_rx = None;
+                self.controller_event_tx = None;
+                self.controller = None;
+                self.task_surface_active = false;
+                "Ready for a new task"
+            }
             "/panel" => {
                 self.show_right_panel = !self.show_right_panel;
                 if self.show_right_panel { "Panel opened" } else { "Panel closed" }
             }
             _ => {
                 self.input_notice = Some(
-                    "Unknown command; use /task … /ask … /main /stats /panel /candidate /diagnostics /help"
+                    "Unknown command; use /task … /ask … /new /main /stats /panel /candidate /diagnostics /help"
                         .to_string(),
                 );
                 return;
@@ -863,6 +888,67 @@ mod tests {
                 .expect("notice")
                 .contains("already running")
         );
+    }
+
+    #[tokio::test]
+    async fn completed_run_routes_task_to_existing_follow_up_executor() {
+        let mut app = App::new(None).expect("app");
+        let (side_effect_tx, _side_effect_rx) = mpsc::channel(4);
+        let (mut controller, controller_event_tx) = RunController::new(
+            "existing-run".to_string(),
+            app.profile.run.max_repairs,
+            side_effect_tx,
+        );
+        controller.state.state = PipelineState::Completed;
+        controller.state.current_attempt = 1;
+        let (executor_effect_tx, _executor_effect_rx) = mpsc::channel(4);
+
+        app.controller = Some(controller);
+        app.controller_event_tx = Some(controller_event_tx);
+        app.executor_effect_tx = Some(executor_effect_tx);
+        app.input_buffer = "add another query".to_string();
+        app.input_cursor = app.input_buffer.chars().count();
+
+        app.submit_input().await.expect("submit follow-up");
+        let effect = app
+            .controller
+            .as_mut()
+            .expect("existing controller")
+            .process_next()
+            .await
+            .expect("follow-up effect");
+
+        assert!(matches!(
+            effect,
+            SideEffect::RunFollowUp { ref task, attempt: 2 }
+                if task == "add another query"
+        ));
+        assert_eq!(app.run_state().run_id, "existing-run");
+        assert!(app.executor_effect_tx.is_some());
+        assert!(app.input_buffer.is_empty());
+    }
+
+    #[test]
+    fn new_command_discards_completed_run_before_next_task() {
+        let mut app = App::new(None).expect("app");
+        let (side_effect_tx, _side_effect_rx) = mpsc::channel(4);
+        let (mut controller, controller_event_tx) = RunController::new(
+            "completed-run".to_string(),
+            app.profile.run.max_repairs,
+            side_effect_tx,
+        );
+        controller.state.state = PipelineState::Completed;
+        let (executor_effect_tx, _executor_effect_rx) = mpsc::channel(4);
+        app.controller = Some(controller);
+        app.controller_event_tx = Some(controller_event_tx);
+        app.executor_effect_tx = Some(executor_effect_tx);
+
+        app.execute_slash_command("/new");
+
+        assert!(app.controller.is_none());
+        assert!(app.controller_event_tx.is_none());
+        assert!(app.executor_effect_tx.is_none());
+        assert_eq!(app.input_notice.as_deref(), Some("Ready for a new task"));
     }
 
     #[test]

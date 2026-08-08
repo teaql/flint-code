@@ -17,6 +17,13 @@ use agent_core::rag::KnowledgeRetriever;
 use rag_remote::WeaviateRetriever;
 use std::sync::Arc;
 
+#[derive(Debug, Clone, serde::Serialize)]
+struct FollowUpRecord {
+    attempt: u8,
+    instruction: String,
+    summary: String,
+}
+
 /// PipelineExecutor processes SideEffects and sends RunEvents back.
 /// Both TUI and headless CLI create one of these.
 pub struct PipelineExecutor {
@@ -33,6 +40,12 @@ pub struct PipelineExecutor {
     build_target: Option<String>,
     /// Optional patches to apply to generated Cargo.toml files
     patches: Option<std::collections::HashMap<String, String>>,
+    /// Exact application workspace generated for build and follow-up coding.
+    workspace_dir: Option<PathBuf>,
+    /// Bounded TeaQL API examples gathered during initial workspace generation.
+    assist_context: String,
+    /// Compact summaries of deterministically verified continuation turns.
+    followup_history: Vec<FollowUpRecord>,
     /// Actionable errors from the most recent failed validation, fed into repair prompts.
     last_actionable_errors: Vec<String>,
     /// RAG retriever for skills and error troubleshooting.
@@ -59,6 +72,9 @@ impl PipelineExecutor {
             run_id,
             build_target: None,
             patches: None,
+            workspace_dir: None,
+            assist_context: String::new(),
+            followup_history: Vec::new(),
             last_actionable_errors: Vec::new(),
             retriever: None,
         }
@@ -109,31 +125,42 @@ impl PipelineExecutor {
 
     /// Run follow-up task on the existing workspace
     async fn run_followup(&mut self, task: String, attempt: u8) {
-        let attempt_dir = self.runs_root.join(&self.run_id).join(format!("attempt-{:02}", attempt - 1)); // We use attempt-1 because that was the latest successful run! Wait, if we use the old one, we should probably copy it or just run in it.
-        // Actually, we should just run agent_loop in the latest available attempt_dir.
-        
-        let build_dir = if attempt_dir.exists() {
-            attempt_dir
-        } else {
-            self.runs_root.join(&self.run_id).join("attempt-01") // fallback
+        let build_dir = match self.followup_workspace() {
+            Ok(path) => path,
+            Err(error) => {
+                warn!(attempt, %error, "Cannot launch follow-up without a workspace");
+                let result = validation::fail(
+                    5,
+                    "build",
+                    vec![error.clone()],
+                    error,
+                    0.0,
+                );
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
         };
 
         info!(?build_dir, "Launching agentic build loop for follow-up task");
 
-        let system_prompt = std::fs::read_to_string("prompts/agentic-build.txt")
-            .unwrap_or_else(|_| include_str!("../../../prompts/agentic-build.txt").to_string())
-            .replace("{{project_dir}}", &build_dir.display().to_string())
-            .replace("{{#if assist_outputs}}", "")
-            .replace("{{/if}}", "")
-            .replace("{{assist_outputs}}", "");
+        let system_template = std::fs::read_to_string("prompts/agentic-build.txt")
+            .unwrap_or_else(|_| include_str!("../../../prompts/agentic-build.txt").to_string());
+        let system_prompt = render_agentic_system_prompt(
+            &system_template,
+            &build_dir,
+            &self.assist_context,
+        );
 
-        let user_prompt = format!(
-            "The project is at `{dir}`.\n\n\
-             Follow-up instruction from user: {task}\n\n\
-             Inspect the codebase, apply the requested changes using write_file/run_command, and ensure it still compiles.\n\
-             If the compile command's Exit code is 0, it succeeded (ignore warnings) and you should respond with a summary of your changes (no more tool calls).",
-            dir = build_dir.display(),
-            task = task
+        let original_task = self
+            .task
+            .as_ref()
+            .map(|task| task.task_content.as_str())
+            .unwrap_or("");
+        let user_prompt = build_followup_prompt(
+            &build_dir,
+            &task,
+            original_task,
+            &self.followup_history,
         );
 
         let max_iterations = 20;
@@ -152,9 +179,43 @@ impl PipelineExecutor {
         match &loop_result {
             crate::agent_loop::AgentLoopResult::Completed { summary, iterations, total_tool_calls } => {
                 let total_elapsed = start.elapsed().as_secs_f64();
+                let verification_target = self.build_target.as_deref().unwrap_or("rust-lib-core");
+                let diagnostic = match verify_generated_build(&build_dir, verification_target).await {
+                    Ok(diagnostic) => diagnostic,
+                    Err(diagnostic) => {
+                        warn!(attempt, "Deterministic follow-up verification failed");
+                        let mut result = validation::fail(
+                            5,
+                            "build",
+                            vec!["Deterministic follow-up build verification failed".to_string()],
+                            diagnostic,
+                            total_elapsed,
+                        );
+                        result.diagnostic = format!(
+                            "Agent summary: {}\n\n{}",
+                            summary, result.diagnostic
+                        );
+                        self.send(RunEvent::ValidationCompleted(result)).await;
+                        return;
+                    }
+                };
+                self.followup_history.push(FollowUpRecord {
+                    attempt,
+                    instruction: bounded_text(&task, 4_000),
+                    summary: bounded_text(summary, 2_000),
+                });
+                if let Some(artifacts) = &self.artifacts {
+                    artifacts
+                        .save_attempt_file(attempt, "session-ledger.json", &self.followup_history)
+                        .await
+                        .ok();
+                }
                 info!(attempt, iterations, total_tool_calls, total_elapsed, "Agentic build loop completed successfully");
                 let mut r = validation::pass(5, "build", total_elapsed);
-                r.diagnostic = format!("Follow-up: ✓ ({} iterations, {} tool calls)\n\nAgent summary: {}", iterations, total_tool_calls, summary);
+                r.diagnostic = format!(
+                    "Follow-up: ✓ ({} iterations, {} tool calls)\n\nAgent summary: {}\n\n{}",
+                    iterations, total_tool_calls, summary, diagnostic
+                );
                 self.send(RunEvent::ValidationCompleted(r)).await;
             }
             crate::agent_loop::AgentLoopResult::Failed { error, iterations } => {
@@ -707,6 +768,7 @@ impl PipelineExecutor {
 
         // ── Step 3: Apply patches to generated files ──
         let build_dir = attempt_dir.join("build");
+        self.workspace_dir = Some(build_dir.clone());
         // Apply patches to any Cargo.toml or pom.xml files found
         for entry in walkdir_toml_xml(&build_dir) {
             if let Ok(content) = std::fs::read_to_string(&entry) {
@@ -805,6 +867,7 @@ impl PipelineExecutor {
         }
 
         if !assist_outputs.is_empty() {
+            self.assist_context = bounded_text(&assist_outputs, 16_000);
             if let Some(artifacts) = &self.artifacts {
                 artifacts
                     .save_attempt_raw(attempt, "assist-output.md", &assist_outputs)
@@ -819,12 +882,13 @@ impl PipelineExecutor {
         if !entity_names.is_empty() && !assist_outputs.is_empty() {
             info!(attempt, "Launching agentic build loop");
 
-            let system_prompt = std::fs::read_to_string("prompts/agentic-build.txt")
-                .unwrap_or_else(|_| include_str!("../../../prompts/agentic-build.txt").to_string())
-                .replace("{{project_dir}}", &build_dir.display().to_string())
-                .replace("{{#if assist_outputs}}", "")
-                .replace("{{/if}}", "")
-                .replace("{{assist_outputs}}", &assist_outputs);
+            let system_template = std::fs::read_to_string("prompts/agentic-build.txt")
+                .unwrap_or_else(|_| include_str!("../../../prompts/agentic-build.txt").to_string());
+            let system_prompt = render_agentic_system_prompt(
+                &system_template,
+                &build_dir,
+                &assist_outputs,
+            );
 
             // Give the agent specific first-step instructions based on detected build system
             let compile_hint = if build_target.starts_with("java") {
@@ -1047,9 +1111,27 @@ impl PipelineExecutor {
         if let Some(candidate) = &self.candidate {
             if let Some(artifacts) = &self.artifacts {
                 match artifacts.save_final_artifact(candidate).await {
-                    Ok(path) => {
-                        info!(path = %path.display(), "Final artifact saved");
-                        self.send(RunEvent::FinalArtifactWritten(path)).await;
+                    Ok(model_path) => {
+                        let final_path = if let Some(workspace) = &self.workspace_dir {
+                            match artifacts.save_final_workspace(workspace).await {
+                                Ok(path) => path,
+                                Err(error) => {
+                                    self.send(RunEvent::Failed(
+                                        AgentError::InfrastructureError {
+                                            detail: format!(
+                                                "Failed to snapshot final workspace: {error}"
+                                            ),
+                                        },
+                                    ))
+                                    .await;
+                                    return;
+                                }
+                            }
+                        } else {
+                            model_path
+                        };
+                        info!(path = %final_path.display(), "Final artifact saved");
+                        self.send(RunEvent::FinalArtifactWritten(final_path)).await;
                     }
                     Err(e) => {
                         self.send(RunEvent::Failed(AgentError::InfrastructureError {
@@ -1116,6 +1198,24 @@ impl PipelineExecutor {
     /// Get all generated candidate files for interactive previews.
     pub fn candidate_files(&self) -> &[(String, String)] {
         &self.candidate_files
+    }
+
+    /// Return the generated application workspace used for follow-up coding.
+    pub fn workspace_dir(&self) -> Option<&Path> {
+        self.workspace_dir.as_deref()
+    }
+
+    fn followup_workspace(&self) -> Result<PathBuf, String> {
+        let path = self.workspace_dir.as_ref().ok_or_else(|| {
+            "No generated workspace is available for follow-up coding".to_string()
+        })?;
+        if !path.is_dir() {
+            return Err(format!(
+                "Generated workspace no longer exists: {}",
+                path.display()
+            ));
+        }
+        Ok(path.clone())
     }
 
     /// Store actionable errors for repair context
@@ -1249,6 +1349,66 @@ fn walkdir_toml_xml(dir: &Path) -> Vec<PathBuf> {
     results
 }
 
+fn bounded_text(text: &str, max_bytes: usize) -> String {
+    if text.len() <= max_bytes {
+        return text.to_string();
+    }
+    let suffix = "\n[context truncated]";
+    let mut boundary = max_bytes.saturating_sub(suffix.len());
+    while boundary > 0 && !text.is_char_boundary(boundary) {
+        boundary -= 1;
+    }
+    format!("{}{}", &text[..boundary], suffix)
+}
+
+fn render_agentic_system_prompt(template: &str, workspace: &Path, assist: &str) -> String {
+    template
+        .replace("{{project_dir}}", &workspace.display().to_string())
+        .replace("{{#if assist_outputs}}", "")
+        .replace("{{/if}}", "")
+        .replace("{{assist_outputs}}", assist)
+}
+
+fn build_followup_prompt(
+    workspace: &Path,
+    instruction: &str,
+    original_task: &str,
+    history: &[FollowUpRecord],
+) -> String {
+    let previous_changes = history
+        .iter()
+        .rev()
+        .take(5)
+        .rev()
+        .map(|record| {
+            format!(
+                "- Attempt {}: {}\n  Result: {}",
+                record.attempt,
+                bounded_text(&record.instruction, 1_000),
+                bounded_text(&record.summary, 2_000)
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    let previous_changes = if previous_changes.is_empty() {
+        "- No previous follow-up changes.".to_string()
+    } else {
+        previous_changes
+    };
+
+    format!(
+        "The project is at `{workspace}`.\n\n\
+         # Original Task\n{original_task}\n\n\
+         # Previously Verified Follow-ups\n{previous_changes}\n\n\
+         # Current Follow-up\n{instruction}\n\n\
+         Inspect the codebase, apply the requested changes using write_file/run_command, and ensure it still compiles.\n\
+         If the compile command's Exit code is 0, respond with a concise summary (no more tool calls).",
+        workspace = workspace.display(),
+        original_task = bounded_text(original_task, 6_000),
+        instruction = bounded_text(instruction, 6_000),
+    )
+}
+
 /// Strip markdown code fences from LLM output (e.g. ```xml ... ```)
 fn strip_markdown_fences(content: &str) -> String {
     let trimmed = content.trim();
@@ -1279,4 +1439,99 @@ fn strip_markdown_fences(content: &str) -> String {
     
     // If no markdown fences are found, return the trimmed content
     trimmed.to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_executor() -> PipelineExecutor {
+        let profile: ModelProfile = toml::from_str(include_str!(
+            "../../../profiles/simulator.toml"
+        ))
+        .expect("simulator profile");
+        let (event_tx, _event_rx) = mpsc::channel(4);
+        PipelineExecutor::new(
+            profile,
+            event_tx,
+            PathBuf::from("runs"),
+            "test-run".to_string(),
+        )
+    }
+
+    #[test]
+    fn followups_reuse_the_recorded_generated_workspace() {
+        let mut executor = test_executor();
+        assert!(executor.followup_workspace().is_err());
+
+        let workspace = std::env::temp_dir().join(format!(
+            "klintcode-followup-workspace-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&workspace).expect("create test workspace");
+        executor.workspace_dir = Some(workspace.clone());
+
+        assert_eq!(executor.followup_workspace().unwrap(), workspace);
+        assert_eq!(executor.followup_workspace().unwrap(), workspace);
+
+        std::fs::remove_dir_all(workspace).expect("remove test workspace");
+    }
+
+    #[tokio::test]
+    async fn deterministic_build_verification_rejects_invalid_rust() {
+        let workspace = std::env::temp_dir().join(format!(
+            "klintcode-invalid-build-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(workspace.join("src")).expect("create test workspace");
+        std::fs::write(
+            workspace.join("Cargo.toml"),
+            "[package]\nname = \"invalid-followup\"\nversion = \"0.1.0\"\nedition = \"2024\"\n",
+        )
+        .expect("write manifest");
+        std::fs::write(workspace.join("src/main.rs"), "fn main() { missing(); }\n")
+            .expect("write invalid source");
+
+        let result = verify_generated_build(&workspace, "rust-lib-core").await;
+
+        assert!(result.is_err());
+        let diagnostic = result.unwrap_err().to_lowercase();
+        assert!(diagnostic.contains("error"));
+        std::fs::remove_dir_all(workspace).expect("remove test workspace");
+    }
+
+    #[test]
+    fn followup_prompt_carries_original_intent_and_bounded_history() {
+        let history = vec![FollowUpRecord {
+            attempt: 2,
+            instruction: "add a query".to_string(),
+            summary: "implemented the query".to_string(),
+        }];
+
+        let prompt = build_followup_prompt(
+            Path::new("/workspace/build"),
+            &"修".repeat(4_000),
+            "build a school service",
+            &history,
+        );
+
+        assert!(prompt.contains("build a school service"));
+        assert!(prompt.contains("implemented the query"));
+        assert!(prompt.contains("/workspace/build"));
+        assert!(prompt.contains("[context truncated]"));
+        assert!(prompt.len() < 16_000);
+    }
+
+    #[test]
+    fn followup_system_prompt_includes_saved_assist_context() {
+        let rendered = render_agentic_system_prompt(
+            "workspace={{project_dir}}\n{{#if assist_outputs}}{{assist_outputs}}{{/if}}",
+            Path::new("/workspace/build"),
+            "Q::school().new_entity(ctx)",
+        );
+
+        assert!(rendered.contains("workspace=/workspace/build"));
+        assert!(rendered.contains("Q::school().new_entity(ctx)"));
+        assert!(!rendered.contains("{{"));
+    }
 }

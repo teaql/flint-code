@@ -136,10 +136,10 @@ impl VllmClient {
             .saturating_sub(estimated_prompt_tokens)
             .saturating_sub(self.profile.context.safety_tokens);
 
-        // Clamp: at least 4096, at most max_completion_tokens from profile
+        // Never request more completion tokens than the remaining context.
         let max_tokens = dynamic_max
-            .max(4096)
-            .min(self.profile.context.max_completion_tokens);
+            .min(self.profile.context.max_completion_tokens)
+            .max(1);
 
         ChatRequest {
             model: self.profile.model.name.clone(),
@@ -556,5 +556,30 @@ impl VllmClient {
             Some(key) => request.bearer_auth(key),
             None => request,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn completion_allocation_does_not_exceed_remaining_context() {
+        let mut profile: ModelProfile = toml::from_str(include_str!(
+            "../../../profiles/simulator.toml"
+        ))
+        .expect("simulator profile");
+        profile.context.model_context_tokens = 1_000;
+        profile.context.safety_tokens = 100;
+        profile.context.max_completion_tokens = 4_096;
+        let client = VllmClient::new(profile);
+
+        let request = client.build_request(
+            vec![ChatMessage::user("x".repeat(3_400))],
+            None,
+            None,
+        );
+
+        assert_eq!(request.max_tokens, 40);
     }
 }

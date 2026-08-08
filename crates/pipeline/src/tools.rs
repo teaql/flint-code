@@ -5,13 +5,38 @@
 
 use serde_json::json;
 use std::path::{Path, PathBuf};
-use tokio::process::Command;
 use tracing::{info, warn};
 
 use model_vllm::chat::{Function, Tool};
 
 /// Maximum output length per tool result (chars) to avoid context overflow
 const MAX_OUTPUT_LEN: usize = 4000;
+
+/// Structured result of an agent tool invocation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ToolExecutionResult {
+    pub output: String,
+    pub success: bool,
+    pub exit_code: Option<i32>,
+}
+
+impl ToolExecutionResult {
+    fn success(output: impl Into<String>) -> Self {
+        Self {
+            output: output.into(),
+            success: true,
+            exit_code: None,
+        }
+    }
+
+    fn failure(output: impl Into<String>) -> Self {
+        Self {
+            output: output.into(),
+            success: false,
+            exit_code: None,
+        }
+    }
+}
 
 /// Get the tool definitions for the agentic build loop
 pub fn build_tool_definitions() -> Vec<Tool> {
@@ -95,10 +120,14 @@ pub fn build_tool_definitions() -> Vec<Tool> {
 ///
 /// All file operations are restricted to the sandbox directory.
 /// Returns a human-readable result string for the LLM.
-pub async fn execute_tool(tool_name: &str, arguments: &str, sandbox_dir: &Path) -> String {
+pub async fn execute_tool(
+    tool_name: &str,
+    arguments: &str,
+    sandbox_dir: &Path,
+) -> ToolExecutionResult {
     let args: serde_json::Value = match serde_json::from_str(arguments) {
         Ok(v) => v,
-        Err(e) => return format!("Error parsing arguments: {}", e),
+        Err(e) => return ToolExecutionResult::failure(format!("Error parsing arguments: {}", e)),
     };
 
     match tool_name {
@@ -106,14 +135,17 @@ pub async fn execute_tool(tool_name: &str, arguments: &str, sandbox_dir: &Path) 
         "read_file" => execute_read_file(&args, sandbox_dir),
         "write_file" => execute_write_file(&args, sandbox_dir),
         "list_directory" => execute_list_directory(&args, sandbox_dir),
-        _ => format!("Unknown tool: {}", tool_name),
+        _ => ToolExecutionResult::failure(format!("Unknown tool: {}", tool_name)),
     }
 }
 
-async fn execute_run_command(args: &serde_json::Value, sandbox_dir: &Path) -> String {
+async fn execute_run_command(
+    args: &serde_json::Value,
+    sandbox_dir: &Path,
+) -> ToolExecutionResult {
     let command = args["command"].as_str().unwrap_or("");
     if command.is_empty() {
-        return "Error: empty command".to_string();
+        return ToolExecutionResult::failure("Error: empty command");
     }
 
     info!(command, dir = %sandbox_dir.display(), "Agent executing command");
@@ -121,7 +153,7 @@ async fn execute_run_command(args: &serde_json::Value, sandbox_dir: &Path) -> St
     let result = tokio::time::timeout(
         std::time::Duration::from_secs(60),
         tokio::process::Command::new("bash")
-            .args(["-c", command])
+            .args(["-o", "pipefail", "-c", command])
             .current_dir(sandbox_dir)
             .env("PAGER", "cat")
             .output()
@@ -130,8 +162,10 @@ async fn execute_run_command(args: &serde_json::Value, sandbox_dir: &Path) -> St
 
     let output = match result {
         Ok(Ok(out)) => out,
-        Ok(Err(e)) => return format!("Command execution failed: {}", e),
-        Err(_) => return "Error: Command timed out after 60 seconds".to_string(),
+        Ok(Err(e)) => {
+            return ToolExecutionResult::failure(format!("Command execution failed: {}", e));
+        }
+        Err(_) => return ToolExecutionResult::failure("Error: Command timed out after 60 seconds"),
     };
 
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -141,64 +175,71 @@ async fn execute_run_command(args: &serde_json::Value, sandbox_dir: &Path) -> St
     let stdout_trunc = truncate_output(&stdout, MAX_OUTPUT_LEN);
     let stderr_trunc = truncate_output(&stderr, MAX_OUTPUT_LEN);
 
-    format!(
-        "Exit code: {}\nStdout:\n{}\nStderr:\n{}",
-        status, stdout_trunc, stderr_trunc
-    )
+    ToolExecutionResult {
+        output: format!(
+            "Exit code: {}\nStdout:\n{}\nStderr:\n{}",
+            status, stdout_trunc, stderr_trunc
+        ),
+        success: output.status.success(),
+        exit_code: Some(status),
+    }
 }
 
-fn execute_read_file(args: &serde_json::Value, sandbox_dir: &Path) -> String {
+fn execute_read_file(args: &serde_json::Value, sandbox_dir: &Path) -> ToolExecutionResult {
     let path = args["path"].as_str().unwrap_or("");
     if path.is_empty() {
-        return "Error: empty path".to_string();
+        return ToolExecutionResult::failure("Error: empty path");
     }
 
     let full_path = resolve_path(sandbox_dir, path);
     if !is_within_sandbox(&full_path, sandbox_dir) {
-        return "Error: path is outside the project directory".to_string();
+        return ToolExecutionResult::failure("Error: path is outside the project directory");
     }
 
     match std::fs::read_to_string(&full_path) {
-        Ok(content) => truncate_output(&content, MAX_OUTPUT_LEN * 2),
-        Err(e) => format!("Error reading file '{}': {}", path, e),
+        Ok(content) => ToolExecutionResult::success(truncate_output(&content, MAX_OUTPUT_LEN * 2)),
+        Err(e) => ToolExecutionResult::failure(format!("Error reading file '{}': {}", path, e)),
     }
 }
 
-fn execute_write_file(args: &serde_json::Value, sandbox_dir: &Path) -> String {
+fn execute_write_file(args: &serde_json::Value, sandbox_dir: &Path) -> ToolExecutionResult {
     let path = args["path"].as_str().unwrap_or("");
     let content = args["content"].as_str().unwrap_or("");
 
     if path.is_empty() {
-        return "Error: empty path".to_string();
+        return ToolExecutionResult::failure("Error: empty path");
     }
 
     let full_path = resolve_path(sandbox_dir, path);
     if !is_within_sandbox(&full_path, sandbox_dir) {
-        return "Error: path is outside the project directory".to_string();
+        return ToolExecutionResult::failure("Error: path is outside the project directory");
     }
 
     // Create parent directories if needed
     if let Some(parent) = full_path.parent() {
         if let Err(e) = std::fs::create_dir_all(parent) {
-            return format!("Error creating directories: {}", e);
+            return ToolExecutionResult::failure(format!("Error creating directories: {}", e));
         }
     }
 
     match std::fs::write(&full_path, content) {
         Ok(_) => {
             info!(path, bytes = content.len(), "Agent wrote file");
-            format!("Successfully wrote {} bytes to {}", content.len(), path)
+            ToolExecutionResult::success(format!(
+                "Successfully wrote {} bytes to {}",
+                content.len(), path
+            ))
         }
-        Err(e) => format!("Error writing file '{}': {}", path, e),
+        Err(e) => ToolExecutionResult::failure(format!("Error writing file '{}': {}", path, e)),
     }
 }
 
-fn execute_list_directory(args: &serde_json::Value, sandbox_dir: &Path) -> String {
+fn execute_list_directory(args: &serde_json::Value, sandbox_dir: &Path) -> ToolExecutionResult {
     let path = args["path"].as_str().unwrap_or(".");
     let full_path = resolve_path(sandbox_dir, path);
 
     if !is_within_sandbox(&full_path, sandbox_dir) {
-        return "Error: path is outside the project directory".to_string();
+        return ToolExecutionResult::failure("Error: path is outside the project directory");
     }
 
     match std::fs::read_dir(&full_path) {
@@ -214,12 +255,12 @@ fn execute_list_directory(args: &serde_json::Value, sandbox_dir: &Path) -> Strin
             }
             listing.sort();
             if listing.is_empty() {
-                "Directory is empty".to_string()
+                ToolExecutionResult::success("Directory is empty")
             } else {
-                listing.join("\n")
+                ToolExecutionResult::success(listing.join("\n"))
             }
         }
-        Err(e) => format!("Error listing directory '{}': {}", path, e),
+        Err(e) => ToolExecutionResult::failure(format!("Error listing directory '{}': {}", path, e)),
     }
 }
 
@@ -276,5 +317,19 @@ mod tests {
         let text = "你".repeat(2_000);
         let truncated = truncate_output(&text, MAX_OUTPUT_LEN);
         assert!(truncated.contains("[truncated"));
+    }
+
+    #[tokio::test]
+    async fn shell_pipeline_preserves_a_failing_stage_exit_code() {
+        let result = execute_tool(
+            "run_command",
+            r#"{"command":"false | true"}"#,
+            Path::new("."),
+        )
+        .await;
+
+        assert!(!result.success);
+        assert_eq!(result.exit_code, Some(1));
+        assert!(result.output.contains("Exit code: 1"));
     }
 }

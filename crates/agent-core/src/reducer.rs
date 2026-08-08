@@ -678,6 +678,30 @@ mod tests {
     }
 
     #[test]
+    fn completed_run_schedules_follow_up_on_existing_workspace() {
+        let mut run = new_run();
+        run.state = PipelineState::Completed;
+        run.current_attempt = 1;
+
+        let effect = reduce(
+            &mut run,
+            RunEvent::ContinueTask("add another query".to_string()),
+        );
+
+        assert!(matches!(
+            effect,
+            SideEffect::RunFollowUp { ref task, attempt: 2 }
+                if task == "add another query"
+        ));
+        assert_eq!(run.state, PipelineState::BuildValidation { attempt: 2 });
+        assert_eq!(run.current_attempt, 2);
+        assert_eq!(
+            run.current_plan_step().map(|(_, step)| step.id.as_str()),
+            Some("follow_up_2")
+        );
+    }
+
+    #[test]
     fn test_interactive_consent_waits_for_user() {
         let mut run = new_run();
         let task = crate::event::TaskPackage {
