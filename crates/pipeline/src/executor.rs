@@ -162,9 +162,32 @@ impl PipelineExecutor {
         match &loop_result {
             crate::agent_loop::AgentLoopResult::Completed { summary, iterations, total_tool_calls } => {
                 let total_elapsed = start.elapsed().as_secs_f64();
+                let verification_target = self.build_target.as_deref().unwrap_or("rust-lib-core");
+                let diagnostic = match verify_generated_build(&build_dir, verification_target).await {
+                    Ok(diagnostic) => diagnostic,
+                    Err(diagnostic) => {
+                        warn!(attempt, "Deterministic follow-up verification failed");
+                        let mut result = validation::fail(
+                            5,
+                            "build",
+                            vec!["Deterministic follow-up build verification failed".to_string()],
+                            diagnostic,
+                            total_elapsed,
+                        );
+                        result.diagnostic = format!(
+                            "Agent summary: {}\n\n{}",
+                            summary, result.diagnostic
+                        );
+                        self.send(RunEvent::ValidationCompleted(result)).await;
+                        return;
+                    }
+                };
                 info!(attempt, iterations, total_tool_calls, total_elapsed, "Agentic build loop completed successfully");
                 let mut r = validation::pass(5, "build", total_elapsed);
-                r.diagnostic = format!("Follow-up: ✓ ({} iterations, {} tool calls)\n\nAgent summary: {}", iterations, total_tool_calls, summary);
+                r.diagnostic = format!(
+                    "Follow-up: ✓ ({} iterations, {} tool calls)\n\nAgent summary: {}\n\n{}",
+                    iterations, total_tool_calls, summary, diagnostic
+                );
                 self.send(RunEvent::ValidationCompleted(r)).await;
             }
             crate::agent_loop::AgentLoopResult::Failed { error, iterations } => {
@@ -1343,6 +1366,29 @@ mod tests {
         assert_eq!(executor.followup_workspace().unwrap(), workspace);
         assert_eq!(executor.followup_workspace().unwrap(), workspace);
 
+        std::fs::remove_dir_all(workspace).expect("remove test workspace");
+    }
+
+    #[tokio::test]
+    async fn deterministic_build_verification_rejects_invalid_rust() {
+        let workspace = std::env::temp_dir().join(format!(
+            "klintcode-invalid-build-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(workspace.join("src")).expect("create test workspace");
+        std::fs::write(
+            workspace.join("Cargo.toml"),
+            "[package]\nname = \"invalid-followup\"\nversion = \"0.1.0\"\nedition = \"2024\"\n",
+        )
+        .expect("write manifest");
+        std::fs::write(workspace.join("src/main.rs"), "fn main() { missing(); }\n")
+            .expect("write invalid source");
+
+        let result = verify_generated_build(&workspace, "rust-lib-core").await;
+
+        assert!(result.is_err());
+        let diagnostic = result.unwrap_err().to_lowercase();
+        assert!(diagnostic.contains("error"));
         std::fs::remove_dir_all(workspace).expect("remove test workspace");
     }
 }

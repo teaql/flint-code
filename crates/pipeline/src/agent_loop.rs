@@ -165,12 +165,12 @@ pub async fn run_agent_loop(
                             if let Some(tx) = &event_tx {
                                 tx.send(agent_core::RunEvent::ToolProcessFinished {
                                     id: cmd_id,
-                                    success: !tool_result.to_lowercase().contains("error"),
-                                    exit_code: None,
+                                    success: tool_result.success,
+                                    exit_code: tool_result.exit_code,
                                 }).await.ok();
                             }
 
-                            messages.push(ChatMessage::tool_result(&tc.id, &tool_result));
+                            messages.push(ChatMessage::tool_result(&tc.id, &tool_result.output));
                         }
 
                         // Nudge: if the agent has been exploring without acting, prod it
