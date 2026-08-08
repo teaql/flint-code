@@ -7,7 +7,7 @@
 
 > *Strike code without the cloud.* — 燧石取火，离线生码。
 
-**KlintCode** is an AI coding agent designed for **air-gapped and compliance-restricted environments**. It runs entirely on local hardware (NVIDIA DGX Spark / DGX Station), requires no internet connection, and produces **compiler-verified** production code.
+**KlintCode** is an AI coding agent designed for **air-gapped and compliance-restricted environments**. It runs entirely inside customer-controlled infrastructure, requires no public internet connection, and produces **compiler-verified** production code. The target architecture keeps the Agent, memory, Skills, and enterprise knowledge access on the local control plane while all project file operations and tool execution happen on a disposable remote machine.
 
 Built with Rust. Powered by [TeaQL](https://teaql.io).
 
@@ -59,6 +59,146 @@ Business Requirements
 
 **The key insight**: We don't let the LLM guess APIs. TeaQL's `assist` system feeds the model **real, compiler-generated API signatures**. Combined with multi-level validation, even a small 8B model can produce code that **compiles on the first try**.
 
+## Remote Execution Architecture and Delivery Checklist
+
+This section is the source of truth for the isolation architecture. It records
+both what the current prototype already supports and what is still planned.
+
+Status legend:
+
+- [x] Implemented in the current codebase
+- [ ] Planned or not yet wired into the production execution path
+
+### Isolation environment setup
+
+The intended trust boundary is strict: the local KlintCode process is a control
+plane, not a code execution environment. It may persist Agent memory, task
+state, Skills, RAG results, and audit metadata, but it must not read or write a
+project workspace or execute project commands. A disposable remote machine is
+the only execution plane.
+
+- [x] Local Agent state machine, TUI, model client, context budgeting, and Skill
+  orchestration foundations exist.
+- [x] Enterprise RAG client and retrieval status are represented in the current
+  application.
+- [x] Continuous follow-up tasks retain bounded context, validation summaries,
+  and a session ledger.
+- [x] Deterministic Cargo/Maven verification and real command exit status are
+  available in the current local pipeline.
+- [ ] Remove local project file tools and local command execution from the
+  production Agent path. There must be no automatic local fallback.
+- [ ] Replace the current SSH prototype, which invokes the host `ssh` process,
+  with a production remote execution backend and authenticated runner protocol.
+- [ ] Provide structured remote operations for ranged file reads, directory
+  listing, search, patch application, validation, cancellation, Git status,
+  commit, and push.
+- [ ] Provision every task into a fresh VM or microVM with a fixed TTL. Containers
+  may be supported where the customer accepts the weaker isolation boundary.
+- [ ] Run the remote workspace as an unprivileged user under a fixed root such as
+  `/workspace/project`, without host mounts or host filesystem visibility.
+- [ ] Canonicalize every runner-side path and reject traversal, device files,
+  sockets, and symlink escapes outside the workspace.
+- [ ] Disable public outbound networking and cloud metadata access. Allow only
+  explicitly configured internal Git, package mirror, and artifact endpoints.
+- [ ] Use pinned SSH host identities and short-lived, task-scoped credentials;
+  never bake long-lived credentials into an image.
+- [ ] Install all required toolchains in the remote image, including exactly
+  `cargo-teaql` 2.0.8, and validate image capabilities before cloning code.
+- [ ] Confirm that the resulting commit exists in the enterprise Git service
+  before the remote environment is destroyed.
+- [ ] Destroy the environment on success, failure, cancellation, or TTL expiry,
+  and retain only approved audit metadata and result identifiers locally.
+
+### System design
+
+```text
+                    customer-controlled network
+
+  Local control plane              Enterprise knowledge plane
+  +----------------------+         +--------------------------+
+  | model orchestration  | <-----> | read-only RAG knowledge  |
+  | memory and context   |         | APIs, rules, examples    |
+  | Skills and task FSM  |         +--------------------------+
+  | audit metadata       |
+  +----------+-----------+
+             |
+             | authenticated SSH / structured runner protocol
+             v
+  +----------------------+         +--------------------------+
+  | disposable execution | ------> | internal Git / artifacts |
+  | project files        | commit  | source of durable results|
+  | build and test tools | + push  +--------------------------+
+  +----------+-----------+
+             |
+             v
+         destroyed
+```
+
+- [ ] Introduce one production `RemoteExecutionBackend`; keep any local backend
+  available only to isolated tests and explicit developer fixtures.
+- [ ] Give the model logical remote paths only. Local filesystem paths must never
+  appear in model-visible tool results.
+- [ ] Keep RAG access on the control plane and send only bounded, task-relevant
+  knowledge excerpts to the model. The disposable machine does not receive
+  unrestricted access to the enterprise knowledge base.
+- [ ] Define a versioned runner capability handshake covering protocol version,
+  workspace root, OS, architecture, installed toolchains, resource limits, and
+  network policy.
+- [ ] Implement an explicit lifecycle: provision, connect, preflight, clone,
+  code, validate, commit, push, confirm, destroy.
+- [ ] Make every operation idempotent where practical and attach task,
+  environment, image digest, and operation identifiers to every audit event.
+- [ ] Support reconnect and cancellation without losing the durable Agent memory
+  or accidentally starting the task on a different workspace.
+- [ ] Treat the enterprise Git commit SHA as the durable result. stdout, patches,
+  and local workspace snapshots are not the primary handoff mechanism.
+
+### Why this design
+
+- Models cannot be relied on to obey prompt-only filesystem boundaries. An Agent
+  with a local shell can inspect `/`, `$HOME`, parent directories, or symlinked
+  paths even when instructed not to do so.
+- A disposable VM makes the machine itself the security boundary. If the Agent
+  explores its root filesystem, it sees only a short-lived environment prepared
+  for that task.
+- Keeping source code and build tools off the control machine reduces the blast
+  radius of model-generated commands and makes cleanup deterministic.
+- Keeping RAG on the control plane prevents a disposable worker from obtaining
+  broad access to enterprise knowledge and allows context to be filtered before
+  it reaches the model.
+- Prebuilt images avoid shipping multi-gigabyte Rust, Java, Maven, TeaQL, and
+  dependency caches with the KlintCode application.
+- Commit-and-push before destruction produces an auditable, reproducible result
+  that survives the temporary machine.
+- A versioned environment contract separates KlintCode from any specific cloud,
+  hypervisor, container runtime, or physical distribution medium.
+
+### Future deployment and portable images
+
+KlintCode should consume a capability contract rather than depend on one image
+format. The same standard environment may be delivered through several channels:
+
+- [ ] OCI image in an internal registry for Kubernetes or approved container
+  platforms.
+- [ ] OVA/OVF image for VMware-based enterprise environments.
+- [ ] QCOW2 image for KVM and OpenStack, including microVM-based task workers.
+- [ ] Cloud marketplace image for customer-owned VPC/VNet deployments.
+- [ ] Encrypted ISO, appliance disk, or other physical media for fully isolated
+  sites without a connected image registry.
+- [ ] Preinstalled physical-machine pool for sites that cannot create VMs on
+  demand, with secure wiping and re-imaging after every task.
+- [ ] Signed image manifest containing image digest, SBOM, protocol version,
+  toolchain versions, supported capabilities, and compatibility range.
+- [ ] Offline update bundles containing only changed image layers or packages,
+  with signature and checksum verification.
+- [ ] Customer-operated provisioner adapters so the same lifecycle can target
+  VMware, OpenStack, Kubernetes, a cloud marketplace image, or a physical pool.
+
+The application package should remain small: it contains the control plane,
+configuration, Skills, and environment contracts. Compilers, test toolchains,
+TeaQL tooling, and dependency caches belong in the separately distributed and
+replaceable execution image.
+
 ## Benchmark Results (NVIDIA DGX Spark)
 
 30 business objects, full pipeline — from natural language to compilable Rust:
@@ -76,6 +216,10 @@ Business Requirements
 ## Quick Start
 
 ### Prerequisites
+
+The commands below describe the **current developer-mode pipeline**, which still
+executes build and validation tools locally. They are not the final isolated
+deployment model tracked in the checklist above.
 
 - Local LLM inference endpoint (NIM, vLLM, Ollama, etc.)
 - Rust 1.75+ with cargo
