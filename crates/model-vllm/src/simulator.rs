@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc;
 
 use agent_core::error::AgentError;
-use agent_core::event::{ModelResult, TokenUsage};
+use agent_core::event::{ModelResult, ModelToolCall, TokenUsage};
 
 use crate::chat::{ChatMessage, ChatUsage, Tool, ToolChoice};
 use crate::client::StreamEvent;
@@ -48,6 +48,9 @@ pub struct SimulatorResponse {
     /// Response fixture relative to the scenario file.
     pub content_file: Option<PathBuf>,
     pub reasoning_content: Option<String>,
+    /// Optional tool calls returned by this scripted response.
+    #[serde(default)]
+    pub tool_calls: Vec<ModelToolCall>,
     #[serde(default = "default_finish_reason")]
     pub finish_reason: String,
     pub latency_ms: Option<u64>,
@@ -153,7 +156,7 @@ impl SimulatorClient {
                             }
                         })?);
                 }
-                (None, None, None) => {
+                (None, None, None) if response.tool_calls.is_empty() => {
                     return Err(AgentError::InfrastructureError {
                         detail: format!(
                             "Simulator response {} has neither content nor error",
@@ -176,8 +179,8 @@ impl SimulatorClient {
     pub async fn chat(
         &self,
         messages: Vec<ChatMessage>,
-        _tools: Option<Vec<Tool>>,
-        _tool_choice: Option<ToolChoice>,
+        tools: Option<Vec<Tool>>,
+        tool_choice: Option<ToolChoice>,
     ) -> Result<ModelResult, AgentError> {
         let response = self.take_response(&messages)?;
         let latency_ms = response
@@ -196,14 +199,56 @@ impl SimulatorClient {
                 body: response.content.unwrap_or_default(),
             });
         }
-        if response.finish_reason != "stop" {
+        if !matches!(
+            response.finish_reason.as_str(),
+            "stop" | "length" | "tool_calls"
+        ) {
             return Err(AgentError::IncompleteGeneration {
                 reason: response.finish_reason,
             });
         }
 
+        if !response.tool_calls.is_empty() {
+            let available_tools = tools.as_deref().unwrap_or_default();
+            for call in &response.tool_calls {
+                if !available_tools
+                    .iter()
+                    .any(|tool| tool.function.name == call.name)
+                {
+                    return Err(AgentError::InfrastructureError {
+                        detail: format!(
+                            "Simulator response {} requested undeclared tool {}",
+                            response.id, call.name
+                        ),
+                    });
+                }
+                serde_json::from_str::<serde_json::Value>(&call.arguments).map_err(|error| {
+                    AgentError::InfrastructureError {
+                        detail: format!(
+                            "Simulator response {} has invalid JSON arguments for {}: {error}",
+                            response.id, call.name
+                        ),
+                    }
+                })?;
+            }
+
+            if let Some(ToolChoice::Object { function, .. }) = tool_choice
+                && response
+                    .tool_calls
+                    .iter()
+                    .any(|call| call.name != function.name)
+            {
+                return Err(AgentError::InfrastructureError {
+                    detail: format!(
+                        "Simulator response {} did not honor forced tool choice {}",
+                        response.id, function.name
+                    ),
+                });
+            }
+        }
+
         let content = response.content.unwrap_or_default();
-        if content.trim().is_empty() {
+        if content.trim().is_empty() && response.tool_calls.is_empty() {
             return Err(AgentError::IncompleteGeneration {
                 reason: "empty simulator content with finish_reason=stop".to_string(),
             });
@@ -213,7 +258,7 @@ impl SimulatorClient {
         Ok(ModelResult {
             content,
             reasoning_content: response.reasoning_content,
-            tool_calls: None,
+            tool_calls: (!response.tool_calls.is_empty()).then_some(response.tool_calls),
             finish_reason: response.finish_reason,
             usage,
             elapsed_secs: latency_ms as f64 / 1_000.0,
@@ -527,6 +572,42 @@ body = "offline"
             error,
             AgentError::TransportError { status: 503, .. }
         ));
+    }
+
+    #[tokio::test]
+    async fn scripted_tool_calls_validate_declared_tools_and_arguments() {
+        let client = scenario(
+            r#"
+name = "tools"
+
+[[responses]]
+id = "call"
+finish_reason = "tool_calls"
+
+[[responses.tool_calls]]
+id = "call-1"
+name = "inspect"
+arguments = '{"path":"src/lib.rs"}'
+"#,
+        );
+        let tools = vec![Tool {
+            r#type: "function".to_string(),
+            function: crate::chat::Function {
+                name: "inspect".to_string(),
+                description: None,
+                parameters: None,
+            },
+        }];
+
+        let result = client
+            .chat(messages("test"), Some(tools), None)
+            .await
+            .expect("tool response");
+
+        assert_eq!(result.finish_reason, "tool_calls");
+        let calls = result.tool_calls.expect("tool calls");
+        assert_eq!(calls[0].name, "inspect");
+        assert_eq!(calls[0].arguments, r#"{"path":"src/lib.rs"}"#);
     }
 
     #[tokio::test]

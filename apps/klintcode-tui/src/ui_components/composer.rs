@@ -1,16 +1,11 @@
-use crate::ui_components::*;
-use crate::ui_components::helpers::*;
 use ratatui::{
     Frame,
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    layout::Rect,
     style::{Color, Modifier, Style},
     text::{Line, Span, Text},
-    widgets::{Block, Borders, Clear, List, ListItem, Padding, Paragraph, Wrap},
+    widgets::{Block, Borders, Padding, Paragraph},
 };
-use agent_core::state::PipelineState;
-use agent_core::shared::{PlanStepStatus, ToolProcessStatus};
-use crate::app::{App, InputMode, ServiceHealth, TimelineRole, View};
-use crate::widgets::*;
+use crate::app::{App, InputMode};
 
 pub fn draw_composer(f: &mut Frame, app: &App, area: Rect) {
     let editing = app.input_mode == InputMode::Editing;
@@ -147,8 +142,7 @@ pub fn draw_bottom_hint(f: &mut Frame, app: &App, area: Rect) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ratatui::backend::TestBackend;
-    use ratatui::Terminal;
+    use crate::app::View;
     use crate::ui::tests::rendered_screen;
         #[test]
         fn composer_grows_to_eight_lines_then_shows_only_the_latest_eight() {

@@ -1,16 +1,11 @@
-use crate::ui_components::*;
+#![allow(dead_code)]
 
 use ratatui::{
-    Frame,
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Color, Modifier, Style},
-    text::{Line, Span, Text},
-    widgets::{Block, Borders, Clear, List, ListItem, Padding, Paragraph, Wrap},
+    style::{Color, Style},
+    text::{Line, Span},
 };
 use agent_core::state::PipelineState;
-use agent_core::shared::{PlanStepStatus, ToolProcessStatus};
-use crate::app::{App, InputMode, ServiceHealth, TimelineRole, View};
-use crate::widgets::*;
+use crate::app::{App, ServiceHealth};
 
 pub const HELP_TEXT: &str = r#"KlintCode TUI — Keyboard Shortcuts
 
@@ -91,10 +86,10 @@ pub fn service_health_line(health: &ServiceHealth) -> Line<'static> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use ratatui::backend::TestBackend;
-    use ratatui::Terminal;
-    use crate::ui::tests::rendered_screen;
+    use agent_core::shared::PlanStepStatus;
+
+    use crate::widgets::plan_step_style;
+
         #[test]
         fn plan_step_visuals_collapse_to_three_states_and_current_step_pulses() {
             assert_eq!(plan_step_style(PlanStepStatus::Pending, 2).0, "○");

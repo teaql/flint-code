@@ -2,30 +2,25 @@
 
 use crate::ui_components::*;
 use crate::widgets::*;
-use crate::app::*;
-
 use anyhow::Result;
 use crossterm::{
-    event::{Event, KeyCode, KeyModifiers, EnableBracketedPaste, DisableBracketedPaste, EnableMouseCapture, DisableMouseCapture},
+    event::{DisableBracketedPaste, EnableBracketedPaste, Event, KeyCode, KeyModifiers},
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
 use ratatui::{
     Frame, Terminal,
     backend::CrosstermBackend,
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Color, Modifier, Style},
-    text::{Line, Span, Text},
-    widgets::{Block, Borders, Clear, List, ListItem, Padding, Paragraph, Wrap},
+    layout::{Constraint, Direction, Layout, Rect},
 };
 use std::io;
 use std::time::Duration;
 
 use agent_core::event::ExportConsent;
 use agent_core::state::PipelineState;
-use agent_core::shared::{PlanStepStatus, ToolProcessStatus};
+use agent_core::shared::ToolProcessStatus;
 
-use crate::app::{App, InputMode, ServiceHealth, TimelineRole, View};
+use crate::app::{App, InputMode, View};
 
 
 /// Run the TUI event loop.
@@ -347,6 +342,7 @@ fn draw(f: &mut Frame, app: &App) {
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Min(8),
+            Constraint::Length(1),
             Constraint::Length(composer_height),
             Constraint::Length(1),
         ])
@@ -361,8 +357,8 @@ fn draw(f: &mut Frame, app: &App) {
     }
 
 
-    draw_composer(f, app, chunks[1]);
-    draw_bottom_hint(f, app, chunks[2]);
+    draw_composer(f, app, chunks[2]);
+    draw_bottom_hint(f, app, chunks[3]);
 }
 
 fn draw_main_surface(f: &mut Frame, app: &App, area: Rect) {
@@ -385,24 +381,24 @@ fn draw_main_surface(f: &mut Frame, app: &App, area: Rect) {
             let status_rows = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([
-                    Constraint::Length(5),
+                    Constraint::Length(6),
                     Constraint::Length(3),
                     Constraint::Length(3),
-                    Constraint::Length(tools_height),
                     Constraint::Length(status_panel_height(app) + 1),
+                    Constraint::Length(tools_height),
                     Constraint::Min(0),
                 ])
                 .split(columns[1]);
             draw_system_status(f, app, status_rows[0]);
             draw_context_metrics(f, app, status_rows[1]);
             draw_context_size(f, app, status_rows[2]);
-            draw_tool_commands(f, app, status_rows[3]);
-            draw_compact_status(f, app, status_rows[4]);
+            draw_compact_status(f, app, status_rows[3]);
+            draw_tool_commands(f, app, status_rows[4]);
         } else {
             let status_rows = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([
-                    Constraint::Length(5),
+                    Constraint::Length(6),
                     Constraint::Length(3),
                     Constraint::Length(3),
                     Constraint::Length(tools_height),
@@ -439,5 +435,24 @@ pub mod tests {
             rendered.push('\n');
         }
         rendered
+    }
+
+    #[test]
+    fn right_sidebar_keeps_plan_above_active_tools() {
+        let mut app = crate::app::App::new(None).expect("app");
+        app.task_surface_active = true;
+        app.dummy_run.state = agent_core::state::PipelineState::Generating { attempt: 1 };
+
+        let screen = rendered_screen(&app, 120, 40);
+        let flint = screen.find("Flint").expect("Flint panel");
+        let tokens = screen.find("Tokens").expect("Tokens panel");
+        let context = screen.find("Context").expect("Context panel");
+        let plan = screen.find("Plan").expect("Plan panel");
+        let tools = screen.find("Active Tools").expect("Active Tools panel");
+
+        assert!(flint < tokens);
+        assert!(tokens < context);
+        assert!(context < plan);
+        assert!(plan < tools);
     }
 }

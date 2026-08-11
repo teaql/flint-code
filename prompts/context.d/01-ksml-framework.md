@@ -36,6 +36,7 @@ This ensures every file is standard-compliant XML.
 
 Business objects use attributes for fields:
 ```xml
+<!-- BUSINESS OBJECT: DO NOT manually define the 'id' attribute -->
 <employee _name="Employee"
           _module="HR" _module_key="hr"
           name="John Doe"
@@ -44,6 +45,7 @@ Business objects use attributes for fields:
 
 Constant objects (enums) use `<_value>` children and MUST reference the domain root:
 ```xml
+<!-- CONSTANT OBJECT: 'id="id()"' is required here to define the type, alongside _value rows -->
 <user_status _name="User Status"
              _module="Platform" _module_key="platform"
              id="id()" name="string()" code="string()"
@@ -52,5 +54,7 @@ Constant objects (enums) use `<_value>` children and MUST reference the domain r
   <_value id="1001" name="Active" code="ACTIVE"/>
 </user_status>
 ```
+
+**CRITICAL RULE: DO NOT manually define the `id` attribute on any BUSINESS object.** The framework auto-generates the primary key `id` attribute for business objects. Defining it manually (e.g. `id="id()"`) on a business object will cause a validation error. You only define `id="id()"` when declaring a CONSTANT object.
 
 *Note: Do not worry about specific privacy fields (like CCPA/GDPR rules) — the domain validation server will instruct you on how to mask sensitive fields if you miss them.*

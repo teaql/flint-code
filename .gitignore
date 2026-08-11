@@ -13,3 +13,13 @@ test.xml
 /run_*.sh
 /benchmark_*.sh
 /calc_avg_time.py
+
+# Temporary scripts and testing files
+/clean_ui.py
+/fix_imports.py
+/refactor.py
+/split_ui.py
+/truncate_ui.py
+/test_task.md
+/docker-compose-weaviate.yml
+/apps/moving-company-platform/build/

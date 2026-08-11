@@ -177,10 +177,19 @@ impl App {
             Ok(client) => client,
             Err(error) => return ServiceHealth::Unavailable(error.to_string()),
         };
-        match client.health_check().await {
-            Ok(true) => ServiceHealth::Healthy,
-            Ok(false) => ServiceHealth::Unavailable("health check failed".to_string()),
-            Err(error) => ServiceHealth::Unavailable(error.to_string()),
+        let report = client
+            .probe(model_vllm::backend::ProbeOptions::health())
+            .await;
+        if report.passed {
+            ServiceHealth::Healthy
+        } else {
+            let detail = report
+                .checks
+                .into_iter()
+                .find(|check| !check.passed)
+                .map(|check| check.detail)
+                .unwrap_or_else(|| "health check failed".to_string());
+            ServiceHealth::Unavailable(detail)
         }
     }
 
@@ -213,7 +222,7 @@ impl App {
 
         let runs_root = PathBuf::from("runs");
         let executor =
-            PipelineExecutor::new(self.profile.clone(), proxy_event_tx, runs_root, run_id);
+            PipelineExecutor::new(self.profile.clone(), proxy_event_tx, runs_root, run_id)?;
 
         self.proxy_event_rx = Some(proxy_event_rx);
         self.controller_event_tx = Some(controller_event_tx);
@@ -381,6 +390,14 @@ impl App {
         self.chat_worker = None;
         match event {
             ChatEvent::Completed(result) => {
+                self.global_input_tokens = self
+                    .global_input_tokens
+                    .saturating_add(u64::from(result.usage.prompt_tokens));
+                self.global_output_tokens = self
+                    .global_output_tokens
+                    .saturating_add(u64::from(result.usage.completion_tokens));
+                self.global_model_calls = self.global_model_calls.saturating_add(1);
+                self.last_context_tokens = u64::from(result.usage.prompt_tokens);
                 if let Some(controller) = self.controller.as_mut() {
                     controller.state.record_model_usage(result.usage);
                 } else {
@@ -466,14 +483,28 @@ impl App {
 
     /// Add durable, compact activity to the main conversation surface.
     pub fn observe_event(&mut self, event: &RunEvent) {
-        if let RunEvent::ModelCompleted(result) = event {
-            self.candidate = result.content.clone();
-            // Track per-call context window size
-            let prompt = u64::from(result.usage.prompt_tokens);
-            self.last_context_tokens = prompt;
-            if prompt > self.max_context_tokens {
-                self.max_context_tokens = prompt;
+        match event {
+            RunEvent::ModelCompleted(result) => {
+                self.candidate = result.content.clone();
+                let prompt = u64::from(result.usage.prompt_tokens);
+                self.last_context_tokens = prompt;
+                self.max_context_tokens = self.max_context_tokens.max(prompt);
+                self.global_input_tokens = self.global_input_tokens.saturating_add(prompt);
+                self.global_output_tokens = self
+                    .global_output_tokens
+                    .saturating_add(u64::from(result.usage.completion_tokens));
+                self.global_model_calls = self.global_model_calls.saturating_add(1);
             }
+            RunEvent::ModelUsageRecorded(usage) => {
+                self.global_input_tokens = self
+                    .global_input_tokens
+                    .saturating_add(u64::from(usage.prompt_tokens));
+                self.global_output_tokens = self
+                    .global_output_tokens
+                    .saturating_add(u64::from(usage.completion_tokens));
+                self.global_model_calls = self.global_model_calls.saturating_add(1);
+            }
+            _ => {}
         }
         let entry = match event {
             RunEvent::TaskLoaded(task) => {
@@ -872,6 +903,36 @@ mod tests {
         );
     }
 
+    #[test]
+    fn global_token_metrics_accumulate_across_model_events() {
+        let mut app = App::new(None).expect("app");
+        let result = ModelResult {
+            content: "response".to_string(),
+            reasoning_content: None,
+            tool_calls: None,
+            finish_reason: "stop".to_string(),
+            usage: TokenUsage {
+                prompt_tokens: 100,
+                completion_tokens: 50,
+                total_tokens: 150,
+            },
+            elapsed_secs: 1.0,
+            http_status: 200,
+        };
+
+        app.observe_event(&RunEvent::ModelCompleted(result));
+        app.observe_event(&RunEvent::ModelUsageRecorded(TokenUsage {
+            prompt_tokens: 200,
+            completion_tokens: 10,
+            total_tokens: 210,
+        }));
+
+        assert_eq!(app.global_input_tokens, 300);
+        assert_eq!(app.global_output_tokens, 60);
+        assert_eq!(app.global_model_calls, 2);
+        assert_eq!(app.last_context_tokens, 100);
+    }
+
     #[tokio::test]
     async fn active_run_rejects_a_second_submission_without_losing_draft() {
         let mut app = App::new(None).expect("app");
@@ -1041,6 +1102,9 @@ mod tests {
         );
         assert_eq!(app.dummy_run.token_totals.input_tokens, 80);
         assert_eq!(app.dummy_run.token_totals.output_tokens, 18);
+        assert_eq!(app.global_input_tokens, 80);
+        assert_eq!(app.global_output_tokens, 18);
+        assert_eq!(app.global_model_calls, 1);
     }
 
     #[tokio::test]

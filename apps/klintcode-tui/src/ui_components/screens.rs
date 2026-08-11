@@ -1,15 +1,16 @@
+#![allow(dead_code)]
 use crate::ui_components::*;
 use crate::ui_components::helpers::*;
 use ratatui::{
     Frame,
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
-    text::{Line, Span, Text},
-    widgets::{Block, Borders, Clear, List, ListItem, Padding, Paragraph, Wrap},
+    text::{Line, Span},
+    widgets::{Paragraph, Wrap},
 };
 use agent_core::state::PipelineState;
-use agent_core::shared::{PlanStepStatus, ToolProcessStatus};
-use crate::app::{App, InputMode, ServiceHealth, TimelineRole, View};
+use agent_core::shared::ToolProcessStatus;
+use crate::app::App;
 use crate::widgets::*;
 
 pub fn draw_stats_screen(f: &mut Frame, app: &App, area: Rect) {
@@ -219,4 +220,3 @@ pub fn draw_plain_screen(f: &mut Frame, title: &str, content: &str, area: Rect) 
     ];
     f.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), area);
 }
-

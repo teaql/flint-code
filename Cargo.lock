@@ -1509,6 +1509,7 @@ dependencies = [
  "rag-remote",
  "serde",
  "serde_json",
+ "tempfile",
  "tokio",
  "toml",
  "tool-runner",

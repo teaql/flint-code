@@ -10,8 +10,8 @@ use tracing::{error, info, warn};
 
 use crate::tools::{build_tool_definitions, execute_tool};
 use agent_core::loop_guard::LoopGuard;
+use model_vllm::backend::ModelClient;
 use model_vllm::chat::{ChatMessage, FunctionCall, ToolCall};
-use model_vllm::client::VllmClient;
 
 /// Result of an agentic build loop
 #[derive(Debug)]
@@ -42,13 +42,13 @@ pub enum AgentLoopResult {
 /// succeeds or the iteration limit is reached.
 ///
 /// # Arguments
-/// * `client` - The vLLM client for model inference
+/// * `client` - The configured model backend for inference
 /// * `sandbox_dir` - The project directory (all tool operations are sandboxed here)
 /// * `system_prompt` - System prompt describing the agent's role
 /// * `user_prompt` - Initial task description with project context
 /// * `max_iterations` - Maximum number of LLM round-trips before giving up
 pub async fn run_agent_loop(
-    client: &VllmClient,
+    client: &ModelClient,
     sandbox_dir: &Path,
     system_prompt: &str,
     user_prompt: &str,
@@ -83,7 +83,11 @@ pub async fn run_agent_loop(
         );
 
         if let Some(tx) = &event_tx {
-            let _ = tx.send(agent_core::RunEvent::ModelStarted { attempt: (iteration + 1) as u8 }).await;
+            let _ = tx
+                .send(agent_core::RunEvent::ModelStarted {
+                    attempt: (iteration + 1) as u8,
+                })
+                .await;
         }
 
         // Call the model with tool definitions
@@ -94,9 +98,11 @@ pub async fn run_agent_loop(
         match result {
             Ok(model_result) => {
                 if let Some(tx) = &event_tx {
-                    let _ = tx.send(agent_core::RunEvent::ModelCompleted(model_result.clone())).await;
+                    let _ = tx
+                        .send(agent_core::RunEvent::ModelCompleted(model_result.clone()))
+                        .await;
                 }
-                
+
                 let tool_calls = model_result.tool_calls.map(|calls| {
                     calls
                         .into_iter()
@@ -147,8 +153,13 @@ pub async fn run_agent_loop(
                             );
 
                             let command_str = if tc.function.name == "run_command" {
-                                if let Ok(args) = serde_json::from_str::<serde_json::Value>(&tc.function.arguments) {
-                                    args.get("command").and_then(|c| c.as_str()).unwrap_or(&tc.function.arguments).to_string()
+                                if let Ok(args) = serde_json::from_str::<serde_json::Value>(
+                                    &tc.function.arguments,
+                                ) {
+                                    args.get("command")
+                                        .and_then(|c| c.as_str())
+                                        .unwrap_or(&tc.function.arguments)
+                                        .to_string()
                                 } else {
                                     tc.function.arguments.clone()
                                 }
@@ -162,7 +173,9 @@ pub async fn run_agent_loop(
                                 tx.send(agent_core::RunEvent::ToolProcessStarted {
                                     id: cmd_id,
                                     command: command_str,
-                                }).await.ok();
+                                })
+                                .await
+                                .ok();
                             }
 
                             let tool_result = execute_tool(
@@ -188,7 +201,9 @@ pub async fn run_agent_loop(
                                     id: cmd_id,
                                     success: tool_result.success,
                                     exit_code: tool_result.exit_code,
-                                }).await.ok();
+                                })
+                                .await
+                                .ok();
                             }
 
                             messages.push(ChatMessage::tool_result(&tc.id, &tool_result.output));
@@ -227,9 +242,13 @@ pub async fn run_agent_loop(
             }
             Err(e) => {
                 if let Some(tx) = &event_tx {
-                    let _ = tx.send(agent_core::RunEvent::ModelFailed(
-                        agent_core::error::AgentError::InfrastructureError { detail: e.to_string() }
-                    )).await;
+                    let _ = tx
+                        .send(agent_core::RunEvent::ModelFailed(
+                            agent_core::error::AgentError::InfrastructureError {
+                                detail: e.to_string(),
+                            },
+                        ))
+                        .await;
                 }
                 error!(iteration, %e, "Model call failed in agent loop");
                 return AgentLoopResult::Failed {
@@ -342,9 +361,10 @@ mod tests {
         for tool in messages.iter().filter(|message| message.role == "tool") {
             let id = tool.tool_call_id.as_deref().expect("tool call id");
             assert!(messages.iter().any(|message| {
-                message.tool_calls.as_ref().is_some_and(|calls| {
-                    calls.iter().any(|call| call.id == id)
-                })
+                message
+                    .tool_calls
+                    .as_ref()
+                    .is_some_and(|calls| calls.iter().any(|call| call.id == id))
             }));
         }
     }

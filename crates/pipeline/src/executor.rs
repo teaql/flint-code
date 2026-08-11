@@ -1,21 +1,21 @@
 use agent_core::error::AgentError;
 use agent_core::event::*;
+use agent_core::rag::KnowledgeRetriever;
 use agent_core::reducer::SideEffect;
 use artifact_store::RunArtifacts;
 use context_builder::{
     TaskPackageData, build_generation_messages, build_repair_messages, calculate_budget,
 };
+use model_vllm::backend::ModelClient;
 use model_vllm::chat::ChatMessage;
-use model_vllm::client::VllmClient;
 use model_vllm::profile::ModelProfile;
 use model_vllm::tokenizer;
+use rag_remote::WeaviateRetriever;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use tokio::sync::mpsc;
 use tracing::{error, info, warn};
 use validation;
-use agent_core::rag::KnowledgeRetriever;
-use rag_remote::WeaviateRetriever;
-use std::sync::Arc;
 
 #[derive(Debug, Clone, serde::Serialize)]
 struct FollowUpRecord {
@@ -28,7 +28,7 @@ struct FollowUpRecord {
 /// Both TUI and headless CLI create one of these.
 pub struct PipelineExecutor {
     profile: ModelProfile,
-    client: VllmClient,
+    client: ModelClient,
     event_tx: mpsc::Sender<RunEvent>,
     task: Option<TaskPackageData>,
     candidate: Option<String>, // current candidate output
@@ -38,6 +38,8 @@ pub struct PipelineExecutor {
     run_id: String,
     /// Optional build target for code generation (e.g. "rust-lib-core")
     build_target: Option<String>,
+    /// Optional explicit modeling skill supplied by a CLI or TUI client.
+    modeling_skill_path: Option<PathBuf>,
     /// Optional patches to apply to generated Cargo.toml files
     patches: Option<std::collections::HashMap<String, String>>,
     /// Exact application workspace generated for build and follow-up coding.
@@ -58,9 +60,9 @@ impl PipelineExecutor {
         event_tx: mpsc::Sender<RunEvent>,
         runs_root: PathBuf,
         run_id: String,
-    ) -> Self {
-        let client = VllmClient::new(profile.clone());
-        Self {
+    ) -> Result<Self, AgentError> {
+        let client = ModelClient::from_profile(profile.clone())?;
+        Ok(Self {
             profile,
             client,
             event_tx,
@@ -71,13 +73,14 @@ impl PipelineExecutor {
             runs_root,
             run_id,
             build_target: None,
+            modeling_skill_path: None,
             patches: None,
             workspace_dir: None,
             assist_context: String::new(),
             followup_history: Vec::new(),
             last_actionable_errors: Vec::new(),
             retriever: None,
-        }
+        })
     }
 
     /// Asynchronously initialize the local RAG retriever if it hasn't been initialized yet.
@@ -92,6 +95,11 @@ impl PipelineExecutor {
     /// Set the build target for code generation (e.g. "rust-lib-core")
     pub fn set_build_target(&mut self, target: String) {
         self.build_target = Some(target);
+    }
+
+    /// Set an explicit modeling skill to load with the next task.
+    pub fn set_modeling_skill_path(&mut self, path: PathBuf) {
+        self.modeling_skill_path = Some(path);
     }
 
     /// Set patches for generated Cargo.toml files
@@ -129,39 +137,29 @@ impl PipelineExecutor {
             Ok(path) => path,
             Err(error) => {
                 warn!(attempt, %error, "Cannot launch follow-up without a workspace");
-                let result = validation::fail(
-                    5,
-                    "build",
-                    vec![error.clone()],
-                    error,
-                    0.0,
-                );
+                let result = validation::fail(5, "build", vec![error.clone()], error, 0.0);
                 self.send(RunEvent::ValidationCompleted(result)).await;
                 return;
             }
         };
 
-        info!(?build_dir, "Launching agentic build loop for follow-up task");
+        info!(
+            ?build_dir,
+            "Launching agentic build loop for follow-up task"
+        );
 
         let system_template = std::fs::read_to_string("prompts/agentic-build.txt")
             .unwrap_or_else(|_| include_str!("../../../prompts/agentic-build.txt").to_string());
-        let system_prompt = render_agentic_system_prompt(
-            &system_template,
-            &build_dir,
-            &self.assist_context,
-        );
+        let system_prompt =
+            render_agentic_system_prompt(&system_template, &build_dir, &self.assist_context);
 
         let original_task = self
             .task
             .as_ref()
             .map(|task| task.task_content.as_str())
             .unwrap_or("");
-        let user_prompt = build_followup_prompt(
-            &build_dir,
-            &task,
-            original_task,
-            &self.followup_history,
-        );
+        let user_prompt =
+            build_followup_prompt(&build_dir, &task, original_task, &self.followup_history);
 
         let max_iterations = 20;
 
@@ -177,10 +175,15 @@ impl PipelineExecutor {
         .await;
 
         match &loop_result {
-            crate::agent_loop::AgentLoopResult::Completed { summary, iterations, total_tool_calls } => {
+            crate::agent_loop::AgentLoopResult::Completed {
+                summary,
+                iterations,
+                total_tool_calls,
+            } => {
                 let total_elapsed = start.elapsed().as_secs_f64();
                 let verification_target = self.build_target.as_deref().unwrap_or("rust-lib-core");
-                let diagnostic = match verify_generated_build(&build_dir, verification_target).await {
+                let diagnostic = match verify_generated_build(&build_dir, verification_target).await
+                {
                     Ok(diagnostic) => diagnostic,
                     Err(diagnostic) => {
                         warn!(attempt, "Deterministic follow-up verification failed");
@@ -191,10 +194,8 @@ impl PipelineExecutor {
                             diagnostic,
                             total_elapsed,
                         );
-                        result.diagnostic = format!(
-                            "Agent summary: {}\n\n{}",
-                            summary, result.diagnostic
-                        );
+                        result.diagnostic =
+                            format!("Agent summary: {}\n\n{}", summary, result.diagnostic);
                         self.send(RunEvent::ValidationCompleted(result)).await;
                         return;
                     }
@@ -210,7 +211,13 @@ impl PipelineExecutor {
                         .await
                         .ok();
                 }
-                info!(attempt, iterations, total_tool_calls, total_elapsed, "Agentic build loop completed successfully");
+                info!(
+                    attempt,
+                    iterations,
+                    total_tool_calls,
+                    total_elapsed,
+                    "Agentic build loop completed successfully"
+                );
                 let mut r = validation::pass(5, "build", total_elapsed);
                 r.diagnostic = format!(
                     "Follow-up: ✓ ({} iterations, {} tool calls)\n\nAgent summary: {}\n\n{}",
@@ -221,25 +228,94 @@ impl PipelineExecutor {
             crate::agent_loop::AgentLoopResult::Failed { error, iterations } => {
                 let total_elapsed = start.elapsed().as_secs_f64();
                 warn!(attempt, iterations, %error, "Agentic build loop failed");
-                let mut r = validation::fail(5, "build", vec!["Agent loop failed".to_string()], error.clone(), total_elapsed);
-                r.diagnostic = format!("Agentic follow-up failed after {} iterations: {}", iterations, error);
+                let mut r = validation::fail(
+                    5,
+                    "build",
+                    vec!["Agent loop failed".to_string()],
+                    error.clone(),
+                    total_elapsed,
+                );
+                r.diagnostic = format!(
+                    "Agentic follow-up failed after {} iterations: {}",
+                    iterations, error
+                );
                 self.send(RunEvent::ValidationCompleted(r)).await;
             }
-            crate::agent_loop::AgentLoopResult::MaxIterationsReached { iterations, total_tool_calls } => {
+            crate::agent_loop::AgentLoopResult::MaxIterationsReached {
+                iterations,
+                total_tool_calls,
+            } => {
                 let total_elapsed = start.elapsed().as_secs_f64();
-                warn!(attempt, iterations, total_tool_calls, "Agentic build loop hit max iterations");
-                let mut r = validation::fail(5, "build", vec![format!("Agent loop exhausted {} iterations", iterations)], "".to_string(), total_elapsed);
-                r.diagnostic = format!("Agentic follow-up did not complete within {} iterations ({} tool calls)", iterations, total_tool_calls);
-                self.send(RunEvent::ValidationCompleted(r)).await;
+                let verification_target = self.build_target.as_deref().unwrap_or("rust-lib-core");
+                match verify_generated_build(&build_dir, verification_target).await {
+                    Ok(diagnostic) => {
+                        let summary = format!(
+                            "Reached the {}-iteration limit after {} tool calls; accepted because independent build verification passed.",
+                            iterations, total_tool_calls
+                        );
+                        self.followup_history.push(FollowUpRecord {
+                            attempt,
+                            instruction: bounded_text(&task, 4_000),
+                            summary: summary.clone(),
+                        });
+                        if let Some(artifacts) = &self.artifacts {
+                            artifacts
+                                .save_attempt_file(
+                                    attempt,
+                                    "session-ledger.json",
+                                    &self.followup_history,
+                                )
+                                .await
+                                .ok();
+                        }
+                        warn!(
+                            attempt,
+                            iterations,
+                            total_tool_calls,
+                            "Agentic follow-up hit its iteration limit but passed deterministic verification"
+                        );
+                        let mut result = validation::pass(5, "build", total_elapsed);
+                        result.diagnostic = format!("{summary}\n\n{diagnostic}");
+                        self.send(RunEvent::ValidationCompleted(result)).await;
+                    }
+                    Err(diagnostic) => {
+                        warn!(
+                            attempt,
+                            iterations,
+                            total_tool_calls,
+                            "Agentic build loop hit max iterations and failed deterministic verification"
+                        );
+                        let mut result = validation::fail(
+                            5,
+                            "build",
+                            vec![format!("Agent loop exhausted {} iterations", iterations)],
+                            diagnostic,
+                            total_elapsed,
+                        );
+                        result.diagnostic = format!(
+                            "Agentic follow-up did not complete within {} iterations ({} tool calls)\n\n{}",
+                            iterations, total_tool_calls, result.diagnostic
+                        );
+                        self.send(RunEvent::ValidationCompleted(result)).await;
+                    }
+                }
             }
         }
     }
 
-
     /// Load a task package from disk.
     pub async fn load_task_from_path(&mut self, path: &Path) {
         match TaskPackageData::load(path) {
-            Ok(task) => {
+            Ok(mut task) => {
+                if let Some(skill_path) = &self.modeling_skill_path
+                    && let Err(error) = task.load_modeling_skill_from(skill_path)
+                {
+                    self.send(RunEvent::TaskLoadFailed(format!(
+                        "Failed to load modeling skill: {error}"
+                    )))
+                    .await;
+                    return;
+                }
                 let pkg = TaskPackage {
                     name: task.name.clone(),
                     task_file: task.root.join("task.md"),
@@ -281,6 +357,16 @@ impl PipelineExecutor {
 
         if !skill_content.is_empty() {
             task.modeling_skill = Some(skill_content);
+        }
+
+        if let Some(skill_path) = &self.modeling_skill_path
+            && let Err(error) = task.load_modeling_skill_from(skill_path)
+        {
+            self.send(RunEvent::TaskLoadFailed(format!(
+                "Failed to load modeling skill: {error}"
+            )))
+            .await;
+            return;
         }
 
         let pkg = TaskPackage {
@@ -354,7 +440,7 @@ impl PipelineExecutor {
 
     async fn generate(&mut self, attempt: u8) {
         self.init_retriever().await;
-        
+
         let task = match &self.task {
             Some(t) => t,
             None => {
@@ -383,7 +469,8 @@ impl PipelineExecutor {
                         let _ = self.event_tx.send(RunEvent::RagCompleted(docs.len())).await;
                         if !docs.is_empty() {
                             info!(count = docs.len(), error = %first_err, "Injected RAG context for repair");
-                            let mut rag_context = String::from("\n\n# Relevant Context/Guidelines to Fix This:\n");
+                            let mut rag_context =
+                                String::from("\n\n# Relevant Context/Guidelines to Fix This:\n");
                             for doc in docs {
                                 rag_context.push_str(&doc.content);
                                 rag_context.push_str("\n\n");
@@ -434,16 +521,29 @@ impl PipelineExecutor {
         }
 
         let mut request_client = self.client.clone();
-        if attempt > 1 {
+        if attempt > 1 && !self.profile.simulator.enabled {
             let mut dynamic_profile = self.profile.clone();
             let base_temp = dynamic_profile.sampling.temperature;
             let new_temp = (base_temp + (attempt as f32 - 1.0) * 0.15).min(0.8);
             dynamic_profile.sampling.temperature = new_temp;
-            request_client = model_vllm::client::VllmClient::new(dynamic_profile);
-            info!(attempt, temp = new_temp, "Applying dynamic temperature for repair");
+            request_client = match ModelClient::from_profile(dynamic_profile) {
+                Ok(client) => client,
+                Err(error) => {
+                    self.send(RunEvent::ModelFailed(error)).await;
+                    return;
+                }
+            };
+            info!(
+                attempt,
+                temp = new_temp,
+                "Applying dynamic temperature for repair"
+            );
         }
 
-        self.send(RunEvent::ModelStarted { attempt: attempt as u8 }).await;
+        self.send(RunEvent::ModelStarted {
+            attempt: attempt as u8,
+        })
+        .await;
         match request_client.chat(messages.clone(), None, None).await {
             Ok(result) => {
                 // Save candidate
@@ -732,7 +832,8 @@ impl PipelineExecutor {
         }
 
         // ── Step 2: Run additional generation targets ──
-        self.send(agent_core::event::RunEvent::WorkspaceGenerationStarted).await;
+        self.send(agent_core::event::RunEvent::WorkspaceGenerationStarted)
+            .await;
         // Derive the app target from the build target (e.g. rust-lib-core → rust-app-console)
         let app_target = if build_target.contains("-lib-core") {
             let app = if build_target.starts_with("java") {
@@ -773,7 +874,7 @@ impl PipelineExecutor {
         for entry in walkdir_toml_xml(&build_dir) {
             if let Ok(content) = std::fs::read_to_string(&entry) {
                 let mut fixed = content.clone();
-                
+
                 if let Some(patches) = &self.patches {
                     for (find, replace) in patches {
                         fixed = fixed.replace(find, replace);
@@ -884,11 +985,8 @@ impl PipelineExecutor {
 
             let system_template = std::fs::read_to_string("prompts/agentic-build.txt")
                 .unwrap_or_else(|_| include_str!("../../../prompts/agentic-build.txt").to_string());
-            let system_prompt = render_agentic_system_prompt(
-                &system_template,
-                &build_dir,
-                &assist_outputs,
-            );
+            let system_prompt =
+                render_agentic_system_prompt(&system_template, &build_dir, &assist_outputs);
 
             // Give the agent specific first-step instructions based on detected build system
             let compile_hint = if build_target.starts_with("java") {
@@ -1116,13 +1214,11 @@ impl PipelineExecutor {
                             match artifacts.save_final_workspace(workspace).await {
                                 Ok(path) => path,
                                 Err(error) => {
-                                    self.send(RunEvent::Failed(
-                                        AgentError::InfrastructureError {
-                                            detail: format!(
-                                                "Failed to snapshot final workspace: {error}"
-                                            ),
-                                        },
-                                    ))
+                                    self.send(RunEvent::Failed(AgentError::InfrastructureError {
+                                        detail: format!(
+                                            "Failed to snapshot final workspace: {error}"
+                                        ),
+                                    }))
                                     .await;
                                     return;
                                 }
@@ -1180,8 +1276,8 @@ impl PipelineExecutor {
         }
     }
 
-    /// Get the VllmClient reference for health checks
-    pub fn client(&self) -> &VllmClient {
+    /// Get the configured model backend.
+    pub fn client(&self) -> &ModelClient {
         &self.client
     }
 
@@ -1412,11 +1508,11 @@ fn build_followup_prompt(
 /// Strip markdown code fences from LLM output (e.g. ```xml ... ```)
 fn strip_markdown_fences(content: &str) -> String {
     let trimmed = content.trim();
-    
+
     // Find the first occurrence of ```
     if let Some(start_idx) = trimmed.find("```") {
         let after_start = &trimmed[start_idx + 3..];
-        
+
         // Skip the optional language identifier (e.g., xml or ksml)
         let content_start = if after_start.to_lowercase().starts_with("xml") {
             after_start[3..].trim_start()
@@ -1430,13 +1526,13 @@ fn strip_markdown_fences(content: &str) -> String {
                 after_start
             }
         };
-        
+
         // Find the matching end fence
         if let Some(end_idx) = content_start.rfind("```") {
             return content_start[..end_idx].trim().to_string();
         }
     }
-    
+
     // If no markdown fences are found, return the trimmed content
     trimmed.to_string()
 }
@@ -1446,10 +1542,13 @@ mod tests {
     use super::*;
 
     fn test_executor() -> PipelineExecutor {
-        let profile: ModelProfile = toml::from_str(include_str!(
-            "../../../profiles/simulator.toml"
-        ))
-        .expect("simulator profile");
+        let mut profile: ModelProfile =
+            toml::from_str(include_str!("../../../profiles/simulator.toml"))
+                .expect("simulator profile");
+        profile.simulator.scenario = Some(
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("../../simulator/scenarios/happy-path.toml"),
+        );
         let (event_tx, _event_rx) = mpsc::channel(4);
         PipelineExecutor::new(
             profile,
@@ -1457,6 +1556,7 @@ mod tests {
             PathBuf::from("runs"),
             "test-run".to_string(),
         )
+        .expect("test executor")
     }
 
     #[test]
@@ -1479,10 +1579,8 @@ mod tests {
 
     #[tokio::test]
     async fn deterministic_build_verification_rejects_invalid_rust() {
-        let workspace = std::env::temp_dir().join(format!(
-            "klintcode-invalid-build-{}",
-            std::process::id()
-        ));
+        let workspace =
+            std::env::temp_dir().join(format!("klintcode-invalid-build-{}", std::process::id()));
         std::fs::create_dir_all(workspace.join("src")).expect("create test workspace");
         std::fs::write(
             workspace.join("Cargo.toml"),

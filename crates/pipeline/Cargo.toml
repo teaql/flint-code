@@ -21,3 +21,6 @@ serde_json = { workspace = true }
 chrono = { workspace = true }
 toml = { workspace = true }
 rag-remote = { version = "0.1.0", path = "../rag-remote" }
+
+[dev-dependencies]
+tempfile = { workspace = true }

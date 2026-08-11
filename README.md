@@ -238,14 +238,71 @@ cd klint-code
 # Build
 cargo build --release
 
-# Run evaluation suite
-FLINTCODE_BASE_URL="http://localhost:8000" \
-  ./target/release/klintcode evaluate \
-    --plan benchmarks/rust-build-suite.toml \
+# Run one backend code-generation task
+LOCAL_API_KEY="<key-if-required>" \
+  ./target/release/klintcode run \
+    --task benchmarks/tasks/school-service-rust \
+    --profile profiles/local-qwen.toml \
+    --build-target rust-lib-core \
+    --output runs/
+
+# Queue tasks, repeat the queue, and continue on each generated workspace
+MIMO_API_KEY="<key>" \
+  ./target/release/klintcode run \
+    --task benchmarks/tasks/school-service-rust \
+    --task benchmarks/tasks/simple-greeting \
+    --profile profiles/mimo-v2.5-pro.toml \
+    --build-target rust-lib-core \
+    --repeat 2 \
+    --follow-up "Add backend tests for the generated services" \
+    --follow-up "Run cargo check and fix remaining warnings" \
     --output runs/
 
 # Interactive TUI
 ./target/release/klintcode-tui
+```
+
+Each repeated `--task` adds a fresh primary run to the queue. `--repeat N`
+replays the complete queue, while repeated `--follow-up` values reuse the
+workspace and bounded session history created by each primary run. A follow-up
+may be literal instruction text or a path to a text file. Queued primary runs
+continue after failures by default; add `--fail-fast` to stop at the first
+failure. `--skill` applies an explicit modeling skill to every primary task.
+
+### Backend Interface Checks
+
+`health` performs an authenticated `/models` request, parses the response, and
+requires the configured model ID to be present. It exits non-zero on transport,
+authentication, protocol, or model-selection failures:
+
+```bash
+MIMO_API_KEY="<key>" \
+  ./target/release/klintcode health \
+    --profile profiles/mimo-v2.5-pro.toml
+```
+
+`probe` runs explicit live conformance checks. Chat, stream, and tool checks
+send small generation requests and may consume provider quota. Use `--json`
+for machine-readable output, or select checks with repeated/comma-separated
+`--check` values:
+
+```bash
+MIMO_API_KEY="<key>" \
+  ./target/release/klintcode probe \
+    --profile profiles/mimo-v2.5-pro.toml \
+    --check models,chat,stream,tools \
+    --json
+```
+
+Run a benchmark plan with per-case timeouts, token accounting, JSON output,
+Markdown output, and a non-zero exit status when any case fails:
+
+```bash
+MIMO_API_KEY="<key>" \
+  ./target/release/klintcode evaluate \
+    --plan benchmarks/rust-build-suite.toml \
+    --profile profiles/mimo-v2.5-pro.toml \
+    --output runs/evaluation/
 ```
 
 The TUI opens with its prompt composer focused. Type a task and press `Enter`
