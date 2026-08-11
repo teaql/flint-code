@@ -1,43 +1,29 @@
 //! L3: Domain validation — TeaQL evaluate or other domain validators
 
 use agent_core::event::ValidationResult;
-use std::path::Path;
-use std::process::Command;
 
-/// Run cargo teaql evaluate on the given input file or directory
-pub fn validate_domain(input_path: &Path) -> ValidationResult {
-    let start = std::time::Instant::now();
-
-    let output = Command::new("cargo")
-        .arg("teaql")
-        .arg("--input")
-        .arg(input_path)
-        .arg("evaluate")
-        .output();
-
-    let elapsed = start.elapsed().as_secs_f64();
-
-    match output {
-        Ok(out) => {
-            let stdout = String::from_utf8_lossy(&out.stdout);
-            let stderr = String::from_utf8_lossy(&out.stderr);
-            let combined = format!("{}\n{}", stdout, stderr);
-            let mut result = parse_teaql_output(&combined);
-            result.elapsed_secs = elapsed;
-
-            // If the command failed but we didn't parse any errors, add a generic error
-            if !out.status.success() && result.error_count == 0 {
-                result.error_count = 1;
-                result.passed = false;
-                result.actionable_errors.push(format!(
-                    "Command failed with exit code: {:?}",
-                    out.status.code()
-                ));
-            }
-            result
-        }
-        Err(e) => super::fail(3, "domain", vec![e.to_string()], e.to_string(), elapsed),
-    }
+pub fn is_infrastructure_output(output: &str) -> bool {
+    let normalized = output.to_ascii_lowercase();
+    [
+        "internal server error",
+        "bad gateway",
+        "service unavailable",
+        "gateway timeout",
+        "connection refused",
+        "failed to connect",
+        "could not connect",
+        "network is unreachable",
+        "name resolution",
+        "dns error",
+        "tls error",
+        "certificate error",
+        "error (500)",
+        "error (502)",
+        "error (503)",
+        "error (504)",
+    ]
+    .iter()
+    .any(|marker| normalized.contains(marker))
 }
 
 /// Parse TeaQL evaluate output to extract error/warning/suggestion counts.
@@ -106,4 +92,22 @@ fn extract_count(line: &str) -> Option<u32> {
         }
     }
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn teaql_transport_failures_are_classified_as_infrastructure() {
+        assert!(is_infrastructure_output(
+            "## Internal Server Error (500)\nStringTemplate failed"
+        ));
+        assert!(is_infrastructure_output(
+            "connection refused while contacting validator"
+        ));
+        assert!(!is_infrastructure_output(
+            "KSML-DOMAIN-ROOT-002 disconnected graph"
+        ));
+    }
 }

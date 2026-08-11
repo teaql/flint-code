@@ -102,6 +102,20 @@ pub struct ValidationResult {
     pub elapsed_secs: f64,
 }
 
+/// Prefix used when a validation gate failed because its execution environment
+/// or an external service was unavailable. These failures must not be sent to
+/// the model as repair instructions.
+pub const INFRASTRUCTURE_FAILURE_PREFIX: &str = "[infrastructure]";
+
+impl ValidationResult {
+    /// Whether this validation failure is not repairable by changing the model.
+    pub fn is_infrastructure_failure(&self) -> bool {
+        self.actionable_errors
+            .iter()
+            .any(|error| error.starts_with(INFRASTRUCTURE_FAILURE_PREFIX))
+    }
+}
+
 /// Export consent record
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportConsent {

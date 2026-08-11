@@ -13,12 +13,14 @@ use model_vllm::profile::ModelProfile;
 
 /// Evaluation suite plan loaded from TOML
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SuitePlan {
     pub suite: SuiteMetadata,
     pub cases: Vec<TestCase>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SuiteMetadata {
     pub name: String,
     pub description: String,
@@ -31,6 +33,7 @@ fn default_version() -> String {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TestCase {
     pub name: String,
     pub task: String, // relative path to task package dir
@@ -43,6 +46,15 @@ pub struct TestCase {
     pub timeout_secs: u64,
     #[serde(default)]
     pub patches: Option<std::collections::HashMap<String, String>>,
+    /// Optional continuation instruction, resolved relative to the suite file.
+    #[serde(default)]
+    pub follow_up: Option<String>,
+    /// Required typed contract for `follow_up`, resolved relative to the suite file.
+    #[serde(default)]
+    pub follow_up_acceptance: Option<String>,
+    /// Optional task modeling skill, resolved relative to the suite file.
+    #[serde(default)]
+    pub skill: Option<String>,
 }
 
 fn default_expect() -> String {
@@ -50,6 +62,14 @@ fn default_expect() -> String {
 }
 fn default_timeout() -> u64 {
     600
+}
+
+fn case_rate(count: usize, total: usize) -> f64 {
+    if total == 0 {
+        0.0
+    } else {
+        count as f64 / total as f64
+    }
 }
 
 /// Result of running a single test case
@@ -117,6 +137,43 @@ pub async fn run_suite(
         let case_start = std::time::Instant::now();
 
         let task_path = base_dir.join(&case.task);
+        let skill_path = case.skill.as_ref().map(|path| base_dir.join(path));
+        if let Some(path) = &skill_path
+            && !path.is_file()
+        {
+            anyhow::bail!(
+                "suite case `{}` modeling skill does not exist: {}",
+                case.name,
+                path.display()
+            );
+        }
+        let follow_up = match (&case.follow_up, &case.follow_up_acceptance) {
+            (Some(instruction_path), Some(contract_path)) => {
+                let instruction_path = base_dir.join(instruction_path);
+                let contract_path = base_dir.join(contract_path);
+                let instruction = std::fs::read_to_string(&instruction_path).map_err(|error| {
+                    anyhow::anyhow!(
+                        "failed to read suite follow-up {}: {error}",
+                        instruction_path.display()
+                    )
+                })?;
+                if instruction.trim().is_empty() {
+                    anyhow::bail!(
+                        "suite follow-up instruction is empty: {}",
+                        instruction_path.display()
+                    );
+                }
+                let contract =
+                    crate::followup_acceptance::FollowUpAcceptanceSpec::load(&contract_path)
+                        .map_err(anyhow::Error::msg)?;
+                Some((instruction, contract))
+            }
+            (None, None) => None,
+            _ => anyhow::bail!(
+                "suite case `{}` must set follow_up and follow_up_acceptance together; evaluation continuations cannot be unverified",
+                case.name
+            ),
+        };
         let run_id = format!(
             "{}-{}-{}",
             plan.suite.name,
@@ -139,12 +196,20 @@ pub async fn run_suite(
             run_id.clone(),
         )?;
 
-        // Load the task
-        executor.load_task_from_path(&task_path).await;
-
         if let Some(ref target) = case.build_target {
             executor.set_build_target(target.clone());
         }
+
+        if let Some((_, contract)) = &follow_up {
+            executor.set_followup_acceptance_specs(vec![contract.clone()]);
+        }
+        if let Some(path) = skill_path {
+            executor.set_modeling_skill_path(path);
+        }
+
+        // Load only after explicit options are installed so task acceptance
+        // can reject a conflicting suite build target deterministically.
+        executor.load_task_from_path(&task_path).await;
 
         if let Some(ref patches) = case.patches {
             executor.set_patches(patches.clone());
@@ -158,14 +223,45 @@ pub async fn run_suite(
                     None => break,
                 }
             }
-            controller
+            let primary_attempts = controller.state.current_attempt;
+            if matches!(controller.state.state, PipelineState::Completed)
+                && let Some((instruction, _)) = follow_up
+            {
+                event_tx
+                    .send(agent_core::event::RunEvent::ContinueTask(instruction))
+                    .await
+                    .map_err(|error| {
+                        anyhow::anyhow!("failed to enqueue suite follow-up: {error}")
+                    })?;
+                // Completed is terminal, so explicitly consume the continuation
+                // event once; it transitions the controller back to an active
+                // follow-up validation state.
+                match controller.process_next().await {
+                    Some(SideEffect::None) => {}
+                    Some(effect) => executor.handle(effect).await,
+                    None => anyhow::bail!("suite controller closed before follow-up started"),
+                }
+                while !controller.state.state.is_terminal() {
+                    match controller.process_next().await {
+                        Some(SideEffect::None) => {}
+                        Some(effect) => executor.handle(effect).await,
+                        None => break,
+                    }
+                }
+            }
+            Ok::<_, anyhow::Error>((controller, primary_attempts))
         };
-        let controller = tokio::time::timeout(
+        let execution = tokio::time::timeout(
             std::time::Duration::from_secs(case.timeout_secs),
             case_execution,
         )
         .await
-        .ok();
+        .ok()
+        .transpose()?;
+        let controller = execution.as_ref().map(|(controller, _)| controller);
+        let primary_attempts = execution
+            .as_ref()
+            .map_or(0, |(_, primary_attempts)| *primary_attempts);
 
         let elapsed = case_start.elapsed().as_secs_f64();
 
@@ -189,11 +285,9 @@ pub async fn run_suite(
         };
 
         let pass = actual_state == case.expect;
-        let attempts = controller
-            .as_ref()
-            .map_or(0, |controller| controller.state.current_attempt);
-        let pass_at_1 = actual_state == "completed" && attempts <= 1;
-        let pass_after_repair = actual_state == "completed" && attempts > 1;
+        let attempts = primary_attempts;
+        let pass_at_1 = actual_state == "completed" && primary_attempts <= 1;
+        let pass_after_repair = actual_state == "completed" && primary_attempts > 1;
 
         if pass {
             pass_count += 1;
@@ -244,11 +338,6 @@ pub async fn run_suite(
 
     let suite_end = Utc::now();
     let total = plan.cases.len();
-    let completed_count = case_results
-        .iter()
-        .filter(|c| c.actual == "completed")
-        .count();
-
     let result = SuiteResult {
         suite_name: plan.suite.name.clone(),
         profile: profile.model.name.clone(),
@@ -257,16 +346,8 @@ pub async fn run_suite(
         total_cases: total,
         passed: pass_count,
         failed: total - pass_count,
-        pass_at_1_rate: if completed_count > 0 {
-            pass_at_1_count as f64 / completed_count as f64
-        } else {
-            0.0
-        },
-        pass_after_repair_rate: if completed_count > 0 {
-            pass_after_repair_count as f64 / completed_count as f64
-        } else {
-            0.0
-        },
+        pass_at_1_rate: case_rate(pass_at_1_count, total),
+        pass_after_repair_rate: case_rate(pass_after_repair_count, total),
         cases: case_results,
     };
 
@@ -344,6 +425,37 @@ mod tests {
     use super::*;
     use std::io::Write;
 
+    #[test]
+    fn pass_rates_use_all_cases_as_the_denominator() {
+        assert_eq!(case_rate(1, 10), 0.1);
+        assert_eq!(case_rate(0, 0), 0.0);
+    }
+
+    #[test]
+    fn suite_schema_rejects_unknown_case_fields_and_loads_moving_contract_paths() {
+        let invalid = r#"
+[suite]
+name = "invalid"
+description = "invalid"
+
+[[cases]]
+name = "case"
+task = "task"
+workflow = "ksml-modeling"
+typo_field = true
+"#;
+        assert!(toml::from_str::<SuitePlan>(invalid).is_err());
+
+        let plan = SuitePlan::load(
+            &Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../benchmarks/moving-company-suite.toml"),
+        )
+        .expect("moving suite");
+        assert!(plan.cases[0].follow_up.is_some());
+        assert!(plan.cases[0].follow_up_acceptance.is_some());
+        assert!(plan.cases[0].skill.is_some());
+    }
+
     #[tokio::test]
     async fn suite_enforces_case_timeout() {
         let mut scenario = tempfile::NamedTempFile::new().expect("scenario");
@@ -378,6 +490,9 @@ content = "<root/>"
                 expect: "timeout".to_string(),
                 timeout_secs: 1,
                 patches: None,
+                follow_up: None,
+                follow_up_acceptance: None,
+                skill: None,
             }],
         };
         let output = tempfile::tempdir().expect("output");

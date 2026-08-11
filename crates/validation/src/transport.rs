@@ -30,3 +30,32 @@ pub fn validate_transport(result: &ModelResult) -> ValidationResult {
         super::fail(0, "transport", errors.clone(), errors.join("; "), elapsed)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use agent_core::event::TokenUsage;
+
+    fn result(finish_reason: &str, content: &str) -> ModelResult {
+        ModelResult {
+            content: content.to_string(),
+            reasoning_content: None,
+            tool_calls: None,
+            finish_reason: finish_reason.to_string(),
+            usage: TokenUsage {
+                prompt_tokens: 1,
+                completion_tokens: 1,
+                total_tokens: 2,
+            },
+            elapsed_secs: 0.1,
+            http_status: 200,
+        }
+    }
+
+    #[test]
+    fn truncated_or_empty_model_content_never_passes_transport_gate() {
+        assert!(!validate_transport(&result("length", "<root>")).passed);
+        assert!(!validate_transport(&result("stop", "   ")).passed);
+        assert!(validate_transport(&result("stop", "<root/>")).passed);
+    }
+}

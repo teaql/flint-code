@@ -11,6 +11,7 @@ use model_vllm::chat::ChatMessage;
 use model_vllm::profile::ModelProfile;
 use model_vllm::tokenizer;
 use rag_remote::WeaviateRetriever;
+use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tokio::sync::mpsc;
@@ -48,8 +49,12 @@ pub struct PipelineExecutor {
     assist_context: String,
     /// Compact summaries of deterministically verified continuation turns.
     followup_history: Vec<FollowUpRecord>,
+    /// Explicit machine-verifiable contracts, aligned with queued follow-ups.
+    followup_acceptance_specs: VecDeque<crate::followup_acceptance::FollowUpAcceptanceSpec>,
     /// Actionable errors from the most recent failed validation, fed into repair prompts.
     last_actionable_errors: Vec<String>,
+    /// Most recent L3 result after task-specific forbidden diagnostics are enforced.
+    last_domain_validation: Option<ValidationResult>,
     /// RAG retriever for skills and error troubleshooting.
     retriever: Option<Arc<dyn KnowledgeRetriever>>,
 }
@@ -78,7 +83,9 @@ impl PipelineExecutor {
             workspace_dir: None,
             assist_context: String::new(),
             followup_history: Vec::new(),
+            followup_acceptance_specs: VecDeque::new(),
             last_actionable_errors: Vec::new(),
+            last_domain_validation: None,
             retriever: None,
         })
     }
@@ -89,6 +96,38 @@ impl PipelineExecutor {
             let r = WeaviateRetriever::new("http://localhost:8085/v1/graphql");
             info!("Remote Weaviate RAG Retriever initialized on port 8085");
             self.retriever = Some(Arc::new(r));
+        }
+    }
+
+    async fn retrieve_modeling_skill(&mut self, task_text: &str) -> Result<String, String> {
+        self.init_retriever().await;
+        let Some(retriever) = &self.retriever else {
+            return Err("RAG retriever is not configured".to_string());
+        };
+
+        let _ = self.event_tx.send(RunEvent::RagStarted).await;
+        match retriever.search_by_intent(task_text).await {
+            Ok(documents) => {
+                let _ = self
+                    .event_tx
+                    .send(RunEvent::RagCompleted(documents.len()))
+                    .await;
+                if !documents.is_empty() {
+                    info!(
+                        count = documents.len(),
+                        "Loaded intent-driven skills from RAG"
+                    );
+                }
+                Ok(documents
+                    .into_iter()
+                    .map(|document| document.content)
+                    .collect::<Vec<_>>()
+                    .join("\n\n"))
+            }
+            Err(error) => {
+                let _ = self.event_tx.send(RunEvent::RagCompleted(0)).await;
+                Err(format!("RAG skill retrieval failed: {error}"))
+            }
         }
     }
 
@@ -105,6 +144,14 @@ impl PipelineExecutor {
     /// Set patches for generated Cargo.toml files
     pub fn set_patches(&mut self, patches: std::collections::HashMap<String, String>) {
         self.patches = Some(patches);
+    }
+
+    /// Set machine-verifiable contracts for queued follow-ups, in queue order.
+    pub fn set_followup_acceptance_specs(
+        &mut self,
+        specs: Vec<crate::followup_acceptance::FollowUpAcceptanceSpec>,
+    ) {
+        self.followup_acceptance_specs = specs.into();
     }
 
     /// Process a side effect. This is the main dispatch loop.
@@ -133,6 +180,19 @@ impl PipelineExecutor {
 
     /// Run follow-up task on the existing workspace
     async fn run_followup(&mut self, task: String, attempt: u8) {
+        let acceptance_spec = self.followup_acceptance_specs.pop_front();
+        if let Some(spec) = acceptance_spec.as_ref() {
+            let missing = missing_followup_environment(std::iter::once(spec));
+            if !missing.is_empty() {
+                let result = infrastructure_validation_failure(
+                    "Required follow-up environment is unavailable",
+                    format!("Missing environment variable(s): {}", missing.join(", ")),
+                    0.0,
+                );
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+        }
         let build_dir = match self.followup_workspace() {
             Ok(path) => path,
             Err(error) => {
@@ -147,9 +207,35 @@ impl PipelineExecutor {
             ?build_dir,
             "Launching agentic build loop for follow-up task"
         );
+        match crate::known_infrastructure::detect_generated_workspace_infrastructure_failure(
+            &build_dir,
+        ) {
+            Ok(Some(failure)) => {
+                let result = validation::fail(
+                    5,
+                    "follow-up infrastructure",
+                    vec![failure.actionable_error()],
+                    failure.diagnostic(),
+                    0.0,
+                );
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+            Ok(None) => {}
+            Err(error) => {
+                let result = infrastructure_validation_failure(
+                    "Failed to inspect follow-up workspace for known runtime incompatibilities",
+                    error.to_string(),
+                    0.0,
+                );
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+        }
+        let workspace_before = application_workspace_snapshot(&build_dir);
 
-        let system_template = std::fs::read_to_string("prompts/agentic-build.txt")
-            .unwrap_or_else(|_| include_str!("../../../prompts/agentic-build.txt").to_string());
+        let system_template = std::fs::read_to_string("prompts/agentic-followup.txt")
+            .unwrap_or_else(|_| include_str!("../../../prompts/agentic-followup.txt").to_string());
         let system_prompt =
             render_agentic_system_prompt(&system_template, &build_dir, &self.assist_context);
 
@@ -158,146 +244,199 @@ impl PipelineExecutor {
             .as_ref()
             .map(|task| task.task_content.as_str())
             .unwrap_or("");
-        let user_prompt =
-            build_followup_prompt(&build_dir, &task, original_task, &self.followup_history);
-
-        let max_iterations = 20;
+        let user_prompt = build_followup_prompt(
+            &build_dir,
+            &task,
+            original_task,
+            &self.followup_history,
+            acceptance_spec.as_ref(),
+        );
 
         let start = std::time::Instant::now();
-        let loop_result = crate::agent_loop::run_agent_loop(
-            &self.client,
-            &build_dir,
-            &system_prompt,
-            &user_prompt,
-            max_iterations,
-            Some(self.event_tx.clone()),
-        )
-        .await;
+        const MAX_VERIFICATION_ROUNDS: usize = 3;
+        const ITERATIONS_PER_ROUND: usize = 10;
+        let mut next_prompt = user_prompt.clone();
+        let mut total_iterations = 0usize;
+        let mut total_tool_calls = 0usize;
+        let mut last_summary = String::new();
+        let requires_workspace_change = acceptance_spec
+            .as_ref()
+            .map(|spec| spec.files.iter().any(|file| file.must_change))
+            .unwrap_or(true);
+        let verification_target = self.build_target.as_deref().unwrap_or("rust-lib-core");
 
-        match &loop_result {
-            crate::agent_loop::AgentLoopResult::Completed {
-                summary,
-                iterations,
-                total_tool_calls,
-            } => {
-                let total_elapsed = start.elapsed().as_secs_f64();
-                let verification_target = self.build_target.as_deref().unwrap_or("rust-lib-core");
-                let diagnostic = match verify_generated_build(&build_dir, verification_target).await
-                {
-                    Ok(diagnostic) => diagnostic,
-                    Err(diagnostic) => {
-                        warn!(attempt, "Deterministic follow-up verification failed");
-                        let mut result = validation::fail(
-                            5,
-                            "build",
-                            vec!["Deterministic follow-up build verification failed".to_string()],
-                            diagnostic,
-                            total_elapsed,
+        for verification_round in 1..=MAX_VERIFICATION_ROUNDS {
+            let loop_result = crate::agent_loop::run_agent_loop(
+                &self.client,
+                &build_dir,
+                &system_prompt,
+                &next_prompt,
+                ITERATIONS_PER_ROUND,
+                Some(self.event_tx.clone()),
+            )
+            .await;
+
+            let (yielded, round_diagnostic) = match loop_result {
+                crate::agent_loop::AgentLoopResult::Completed {
+                    summary,
+                    iterations,
+                    total_tool_calls: tool_calls,
+                } => {
+                    total_iterations += iterations;
+                    total_tool_calls += tool_calls;
+                    last_summary = summary;
+                    (true, None)
+                }
+                crate::agent_loop::AgentLoopResult::Failed { error, iterations } => {
+                    total_iterations += iterations;
+                    if is_infrastructure_diagnostic(&error) {
+                        let mut result = infrastructure_validation_failure(
+                            "Follow-up agent stopped on an infrastructure failure",
+                            error.clone(),
+                            start.elapsed().as_secs_f64(),
                         );
-                        result.diagnostic =
-                            format!("Agent summary: {}\n\n{}", summary, result.diagnostic);
+                        result.diagnostic = format!(
+                            "Agentic follow-up stopped after {total_iterations} iteration(s): {error}"
+                        );
                         self.send(RunEvent::ValidationCompleted(result)).await;
                         return;
                     }
-                };
-                self.followup_history.push(FollowUpRecord {
-                    attempt,
-                    instruction: bounded_text(&task, 4_000),
-                    summary: bounded_text(summary, 2_000),
-                });
-                if let Some(artifacts) = &self.artifacts {
-                    artifacts
-                        .save_attempt_file(attempt, "session-ledger.json", &self.followup_history)
-                        .await
-                        .ok();
-                }
-                info!(
-                    attempt,
-                    iterations,
-                    total_tool_calls,
-                    total_elapsed,
-                    "Agentic build loop completed successfully"
-                );
-                let mut r = validation::pass(5, "build", total_elapsed);
-                r.diagnostic = format!(
-                    "Follow-up: ✓ ({} iterations, {} tool calls)\n\nAgent summary: {}\n\n{}",
-                    iterations, total_tool_calls, summary, diagnostic
-                );
-                self.send(RunEvent::ValidationCompleted(r)).await;
-            }
-            crate::agent_loop::AgentLoopResult::Failed { error, iterations } => {
-                let total_elapsed = start.elapsed().as_secs_f64();
-                warn!(attempt, iterations, %error, "Agentic build loop failed");
-                let mut r = validation::fail(
-                    5,
-                    "build",
-                    vec!["Agent loop failed".to_string()],
-                    error.clone(),
-                    total_elapsed,
-                );
-                r.diagnostic = format!(
-                    "Agentic follow-up failed after {} iterations: {}",
-                    iterations, error
-                );
-                self.send(RunEvent::ValidationCompleted(r)).await;
-            }
-            crate::agent_loop::AgentLoopResult::MaxIterationsReached {
-                iterations,
-                total_tool_calls,
-            } => {
-                let total_elapsed = start.elapsed().as_secs_f64();
-                let verification_target = self.build_target.as_deref().unwrap_or("rust-lib-core");
-                match verify_generated_build(&build_dir, verification_target).await {
-                    Ok(diagnostic) => {
-                        let summary = format!(
-                            "Reached the {}-iteration limit after {} tool calls; accepted because independent build verification passed.",
-                            iterations, total_tool_calls
-                        );
-                        self.followup_history.push(FollowUpRecord {
-                            attempt,
-                            instruction: bounded_text(&task, 4_000),
-                            summary: summary.clone(),
-                        });
-                        if let Some(artifacts) = &self.artifacts {
-                            artifacts
-                                .save_attempt_file(
-                                    attempt,
-                                    "session-ledger.json",
-                                    &self.followup_history,
-                                )
-                                .await
-                                .ok();
-                        }
-                        warn!(
-                            attempt,
-                            iterations,
-                            total_tool_calls,
-                            "Agentic follow-up hit its iteration limit but passed deterministic verification"
-                        );
-                        let mut result = validation::pass(5, "build", total_elapsed);
-                        result.diagnostic = format!("{summary}\n\n{diagnostic}");
-                        self.send(RunEvent::ValidationCompleted(result)).await;
-                    }
-                    Err(diagnostic) => {
-                        warn!(
-                            attempt,
-                            iterations,
-                            total_tool_calls,
-                            "Agentic build loop hit max iterations and failed deterministic verification"
-                        );
-                        let mut result = validation::fail(
+                    if acceptance_spec.is_none() {
+                        let result = validation::fail(
                             5,
-                            "build",
-                            vec![format!("Agent loop exhausted {} iterations", iterations)],
-                            diagnostic,
-                            total_elapsed,
-                        );
-                        result.diagnostic = format!(
-                            "Agentic follow-up did not complete within {} iterations ({} tool calls)\n\n{}",
-                            iterations, total_tool_calls, result.diagnostic
+                            "follow-up acceptance",
+                            vec!["Unverified follow-up agent loop failed".to_string()],
+                            error,
+                            start.elapsed().as_secs_f64(),
                         );
                         self.send(RunEvent::ValidationCompleted(result)).await;
+                        return;
                     }
+                    (false, Some(error))
+                }
+                crate::agent_loop::AgentLoopResult::MaxIterationsReached {
+                    iterations,
+                    total_tool_calls: tool_calls,
+                    last_failed_build,
+                } => {
+                    total_iterations += iterations;
+                    total_tool_calls += tool_calls;
+                    if acceptance_spec.is_none() {
+                        let result = validation::fail(
+                            5,
+                            "follow-up acceptance",
+                            vec!["Agent reached its iteration limit without an explicit, verifiable acceptance contract".to_string()],
+                            "The model did not yield completion. Natural-language hints are not an acceptance contract; provide a typed follow-up acceptance sidecar or CLI contract. Compilation alone is never accepted at the iteration limit.".to_string(),
+                            start.elapsed().as_secs_f64(),
+                        );
+                        self.send(RunEvent::ValidationCompleted(result)).await;
+                        return;
+                    }
+                    last_summary = format!(
+                        "Round {verification_round} reached its iteration limit; deterministic verification was still required. Last failed build: {}",
+                        last_failed_build
+                            .as_deref()
+                            .unwrap_or("no compiler diagnostic captured")
+                    );
+                    (false, None)
+                }
+            };
+
+            let verification = if requires_workspace_change
+                && application_workspace_snapshot(&build_dir) == workspace_before
+            {
+                Err("The follow-up has not changed any application-owned file required by the acceptance contract.".to_string())
+            } else {
+                verify_followup_outcome(
+                    &build_dir,
+                    &workspace_before,
+                    acceptance_spec.as_ref(),
+                    verification_target,
+                )
+                .await
+            };
+
+            match verification {
+                Ok(acceptance_diagnostic) => {
+                    let summary = if yielded {
+                        last_summary.clone()
+                    } else {
+                        format!(
+                            "The agent did not explicitly yield in verification round {verification_round}, but every item in the explicit machine contract passed independently. {}",
+                            last_summary
+                        )
+                    };
+                    self.followup_history.push(FollowUpRecord {
+                        attempt,
+                        instruction: bounded_text(&task, 4_000),
+                        summary: bounded_text(&summary, 2_000),
+                    });
+                    if let Some(artifacts) = &self.artifacts {
+                        artifacts
+                            .save_attempt_file(
+                                attempt,
+                                "session-ledger.json",
+                                &self.followup_history,
+                            )
+                            .await
+                            .ok();
+                    }
+                    let total_elapsed = start.elapsed().as_secs_f64();
+                    info!(
+                        attempt,
+                        verification_round,
+                        total_iterations,
+                        total_tool_calls,
+                        total_elapsed,
+                        "Agentic follow-up passed deterministic acceptance"
+                    );
+                    let mut result = validation::pass(5, "build", total_elapsed);
+                    result.diagnostic = format!(
+                        "Follow-up: ✓ ({verification_round} verification round(s), {total_iterations} model iteration(s), {total_tool_calls} tool call(s))\n\nAgent summary: {summary}\n\n{acceptance_diagnostic}"
+                    );
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
+                }
+                Err(diagnostic) if is_infrastructure_diagnostic(&diagnostic) => {
+                    let result = infrastructure_validation_failure(
+                        "Deterministic follow-up verification hit an infrastructure failure",
+                        diagnostic,
+                        start.elapsed().as_secs_f64(),
+                    );
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
+                }
+                Err(diagnostic) if verification_round < MAX_VERIFICATION_ROUNDS => {
+                    warn!(
+                        attempt,
+                        verification_round,
+                        "Deterministic acceptance failed; returning evidence to the coding agent"
+                    );
+                    next_prompt = format!(
+                        "{user_prompt}\n\n# Independent Acceptance Feedback (round {verification_round})\nThe previous attempt did not pass. Fix every failed check below, rerun the relevant commands, and only then yield. Do not regenerate or modify the model or validation evidence.\n\n{}\n\nPrevious agent summary:\n{}",
+                        bounded_text(&diagnostic, 12_000),
+                        bounded_text(&last_summary, 2_000)
+                    );
+                }
+                Err(diagnostic) => {
+                    let total_elapsed = start.elapsed().as_secs_f64();
+                    let mut result = validation::fail(
+                        5,
+                        "follow-up acceptance",
+                        vec![format!(
+                            "Deterministic follow-up acceptance failed after {MAX_VERIFICATION_ROUNDS} verification rounds"
+                        )],
+                        diagnostic,
+                        total_elapsed,
+                    );
+                    if let Some(round_error) = round_diagnostic {
+                        result.diagnostic = format!(
+                            "Last agent-loop error: {round_error}\n\n{}",
+                            result.diagnostic
+                        );
+                    }
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
                 }
             }
         }
@@ -307,6 +446,73 @@ impl PipelineExecutor {
     pub async fn load_task_from_path(&mut self, path: &Path) {
         match TaskPackageData::load(path) {
             Ok(mut task) => {
+                let required_build_targets = task
+                    .acceptance_spec
+                    .as_ref()
+                    .and_then(|spec| spec.get("build_targets"))
+                    .and_then(serde_json::Value::as_array)
+                    .map(|targets| {
+                        targets
+                            .iter()
+                            .filter_map(serde_json::Value::as_str)
+                            .map(str::to_owned)
+                            .collect::<Vec<_>>()
+                    })
+                    .unwrap_or_default();
+                if required_build_targets.len() > 1 {
+                    self.send(RunEvent::TaskLoadFailed(format!(
+                        "Task acceptance requires multiple build targets ({}) but this pipeline supports exactly one target per run",
+                        required_build_targets.join(", ")
+                    )))
+                    .await;
+                    return;
+                }
+                if let Some(required_target) = required_build_targets.first() {
+                    if let Some(configured_target) = self.build_target.as_deref()
+                        && configured_target != required_target
+                    {
+                        self.send(RunEvent::TaskLoadFailed(format!(
+                            "Configured build target `{configured_target}` conflicts with task acceptance target `{required_target}`"
+                        )))
+                        .await;
+                        return;
+                    }
+                    if self.build_target.is_none() {
+                        info!(target = %required_target, "Using build target required by task acceptance");
+                        self.build_target = Some(required_target.clone());
+                    }
+                }
+                if self.followup_acceptance_specs.is_empty() {
+                    let sidecar = task.root.join("followup-acceptance.json");
+                    if sidecar.is_file() {
+                        match crate::followup_acceptance::FollowUpAcceptanceSpec::load(&sidecar) {
+                            Ok(spec) => {
+                                info!(path = %sidecar.display(), "Loaded task follow-up acceptance sidecar");
+                                self.followup_acceptance_specs.push_back(spec);
+                            }
+                            Err(error) => {
+                                self.send(RunEvent::TaskLoadFailed(error)).await;
+                                return;
+                            }
+                        }
+                    }
+                }
+                if self.modeling_skill_path.is_none() && !self.profile.simulator.enabled {
+                    let task_text = task.task_content.clone();
+                    match self.retrieve_modeling_skill(&task_text).await {
+                        Ok(skill) if !skill.is_empty() => {
+                            task.modeling_skill = Some(match task.modeling_skill.take() {
+                                Some(existing) => format!("{existing}\n\n{skill}"),
+                                None => skill,
+                            });
+                        }
+                        Ok(_) => {}
+                        Err(error) => {
+                            self.send(RunEvent::TaskLoadFailed(error)).await;
+                            return;
+                        }
+                    }
+                }
                 if let Some(skill_path) = &self.modeling_skill_path
                     && let Err(error) = task.load_modeling_skill_from(skill_path)
                 {
@@ -338,25 +544,15 @@ impl PipelineExecutor {
     pub async fn load_task_from_text(&mut self, text: &str) {
         let mut task = TaskPackageData::from_inline_text(text);
 
-        // Dynamically retrieve skills based on the user's input text (intent)
-        self.init_retriever().await;
-        let mut skill_content = String::new();
-        if let Some(retriever) = &self.retriever {
-            let _ = self.event_tx.send(RunEvent::RagStarted).await;
-            if let Ok(docs) = retriever.search_by_intent(text).await {
-                let _ = self.event_tx.send(RunEvent::RagCompleted(docs.len())).await;
-                if !docs.is_empty() {
-                    info!(count = docs.len(), "Loaded intent-driven skills from RAG");
-                    for doc in docs {
-                        skill_content.push_str(&doc.content);
-                        skill_content.push_str("\n\n");
-                    }
+        if self.modeling_skill_path.is_none() && !self.profile.simulator.enabled {
+            match self.retrieve_modeling_skill(text).await {
+                Ok(skill) if !skill.is_empty() => task.modeling_skill = Some(skill),
+                Ok(_) => {}
+                Err(error) => {
+                    self.send(RunEvent::TaskLoadFailed(error)).await;
+                    return;
                 }
             }
-        }
-
-        if !skill_content.is_empty() {
-            task.modeling_skill = Some(skill_content);
         }
 
         if let Some(skill_path) = &self.modeling_skill_path
@@ -393,6 +589,18 @@ impl PipelineExecutor {
             }
         };
 
+        let missing_environment =
+            missing_followup_environment(self.followup_acceptance_specs.iter());
+        if !missing_environment.is_empty() {
+            self.send(RunEvent::PreflightFailed(format!(
+                "{} Required follow-up environment is unavailable: {}",
+                INFRASTRUCTURE_FAILURE_PREFIX,
+                missing_environment.join(", ")
+            )))
+            .await;
+            return;
+        }
+
         // Estimate token usage
         let messages = build_generation_messages(task);
         let estimated_prompt = tokenizer::estimate_messages_tokens(&messages);
@@ -420,13 +628,27 @@ impl PipelineExecutor {
             return;
         }
 
+        if !self.profile.simulator.enabled {
+            if let Err(error) = verify_cargo_teaql_version().await {
+                self.send(RunEvent::PreflightFailed(format!(
+                    "[infrastructure] {error}"
+                )))
+                .await;
+                return;
+            }
+        }
+
         // Create run artifacts directory
         match RunArtifacts::create(&self.runs_root, &self.run_id).await {
             Ok(artifacts) => {
                 self.artifacts = Some(artifacts);
             }
             Err(e) => {
-                warn!("Failed to create artifacts dir: {e}");
+                self.send(RunEvent::PreflightFailed(format!(
+                    "[infrastructure] Failed to create run artifacts: {e}"
+                )))
+                .await;
+                return;
             }
         }
 
@@ -546,6 +768,22 @@ impl PipelineExecutor {
         .await;
         match request_client.chat(messages.clone(), None, None).await {
             Ok(result) => {
+                let transport = validation::validate_transport(&result);
+                if !transport.passed {
+                    if let Some(artifacts) = &self.artifacts {
+                        artifacts
+                            .save_attempt_file(attempt, "response.json", &result)
+                            .await
+                            .ok();
+                    }
+                    self.send(RunEvent::ModelUsageRecorded(result.usage.clone()))
+                        .await;
+                    self.send(RunEvent::ModelFailed(AgentError::IncompleteGeneration {
+                        reason: transport.diagnostic,
+                    }))
+                    .await;
+                    return;
+                }
                 // Save candidate
                 self.candidate = Some(result.content.clone());
                 self.candidate_files = vec![("main.xml".to_string(), result.content.clone())];
@@ -570,6 +808,21 @@ impl PipelineExecutor {
 
                     match self.client.chat(sub_messages, None, None).await {
                         Ok(sub_result) => {
+                            let transport = validation::validate_transport(&sub_result);
+                            if !transport.passed {
+                                self.send(RunEvent::ModelUsageRecorded(sub_result.usage.clone()))
+                                    .await;
+                                self.send(RunEvent::ModelFailed(
+                                    AgentError::IncompleteGeneration {
+                                        reason: format!(
+                                            "Included file `{file}` was incomplete: {}",
+                                            transport.diagnostic
+                                        ),
+                                    },
+                                ))
+                                .await;
+                                return;
+                            }
                             let clean_content = strip_markdown_fences(&sub_result.content);
                             self.candidate_files
                                 .push((file.clone(), clean_content.clone()));
@@ -618,8 +871,14 @@ impl PipelineExecutor {
             }
         };
 
-        // L1: XML parse validation
-        let parse_result = validation::validate_xml_parse(&candidate);
+        // L1: Parse every generated KSML file and validate the combined model.
+        // This catches duplicate object declarations across `_include` files
+        // before they reach TeaQL code generation.
+        let parse_result = if self.candidate_files.is_empty() {
+            validation::validate_xml_parse(&candidate)
+        } else {
+            validation::validate_xml_model_files(&self.candidate_files)
+        };
         if let Some(artifacts) = &self.artifacts {
             artifacts
                 .save_attempt_file(attempt, "local-validation.json", &parse_result)
@@ -631,64 +890,73 @@ impl PipelineExecutor {
             self.send(RunEvent::ValidationCompleted(parse_result)).await;
             return;
         }
+        let mut local_result = parse_result;
 
         // L2: Acceptance validation (if spec exists)
         if let Some(task) = &self.task {
             if let Some(spec) = &task.acceptance_spec {
-                let acceptance_result = validation::validate_acceptance(&candidate, spec);
+                let acceptance_result = if self.candidate_files.is_empty() {
+                    validation::validate_acceptance(&candidate, spec)
+                } else {
+                    validation::validate_acceptance_model_files(&self.candidate_files, spec)
+                };
                 if !acceptance_result.passed {
                     self.send(RunEvent::ValidationCompleted(acceptance_result))
                         .await;
                     return;
                 }
+                local_result = acceptance_result;
             }
         }
 
         // All local validation passed
-        self.send(RunEvent::ValidationCompleted(parse_result)).await;
+        self.send(RunEvent::ValidationCompleted(local_result)).await;
     }
 
     async fn domain_validate(&mut self, attempt: u8) {
         let result = if let Some(artifacts) = &self.artifacts {
-            // Write the candidate to a temporary model.xml in the attempt dir
-            let attempt_dir = artifacts
-                .create_attempt(attempt)
-                .await
-                .unwrap_or_else(|_| artifacts.root.clone());
-            let model_path = attempt_dir.join("main.xml");
-            if let Some(c) = &self.candidate {
-                let mut clean = strip_markdown_fences(c);
-                // Auto-repair: ensure </root> closing tag exists
-                if clean.contains("<root") && !clean.contains("</root>") {
-                    tracing::warn!("main.xml missing </root> — auto-appending closing tag");
-                    clean.push_str("\n</root>\n");
+            match prepare_domain_model_files(
+                artifacts,
+                attempt,
+                &self.candidate_files,
+                self.candidate.as_deref(),
+            )
+            .await
+            {
+                Ok(model_dir) => {
+                    info!(attempt, path = %model_dir.display(), "Running domain validation");
+                    run_domain_validation(&model_dir).await
                 }
-                std::fs::write(&model_path, &clean).ok();
+                Err(error) => validation::fail(
+                    3,
+                    "domain",
+                    vec![format!(
+                        "{} Failed to prepare domain validation input",
+                        INFRASTRUCTURE_FAILURE_PREFIX
+                    )],
+                    error,
+                    0.0,
+                ),
             }
-
-            let model_dir = attempt_dir.join("model");
-            std::fs::create_dir_all(&model_dir).ok();
-            if let Ok(entries) = std::fs::read_dir(&attempt_dir) {
-                for entry in entries.flatten() {
-                    let path = entry.path();
-                    if path.is_file() {
-                        if let Some(ext) = path.extension() {
-                            if ext == "xml" || ext == "ksml" {
-                                std::fs::copy(&path, model_dir.join(path.file_name().unwrap()))
-                                    .ok();
-                            }
-                        }
-                    }
-                }
-            }
-
-            info!(attempt, path = %attempt_dir.display(), "Running domain validation");
-            validation::domain::validate_domain(&model_dir)
         } else {
-            // Fallback if no artifacts dir (shouldn't happen in normal runs)
-            info!(attempt, "Domain validation skipped — no artifact dir");
-            validation::pass(3, "domain", 0.0)
+            validation::fail(
+                3,
+                "domain",
+                vec!["[infrastructure] Run artifact store is unavailable; domain validation cannot execute".to_string()],
+                "Domain validation requires a durable attempt directory and model snapshot".to_string(),
+                0.0,
+            )
         };
+        let result = if let Some(spec) = self
+            .task
+            .as_ref()
+            .and_then(|task| task.acceptance_spec.as_ref())
+        {
+            validation::enforce_forbidden_domain_errors(result, spec)
+        } else {
+            result
+        };
+        self.last_domain_validation = Some(result.clone());
 
         if let Some(artifacts) = &self.artifacts {
             artifacts
@@ -731,36 +999,22 @@ impl PipelineExecutor {
                 Ok(dir) => dir,
                 Err(e) => {
                     error!(attempt, %e, "Failed to create attempt directory");
-                    let result = ValidationResult {
-                        level: 5,
-                        level_name: "build".to_string(),
-                        passed: false,
-                        error_count: 1,
-                        warning_count: 0,
-                        suggestion_count: 0,
-                        actionable_errors: vec![format!("Failed to create attempt dir: {}", e)],
-                        structured_errors: vec![],
-                        diagnostic: e.to_string(),
-                        elapsed_secs: 0.0,
-                    };
+                    let result = infrastructure_validation_failure(
+                        format!("Failed to create attempt directory: {e}"),
+                        e.to_string(),
+                        0.0,
+                    );
                     self.send(RunEvent::ValidationCompleted(result)).await;
                     return;
                 }
             },
             None => {
                 error!(attempt, "No artifact directory for build validation");
-                let result = ValidationResult {
-                    level: 5,
-                    level_name: "build".to_string(),
-                    passed: false,
-                    error_count: 1,
-                    warning_count: 0,
-                    suggestion_count: 0,
-                    actionable_errors: vec!["No artifact directory available".to_string()],
-                    structured_errors: vec![],
-                    diagnostic: "Internal error: no artifact store".to_string(),
-                    elapsed_secs: 0.0,
-                };
+                let result = infrastructure_validation_failure(
+                    "No artifact directory available",
+                    "Internal error: no artifact store".to_string(),
+                    0.0,
+                );
                 self.send(RunEvent::ValidationCompleted(result)).await;
                 return;
             }
@@ -770,11 +1024,17 @@ impl PipelineExecutor {
 
         // Step 1: Run cargo teaql to generate code
         info!(attempt, target = %build_target, dir = %attempt_dir.display(), "Running code generation");
-        let gen_result = tokio::process::Command::new("cargo")
+        let mut generation_command = tokio::process::Command::new("cargo");
+        crate::process_env::apply_safe_environment(&mut generation_command, &attempt_dir);
+        generation_command
             .args(["teaql", "--input", "model", &build_target])
-            .current_dir(&attempt_dir)
-            .output()
-            .await;
+            .current_dir(&attempt_dir);
+        let gen_result = crate::process_output::run_bounded_output(
+            &mut generation_command,
+            std::time::Duration::from_secs(300),
+            512 * 1024,
+        )
+        .await;
 
         match &gen_result {
             Ok(output) if !output.status.success() => {
@@ -782,18 +1042,11 @@ impl PipelineExecutor {
                 let stdout = String::from_utf8_lossy(&output.stdout);
                 let diagnostic = format!("Code generation failed:\n{}\n{}", stdout, stderr);
                 warn!(attempt, "Code generation failed");
-                let result = ValidationResult {
-                    level: 5,
-                    level_name: "build".to_string(),
-                    passed: false,
-                    error_count: 1,
-                    warning_count: 0,
-                    suggestion_count: 0,
-                    actionable_errors: vec![format!("cargo teaql {} failed", build_target)],
-                    structured_errors: vec![],
+                let result = generation_validation_failure(
+                    format!("cargo teaql {build_target} failed"),
                     diagnostic,
-                    elapsed_secs: start.elapsed().as_secs_f64(),
-                };
+                    start.elapsed().as_secs_f64(),
+                );
                 if let Some(artifacts) = &self.artifacts {
                     artifacts
                         .save_attempt_file(attempt, "build-validation.json", &result)
@@ -805,18 +1058,11 @@ impl PipelineExecutor {
             }
             Err(e) => {
                 error!(attempt, %e, "Failed to run cargo teaql");
-                let result = ValidationResult {
-                    level: 5,
-                    level_name: "build".to_string(),
-                    passed: false,
-                    error_count: 1,
-                    warning_count: 0,
-                    suggestion_count: 0,
-                    actionable_errors: vec![format!("Failed to execute cargo teaql: {}", e)],
-                    structured_errors: vec![],
-                    diagnostic: e.to_string(),
-                    elapsed_secs: start.elapsed().as_secs_f64(),
-                };
+                let result = infrastructure_validation_failure(
+                    format!("Failed to execute cargo teaql: {e}"),
+                    e.to_string(),
+                    start.elapsed().as_secs_f64(),
+                );
                 if let Some(artifacts) = &self.artifacts {
                     artifacts
                         .save_attempt_file(attempt, "build-validation.json", &result)
@@ -842,24 +1088,58 @@ impl PipelineExecutor {
                 build_target.replace("-lib-core", "-app-console")
             };
             info!(attempt, target = %app, "Generating app target");
-            let app_gen = tokio::process::Command::new("cargo")
+            let mut app_generation_command = tokio::process::Command::new("cargo");
+            crate::process_env::apply_safe_environment(&mut app_generation_command, &attempt_dir);
+            app_generation_command
                 .args(["teaql", "--input", "model", &app])
-                .current_dir(&attempt_dir)
-                .output()
-                .await;
+                .current_dir(&attempt_dir);
+            let app_gen = crate::process_output::run_bounded_output(
+                &mut app_generation_command,
+                std::time::Duration::from_secs(300),
+                512 * 1024,
+            )
+            .await;
 
             match &app_gen {
                 Ok(output) if !output.status.success() => {
                     let stderr = String::from_utf8_lossy(&output.stderr);
+                    let stdout = String::from_utf8_lossy(&output.stdout);
+                    let diagnostic = format!("Application generation failed:\n{stdout}\n{stderr}");
                     warn!(attempt, "App target generation failed: {}", stderr);
+                    let result = generation_validation_failure(
+                        format!("cargo teaql {app} failed"),
+                        diagnostic,
+                        start.elapsed().as_secs_f64(),
+                    );
                     if let Some(artifacts) = &self.artifacts {
                         artifacts
                             .save_attempt_raw(attempt, "app-gen-error.txt", &stderr)
                             .await
                             .ok();
+                        artifacts
+                            .save_attempt_file(attempt, "build-validation.json", &result)
+                            .await
+                            .ok();
                     }
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
                 }
-                Err(e) => warn!(attempt, %e, "Failed to run app target generation"),
+                Err(e) => {
+                    warn!(attempt, %e, "Failed to run app target generation");
+                    let result = infrastructure_validation_failure(
+                        format!("Failed to execute cargo teaql {app}: {e}"),
+                        e.to_string(),
+                        start.elapsed().as_secs_f64(),
+                    );
+                    if let Some(artifacts) = &self.artifacts {
+                        artifacts
+                            .save_attempt_file(attempt, "build-validation.json", &result)
+                            .await
+                            .ok();
+                    }
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
+                }
                 _ => info!(attempt, target = %app, "App target generated successfully"),
             }
             Some(app)
@@ -870,6 +1150,24 @@ impl PipelineExecutor {
         // ── Step 3: Apply patches to generated files ──
         let build_dir = attempt_dir.join("build");
         self.workspace_dir = Some(build_dir.clone());
+        if let Err(error) = prepare_workspace_context(&attempt_dir, &build_dir) {
+            let result = infrastructure_validation_failure(
+                "Failed to prepare model and agent context in generated workspace",
+                error,
+                start.elapsed().as_secs_f64(),
+            );
+            self.send(RunEvent::ValidationCompleted(result)).await;
+            return;
+        }
+        if let Err(error) = self.write_workspace_validation_evidence(&build_dir) {
+            let result = infrastructure_validation_failure(
+                "Failed to write deterministic validation evidence",
+                error,
+                start.elapsed().as_secs_f64(),
+            );
+            self.send(RunEvent::ValidationCompleted(result)).await;
+            return;
+        }
         // Apply patches to any Cargo.toml or pom.xml files found
         for entry in walkdir_toml_xml(&build_dir) {
             if let Ok(content) = std::fs::read_to_string(&entry) {
@@ -893,12 +1191,48 @@ impl PipelineExecutor {
             if app_cargo_toml.exists() {
                 if let Ok(content) = std::fs::read_to_string(&app_cargo_toml) {
                     let old_path = format!(r#"path = "../{}/lib""#, build_target);
-                    let fixed = content.replace(&old_path, r#"path = "./lib""#);
+                    let mut fixed = content.replace(&old_path, r#"path = "./lib""#);
+                    fixed = ensure_standalone_cargo_workspace(&fixed);
                     if fixed != content {
-                        info!(attempt, "Fixed app dependency path");
+                        info!(attempt, "Fixed generated app workspace manifest");
                         std::fs::write(&app_cargo_toml, &fixed).ok();
                     }
                 }
+            }
+        }
+
+        // Fail fast on framework defects that application edits or KSML repair
+        // cannot resolve. This detector reads only manifests, Cargo.lock, and
+        // the copied model; generated library source remains out of scope.
+        match crate::known_infrastructure::detect_generated_workspace_infrastructure_failure(
+            &build_dir,
+        ) {
+            Ok(Some(failure)) => {
+                let result = validation::fail(
+                    5,
+                    "build infrastructure",
+                    vec![failure.actionable_error()],
+                    failure.diagnostic(),
+                    start.elapsed().as_secs_f64(),
+                );
+                if let Some(artifacts) = &self.artifacts {
+                    artifacts
+                        .save_attempt_file(attempt, "build-validation.json", &result)
+                        .await
+                        .ok();
+                }
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+            Ok(None) => {}
+            Err(error) => {
+                let result = infrastructure_validation_failure(
+                    "Failed to inspect generated workspace for known runtime incompatibilities",
+                    error.to_string(),
+                    start.elapsed().as_secs_f64(),
+                );
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
             }
         }
 
@@ -931,31 +1265,76 @@ impl PipelineExecutor {
         );
 
         let assist_target_base = build_target.replace("-lib-core", "-assist-query");
-        let mut assist_outputs = String::new();
+        let assist_dir = build_dir.join(".klintcode/assist");
+        if let Err(error) = std::fs::create_dir_all(&assist_dir) {
+            let result = infrastructure_validation_failure(
+                "Failed to create workspace assist directory",
+                error.to_string(),
+                start.elapsed().as_secs_f64(),
+            );
+            self.send(RunEvent::ValidationCompleted(result)).await;
+            return;
+        }
+        let mut assist_outputs = String::from(
+            "Complete TeaQL assist responses are saved under `.klintcode/assist/`. Read the relevant file before writing TeaQL business code. The canonical model path is `model/main.xml`.\n\n",
+        );
         for entity in &assist_entities {
             let assist_target = format!("{}/{}", assist_target_base, entity);
-            let assist_result = tokio::process::Command::new("cargo")
+            let mut assist_command = tokio::process::Command::new("cargo");
+            crate::process_env::apply_safe_environment(&mut assist_command, &attempt_dir);
+            assist_command
                 .args(["teaql", "--input", "model", &assist_target])
-                .current_dir(&attempt_dir)
-                .output()
-                .await;
+                .current_dir(&attempt_dir);
+            let assist_result = crate::process_output::run_bounded_output(
+                &mut assist_command,
+                std::time::Duration::from_secs(120),
+                256 * 1024,
+            )
+            .await;
 
-            if let Ok(output) = &assist_result {
-                let stdout = String::from_utf8_lossy(&output.stdout);
-                let truncated = if stdout.len() > 1200 {
-                    let mut boundary = 1200;
-                    while boundary > 0 && !stdout.is_char_boundary(boundary) {
-                        boundary -= 1;
-                    }
-                    format!("{}...\n[truncated]", &stdout[..boundary])
-                } else {
-                    stdout.to_string()
-                };
-                assist_outputs.push_str(&format!(
-                    "### Assist: query/{}\n\n{}\n\n",
-                    entity, truncated
-                ));
+            let output = match assist_result {
+                Ok(output) if output.status.success() => output,
+                Ok(output) => {
+                    let diagnostic = format!(
+                        "cargo teaql --input model rust-assist-query/{entity} failed with {}\nSTDOUT:\n{}\nSTDERR:\n{}",
+                        output.status,
+                        String::from_utf8_lossy(&output.stdout),
+                        String::from_utf8_lossy(&output.stderr)
+                    );
+                    let result = infrastructure_validation_failure(
+                        format!("TeaQL assist context is unavailable for entity `{entity}`"),
+                        diagnostic,
+                        start.elapsed().as_secs_f64(),
+                    );
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
+                }
+                Err(error) => {
+                    let result = infrastructure_validation_failure(
+                        format!("Failed to execute TeaQL assist for entity `{entity}`"),
+                        error.to_string(),
+                        start.elapsed().as_secs_f64(),
+                    );
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
+                }
+            };
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            let assist_relative = format!(".klintcode/assist/query-{entity}.md");
+            if let Err(error) = std::fs::write(build_dir.join(&assist_relative), stdout.as_bytes())
+            {
+                let result = infrastructure_validation_failure(
+                    format!("Failed to save complete assist response for entity `{entity}`"),
+                    error.to_string(),
+                    start.elapsed().as_secs_f64(),
+                );
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
             }
+            assist_outputs.push_str(&format!(
+                "### Assist: query/{entity}\nFull response: `{assist_relative}`\n\n{}\n\n",
+                bounded_text(&stdout, 2_400)
+            ));
         }
 
         // List remaining entities so LLM knows the full set
@@ -968,7 +1347,7 @@ impl PipelineExecutor {
         }
 
         if !assist_outputs.is_empty() {
-            self.assist_context = bounded_text(&assist_outputs, 16_000);
+            self.assist_context = bounded_text(&assist_outputs, 20_000);
             if let Some(artifacts) = &self.artifacts {
                 artifacts
                     .save_attempt_raw(attempt, "assist-output.md", &assist_outputs)
@@ -990,20 +1369,37 @@ impl PipelineExecutor {
 
             // Give the agent specific first-step instructions based on detected build system
             let compile_hint = if build_target.starts_with("java") {
-                "This is a Java/Maven project. Your FIRST action must be: run_command({\"command\": \"mvn compile -f pom.xml 2>&1 | tail -30\"})"
+                "This is a Java/Maven project. Your FIRST action must be: run_command({\"command\": \"mvn compile -f pom.xml\"})"
             } else {
-                "This is a Rust/Cargo project. Your FIRST action must be: run_command({\"command\": \"cargo check 2>&1 | tail -30\"})"
+                "This is a Rust/Cargo project. Your FIRST action must be: run_command({\"command\": \"cargo check\"})"
             };
+            let original_task = self
+                .task
+                .as_ref()
+                .map(|task| bounded_text(&task.task_content, 8_000))
+                .unwrap_or_default();
+            let model_acceptance = self
+                .task
+                .as_ref()
+                .and_then(|task| task.acceptance_spec.as_ref())
+                .and_then(|spec| serde_json::to_string_pretty(spec).ok())
+                .map(|spec| bounded_text(&spec, 4_000))
+                .unwrap_or_else(|| "No model acceptance sidecar was supplied.".to_string());
 
             let user_prompt = format!(
-                "The project is at `{dir}`. {hint}\n\n\
+                "You are already operating at the project workspace root. Do not `cd` to `{dir}` and do not prefix tool paths with it; every tool path is relative to the current root. {hint}\n\n\
+                 # Original User Task\n{original_task}\n\n\
+                 # Model Acceptance Context\n{model_acceptance}\n\n\
                  After seeing the compile output:\n\
-                 - If the Exit code is 0, it succeeded. Ignore warnings and respond with a summary (no more tool calls).\n\
-                 - If the Exit code is non-zero, it failed. Read the relevant source files, fix the errors using write_file, and recompile.\n\
+                 - If the Exit code is 0, compilation succeeded, but the task is not complete until every requested API example, test, review, report, and runtime check from the original task is complete.\n\
+                 - If the Exit code is non-zero, use the complete compiler diagnostic and the TeaQL assist output. Fix only application code or workspace configuration, then recompile.\n\
                  - Write business logic code (one query function per entity) if the src/ files are empty stubs.\n\n\
-                 Do NOT spend time exploring the directory tree. Compile first, fix errors after.",
+                 - Never read, search, or modify generated library source such as lib/src. If the compiler reports duplicate generated definitions, stop and report that the KSML model must be repaired.\n\n\
+                 Do NOT spend time exploring the directory tree. Compile first, fix errors after. Run the requested tests and runtime checks, then respond with a summary only when the complete original task is satisfied.",
                 dir = build_dir.display(),
-                hint = compile_hint
+                hint = compile_hint,
+                original_task = original_task,
+                model_acceptance = model_acceptance,
             );
 
             let max_iterations = 20; // Enough for explore → compile → fix → recompile cycles
@@ -1025,18 +1421,57 @@ impl PipelineExecutor {
                     total_tool_calls,
                 } => {
                     let total_elapsed = start.elapsed().as_secs_f64();
-                    if let Err(diagnostic) = verify_generated_build(&build_dir, &build_target).await
+                    let build_diagnostic = match verify_generated_build(&build_dir, &build_target)
+                        .await
                     {
-                        let result = validation::fail(
-                            5,
-                            "build",
-                            vec!["Deterministic build verification failed".to_string()],
-                            diagnostic,
-                            total_elapsed,
-                        );
-                        self.send(RunEvent::ValidationCompleted(result)).await;
-                        return;
-                    }
+                        Ok(diagnostic) => diagnostic,
+                        Err(diagnostic) => {
+                            let result = if is_infrastructure_diagnostic(&diagnostic) {
+                                infrastructure_validation_failure(
+                                    "Deterministic build verification hit an infrastructure failure",
+                                    diagnostic,
+                                    total_elapsed,
+                                )
+                            } else {
+                                validation::fail(
+                                    5,
+                                    "build",
+                                    vec!["Deterministic build verification failed".to_string()],
+                                    diagnostic,
+                                    total_elapsed,
+                                )
+                            };
+                            self.send(RunEvent::ValidationCompleted(result)).await;
+                            return;
+                        }
+                    };
+                    let (test_diagnostic, observed_tests) = match verify_generated_tests(
+                        &build_dir,
+                        &build_target,
+                    )
+                    .await
+                    {
+                        Ok(result) => result,
+                        Err(diagnostic) => {
+                            let result = if is_infrastructure_diagnostic(&diagnostic) {
+                                infrastructure_validation_failure(
+                                    "Deterministic test verification hit an infrastructure failure",
+                                    diagnostic,
+                                    total_elapsed,
+                                )
+                            } else {
+                                validation::fail(
+                                    5,
+                                    "build",
+                                    vec!["Deterministic test verification failed".to_string()],
+                                    diagnostic,
+                                    total_elapsed,
+                                )
+                            };
+                            self.send(RunEvent::ValidationCompleted(result)).await;
+                            return;
+                        }
+                    };
                     info!(
                         attempt,
                         iterations,
@@ -1046,8 +1481,13 @@ impl PipelineExecutor {
                     );
                     let mut r = validation::pass(5, "build", total_elapsed);
                     r.diagnostic = format!(
-                        "Agentic build: ✓ ({} iterations, {} tool calls)\n\nAgent summary: {}",
-                        iterations, total_tool_calls, summary
+                        "Agentic build: ✓ ({} iterations, {} tool calls; {} tests observed)\n\nAgent summary: {}\n\n{}\n\n{}",
+                        iterations,
+                        total_tool_calls,
+                        observed_tests,
+                        summary,
+                        build_diagnostic,
+                        test_diagnostic,
                     );
                     if let Some(artifacts) = &self.artifacts {
                         artifacts
@@ -1065,20 +1505,31 @@ impl PipelineExecutor {
                 crate::agent_loop::AgentLoopResult::Failed { error, iterations } => {
                     let total_elapsed = start.elapsed().as_secs_f64();
                     warn!(attempt, iterations, %error, "Agentic build loop failed");
-                    let result = ValidationResult {
-                        level: 5,
-                        level_name: "build".to_string(),
-                        passed: false,
-                        error_count: 1,
-                        warning_count: 0,
-                        suggestion_count: 0,
-                        actionable_errors: vec![format!("Agent loop failed: {}", error)],
-                        structured_errors: vec![],
-                        diagnostic: format!(
-                            "Agentic build failed after {} iterations: {}",
-                            iterations, error
-                        ),
-                        elapsed_secs: total_elapsed,
+                    let result = if is_infrastructure_diagnostic(error) {
+                        infrastructure_validation_failure(
+                            "Agentic build stopped on an infrastructure failure",
+                            format!(
+                                "Agentic build failed after {} iterations: {}",
+                                iterations, error
+                            ),
+                            total_elapsed,
+                        )
+                    } else {
+                        ValidationResult {
+                            level: 5,
+                            level_name: "build".to_string(),
+                            passed: false,
+                            error_count: 1,
+                            warning_count: 0,
+                            suggestion_count: 0,
+                            actionable_errors: vec![format!("Agent loop failed: {}", error)],
+                            structured_errors: vec![],
+                            diagnostic: format!(
+                                "Agentic build failed after {} iterations: {}",
+                                iterations, error
+                            ),
+                            elapsed_secs: total_elapsed,
+                        }
                     };
                     if let Some(artifacts) = &self.artifacts {
                         artifacts
@@ -1092,6 +1543,7 @@ impl PipelineExecutor {
                 crate::agent_loop::AgentLoopResult::MaxIterationsReached {
                     iterations,
                     total_tool_calls,
+                    last_failed_build,
                 } => {
                     let total_elapsed = start.elapsed().as_secs_f64();
                     warn!(
@@ -1106,13 +1558,20 @@ impl PipelineExecutor {
                         warning_count: 0,
                         suggestion_count: 0,
                         actionable_errors: vec![format!(
-                            "Agent loop exhausted {} iterations",
-                            iterations
+                            "Agent loop exhausted {} iterations. Last failed build: {}",
+                            iterations,
+                            last_failed_build
+                                .as_deref()
+                                .unwrap_or("no compiler diagnostic captured")
                         )],
                         structured_errors: vec![],
                         diagnostic: format!(
-                            "Agentic build did not complete within {} iterations ({} tool calls)",
-                            iterations, total_tool_calls
+                            "Agentic build did not complete within {} iterations ({} tool calls)\n\n{}",
+                            iterations,
+                            total_tool_calls,
+                            last_failed_build
+                                .as_deref()
+                                .unwrap_or("No compiler diagnostic captured")
                         ),
                         elapsed_secs: total_elapsed,
                     };
@@ -1135,10 +1594,35 @@ impl PipelineExecutor {
             total_elapsed, "No entities for agentic build; lib-only validation"
         );
         let r = match verify_generated_build(&build_dir, &build_target).await {
-            Ok(diagnostic) => {
-                let mut result = validation::pass(5, "build", total_elapsed);
-                result.diagnostic = diagnostic;
-                result
+            Ok(build_diagnostic) => match verify_generated_tests(&build_dir, &build_target).await {
+                Ok((test_diagnostic, observed_tests)) => {
+                    let mut result = validation::pass(5, "build", total_elapsed);
+                    result.diagnostic = format!(
+                        "Lib-only deterministic build and test passed ({observed_tests} tests observed).\n\n{build_diagnostic}\n\n{test_diagnostic}"
+                    );
+                    result
+                }
+                Err(diagnostic) if is_infrastructure_diagnostic(&diagnostic) => {
+                    infrastructure_validation_failure(
+                        "Generated project test verification hit an infrastructure failure",
+                        diagnostic,
+                        total_elapsed,
+                    )
+                }
+                Err(diagnostic) => validation::fail(
+                    5,
+                    "build",
+                    vec!["Generated project failed deterministic test verification".to_string()],
+                    diagnostic,
+                    total_elapsed,
+                ),
+            },
+            Err(diagnostic) if is_infrastructure_diagnostic(&diagnostic) => {
+                infrastructure_validation_failure(
+                    "Generated project build verification hit an infrastructure failure",
+                    diagnostic,
+                    total_elapsed,
+                )
             }
             Err(diagnostic) => validation::fail(
                 5,
@@ -1237,10 +1721,10 @@ impl PipelineExecutor {
                     }
                 }
             } else {
-                // No artifact store, just report success with a fake path
-                self.send(RunEvent::FinalArtifactWritten(PathBuf::from(
-                    "<no-artifact-store>",
-                )))
+                self.send(RunEvent::Failed(AgentError::InfrastructureError {
+                    detail: "Run artifact store is unavailable; final output cannot be persisted"
+                        .to_string(),
+                }))
                 .await;
             }
         } else {
@@ -1301,6 +1785,32 @@ impl PipelineExecutor {
         self.workspace_dir.as_deref()
     }
 
+    fn write_workspace_validation_evidence(&self, workspace: &Path) -> Result<(), String> {
+        let model_files = if self.candidate_files.is_empty() {
+            self.candidate
+                .as_ref()
+                .map(|content| vec![("main.xml".to_string(), content.clone())])
+                .unwrap_or_default()
+        } else {
+            self.candidate_files.clone()
+        };
+        let evidence = serde_json::json!({
+            "schema": "klintcode-validation-evidence-v1",
+            "model_files": model_files.iter().map(|(name, _)| name).collect::<Vec<_>>(),
+            "object_count": validation::count_model_objects(&model_files),
+            "acceptance_spec": self.task.as_ref().and_then(|task| task.acceptance_spec.as_ref()),
+            "domain_validation": self.last_domain_validation.as_ref(),
+        });
+        let evidence_dir = workspace.join(".klintcode");
+        std::fs::create_dir_all(&evidence_dir)
+            .map_err(|error| format!("Failed to create {}: {error}", evidence_dir.display()))?;
+        let evidence_path = evidence_dir.join("validation-evidence.json");
+        let content = serde_json::to_vec_pretty(&evidence)
+            .map_err(|error| format!("Failed to serialize validation evidence: {error}"))?;
+        std::fs::write(&evidence_path, content)
+            .map_err(|error| format!("Failed to write {}: {error}", evidence_path.display()))
+    }
+
     fn followup_workspace(&self) -> Result<PathBuf, String> {
         let path = self.workspace_dir.as_ref().ok_or_else(|| {
             "No generated workspace is available for follow-up coding".to_string()
@@ -1321,6 +1831,125 @@ impl PipelineExecutor {
     }
 }
 
+async fn prepare_domain_model_files(
+    artifacts: &RunArtifacts,
+    attempt: u8,
+    candidate_files: &[(String, String)],
+    candidate: Option<&str>,
+) -> Result<PathBuf, String> {
+    let attempt_dir = artifacts
+        .create_attempt(attempt)
+        .await
+        .map_err(|error| format!("Failed to create attempt directory: {error}"))?;
+    let model_dir = attempt_dir.join("model");
+    std::fs::create_dir_all(&model_dir)
+        .map_err(|error| format!("Failed to create {}: {error}", model_dir.display()))?;
+
+    let fallback;
+    let files = if candidate_files.is_empty() {
+        fallback = vec![(
+            "main.xml".to_string(),
+            candidate
+                .ok_or_else(|| "No candidate model is available".to_string())?
+                .to_string(),
+        )];
+        fallback.as_slice()
+    } else {
+        candidate_files
+    };
+    for (name, content) in files {
+        let relative = Path::new(name);
+        if relative.is_absolute()
+            || relative
+                .components()
+                .any(|component| !matches!(component, std::path::Component::Normal(_)))
+        {
+            return Err(format!("Unsafe generated model file name `{name}`"));
+        }
+        if !matches!(
+            relative
+                .extension()
+                .and_then(|extension| extension.to_str()),
+            Some("xml" | "ksml")
+        ) {
+            return Err(format!("Generated model include is not XML/KSML: `{name}`"));
+        }
+        let destination = model_dir.join(relative);
+        if let Some(parent) = destination.parent() {
+            std::fs::create_dir_all(parent)
+                .map_err(|error| format!("Failed to create {}: {error}", parent.display()))?;
+        }
+        std::fs::write(&destination, strip_markdown_fences(content)).map_err(|error| {
+            format!(
+                "Failed to write domain model file {}: {error}",
+                destination.display()
+            )
+        })?;
+    }
+    Ok(model_dir)
+}
+
+async fn run_domain_validation(model_dir: &Path) -> ValidationResult {
+    let started = std::time::Instant::now();
+    let workspace = model_dir.parent().unwrap_or(model_dir);
+    let mut command = tokio::process::Command::new("cargo");
+    crate::process_env::apply_safe_environment(&mut command, workspace);
+    command
+        .args(["teaql", "--input"])
+        .arg(model_dir)
+        .arg("evaluate")
+        .current_dir(workspace);
+    let output = match crate::process_output::run_bounded_output(
+        &mut command,
+        std::time::Duration::from_secs(120),
+        512 * 1024,
+    )
+    .await
+    {
+        Ok(output) => output,
+        Err(error) => {
+            return validation::fail(
+                3,
+                "domain",
+                vec![format!(
+                    "{} TeaQL domain validator is unavailable",
+                    INFRASTRUCTURE_FAILURE_PREFIX
+                )],
+                error,
+                started.elapsed().as_secs_f64(),
+            );
+        }
+    };
+    let combined = format!(
+        "{}\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    if !output.status.success() && is_infrastructure_diagnostic(&combined) {
+        return validation::fail(
+            3,
+            "domain",
+            vec![format!(
+                "{} TeaQL domain validator is unavailable",
+                INFRASTRUCTURE_FAILURE_PREFIX
+            )],
+            combined,
+            started.elapsed().as_secs_f64(),
+        );
+    }
+    let mut result = validation::domain::parse_teaql_output(&combined);
+    result.elapsed_secs = started.elapsed().as_secs_f64();
+    if !output.status.success() && result.error_count == 0 {
+        result.passed = false;
+        result.error_count = 1;
+        result.actionable_errors.push(format!(
+            "TeaQL evaluate failed with exit code {:?}",
+            output.status.code()
+        ));
+    }
+    result
+}
+
 async fn verify_generated_build(build_dir: &Path, build_target: &str) -> Result<String, String> {
     let mut command = if build_target.starts_with("java") {
         let mut command = tokio::process::Command::new("mvn");
@@ -1331,13 +1960,16 @@ async fn verify_generated_build(build_dir: &Path, build_target: &str) -> Result<
         command.arg("check");
         command
     };
+    crate::process_env::apply_safe_environment(&mut command, build_dir);
+    command.current_dir(build_dir);
 
-    let output = command
-        .current_dir(build_dir)
-        .env("PAGER", "cat")
-        .output()
-        .await
-        .map_err(|error| format!("Failed to start deterministic build verification: {error}"))?;
+    let output = crate::process_output::run_bounded_output(
+        &mut command,
+        std::time::Duration::from_secs(300),
+        512 * 1024,
+    )
+    .await
+    .map_err(|error| format!("Deterministic build verification failed: {error}"))?;
 
     let diagnostic = format!(
         "Exit status: {}\nSTDOUT:\n{}\nSTDERR:\n{}",
@@ -1351,6 +1983,109 @@ async fn verify_generated_build(build_dir: &Path, build_target: &str) -> Result<
     } else {
         Err(diagnostic)
     }
+}
+
+async fn verify_followup_outcome(
+    workspace: &Path,
+    before: &crate::followup_acceptance::WorkspaceSnapshot,
+    acceptance: Option<&crate::followup_acceptance::FollowUpAcceptanceSpec>,
+    build_target: &str,
+) -> Result<String, String> {
+    let build_diagnostic = verify_generated_build(workspace, build_target)
+        .await
+        .map_err(|diagnostic| {
+            format!("Independent follow-up build verification failed:\n{diagnostic}")
+        })?;
+    let (test_diagnostic, test_count) = verify_generated_tests(workspace, build_target)
+        .await
+        .map_err(|diagnostic| {
+            format!("Independent follow-up test verification failed:\n{diagnostic}")
+        })?;
+
+    let default_evidence = format!(
+        "Independent build and test verification passed ({test_count} tests observed).\n\n{}\n\n{}",
+        bounded_text(&build_diagnostic, 8_000),
+        bounded_text(&test_diagnostic, 8_000)
+    );
+    let Some(acceptance) = acceptance else {
+        return Ok(format!(
+            "{default_evidence}\n\nNo explicit machine acceptance contract was supplied; this yielded result is verified only for workspace change, build, and test command success."
+        ));
+    };
+
+    let report = acceptance.verify(workspace, before).await?;
+    let report_path = workspace.join(".klintcode/followup-acceptance-report.json");
+    if let Some(parent) = report_path.parent() {
+        std::fs::create_dir_all(parent)
+            .map_err(|error| format!("Failed to create follow-up evidence directory: {error}"))?;
+    }
+    let report_content = serde_json::to_vec_pretty(&report)
+        .map_err(|error| format!("Failed to serialize follow-up acceptance report: {error}"))?;
+    std::fs::write(&report_path, report_content).map_err(|error| {
+        format!(
+            "Failed to write follow-up acceptance report {}: {error}",
+            report_path.display()
+        )
+    })?;
+
+    if report.passed {
+        Ok(format!("{default_evidence}\n\n{}", report.diagnostic()))
+    } else {
+        Err(format!("{default_evidence}\n\n{}", report.diagnostic()))
+    }
+}
+
+async fn verify_generated_tests(
+    build_dir: &Path,
+    build_target: &str,
+) -> Result<(String, usize), String> {
+    let mut command = if build_target.starts_with("java") {
+        let mut command = tokio::process::Command::new("mvn");
+        command.args(["test", "-f", "pom.xml"]);
+        command
+    } else {
+        let mut command = tokio::process::Command::new("cargo");
+        command.arg("test");
+        command
+    };
+    crate::process_env::apply_safe_environment(&mut command, build_dir);
+    command.current_dir(build_dir);
+    let output = crate::process_output::run_bounded_output(
+        &mut command,
+        std::time::Duration::from_secs(300),
+        512 * 1024,
+    )
+    .await
+    .map_err(|error| format!("Deterministic test verification failed: {error}"))?;
+    let diagnostic = format!(
+        "Exit status: {}\nSTDOUT:\n{}\nSTDERR:\n{}",
+        output.status,
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    if !output.status.success() {
+        return Err(diagnostic);
+    }
+
+    let combined = format!(
+        "{}\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    Ok((diagnostic, observed_test_count(&combined)))
+}
+
+fn observed_test_count(output: &str) -> usize {
+    output
+        .lines()
+        .filter_map(|line| {
+            line.trim()
+                .strip_prefix("running ")?
+                .strip_suffix(" tests")?
+                .parse::<usize>()
+                .ok()
+        })
+        .sum()
 }
 
 fn extract_includes(content: &str) -> Vec<String> {
@@ -1377,6 +2112,154 @@ fn extract_includes(content: &str) -> Vec<String> {
         }
     }
     includes
+}
+
+fn ensure_standalone_cargo_workspace(content: &str) -> String {
+    let has_workspace = content.lines().any(|line| line.trim() == "[workspace]");
+    if has_workspace {
+        content.to_string()
+    } else {
+        format!("{}\n[workspace]\n", content.trim_end())
+    }
+}
+
+/// Put the validated model and stable TeaQL instructions inside the generated
+/// application workspace so every continuation can use the same inputs.
+fn prepare_workspace_context(attempt_dir: &Path, build_dir: &Path) -> Result<(), String> {
+    let source_model = attempt_dir.join("model");
+    if !source_model.is_dir() {
+        return Err(format!(
+            "Validated model directory is missing: {}",
+            source_model.display()
+        ));
+    }
+    copy_directory_files(&source_model, &build_dir.join("model"))?;
+
+    let agents_path = build_dir.join("AGENTS.md");
+    let agents = std::fs::read_to_string(&agents_path)
+        .map_err(|error| format!("Failed to read {}: {error}", agents_path.display()))?;
+    let mut normalized = canonicalize_teaql_input_paths(&agents);
+    normalized.push_str(
+        "\n\n## KlintCode Workspace Context\n\n\
+         All agent tools already run from this workspace root. Use relative paths and do not `cd` back into the workspace.\n\
+         The validated model is `model/main.xml`. Every TeaQL command must use the exact form\n\
+         `cargo teaql --input model/main.xml rust-assist-[action]/[entity-name]`.\n\
+         Complete pre-fetched responses are stored under `.klintcode/assist/`; run the canonical command for actions not yet saved there.\n\
+         Deterministic model and domain-validation facts are stored in `.klintcode/validation-evidence.json`.\n\
+         Any review or running report must cite that evidence and must not replace validator results with inferred claims.\n",
+    );
+    std::fs::write(&agents_path, normalized)
+        .map_err(|error| format!("Failed to update {}: {error}", agents_path.display()))
+}
+
+fn copy_directory_files(source: &Path, destination: &Path) -> Result<(), String> {
+    std::fs::create_dir_all(destination)
+        .map_err(|error| format!("Failed to create {}: {error}", destination.display()))?;
+    let entries = std::fs::read_dir(source)
+        .map_err(|error| format!("Failed to read {}: {error}", source.display()))?;
+    for entry in entries {
+        let entry = entry.map_err(|error| error.to_string())?;
+        let source_path = entry.path();
+        let destination_path = destination.join(entry.file_name());
+        if source_path.is_dir() {
+            copy_directory_files(&source_path, &destination_path)?;
+        } else if source_path.is_file() {
+            std::fs::copy(&source_path, &destination_path).map_err(|error| {
+                format!(
+                    "Failed to copy {} to {}: {error}",
+                    source_path.display(),
+                    destination_path.display()
+                )
+            })?;
+        }
+    }
+    Ok(())
+}
+
+fn canonicalize_teaql_input_paths(content: &str) -> String {
+    const MARKER: &str = "--input ";
+    let mut remaining = content;
+    let mut result = String::with_capacity(content.len());
+    while let Some(index) = remaining.find(MARKER) {
+        let value_start = index + MARKER.len();
+        result.push_str(&remaining[..value_start]);
+        let value = &remaining[value_start..];
+        let value_end = value
+            .find(|character: char| character.is_whitespace() || character == '`')
+            .unwrap_or(value.len());
+        result.push_str("model/main.xml");
+        remaining = &value[value_end..];
+    }
+    result.push_str(remaining);
+    result
+}
+
+/// Snapshot user-editable workspace files. Generated libraries, build output,
+/// cached assist responses, and lockfiles are intentionally excluded.
+pub(crate) fn application_workspace_snapshot(
+    root: &Path,
+) -> std::collections::BTreeMap<PathBuf, Vec<u8>> {
+    fn collect(
+        root: &Path,
+        current: &Path,
+        files: &mut std::collections::BTreeMap<PathBuf, Vec<u8>>,
+    ) {
+        let Ok(entries) = std::fs::read_dir(current) else {
+            return;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let Ok(file_type) = entry.file_type() else {
+                continue;
+            };
+            // Never follow symlinks: a generated source directory could be
+            // aliased under an otherwise application-owned path.
+            if file_type.is_symlink() {
+                continue;
+            }
+            let Ok(relative) = path.strip_prefix(root) else {
+                continue;
+            };
+            let first = relative
+                .components()
+                .next()
+                .and_then(|part| part.as_os_str().to_str());
+            if matches!(
+                first,
+                Some(
+                    "lib"
+                        | "rust-lib-core"
+                        | "java-lib-core"
+                        | "java-web-spring-boot"
+                        | "target"
+                        | ".git"
+                        | ".klintcode"
+                        | "model"
+                )
+            ) {
+                continue;
+            }
+            if file_type.is_dir() {
+                collect(root, &path, files);
+            } else if file_type.is_file()
+                && relative.file_name().and_then(|name| name.to_str()) != Some("Cargo.lock")
+                && !matches!(
+                    relative
+                        .extension()
+                        .and_then(|extension| extension.to_str()),
+                    Some("db" | "sqlite" | "sqlite3" | "log")
+                )
+            {
+                if let Ok(content) = std::fs::read(&path) {
+                    files.insert(relative.to_path_buf(), content);
+                }
+            }
+        }
+    }
+
+    let mut files = std::collections::BTreeMap::new();
+    collect(root, root, &mut files);
+    files
 }
 
 /// Parse entity names from the generated AGENTS.md.
@@ -1432,9 +2315,22 @@ fn walkdir_toml_xml(dir: &Path) -> Vec<PathBuf> {
     if let Ok(entries) = std::fs::read_dir(dir) {
         for entry in entries.flatten() {
             let path = entry.path();
-            if path.is_dir() {
+            let Ok(file_type) = entry.file_type() else {
+                continue;
+            };
+            if file_type.is_symlink() {
+                continue;
+            }
+            if file_type.is_dir() {
+                let name = path.file_name().and_then(|name| name.to_str());
+                if matches!(
+                    name,
+                    Some("src" | "target" | ".git" | ".klintcode" | "model")
+                ) {
+                    continue;
+                }
                 results.extend(walkdir_toml_xml(&path));
-            } else {
+            } else if file_type.is_file() {
                 let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
                 if name == "Cargo.toml" || name == "pom.xml" || name == "build.gradle" {
                     results.push(path);
@@ -1443,6 +2339,122 @@ fn walkdir_toml_xml(dir: &Path) -> Vec<PathBuf> {
         }
     }
     results
+}
+
+const REQUIRED_CARGO_TEAQL_VERSION: &str = "2.0.11";
+
+async fn verify_cargo_teaql_version() -> Result<(), String> {
+    let mut command = tokio::process::Command::new("cargo");
+    crate::process_env::apply_safe_environment(&mut command, Path::new("."));
+    command.args(["teaql", "--version"]);
+    let output = crate::process_output::run_bounded_output(
+        &mut command,
+        std::time::Duration::from_secs(10),
+        16 * 1024,
+    )
+    .await
+    .map_err(|error| format!("Failed to execute `cargo teaql --version`: {error}"))?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    if !output.status.success() {
+        return Err(format!(
+            "`cargo teaql --version` failed with {}. stdout: {}; stderr: {}",
+            output.status,
+            bounded_text(stdout.trim(), 1_000),
+            bounded_text(stderr.trim(), 1_000)
+        ));
+    }
+    let observed = parse_cargo_teaql_version(&stdout).ok_or_else(|| {
+        format!(
+            "Could not parse cargo-teaql version from `{}`; required exactly {REQUIRED_CARGO_TEAQL_VERSION}",
+            bounded_text(stdout.trim(), 1_000)
+        )
+    })?;
+    if observed != REQUIRED_CARGO_TEAQL_VERSION {
+        return Err(format!(
+            "cargo-teaql version {observed} is installed; required exactly {REQUIRED_CARGO_TEAQL_VERSION}"
+        ));
+    }
+    Ok(())
+}
+
+fn parse_cargo_teaql_version(output: &str) -> Option<&str> {
+    let words = output.split_whitespace().collect::<Vec<_>>();
+    words.windows(2).find_map(|pair| {
+        let program = pair[0]
+            .trim_matches(|character: char| !character.is_ascii_alphanumeric() && character != '-');
+        if matches!(program, "teaql" | "cargo-teaql") {
+            Some(
+                pair[1].trim_matches(|character: char| {
+                    !(character.is_ascii_digit() || character == '.')
+                }),
+            )
+        } else {
+            None
+        }
+    })
+}
+
+fn generation_validation_failure(
+    summary: impl Into<String>,
+    diagnostic: String,
+    elapsed_secs: f64,
+) -> ValidationResult {
+    let summary = summary.into();
+    if is_infrastructure_diagnostic(&diagnostic) {
+        infrastructure_validation_failure(summary, diagnostic, elapsed_secs)
+    } else {
+        validation::fail(5, "build", vec![summary], diagnostic, elapsed_secs)
+    }
+}
+
+fn infrastructure_validation_failure(
+    summary: impl Into<String>,
+    diagnostic: String,
+    elapsed_secs: f64,
+) -> ValidationResult {
+    validation::fail(
+        5,
+        "build",
+        vec![format!(
+            "{} {}",
+            INFRASTRUCTURE_FAILURE_PREFIX,
+            summary.into()
+        )],
+        diagnostic,
+        elapsed_secs,
+    )
+}
+
+pub(crate) fn is_infrastructure_diagnostic(diagnostic: &str) -> bool {
+    let normalized = diagnostic.to_ascii_lowercase();
+    [
+        "[infrastructure]",
+        "internal server error",
+        "http 500",
+        "http 502",
+        "http 503",
+        "http 504",
+        "error (500)",
+        "error (502)",
+        "error (503)",
+        "error (504)",
+        "bad gateway",
+        "service unavailable",
+        "gateway timeout",
+        "timed out",
+        "connection refused",
+        "failed to connect",
+        "could not connect",
+        "network is unreachable",
+        "name resolution",
+        "dns error",
+        "tls error",
+        "certificate error",
+    ]
+    .iter()
+    .any(|marker| normalized.contains(marker))
 }
 
 fn bounded_text(text: &str, max_bytes: usize) -> String {
@@ -1465,11 +2477,27 @@ fn render_agentic_system_prompt(template: &str, workspace: &Path, assist: &str) 
         .replace("{{assist_outputs}}", assist)
 }
 
+fn missing_followup_environment<'a>(
+    specs: impl IntoIterator<Item = &'a crate::followup_acceptance::FollowUpAcceptanceSpec>,
+) -> Vec<String> {
+    let mut missing = specs
+        .into_iter()
+        .flat_map(|spec| &spec.commands)
+        .flat_map(|command| &command.env_ref)
+        .filter(|name| std::env::var_os(name).is_none())
+        .cloned()
+        .collect::<Vec<_>>();
+    missing.sort();
+    missing.dedup();
+    missing
+}
+
 fn build_followup_prompt(
     workspace: &Path,
     instruction: &str,
     original_task: &str,
     history: &[FollowUpRecord],
+    acceptance: Option<&crate::followup_acceptance::FollowUpAcceptanceSpec>,
 ) -> String {
     let previous_changes = history
         .iter()
@@ -1491,17 +2519,25 @@ fn build_followup_prompt(
     } else {
         previous_changes
     };
+    let acceptance = acceptance.map_or_else(
+        || {
+            "No explicit machine acceptance contract was supplied. You must still complete the requested change, run the independent build and test commands, and yield only after both pass. A max-iteration result will be rejected."
+                .to_string()
+        },
+        crate::followup_acceptance::FollowUpAcceptanceSpec::render_checklist,
+    );
 
     format!(
-        "The project is at `{workspace}`.\n\n\
+        "You are already operating at the workspace root `{workspace}`. Do not `cd` to this path and do not prefix tool paths with it; use `.` for the root. The validated TeaQL model is `model/main.xml`, and complete cached assist responses are under `.klintcode/assist/`.\n\n\
          # Original Task\n{original_task}\n\n\
          # Previously Verified Follow-ups\n{previous_changes}\n\n\
          # Current Follow-up\n{instruction}\n\n\
-         Inspect the codebase, apply the requested changes using write_file/run_command, and ensure it still compiles.\n\
-         If the compile command's Exit code is 0, respond with a concise summary (no more tool calls).",
+         # Machine Acceptance\n{acceptance}\n\n\
+         Inspect only the application code and workspace configuration and apply the requested changes using write_file/run_command. Compilation alone does not complete this follow-up. Run every required build, test, runtime, and artifact check. Respond with a concise summary only after the full acceptance checklist passes; otherwise keep fixing the application workspace.",
         workspace = workspace.display(),
         original_task = bounded_text(original_task, 6_000),
         instruction = bounded_text(instruction, 6_000),
+        acceptance = bounded_text(&acceptance, 6_000),
     )
 }
 
@@ -1541,7 +2577,7 @@ fn strip_markdown_fences(content: &str) -> String {
 mod tests {
     use super::*;
 
-    fn test_executor() -> PipelineExecutor {
+    fn test_executor_with_sender(event_tx: mpsc::Sender<RunEvent>) -> PipelineExecutor {
         let mut profile: ModelProfile =
             toml::from_str(include_str!("../../../profiles/simulator.toml"))
                 .expect("simulator profile");
@@ -1549,7 +2585,6 @@ mod tests {
             PathBuf::from(env!("CARGO_MANIFEST_DIR"))
                 .join("../../simulator/scenarios/happy-path.toml"),
         );
-        let (event_tx, _event_rx) = mpsc::channel(4);
         PipelineExecutor::new(
             profile,
             event_tx,
@@ -1557,6 +2592,130 @@ mod tests {
             "test-run".to_string(),
         )
         .expect("test executor")
+    }
+
+    fn test_executor() -> PipelineExecutor {
+        let (event_tx, _event_rx) = mpsc::channel(4);
+        test_executor_with_sender(event_tx)
+    }
+
+    #[test]
+    fn workspace_validation_evidence_uses_validator_facts() {
+        let workspace = tempfile::tempdir().expect("workspace");
+        let mut executor = test_executor();
+        executor.candidate_files = vec![
+            (
+                "main.xml".to_string(),
+                r#"<root><_include file="more.xml"/><company _name="Company"/></root>"#.to_string(),
+            ),
+            (
+                "more.xml".to_string(),
+                r#"<root><move_order _name="Move Order"/></root>"#.to_string(),
+            ),
+        ];
+        let mut task = TaskPackageData::from_prompt("evidence", "task", PathBuf::from("."));
+        task.acceptance_spec = Some(serde_json::json!({ "min_object_count": 2 }));
+        executor.task = Some(task);
+        let mut domain = validation::pass(3, "domain", 0.1);
+        domain.warning_count = 1;
+        domain.diagnostic = "KSML-DOMAIN-ROOT-002".to_string();
+        executor.last_domain_validation = Some(domain);
+
+        executor
+            .write_workspace_validation_evidence(workspace.path())
+            .expect("write evidence");
+
+        let evidence: serde_json::Value = serde_json::from_slice(
+            &std::fs::read(workspace.path().join(".klintcode/validation-evidence.json"))
+                .expect("read evidence"),
+        )
+        .expect("parse evidence");
+        assert_eq!(evidence["object_count"], 2);
+        assert_eq!(evidence["domain_validation"]["warning_count"], 1);
+        assert_eq!(evidence["acceptance_spec"]["min_object_count"], 2);
+    }
+
+    #[tokio::test]
+    async fn local_validation_counts_objects_across_include_files() {
+        let (event_tx, mut event_rx) = mpsc::channel(4);
+        let mut executor = test_executor_with_sender(event_tx);
+        let main = r#"<root><_include file="operations.xml"/></root>"#.to_string();
+        executor.candidate = Some(main.clone());
+        executor.candidate_files = vec![
+            ("main.xml".to_string(), main),
+            (
+                "operations.xml".to_string(),
+                r#"<root><move_order _name="Move Order"/><route_plan _name="Route Plan"/></root>"#
+                    .to_string(),
+            ),
+        ];
+        let mut task = TaskPackageData::from_inline_text("model operations");
+        task.acceptance_spec = Some(serde_json::json!({
+            "expected_objects": ["MoveOrder", "RoutePlan"],
+            "expected_object_count": 2
+        }));
+        executor.task = Some(task);
+
+        executor.local_validate(1).await;
+
+        let event = event_rx.recv().await.expect("validation event");
+        let RunEvent::ValidationCompleted(result) = event else {
+            panic!("expected validation completion");
+        };
+        assert!(result.passed, "{:?}", result.actionable_errors);
+    }
+
+    #[tokio::test]
+    async fn task_acceptance_drives_and_protects_the_build_target() {
+        let task = tempfile::tempdir().expect("task package");
+        std::fs::write(task.path().join("task.md"), "build a model").unwrap();
+        std::fs::write(
+            task.path().join("acceptance.json"),
+            r#"{"schema":"ksml-acceptance-v1","build_targets":["rust-lib-core"]}"#,
+        )
+        .unwrap();
+
+        let (event_tx, mut event_rx) = mpsc::channel(4);
+        let mut executor = test_executor_with_sender(event_tx);
+        executor.load_task_from_path(task.path()).await;
+        assert_eq!(executor.build_target.as_deref(), Some("rust-lib-core"));
+        assert!(matches!(
+            event_rx.recv().await,
+            Some(RunEvent::TaskLoaded(_))
+        ));
+
+        let (event_tx, mut event_rx) = mpsc::channel(4);
+        let mut conflicting = test_executor_with_sender(event_tx);
+        conflicting.set_build_target("java-lib-core".to_string());
+        conflicting.load_task_from_path(task.path()).await;
+        assert!(matches!(
+            event_rx.recv().await,
+            Some(RunEvent::TaskLoadFailed(error)) if error.contains("conflicts")
+        ));
+    }
+
+    #[tokio::test]
+    async fn task_followup_acceptance_sidecar_is_loaded_for_interactive_clients() {
+        let task = tempfile::tempdir().expect("task package");
+        std::fs::write(task.path().join("task.md"), "build a model").unwrap();
+        std::fs::write(
+            task.path().join("followup-acceptance.json"),
+            format!(
+                r#"{{"schema":"{}","commands":[{{"program":"cargo","args":["check"]}}]}}"#,
+                crate::followup_acceptance::FOLLOWUP_ACCEPTANCE_SCHEMA
+            ),
+        )
+        .unwrap();
+
+        let (event_tx, mut event_rx) = mpsc::channel(4);
+        let mut executor = test_executor_with_sender(event_tx);
+        executor.load_task_from_path(task.path()).await;
+
+        assert!(matches!(
+            event_rx.recv().await,
+            Some(RunEvent::TaskLoaded(_))
+        ));
+        assert_eq!(executor.followup_acceptance_specs.len(), 1);
     }
 
     #[test]
@@ -1611,12 +2770,14 @@ mod tests {
             &"修".repeat(4_000),
             "build a school service",
             &history,
+            None,
         );
 
         assert!(prompt.contains("build a school service"));
         assert!(prompt.contains("implemented the query"));
         assert!(prompt.contains("/workspace/build"));
         assert!(prompt.contains("[context truncated]"));
+        assert!(prompt.contains("Compilation alone"));
         assert!(prompt.len() < 16_000);
     }
 
@@ -1631,5 +2792,141 @@ mod tests {
         assert!(rendered.contains("workspace=/workspace/build"));
         assert!(rendered.contains("Q::school().new_entity(ctx)"));
         assert!(!rendered.contains("{{"));
+    }
+
+    #[test]
+    fn teaql_server_500_is_classified_as_infrastructure_failure() {
+        let result = generation_validation_failure(
+            "cargo teaql rust-lib-core failed",
+            "## Internal Server Error (500)\nStringTemplate failed".to_string(),
+            1.0,
+        );
+
+        assert!(result.is_infrastructure_failure());
+        assert!(result.actionable_errors[0].contains("rust-lib-core"));
+    }
+
+    #[test]
+    fn model_derived_generation_error_remains_repairable() {
+        let result = generation_validation_failure(
+            "cargo teaql rust-lib-core failed",
+            "Unknown KSML object reference: missing_school".to_string(),
+            1.0,
+        );
+
+        assert!(!result.is_infrastructure_failure());
+    }
+
+    #[test]
+    fn compiler_symbol_named_timeout_is_not_misclassified_as_infrastructure() {
+        assert!(!is_infrastructure_diagnostic(
+            "error[E0599]: no method named `timeout` found for struct Request"
+        ));
+        assert!(is_infrastructure_diagnostic(
+            "request timed out while connecting to the backend"
+        ));
+    }
+
+    #[test]
+    fn cargo_teaql_version_parser_requires_the_reported_program_token() {
+        assert_eq!(parse_cargo_teaql_version("teaql 2.0.11\n"), Some("2.0.11"));
+        assert_eq!(
+            parse_cargo_teaql_version("cargo-teaql v2.0.10\n"),
+            Some("2.0.10")
+        );
+        assert_eq!(parse_cargo_teaql_version("2.0.11\n"), None);
+    }
+
+    #[test]
+    fn missing_followup_environment_is_deduplicated_before_preflight() {
+        let spec = crate::followup_acceptance::FollowUpAcceptanceSpec::parse_json(&format!(
+            r#"{{"schema":"{}","commands":[{{"program":"cargo","args":["check"],"env_ref":["KLINTCODE_DEFINITELY_MISSING_ENV_91827","KLINTCODE_DEFINITELY_MISSING_ENV_91827"]}}]}}"#,
+            crate::followup_acceptance::FOLLOWUP_ACCEPTANCE_SCHEMA
+        ))
+        .unwrap();
+
+        assert_eq!(
+            missing_followup_environment(std::iter::once(&spec)),
+            vec!["KLINTCODE_DEFINITELY_MISSING_ENV_91827"]
+        );
+    }
+
+    #[test]
+    fn generated_app_manifest_is_detached_from_parent_workspace() {
+        let manifest = "[package]\nname = \"school-app\"\nversion = \"0.1.0\"\n";
+
+        let fixed = ensure_standalone_cargo_workspace(manifest);
+
+        assert!(fixed.ends_with("[workspace]\n"));
+        assert_eq!(
+            ensure_standalone_cargo_workspace(&fixed)
+                .matches("[workspace]")
+                .count(),
+            1
+        );
+    }
+
+    #[test]
+    fn workspace_context_copies_model_and_rewrites_generated_instructions() {
+        let attempt = tempfile::tempdir().expect("attempt directory");
+        let build = attempt.path().join("build");
+        std::fs::create_dir_all(attempt.path().join("model/nested")).unwrap();
+        std::fs::create_dir_all(&build).unwrap();
+        std::fs::write(attempt.path().join("model/main.xml"), "<root/>").unwrap();
+        std::fs::write(
+            attempt.path().join("model/nested/entities.xml"),
+            "<school/>",
+        )
+        .unwrap();
+        std::fs::write(
+            build.join("AGENTS.md"),
+            "cargo teaql --input models/school-service.xml rust-assist-query/school\n",
+        )
+        .unwrap();
+
+        prepare_workspace_context(attempt.path(), &build).expect("prepare workspace context");
+
+        assert_eq!(
+            std::fs::read_to_string(build.join("model/main.xml")).unwrap(),
+            "<root/>"
+        );
+        assert!(build.join("model/nested/entities.xml").is_file());
+        let agents = std::fs::read_to_string(build.join("AGENTS.md")).unwrap();
+        assert!(agents.contains("cargo teaql --input model/main.xml rust-assist-query/school"));
+        assert!(!agents.contains("models/school-service.xml"));
+        assert!(agents.contains("already run from this workspace root"));
+    }
+
+    #[test]
+    fn application_snapshot_detects_source_changes_but_ignores_generated_files() {
+        let workspace = tempfile::tempdir().expect("workspace");
+        std::fs::create_dir_all(workspace.path().join("src")).unwrap();
+        std::fs::create_dir_all(workspace.path().join("lib/src")).unwrap();
+        std::fs::create_dir_all(workspace.path().join(".klintcode/assist")).unwrap();
+        std::fs::write(workspace.path().join("src/lib.rs"), "pub fn first() {}\n").unwrap();
+        std::fs::write(workspace.path().join("lib/src/generated.rs"), "generated\n").unwrap();
+
+        let before = application_workspace_snapshot(workspace.path());
+        std::fs::write(
+            workspace.path().join("lib/src/generated.rs"),
+            "regenerated\n",
+        )
+        .unwrap();
+        std::fs::write(
+            workspace.path().join(".klintcode/assist/query-school.md"),
+            "cached assist\n",
+        )
+        .unwrap();
+        assert_eq!(application_workspace_snapshot(workspace.path()), before);
+
+        std::fs::write(workspace.path().join("src/lib.rs"), "pub fn second() {}\n").unwrap();
+        assert_ne!(application_workspace_snapshot(workspace.path()), before);
+    }
+
+    #[test]
+    fn rust_test_count_sums_all_test_binaries() {
+        let output = "running 3 tests\n\ntest result: ok\n\nrunning 2 tests\n";
+        assert_eq!(observed_test_count(output), 5);
+        assert_eq!(observed_test_count("no test summary"), 0);
     }
 }

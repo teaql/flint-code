@@ -1,13 +1,13 @@
+use crate::app::{App, TimelineRole, TranscriptHitbox};
 use crate::ui_components::helpers::*;
+use agent_core::state::PipelineState;
 use ratatui::{
     Frame,
     layout::{Alignment, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Clear, Paragraph, Wrap},
+    widgets::{Clear, Paragraph},
 };
-use agent_core::state::PipelineState;
-use crate::app::{App, TimelineRole};
 
 pub const KLINT_TEXT_MARK: [&str; 3] = [
     " ██▀ █   █ █▄ █ ▀█▀",
@@ -16,7 +16,7 @@ pub const KLINT_TEXT_MARK: [&str; 3] = [
 ];
 pub const KLINT_SLOGAN: &str = "Built for coding where networks can't reach.";
 
-pub fn draw_transcript(f: &mut Frame, app: &App, area: Rect) {
+pub fn draw_transcript(f: &mut Frame, app: &mut App, area: Rect) {
     let mut lines = if app.timeline.is_empty() {
         let mut header = KLINT_TEXT_MARK
             .iter()
@@ -61,15 +61,8 @@ pub fn draw_transcript(f: &mut Frame, app: &App, area: Rect) {
             Style::default().fg(Color::DarkGray),
         )));
     } else {
+        let mut entry_lines = Vec::with_capacity(app.timeline.len());
         for (i, entry) in app.timeline.iter().enumerate() {
-            if i > 0 {
-                match entry.role {
-                    TimelineRole::User | TimelineRole::Agent => {
-                        lines.push(Line::from(""));
-                    }
-                    _ => {}
-                }
-            }
             let (marker, color) = match entry.role {
                 TimelineRole::User => ("❯", Color::White),
                 TimelineRole::Agent => ("●", Color::Cyan),
@@ -77,54 +70,30 @@ pub fn draw_transcript(f: &mut Frame, app: &App, area: Rect) {
                 TimelineRole::Success => ("✓", Color::Green),
                 TimelineRole::Error => ("✗", Color::Red),
             };
-            let content_lines: Vec<&str> = entry.content.lines().collect();
-            let mut display_lines = content_lines.clone();
-            let mut truncated = false;
-            
-            match entry.role {
-                TimelineRole::Activity | TimelineRole::Success | TimelineRole::Error => {
-                    if display_lines.len() > 3 {
-                        display_lines.truncate(3);
-                        truncated = true;
-                    }
-                }
-                _ => {}
-            }
+            let id = i + 1;
+            let prefix = format!(" [T{id:03}] {marker} ");
+            let preview_width = usize::from(area.width).saturating_sub(prefix.chars().count());
+            let preview = one_line_preview(&entry.content, preview_width);
+            entry_lines.push((id, lines.len()));
+            lines.push(Line::from(vec![
+                Span::styled(
+                    prefix,
+                    Style::default().fg(color).add_modifier(Modifier::BOLD),
+                ),
+                Span::styled(preview, Style::default().fg(color)),
+            ]));
+        }
 
-            for (index, content_line) in display_lines.iter().enumerate() {
-                lines.push(Line::from(vec![
-                    Span::styled(
-                        if index == 0 {
-                            match entry.role {
-                                TimelineRole::Activity | TimelineRole::Success | TimelineRole::Error => {
-                                    format!("   {marker} ")
-                                }
-                                _ => format!(" {marker} ")
-                            }
-                        } else {
-                            match entry.role {
-                                TimelineRole::Activity | TimelineRole::Success | TimelineRole::Error => {
-                                    "     ".to_string()
-                                }
-                                _ => "   ".to_string()
-                            }
-                        },
-                        Style::default().fg(color).add_modifier(if index == 0 {
-                            Modifier::BOLD
-                        } else {
-                            Modifier::empty()
-                        }),
-                    ),
-                    Span::styled(content_line.to_string(), Style::default().fg(color)),
-                ]));
-            }
-            
-            if truncated {
-                lines.push(Line::from(vec![
-                    Span::styled("     ", Style::default().fg(color)),
-                    Span::styled("...", Style::default().fg(color).add_modifier(Modifier::DIM)),
-                ]));
-            }
+        app.transcript_hitboxes.clear();
+        app.transcript_hitboxes.reserve(entry_lines.len());
+        // Hitboxes are populated after the final scroll offset is known.
+        for (id, line) in entry_lines {
+            app.transcript_hitboxes.push(TranscriptHitbox {
+                id,
+                row: line.min(usize::from(u16::MAX)) as u16,
+                left: area.x,
+                right: area.right(),
+            });
         }
     }
 
@@ -157,13 +126,21 @@ pub fn draw_transcript(f: &mut Frame, app: &App, area: Rect) {
 
     let transcript_area = area;
 
-    let rendered_line_count = wrapped_line_count(&lines, transcript_area.width);
-    let paragraph = Paragraph::new(lines).wrap(Wrap { trim: false });
+    let rendered_line_count = lines.len();
+    let paragraph = Paragraph::new(lines);
     let max_scroll = rendered_line_count
         .saturating_sub(usize::from(transcript_area.height))
         .min(usize::from(u16::MAX)) as u16;
     let browse_back = app.transcript_scroll_back.min(max_scroll);
     let scroll = max_scroll.saturating_sub(browse_back);
+    app.transcript_hitboxes.retain_mut(|hitbox| {
+        let logical_row = hitbox.row;
+        if logical_row < scroll || logical_row >= scroll.saturating_add(transcript_area.height) {
+            return false;
+        }
+        hitbox.row = transcript_area.y + logical_row - scroll;
+        true
+    });
     f.render_widget(paragraph.scroll((scroll, 0)), transcript_area);
 
     if browse_back > 0 && transcript_area.height > 0 {
@@ -188,38 +165,50 @@ pub fn draw_transcript(f: &mut Frame, app: &App, area: Rect) {
     }
 }
 
-pub fn wrapped_line_count(lines: &[Line<'_>], width: u16) -> usize {
-    let width = usize::from(width.max(1));
-    lines
-        .iter()
-        .map(|line| {
-            // Get the raw text of the line to simulate word wrapping
-            let mut raw_text = String::new();
-            for span in &line.spans {
-                raw_text.push_str(span.content.as_ref());
-            }
-            
-            let mut line_count = 1;
-            let mut current_width = 0;
-            
-            for word in raw_text.split_whitespace() {
-                let word_len = word.chars().count();
-                if current_width + word_len + (if current_width > 0 { 1 } else { 0 }) > width {
-                    if word_len > width {
-                        line_count += word_len.div_ceil(width);
-                        current_width = word_len % width;
-                    } else {
-                        line_count += 1;
-                        current_width = word_len;
-                    }
-                } else {
-                    if current_width > 0 {
-                        current_width += 1;
-                    }
-                    current_width += word_len;
-                }
-            }
-            line_count
-        })
-        .sum()
+pub fn one_line_preview(content: &str, max_chars: usize) -> String {
+    if max_chars == 0 {
+        return String::new();
+    }
+
+    let total_chars = content.chars().count();
+    let first_line = content.lines().next().unwrap_or("");
+    let first_line_chars = first_line.chars().count();
+    let mut shown = first_line_chars.min(max_chars);
+
+    loop {
+        let omitted = total_chars.saturating_sub(shown);
+        if omitted == 0 {
+            return first_line.chars().take(shown).collect();
+        }
+        let suffix = format!(" … {omitted} chars omitted");
+        let allowed = max_chars.saturating_sub(suffix.chars().count());
+        let next_shown = first_line_chars.min(allowed);
+        if next_shown == shown {
+            let mut preview = first_line.chars().take(shown).collect::<String>();
+            preview.push_str(&suffix);
+            return preview.chars().take(max_chars).collect();
+        }
+        shown = next_shown;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn multiline_preview_reports_exact_omitted_characters() {
+        let preview = one_line_preview("alpha\nbeta", 40);
+
+        assert_eq!(preview, "alpha … 5 chars omitted");
+        assert!(!preview.contains('\n'));
+    }
+
+    #[test]
+    fn long_single_line_is_bounded() {
+        let preview = one_line_preview(&"x".repeat(200), 32);
+
+        assert_eq!(preview.chars().count(), 32);
+        assert!(preview.contains("chars omitted"));
+    }
 }

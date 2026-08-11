@@ -4,7 +4,10 @@ use crate::ui_components::*;
 use crate::widgets::*;
 use anyhow::Result;
 use crossterm::{
-    event::{DisableBracketedPaste, EnableBracketedPaste, Event, KeyCode, KeyModifiers},
+    event::{
+        DisableBracketedPaste, EnableBracketedPaste, Event, KeyCode, KeyModifiers, MouseButton,
+        MouseEventKind,
+    },
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
@@ -17,11 +20,10 @@ use std::io;
 use std::time::Duration;
 
 use agent_core::event::ExportConsent;
-use agent_core::state::PipelineState;
 use agent_core::shared::ToolProcessStatus;
+use agent_core::state::PipelineState;
 
 use crate::app::{App, InputMode, View};
-
 
 /// Run the TUI event loop.
 pub async fn run(app: &mut App) -> Result<()> {
@@ -34,7 +36,11 @@ pub async fn run(app: &mut App) -> Result<()> {
     let result = event_loop(&mut terminal, app).await;
 
     disable_raw_mode()?;
-    execute!(terminal.backend_mut(), LeaveAlternateScreen, DisableBracketedPaste)?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableBracketedPaste
+    )?;
     terminal.show_cursor()?;
 
     result
@@ -61,9 +67,12 @@ async fn event_loop(
     let mut plan_pulse = tokio::time::interval(Duration::from_millis(850));
     plan_pulse.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
     let health_profile = app.profile.clone();
-    let health_probe = App::probe_model_service(health_profile);
-    tokio::pin!(health_probe);
-    let mut health_probe_complete = false;
+    let llm_health_probe = App::probe_model_service(health_profile);
+    let rag_health_probe = App::probe_rag_service();
+    tokio::pin!(llm_health_probe);
+    tokio::pin!(rag_health_probe);
+    let mut llm_health_probe_complete = false;
+    let mut rag_health_probe_complete = false;
     loop {
         terminal.draw(|f| draw(f, app))?;
 
@@ -87,6 +96,10 @@ async fn event_loop(
                         && key.modifiers.contains(KeyModifiers::CONTROL)
                     {
                         app.should_quit = true;
+                    } else if key.code == KeyCode::Esc
+                        && app.view == View::TranscriptDetail
+                    {
+                        app.close_transcript_detail();
                     } else if matches!(
                         &app.run_state().state,
                         PipelineState::AwaitingConsent { .. }
@@ -186,7 +199,12 @@ async fn event_loop(
                     }
                     Event::Mouse(mouse) => {
                         match mouse.kind {
-                            crossterm::event::MouseEventKind::ScrollUp => {
+                            MouseEventKind::Down(MouseButton::Left) => {
+                                if app.view == View::Main {
+                                    app.open_timeline_entry_at(mouse.column, mouse.row);
+                                }
+                            }
+                            MouseEventKind::ScrollUp => {
                                 if app.view == View::Main {
                                     app.transcript_scroll_back =
                                         app.transcript_scroll_back.saturating_add(3);
@@ -194,7 +212,7 @@ async fn event_loop(
                                     app.scroll_offset = app.scroll_offset.saturating_sub(3);
                                 }
                             }
-                            crossterm::event::MouseEventKind::ScrollDown => {
+                            MouseEventKind::ScrollDown => {
                                 if app.view == View::Main {
                                     app.transcript_scroll_back =
                                         app.transcript_scroll_back.saturating_sub(3);
@@ -323,9 +341,14 @@ async fn event_loop(
             }
 
             // 7. Probe once after the interface is visible.
-            health = &mut health_probe, if !health_probe_complete => {
-                app.service_health = health;
-                health_probe_complete = true;
+            health = &mut llm_health_probe, if !llm_health_probe_complete => {
+                app.llm_service_health = health;
+                llm_health_probe_complete = true;
+            }
+
+            rag_health = &mut rag_health_probe, if !rag_health_probe_complete => {
+                app.rag_service_health = rag_health;
+                rag_health_probe_complete = true;
             }
         }
 
@@ -335,7 +358,7 @@ async fn event_loop(
     }
 }
 
-fn draw(f: &mut Frame, app: &App) {
+fn draw(f: &mut Frame, app: &mut App) {
     let composer_lines = visible_composer_lines(app);
     let composer_height = composer_lines + 2;
     let chunks = Layout::default()
@@ -350,38 +373,68 @@ fn draw(f: &mut Frame, app: &App) {
 
     match app.view {
         View::Stats => draw_stats_screen(f, app, chunks[0]),
-        View::Candidate => draw_plain_screen(f, "Candidate", &app.candidate, chunks[0]),
-        View::Diagnostics => draw_plain_screen(f, "Diagnostics", &app.diagnostics, chunks[0]),
-        View::Help => draw_plain_screen(f, "Help", HELP_TEXT, chunks[0]),
+        View::Candidate => {
+            draw_plain_screen(f, "Candidate", &app.candidate, app.scroll_offset, chunks[0])
+        }
+        View::Diagnostics => draw_plain_screen(
+            f,
+            "Diagnostics",
+            &app.diagnostics,
+            app.scroll_offset,
+            chunks[0],
+        ),
+        View::TranscriptDetail => {
+            if let Some((id, entry)) = app.timeline_detail() {
+                draw_plain_screen(
+                    f,
+                    &format!("Transcript T{id:03} · Esc back"),
+                    &entry.content,
+                    app.scroll_offset,
+                    chunks[0],
+                );
+            } else {
+                draw_plain_screen(
+                    f,
+                    "Transcript",
+                    "Transcript entry not found",
+                    app.scroll_offset,
+                    chunks[0],
+                );
+            }
+        }
+        View::Help => draw_plain_screen(f, "Help", HELP_TEXT, app.scroll_offset, chunks[0]),
         _ => draw_main_surface(f, app, chunks[0]),
     }
-
 
     draw_composer(f, app, chunks[2]);
     draw_bottom_hint(f, app, chunks[3]);
 }
 
-fn draw_main_surface(f: &mut Frame, app: &App, area: Rect) {
+fn draw_main_surface(f: &mut Frame, app: &mut App, area: Rect) {
     if app.show_right_panel {
         let columns = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([Constraint::Percentage(75), Constraint::Percentage(25)])
             .split(area);
         draw_transcript(f, app, columns[0]);
-        
+
         let running_count = app
             .run_state()
             .tool_processes
             .iter()
             .filter(|p| p.status == ToolProcessStatus::Running)
             .count();
-        let tools_height = if running_count > 0 { (running_count.min(6) + 3) as u16 } else { 3 };
+        let tools_height = if running_count > 0 {
+            (running_count.min(6) + 3) as u16
+        } else {
+            3
+        };
 
         if app.task_surface_active {
             let status_rows = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([
-                    Constraint::Length(6),
+                    Constraint::Length(7),
                     Constraint::Length(3),
                     Constraint::Length(3),
                     Constraint::Length(status_panel_height(app) + 1),
@@ -398,7 +451,7 @@ fn draw_main_surface(f: &mut Frame, app: &App, area: Rect) {
             let status_rows = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([
-                    Constraint::Length(6),
+                    Constraint::Length(7),
                     Constraint::Length(3),
                     Constraint::Length(3),
                     Constraint::Length(tools_height),
@@ -418,9 +471,9 @@ fn draw_main_surface(f: &mut Frame, app: &App, area: Rect) {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use ratatui::backend::TestBackend;
     use ratatui::Terminal;
-    pub fn rendered_screen(app: &crate::app::App, width: u16, height: u16) -> String {
+    use ratatui::backend::TestBackend;
+    pub fn rendered_screen(app: &mut crate::app::App, width: u16, height: u16) -> String {
         let backend = TestBackend::new(width, height);
         let mut terminal = Terminal::new(backend).expect("test terminal");
         terminal
@@ -443,7 +496,10 @@ pub mod tests {
         app.task_surface_active = true;
         app.dummy_run.state = agent_core::state::PipelineState::Generating { attempt: 1 };
 
-        let screen = rendered_screen(&app, 120, 40);
+        let screen = rendered_screen(&mut app, 120, 40);
+        assert!(screen.contains("LLM service:"));
+        assert!(screen.contains("RAG service:"));
+        assert!(screen.contains("window:"));
         let flint = screen.find("Flint").expect("Flint panel");
         let tokens = screen.find("Tokens").expect("Tokens panel");
         let context = screen.find("Context").expect("Context panel");
@@ -454,5 +510,58 @@ pub mod tests {
         assert!(tokens < context);
         assert!(context < plan);
         assert!(plan < tools);
+    }
+
+    #[test]
+    fn transcript_entries_are_one_line_and_clickable_by_id() {
+        let mut app = crate::app::App::new(None).expect("app");
+        app.timeline.push(crate::app::TimelineEntry {
+            role: crate::app::TimelineRole::Agent,
+            content: "first line\nsecond line with full detail".to_string(),
+        });
+
+        let screen = rendered_screen(&mut app, 120, 40);
+
+        assert!(screen.contains("[T001]"));
+        assert!(screen.contains("chars omitted"));
+        assert!(!screen.contains("second line with full detail"));
+        let hitbox = app.transcript_hitboxes[0];
+        assert!(app.open_timeline_entry_at(hitbox.left, hitbox.row));
+        assert_eq!(app.view, crate::app::View::TranscriptDetail);
+        assert_eq!(
+            app.timeline_detail().unwrap().1.content,
+            "first line\nsecond line with full detail"
+        );
+    }
+
+    #[test]
+    fn transcript_detail_preserves_newlines_and_supports_scrolling() {
+        let mut app = crate::app::App::new(None).expect("app");
+        let content = (1..=40)
+            .map(|line| format!("detail-line-{line:02}"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        app.timeline.push(crate::app::TimelineEntry {
+            role: crate::app::TimelineRole::Agent,
+            content,
+        });
+        assert!(app.open_timeline_entry(1));
+
+        let first_screen = rendered_screen(&mut app, 100, 18);
+        let rows = first_screen.lines().collect::<Vec<_>>();
+        let first_row = rows
+            .iter()
+            .position(|row| row.contains("detail-line-01"))
+            .expect("first detail line");
+        let second_row = rows
+            .iter()
+            .position(|row| row.contains("detail-line-02"))
+            .expect("second detail line");
+        assert_eq!(second_row, first_row + 1);
+
+        app.scroll_offset = 12;
+        let scrolled = rendered_screen(&mut app, 100, 18);
+        assert!(!scrolled.contains("detail-line-01"));
+        assert!(scrolled.contains("detail-line-11"));
     }
 }

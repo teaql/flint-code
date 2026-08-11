@@ -82,7 +82,10 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
             state.current_attempt = 1;
             state.state = PipelineState::Generating { attempt: 1 };
             state.start_stage("generate_1");
-            state.activate_plan_step("modeling_draft", "Ask the local model to generate a candidate");
+            state.activate_plan_step(
+                "modeling_draft",
+                "Ask the local model to generate a candidate",
+            );
             SideEffect::Generate { attempt: 1 }
         }
 
@@ -143,7 +146,23 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
             let attempt = *attempt;
             error!(%err, "Model failed");
             state.complete_current_stage();
-            
+
+            let is_infrastructure = err.is_infrastructure()
+                || matches!(
+                    &err,
+                    AgentError::TransportError { status, .. } if *status >= 500
+                );
+            if is_infrastructure {
+                let detail = err.to_string();
+                state.mark_current_plan_step(PlanStepStatus::Failed, detail.clone());
+                state.state = PipelineState::Failed {
+                    error: detail.clone(),
+                };
+                return SideEffect::RecordFailure {
+                    error: format!("{detail} (retry skipped)"),
+                };
+            }
+
             // HTTP 4xx: do NOT retry
             if let AgentError::TransportError { status, .. } = &err {
                 if *status >= 400 && *status < 500 {
@@ -162,7 +181,10 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
                 warn!(next, "Infrastructure error, retrying generation");
                 state.state = PipelineState::Generating { attempt: next };
                 state.start_stage(format!("generate_{next}"));
-                state.activate_plan_step("modeling_draft", format!("Retry generation (attempt {next})"));
+                state.activate_plan_step(
+                    "modeling_draft",
+                    format!("Retry generation (attempt {next})"),
+                );
                 SideEffect::Generate { attempt: next }
             } else {
                 state.mark_current_plan_step(PlanStepStatus::Failed, err.to_string());
@@ -212,10 +234,8 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
                 // We keep model_evaluation active
                 state.state = PipelineState::DomainValidation { attempt };
                 state.start_stage(format!("domain_validation_{attempt}"));
-                state.activate_plan_step(
-                    "model_evaluation",
-                    "Run TeaQL domain semantic validation",
-                );
+                state
+                    .activate_plan_step("model_evaluation", "Run TeaQL domain semantic validation");
                 SideEffect::RunDomainValidation { attempt }
             } else if attempt <= state.max_repairs {
                 warn!(
@@ -271,6 +291,21 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
                     "Generate code and run cargo check/test",
                 );
                 SideEffect::RunBuildValidation { attempt }
+            } else if result.is_infrastructure_failure() {
+                let detail = result
+                    .actionable_errors
+                    .first()
+                    .cloned()
+                    .unwrap_or_else(|| "Domain validation infrastructure failure".to_string());
+                error!(%detail, "Domain validation infrastructure failed; aborting repair");
+                state.complete_current_stage();
+                state.state = PipelineState::Failed {
+                    error: detail.clone(),
+                };
+                state.mark_current_plan_step(PlanStepStatus::Failed, detail.clone());
+                SideEffect::RecordFailure {
+                    error: format!("{detail} (model repair skipped)"),
+                }
             } else if result.error_count > 0 && attempt <= state.max_repairs {
                 warn!(
                     errors = result.error_count,
@@ -295,7 +330,10 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
                     format!("{} errors; repair limit reached", result.error_count),
                 );
                 SideEffect::RecordFailure {
-                    error: format!("TeaQL: {} errors (repair limit reached)", result.error_count),
+                    error: format!(
+                        "TeaQL: {} errors (repair limit reached)",
+                        result.error_count
+                    ),
                 }
             }
         }
@@ -313,20 +351,22 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
                 state.activate_plan_step("finalize", "Write the final result and run artifact");
                 SideEffect::WriteFinalArtifact
             } else if attempt <= state.max_repairs {
-                let is_infra_error = result.actionable_errors.iter().any(|e| e.contains("Agent loop exhausted"));
-                
+                let is_infra_error = result.is_infrastructure_failure();
+
                 if is_infra_error {
-                    error!("Build failed due to infrastructure timeout, aborting repair");
+                    let detail = result
+                        .actionable_errors
+                        .first()
+                        .cloned()
+                        .unwrap_or_else(|| "Build infrastructure failure".to_string());
+                    error!(%detail, "Build failed due to infrastructure, aborting repair");
                     state.complete_current_stage();
                     state.state = PipelineState::Failed {
-                        error: format!("Build timed out: {}", result.actionable_errors.first().unwrap_or(&String::new())),
+                        error: detail.clone(),
                     };
-                    state.mark_current_plan_step(
-                        PlanStepStatus::Failed,
-                        "Build agent loop exhausted".to_string(),
-                    );
+                    state.mark_current_plan_step(PlanStepStatus::Failed, detail.clone());
                     SideEffect::RecordFailure {
-                        error: "Build agent loop exhausted (repair aborted)".to_string(),
+                        error: format!("{detail} (model repair skipped)"),
                     }
                 } else {
                     warn!("Build validation failed — scheduling repair");
@@ -350,7 +390,42 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
                     format!("{} errors; repair limit reached", result.error_count),
                 );
                 SideEffect::RecordFailure {
-                    error: format!("Build L{}: {} errors (repair limit reached)", result.level, result.error_count),
+                    error: format!(
+                        "Build L{}: {} errors (repair limit reached)",
+                        result.level, result.error_count
+                    ),
+                }
+            }
+        }
+
+        // ── FollowUpValidation → Finalizing or Failed ──
+        // A continuation edits the already generated application workspace. It must never
+        // fall back into the KSML repair/generation pipeline because that would replace the
+        // model and discard the workspace the user asked us to continue.
+        (PipelineState::FollowUpValidation { attempt }, RunEvent::ValidationCompleted(result)) => {
+            let attempt = *attempt;
+            state.validation_history.push(result.clone());
+            state.complete_current_stage();
+            if result.passed {
+                info!("Follow-up validation passed — finalizing existing workspace");
+                state.complete_plan_step(&format!("follow_up_{attempt}"));
+                state.state = PipelineState::Finalizing;
+                state.start_stage("finalizing");
+                state.activate_plan_step("finalize", "Writing updated final artifact");
+                SideEffect::WriteFinalArtifact
+            } else {
+                let detail = result
+                    .actionable_errors
+                    .first()
+                    .cloned()
+                    .unwrap_or_else(|| result.diagnostic.clone());
+                error!(%detail, "Follow-up validation failed; preserving current workspace");
+                state.mark_current_plan_step(PlanStepStatus::Failed, detail.clone());
+                state.state = PipelineState::Failed {
+                    error: detail.clone(),
+                };
+                SideEffect::RecordFailure {
+                    error: format!("Follow-up failed: {detail} (KSML regeneration skipped)"),
                 }
             }
         }
@@ -369,7 +444,10 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
         // ── WorkspaceGenerationStarted ──
         (PipelineState::BuildValidation { .. }, RunEvent::WorkspaceGenerationStarted) => {
             state.complete_plan_step("generate_library");
-            state.activate_plan_step("generate_workspace", "Generating application workspace targets");
+            state.activate_plan_step(
+                "generate_workspace",
+                "Generating application workspace targets",
+            );
             SideEffect::None
         }
 
@@ -409,7 +487,13 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
             SideEffect::None
         }
 
-        // ── Terminal Completed → Resume BuildValidation ──
+        // RAG lifecycle is observational and may begin while the task is still
+        // being loaded, before the pipeline leaves Idle.
+        (_, RunEvent::RagStarted | RunEvent::RagCompleted(_) | RunEvent::ModelStarted { .. }) => {
+            SideEffect::None
+        }
+
+        // ── Terminal Completed → Resume the existing workspace ──
         (PipelineState::Completed, RunEvent::ContinueTask(task)) => {
             info!("Resuming workspace with follow-up task");
             // Add a new plan step
@@ -421,19 +505,21 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
             });
             let next = state.current_attempt + 1;
             state.current_attempt = next;
-            state.state = PipelineState::BuildValidation { attempt: next };
+            state.state = PipelineState::FollowUpValidation { attempt: next };
             state.start_stage(format!("followup_{next}"));
-            state.activate_plan_step(&format!("follow_up_{next}"), format!("Continuing: {}", task));
-            SideEffect::RunFollowUp { task, attempt: next }
+            state.activate_plan_step(
+                &format!("follow_up_{next}"),
+                format!("Continuing: {}", task),
+            );
+            SideEffect::RunFollowUp {
+                task,
+                attempt: next,
+            }
         }
 
         // ── Unhandled transitions ──
         (current, event) => {
-            warn!(
-                ?current,
-                ?event,
-                "Unhandled state transition (ignored)"
-            );
+            warn!(?current, ?event, "Unhandled state transition (ignored)");
             SideEffect::None
         }
     }
@@ -624,6 +710,89 @@ mod tests {
     }
 
     #[test]
+    fn build_infrastructure_failure_stops_without_model_repair() {
+        let mut run = new_run();
+        run.current_attempt = 1;
+        run.state = PipelineState::BuildValidation { attempt: 1 };
+        let result = ValidationResult {
+            level: 5,
+            level_name: "build".to_string(),
+            passed: false,
+            error_count: 1,
+            warning_count: 0,
+            suggestion_count: 0,
+            actionable_errors: vec![format!(
+                "{} cargo teaql rust-lib-core failed",
+                crate::event::INFRASTRUCTURE_FAILURE_PREFIX
+            )],
+            structured_errors: vec![],
+            diagnostic: "Internal Server Error (500)".to_string(),
+            elapsed_secs: 1.0,
+        };
+
+        let effect = reduce(&mut run, RunEvent::ValidationCompleted(result));
+
+        assert!(matches!(effect, SideEffect::RecordFailure { .. }));
+        assert!(matches!(run.state, PipelineState::Failed { .. }));
+        assert_eq!(run.current_attempt, 1);
+    }
+
+    #[test]
+    fn domain_infrastructure_failure_stops_without_model_repair() {
+        let mut run = new_run();
+        run.current_attempt = 1;
+        run.state = PipelineState::DomainValidation { attempt: 1 };
+        let result = ValidationResult {
+            level: 3,
+            level_name: "domain".to_string(),
+            passed: false,
+            error_count: 1,
+            warning_count: 0,
+            suggestion_count: 0,
+            actionable_errors: vec![format!(
+                "{} TeaQL domain validator is unavailable",
+                crate::event::INFRASTRUCTURE_FAILURE_PREFIX
+            )],
+            structured_errors: vec![],
+            diagnostic: "connection refused".to_string(),
+            elapsed_secs: 1.0,
+        };
+
+        let effect = reduce(&mut run, RunEvent::ValidationCompleted(result));
+
+        assert!(matches!(effect, SideEffect::RecordFailure { .. }));
+        assert!(matches!(run.state, PipelineState::Failed { .. }));
+        assert_eq!(run.current_attempt, 1);
+    }
+
+    #[test]
+    fn exhausted_agent_loop_is_model_repairable() {
+        let mut run = new_run();
+        run.current_attempt = 1;
+        run.state = PipelineState::BuildValidation { attempt: 1 };
+        let result = ValidationResult {
+            level: 5,
+            level_name: "build".to_string(),
+            passed: false,
+            error_count: 1,
+            warning_count: 0,
+            suggestion_count: 0,
+            actionable_errors: vec![
+                "Agent loop exhausted 6 iterations. Duplicate KSML object 'School Type'"
+                    .to_string(),
+            ],
+            structured_errors: vec![],
+            diagnostic: "duplicate definitions".to_string(),
+            elapsed_secs: 1.0,
+        };
+
+        let effect = reduce(&mut run, RunEvent::ValidationCompleted(result));
+
+        assert!(matches!(effect, SideEffect::Repair { attempt: 2 }));
+        assert!(matches!(run.state, PipelineState::Repairing { attempt: 2 }));
+    }
+
+    #[test]
     fn test_http_4xx_no_retry() {
         let mut run = new_run();
         let task = crate::event::TaskPackage {
@@ -650,6 +819,31 @@ mod tests {
         let effect = reduce(&mut run, RunEvent::ModelFailed(err));
         assert!(matches!(effect, SideEffect::RecordFailure { .. }));
         assert!(matches!(run.state, PipelineState::Failed { .. }));
+    }
+
+    #[test]
+    fn model_infrastructure_failures_stop_without_retry() {
+        let errors = [
+            AgentError::TransportError {
+                status: 503,
+                body: "service unavailable".to_string(),
+            },
+            AgentError::InfrastructureError {
+                detail: "connection refused".to_string(),
+            },
+        ];
+
+        for error in errors {
+            let mut run = new_run();
+            run.current_attempt = 1;
+            run.state = PipelineState::Generating { attempt: 1 };
+
+            let effect = reduce(&mut run, RunEvent::ModelFailed(error));
+
+            assert!(matches!(effect, SideEffect::RecordFailure { .. }));
+            assert!(matches!(run.state, PipelineState::Failed { .. }));
+            assert_eq!(run.current_attempt, 1);
+        }
     }
 
     #[test]
@@ -693,12 +887,37 @@ mod tests {
             SideEffect::RunFollowUp { ref task, attempt: 2 }
                 if task == "add another query"
         ));
-        assert_eq!(run.state, PipelineState::BuildValidation { attempt: 2 });
+        assert_eq!(run.state, PipelineState::FollowUpValidation { attempt: 2 });
         assert_eq!(run.current_attempt, 2);
         assert_eq!(
             run.current_plan_step().map(|(_, step)| step.id.as_str()),
             Some("follow_up_2")
         );
+    }
+
+    #[test]
+    fn failed_follow_up_stops_without_scheduling_model_repair() {
+        let mut run = new_run();
+        run.state = PipelineState::FollowUpValidation { attempt: 2 };
+        run.current_attempt = 2;
+
+        let result = ValidationResult {
+            level: 5,
+            level_name: "build".to_string(),
+            passed: false,
+            error_count: 1,
+            warning_count: 0,
+            suggestion_count: 0,
+            actionable_errors: vec!["application coding failed".to_string()],
+            structured_errors: vec![],
+            diagnostic: "agent made no progress".to_string(),
+            elapsed_secs: 1.0,
+        };
+        let effect = reduce(&mut run, RunEvent::ValidationCompleted(result));
+
+        assert!(matches!(effect, SideEffect::RecordFailure { ref error }
+            if error.contains("KSML regeneration skipped")));
+        assert!(matches!(run.state, PipelineState::Failed { .. }));
     }
 
     #[test]

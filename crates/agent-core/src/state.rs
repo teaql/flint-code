@@ -42,6 +42,8 @@ pub enum PipelineState {
     DomainValidation { attempt: u8 },
     /// Running build validation (L4-L6, cargo check/test)
     BuildValidation { attempt: u8 },
+    /// Continuing application work in an already generated workspace.
+    FollowUpValidation { attempt: u8 },
     /// Creating a fresh repair request
     Repairing { attempt: u8 },
     /// All gates passed, writing final artifact
@@ -91,6 +93,7 @@ impl PipelineState {
             PipelineState::LocalValidation { .. } => "Local Validation",
             PipelineState::DomainValidation { .. } => "Domain Validation",
             PipelineState::BuildValidation { .. } => "Build Validation",
+            PipelineState::FollowUpValidation { .. } => "Follow-up Validation",
             PipelineState::Repairing { .. } => "Repairing",
             PipelineState::Finalizing => "Finalizing",
             PipelineState::Completed => "Completed",

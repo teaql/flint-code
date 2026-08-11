@@ -442,7 +442,8 @@ impl VllmClient {
                                     continue;
                                 }
 
-                                if let Some(data) = line.strip_prefix("data:").map(str::trim_start) {
+                                if let Some(data) = line.strip_prefix("data:").map(str::trim_start)
+                                {
                                     if data.trim() == "[DONE]" {
                                         let reasoning = if full_reasoning.is_empty() {
                                             None

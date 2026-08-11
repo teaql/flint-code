@@ -31,6 +31,7 @@ pub enum AgentLoopResult {
     MaxIterationsReached {
         iterations: usize,
         total_tool_calls: usize,
+        last_failed_build: Option<String>,
     },
 }
 
@@ -63,7 +64,9 @@ pub async fn run_agent_loop(
     ];
 
     let mut total_tool_calls = 0usize;
-    let mut iters_without_action = 0usize; // Track iterations without run_command or write_file
+    let mut iterations_without_progress = 0usize;
+    let mut last_failed_build = None;
+    let mut last_failed_tool = None;
     let mut loop_guard = LoopGuard::new(3);
     let max_prompt_bytes = (client.profile().context.max_prompt_tokens as usize).saturating_mul(3);
 
@@ -82,14 +85,6 @@ pub async fn run_agent_loop(
             "Agent loop iteration"
         );
 
-        if let Some(tx) = &event_tx {
-            let _ = tx
-                .send(agent_core::RunEvent::ModelStarted {
-                    attempt: (iteration + 1) as u8,
-                })
-                .await;
-        }
-
         // Call the model with tool definitions
         let result = client
             .chat(messages.clone(), Some(tools.clone()), None)
@@ -99,7 +94,9 @@ pub async fn run_agent_loop(
             Ok(model_result) => {
                 if let Some(tx) = &event_tx {
                     let _ = tx
-                        .send(agent_core::RunEvent::ModelCompleted(model_result.clone()))
+                        .send(agent_core::RunEvent::ModelUsageRecorded(
+                            model_result.usage.clone(),
+                        ))
                         .await;
                 }
 
@@ -126,15 +123,7 @@ pub async fn run_agent_loop(
                             "Agent requested tool calls"
                         );
 
-                        // Track whether this iteration includes an "action" tool
-                        let has_action = calls.iter().any(|tc| {
-                            tc.function.name == "run_command" || tc.function.name == "write_file"
-                        });
-                        if has_action {
-                            iters_without_action = 0;
-                        } else {
-                            iters_without_action += 1;
-                        }
+                        let mut iteration_made_progress = false;
 
                         // Add the assistant's message (with tool calls) to history
                         messages.push(ChatMessage::assistant_with_tool_calls(
@@ -172,7 +161,7 @@ pub async fn run_agent_loop(
                             if let Some(tx) = &event_tx {
                                 tx.send(agent_core::RunEvent::ToolProcessStarted {
                                     id: cmd_id,
-                                    command: command_str,
+                                    command: command_str.clone(),
                                 })
                                 .await
                                 .ok();
@@ -184,6 +173,44 @@ pub async fn run_agent_loop(
                                 sandbox_dir,
                             )
                             .await;
+
+                            if !tool_result.success {
+                                last_failed_tool = Some(format!(
+                                    "Tool `{}` failed for `{}`:\n{}",
+                                    tc.function.name, command_str, tool_result.output
+                                ));
+                                if crate::executor::is_infrastructure_diagnostic(
+                                    &tool_result.output,
+                                ) {
+                                    return AgentLoopResult::Failed {
+                                        error: format!(
+                                            "{} Agent tool `{}` stopped on an infrastructure failure:\n{}",
+                                            agent_core::event::INFRASTRUCTURE_FAILURE_PREFIX,
+                                            tc.function.name,
+                                            tool_result.output
+                                        ),
+                                        iterations: iteration + 1,
+                                    };
+                                }
+                            }
+
+                            if tc.function.name == "write_file" && tool_result.success {
+                                iteration_made_progress = true;
+                            }
+                            if tc.function.name == "run_command" {
+                                if tool_result.success && is_build_command(&command_str) {
+                                    iteration_made_progress = true;
+                                } else if !tool_result.success
+                                    && is_build_command(&command_str)
+                                    && (last_failed_build.is_none()
+                                        || tool_result
+                                            .output
+                                            .to_ascii_lowercase()
+                                            .contains("error"))
+                                {
+                                    last_failed_build = Some(tool_result.output.clone());
+                                }
+                            }
 
                             if let Some(detection) = loop_guard.record_tool_call(
                                 &tc.function.name,
@@ -209,11 +236,18 @@ pub async fn run_agent_loop(
                             messages.push(ChatMessage::tool_result(&tc.id, &tool_result.output));
                         }
 
-                        // Nudge: if the agent has been exploring without acting, prod it
-                        if iters_without_action >= 3 {
+                        if iteration_made_progress {
+                            iterations_without_progress = 0;
+                        } else {
+                            iterations_without_progress += 1;
+                        }
+
+                        // Nudge once, then stop early if diagnostics/exploration do not
+                        // produce a successful edit or build.
+                        if iterations_without_progress == 3 {
                             warn!(
                                 iteration,
-                                iters_without_action,
+                                iterations_without_progress,
                                 "Agent stuck in exploration — injecting nudge"
                             );
                             messages.push(ChatMessage::user(
@@ -221,9 +255,21 @@ pub async fn run_agent_loop(
                                  1. If there is a pom.xml, run: run_command({\"command\": \"mvn compile -f pom.xml\"})\n\
                                  2. If there is a Cargo.toml, run: run_command({\"command\": \"cargo check\"})\n\
                                  3. If business logic code is missing, use write_file to create it.\n\
+                                 Never read or modify generated library source such as lib/src.\n\
                                  DO NOT call list_directory or read_file again until you have tried compiling."
                             ));
-                            iters_without_action = 0; // Reset so we don't spam
+                        }
+                        if iterations_without_progress >= 6 {
+                            let diagnostic = last_failed_build
+                                .as_deref()
+                                .or(last_failed_tool.as_deref())
+                                .unwrap_or("No failed tool or build diagnostic was captured; the agent only explored successfully");
+                            return AgentLoopResult::Failed {
+                                error: format!(
+                                    "Agent made no build progress for {iterations_without_progress} consecutive iterations. Last failed build:\n{diagnostic}"
+                                ),
+                                iterations: iteration + 1,
+                            };
                         }
                     }
                     _ => {
@@ -266,7 +312,18 @@ pub async fn run_agent_loop(
     AgentLoopResult::MaxIterationsReached {
         iterations: max_iterations,
         total_tool_calls,
+        last_failed_build,
     }
+}
+
+fn is_build_command(command: &str) -> bool {
+    let normalized = command.to_ascii_lowercase();
+    normalized.contains("cargo check")
+        || normalized.contains("cargo test")
+        || normalized.contains("mvn compile")
+        || normalized.contains("mvn test")
+        || normalized.contains("gradle build")
+        || normalized.contains("gradlew build")
 }
 
 fn message_bytes(message: &ChatMessage) -> usize {

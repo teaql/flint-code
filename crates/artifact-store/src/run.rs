@@ -38,7 +38,8 @@ impl RunArtifacts {
         let mut file = tokio::fs::OpenOptions::new()
             .create(true)
             .append(true)
-            .open(&path).await?;
+            .open(&path)
+            .await?;
         let json = serde_json::to_string(event)?;
         file.write_all(format!("{json}\n").as_bytes()).await?;
         Ok(())
@@ -110,7 +111,12 @@ impl RunArtifacts {
     }
 
     /// Save arbitrary string content to an attempt directory.
-    pub async fn save_attempt_raw(&self, attempt: u8, filename: &str, content: &str) -> Result<PathBuf> {
+    pub async fn save_attempt_raw(
+        &self,
+        attempt: u8,
+        filename: &str,
+        content: &str,
+    ) -> Result<PathBuf> {
         let dir = self.create_attempt(attempt).await?;
         let path = dir.join(filename);
         if let Some(p) = path.parent() {
@@ -179,8 +185,11 @@ mod tests {
         assert!(!snapshot.join("target").exists());
 
         std::fs::write(snapshot.join("stale.rs"), "stale").expect("write stale file");
-        std::fs::write(source.join("src/main.rs"), "fn main() { println!(\"new\"); }\n")
-            .expect("update source");
+        std::fs::write(
+            source.join("src/main.rs"),
+            "fn main() { println!(\"new\"); }\n",
+        )
+        .expect("update source");
         artifacts
             .save_final_workspace(&source)
             .await

@@ -1,6 +1,10 @@
 #![allow(dead_code)]
-use crate::ui_components::*;
+use crate::app::App;
 use crate::ui_components::helpers::*;
+use crate::ui_components::*;
+use crate::widgets::*;
+use agent_core::shared::ToolProcessStatus;
+use agent_core::state::PipelineState;
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
@@ -8,10 +12,6 @@ use ratatui::{
     text::{Line, Span},
     widgets::{Paragraph, Wrap},
 };
-use agent_core::state::PipelineState;
-use agent_core::shared::ToolProcessStatus;
-use crate::app::App;
-use crate::widgets::*;
 
 pub fn draw_stats_screen(f: &mut Frame, app: &App, area: Rect) {
     let run = app.run_state();
@@ -22,7 +22,9 @@ pub fn draw_stats_screen(f: &mut Frame, app: &App, area: Rect) {
     lines.push(Line::from(vec![
         Span::styled(
             " Statistics",
-            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD),
         ),
         Span::styled("  Esc back", Style::default().fg(Color::DarkGray)),
     ]));
@@ -31,7 +33,9 @@ pub fn draw_stats_screen(f: &mut Frame, app: &App, area: Rect) {
     // Plan
     lines.push(Line::from(Span::styled(
         format!(" Plan {completed}/{total}"),
-        Style::default().fg(Color::White).add_modifier(Modifier::BOLD),
+        Style::default()
+            .fg(Color::White)
+            .add_modifier(Modifier::BOLD),
     )));
     for (index, step) in run.plan.iter().enumerate() {
         let (icon, style) = plan_step_style(step.status, app.plan_pulse_phase);
@@ -45,7 +49,9 @@ pub fn draw_stats_screen(f: &mut Frame, app: &App, area: Rect) {
     // Validation history
     lines.push(Line::from(Span::styled(
         " Validation",
-        Style::default().fg(Color::White).add_modifier(Modifier::BOLD),
+        Style::default()
+            .fg(Color::White)
+            .add_modifier(Modifier::BOLD),
     )));
     if run.validation_history.is_empty() {
         lines.push(Line::from(Span::styled(
@@ -64,8 +70,12 @@ pub fn draw_stats_screen(f: &mut Frame, app: &App, area: Rect) {
                 Span::styled(
                     format!(
                         "L{} {} · check {} · {:.1}s · {} err · {} warn",
-                        result.level, result.level_name, index + 1,
-                        result.elapsed_secs, result.error_count, result.warning_count
+                        result.level,
+                        result.level_name,
+                        index + 1,
+                        result.elapsed_secs,
+                        result.error_count,
+                        result.warning_count
                     ),
                     Style::default().fg(Color::DarkGray),
                 ),
@@ -78,7 +88,9 @@ pub fn draw_stats_screen(f: &mut Frame, app: &App, area: Rect) {
     let totals = &run.token_totals;
     lines.push(Line::from(Span::styled(
         " Tokens",
-        Style::default().fg(Color::White).add_modifier(Modifier::BOLD),
+        Style::default()
+            .fg(Color::White)
+            .add_modifier(Modifier::BOLD),
     )));
     lines.push(Line::from(vec![
         Span::styled("   ↑", Style::default().fg(Color::Green)),
@@ -95,10 +107,15 @@ pub fn draw_stats_screen(f: &mut Frame, app: &App, area: Rect) {
         Span::styled(" = ", Style::default().fg(Color::DarkGray)),
         Span::styled(
             format_tokens(totals.input_tokens + totals.output_tokens),
-            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD),
         ),
         Span::styled(" (", Style::default().fg(Color::DarkGray)),
-        Span::styled(format!("{} reqs", totals.model_calls), Style::default().fg(Color::White)),
+        Span::styled(
+            format!("{} reqs", totals.model_calls),
+            Style::default().fg(Color::White),
+        ),
         Span::styled(")", Style::default().fg(Color::DarkGray)),
     ]));
     lines.push(Line::from(""));
@@ -108,7 +125,9 @@ pub fn draw_stats_screen(f: &mut Frame, app: &App, area: Rect) {
     if !processes.is_empty() {
         lines.push(Line::from(Span::styled(
             " Tools",
-            Style::default().fg(Color::White).add_modifier(Modifier::BOLD),
+            Style::default()
+                .fg(Color::White)
+                .add_modifier(Modifier::BOLD),
         )));
         for process in processes.iter().rev().take(10) {
             let (icon, color) = match process.status {
@@ -201,8 +220,14 @@ pub fn draw_stats_dashboard(f: &mut Frame, app: &App, area: Rect) {
     draw_tool_history(f, app, right_rows[1]);
 }
 
-pub fn draw_plain_screen(f: &mut Frame, title: &str, content: &str, area: Rect) {
-    let lines = vec![
+pub fn draw_plain_screen(
+    f: &mut Frame,
+    title: &str,
+    content: &str,
+    scroll_offset: u16,
+    area: Rect,
+) {
+    let mut lines = vec![
         Line::from(vec![
             Span::styled(
                 format!(" {title}"),
@@ -211,12 +236,21 @@ pub fn draw_plain_screen(f: &mut Frame, title: &str, content: &str, area: Rect) 
                     .add_modifier(Modifier::BOLD),
             ),
             Span::styled(
-                " · /main back · /stats",
+                " · /main back · mouse wheel scroll",
                 Style::default().fg(Color::DarkGray),
             ),
         ]),
         Line::from(""),
-        Line::from(content.to_string()),
     ];
-    f.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), area);
+    lines.extend(
+        content
+            .split('\n')
+            .map(|line| Line::from(line.strip_suffix('\r').unwrap_or(line).to_string())),
+    );
+    f.render_widget(
+        Paragraph::new(lines)
+            .wrap(Wrap { trim: false })
+            .scroll((scroll_offset, 0)),
+        area,
+    );
 }

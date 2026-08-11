@@ -1,5 +1,9 @@
 #![allow(dead_code)]
+use crate::app::{App, View};
 use crate::ui_components::helpers::*;
+use crate::widgets::*;
+use agent_core::shared::ToolProcessStatus;
+use agent_core::state::PipelineState;
 use ratatui::{
     Frame,
     layout::Rect,
@@ -7,10 +11,6 @@ use ratatui::{
     text::{Line, Span},
     widgets::{Block, Borders, List, ListItem, Padding, Paragraph, Wrap},
 };
-use agent_core::state::PipelineState;
-use agent_core::shared::ToolProcessStatus;
-use crate::app::{App, View};
-use crate::widgets::*;
 
 pub fn draw_plan(f: &mut Frame, app: &App, area: Rect) {
     let run = app.run_state();

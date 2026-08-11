@@ -1,11 +1,11 @@
 #![allow(dead_code)]
 
+use crate::app::{App, ServiceHealth};
+use agent_core::state::PipelineState;
 use ratatui::{
     style::{Color, Style},
     text::{Line, Span},
 };
-use agent_core::state::PipelineState;
-use crate::app::{App, ServiceHealth};
 
 pub const HELP_TEXT: &str = r#"KlintCode TUI — Keyboard Shortcuts
 
@@ -14,6 +14,7 @@ pub const HELP_TEXT: &str = r#"KlintCode TUI — Keyboard Shortcuts
   d     Candidate / diff view
   ?     Toggle help
   j/k   Scroll down/up
+  click Open a transcript entry by its T### ID
   c     Cancel current operation
   i     Focus interactive prompt
   q     Quit
@@ -24,7 +25,9 @@ While editing the prompt:
   Esc               Return to dashboard shortcuts
 
 Slash commands:
+  /show T###         Open the full transcript entry
   /task <request>    Force the development task pipeline
+  /task <package-dir> Load a task package and its acceptance sidecars
   /ask <question>    Force lightweight conversation
   /main              Main conversation
   /stats             Plan, validation, context, and Token usage"#;
@@ -38,6 +41,7 @@ pub fn state_presentation(state: &PipelineState) -> (&'static str, &'static str,
         PipelineState::LocalValidation { .. }
         | PipelineState::DomainValidation { .. }
         | PipelineState::BuildValidation { .. } => ("●", "VALIDATING", Color::Cyan),
+        PipelineState::FollowUpValidation { .. } => ("●", "CONTINUING", Color::Cyan),
         PipelineState::Repairing { .. } => ("↻", "REPAIRING", Color::Yellow),
         PipelineState::Finalizing => ("●", "FINALIZING", Color::Cyan),
         PipelineState::Completed => ("✓", "COMPLETED", Color::Green),
@@ -69,11 +73,11 @@ pub fn endpoint_line(app: &App) -> Line<'static> {
 
 pub fn service_health_line(health: &ServiceHealth) -> Line<'static> {
     let (icon, label, color) = match health {
-        ServiceHealth::Checking => ("●", "checking model service".to_string(), Color::Yellow),
-        ServiceHealth::Healthy => ("✓", "model service healthy".to_string(), Color::Green),
+        ServiceHealth::Checking => ("●", "checking LLM service".to_string(), Color::Yellow),
+        ServiceHealth::Healthy => ("✓", "LLM service healthy".to_string(), Color::Green),
         ServiceHealth::Unavailable(detail) => (
             "✗",
-            format!("model service unavailable · {detail}"),
+            format!("LLM service unavailable · {detail}"),
             Color::Red,
         ),
     };
@@ -83,24 +87,22 @@ pub fn service_health_line(health: &ServiceHealth) -> Line<'static> {
     ])
 }
 
-
 #[cfg(test)]
 mod tests {
     use agent_core::shared::PlanStepStatus;
 
     use crate::widgets::plan_step_style;
 
-        #[test]
-        fn plan_step_visuals_collapse_to_three_states_and_current_step_pulses() {
-            assert_eq!(plan_step_style(PlanStepStatus::Pending, 2).0, "○");
-            assert_eq!(plan_step_style(PlanStepStatus::Failed, 2).0, "✗");
-            assert_eq!(plan_step_style(PlanStepStatus::InProgress, 2).0, "●");
-            assert_eq!(plan_step_style(PlanStepStatus::WaitingUser, 2).0, "●");
-            assert_eq!(plan_step_style(PlanStepStatus::Completed, 2).0, "✓");
-    
-            let bright = plan_step_style(PlanStepStatus::InProgress, 2).1;
-            let dim = plan_step_style(PlanStepStatus::InProgress, 0).1;
-            assert_ne!(bright.fg, dim.fg);
-        }
-    
+    #[test]
+    fn plan_step_visuals_collapse_to_three_states_and_current_step_pulses() {
+        assert_eq!(plan_step_style(PlanStepStatus::Pending, 2).0, "○");
+        assert_eq!(plan_step_style(PlanStepStatus::Failed, 2).0, "✗");
+        assert_eq!(plan_step_style(PlanStepStatus::InProgress, 2).0, "●");
+        assert_eq!(plan_step_style(PlanStepStatus::WaitingUser, 2).0, "●");
+        assert_eq!(plan_step_style(PlanStepStatus::Completed, 2).0, "✓");
+
+        let bright = plan_step_style(PlanStepStatus::InProgress, 2).1;
+        let dim = plan_step_style(PlanStepStatus::InProgress, 0).1;
+        assert_ne!(bright.fg, dim.fg);
+    }
 }

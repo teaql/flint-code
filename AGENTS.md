@@ -26,7 +26,7 @@ context windows (64K-128K tokens).
 6. **Use cargo teaql with --input**: Every Rust TeaQL operation must use
    `cargo teaql --input <model> <command>`.
 
-7. **Version requirement**: `cargo-teaql` exactly `2.0.8`.
+7. **Version requirement**: `cargo-teaql` exactly `2.0.11`.
 
 8. **Diagnosing Errors**: When running commands (like `cargo run`, `mvn build`, etc.) and checking for errors, NEVER use strict case-sensitive tools like `grep "Error"`. Compilers and tools often output `error:`, `ERROR:`, `Exception`, or `Failed`. Instead, use case-insensitive searches (e.g. `grep -i "error"`) or pipe the entire output to a file and read it. If a command fails and your search returns nothing, stop blindly retrying with larger context bounds; dump the raw output instead.
 

@@ -9,11 +9,11 @@
 //! - tool-policy.toml — command whitelist
 
 mod budget;
+pub mod includes;
 mod prompt;
 mod task_package;
-pub mod includes;
 
 pub use budget::*;
+pub use includes::*;
 pub use prompt::*;
 pub use task_package::*;
-pub use includes::*;

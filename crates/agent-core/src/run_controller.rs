@@ -65,13 +65,34 @@ impl RunController {
         // Broadcast terminal failures to observers (e.g. TUI)
         match &self.state.state {
             crate::state::PipelineState::Failed { error } => {
-                let _ = self.event_tx.send(crate::event::RunEvent::Failed(crate::error::AgentError::InfrastructureError { detail: error.clone() })).await;
+                let _ = self
+                    .event_tx
+                    .send(crate::event::RunEvent::Failed(
+                        crate::error::AgentError::InfrastructureError {
+                            detail: error.clone(),
+                        },
+                    ))
+                    .await;
             }
             crate::state::PipelineState::Cancelled => {
-                let _ = self.event_tx.send(crate::event::RunEvent::Failed(crate::error::AgentError::InfrastructureError { detail: "Cancelled by user".to_string() })).await;
+                let _ = self
+                    .event_tx
+                    .send(crate::event::RunEvent::Failed(
+                        crate::error::AgentError::InfrastructureError {
+                            detail: "Cancelled by user".to_string(),
+                        },
+                    ))
+                    .await;
             }
             crate::state::PipelineState::SkippedByPolicy { reason } => {
-                let _ = self.event_tx.send(crate::event::RunEvent::Failed(crate::error::AgentError::InfrastructureError { detail: format!("Skipped by policy: {}", reason) })).await;
+                let _ = self
+                    .event_tx
+                    .send(crate::event::RunEvent::Failed(
+                        crate::error::AgentError::InfrastructureError {
+                            detail: format!("Skipped by policy: {}", reason),
+                        },
+                    ))
+                    .await;
             }
             _ => {}
         }
@@ -94,10 +115,12 @@ mod tests {
     #[tokio::test]
     async fn test_terminal_failure_broadcasts_event() {
         let (side_effect_tx, _side_effect_rx) = tokio::sync::mpsc::channel(32);
-        let (mut controller, tx) = RunController::new("test-run".to_string(), 3, side_effect_tx);
+        let (mut controller, _tx) = RunController::new("test-run".to_string(), 3, side_effect_tx);
 
         // Force the state to a terminal failure
-        controller.state.state = PipelineState::Failed { error: "Max repairs reached".to_string() };
+        controller.state.state = PipelineState::Failed {
+            error: "Max repairs reached".to_string(),
+        };
 
         // Run the controller; it should see the terminal state and exit, broadcasting the failure
         controller.run_to_completion().await;
@@ -105,7 +128,7 @@ mod tests {
         // Since event_tx is bounded but has capacity, we should be able to receive the emitted event
         let mut rx = controller.event_rx; // consume the receiver
         let ev = rx.recv().await.unwrap();
-        
+
         match ev {
             RunEvent::Failed(err) => {
                 assert!(err.to_string().contains("Max repairs reached"));

@@ -1,0 +1,94 @@
+{
+  "schema": "klintcode-followup-acceptance-v1",
+  "files": [
+    {
+      "path": "MODEL_REVIEW.md",
+      "must_change": true,
+      "min_bytes": 256,
+      "contains": [
+        ".klintcode/validation-evidence.json"
+      ],
+      "not_contains": []
+    },
+    {
+      "path": "RUNNING_REPORT.md",
+      "must_change": true,
+      "min_bytes": 512,
+      "contains": [
+        ".klintcode/validation-evidence.json",
+        "KLINTCODE_Q_OK:1",
+        "KLINTCODE_Q_OK:2",
+        "KLINTCODE_Q_OK:3",
+        "KLINTCODE_E_OK:1",
+        "KLINTCODE_RUN_OK"
+      ],
+      "not_contains": []
+    }
+  ],
+  "rust_api": [
+    {
+      "receiver": "Q",
+      "terminal": [
+        "execute",
+        "execute_for_list"
+      ],
+      "min": 3,
+      "runtime_markers": [
+        "KLINTCODE_Q_OK:1",
+        "KLINTCODE_Q_OK:2",
+        "KLINTCODE_Q_OK:3"
+      ]
+    },
+    {
+      "receiver": "E",
+      "terminal": [
+        "eval"
+      ],
+      "min": 1,
+      "runtime_markers": [
+        "KLINTCODE_E_OK:1"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "program": "cargo",
+      "args": [
+        "test",
+        "--quiet"
+      ],
+      "timeout_secs": 300,
+      "expect": {
+        "exit_code": 0,
+        "min_tests": 2,
+        "stdout_contains": [],
+        "stdout_not_contains": []
+      }
+    },
+    {
+      "program": "cargo",
+      "args": [
+        "run",
+        "--quiet"
+      ],
+      "env_ref": [
+        "MOVING_COMPANY_SERVICE_CORE_DATABASE_URL"
+      ],
+      "timeout_secs": 180,
+      "expect": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "KLINTCODE_Q_OK:1",
+          "KLINTCODE_Q_OK:2",
+          "KLINTCODE_Q_OK:3",
+          "KLINTCODE_E_OK:1",
+          "KLINTCODE_RUN_OK"
+        ],
+        "stdout_not_contains": [
+          "invalid field",
+          "query note"
+        ]
+      }
+    }
+  ]
+}

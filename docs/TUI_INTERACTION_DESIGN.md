@@ -627,7 +627,7 @@ Chart 必须可以切换为 Table，以便查看精确数据和兼容低能力�
   `.comment("what")`；
 - `.save()` 或 `.update()` 前必须有 `.audit_as("description")`；
 - Rust TeaQL 操作必须使用 `cargo teaql --input <model> <command>`；
-- `cargo-teaql` 版本必须严格为 `2.0.8`；
+- `cargo-teaql` 版本必须严格为 `2.0.11`；
 - 项目或组织配置中声明的禁用框架、依赖和命令；
 - 禁止终端控制字符、零宽字符和其他配置的特征字符。
 

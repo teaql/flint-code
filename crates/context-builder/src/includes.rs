@@ -44,7 +44,10 @@ mod tests {
     #[test]
     fn test_multiple_includes() {
         let content = r#"<_include file="test1.xml"> and <_include file="test2.xml"> <_include file='test3.xml'>"#;
-        assert_eq!(extract_includes(content), vec!["test1.xml", "test2.xml", "test3.xml"]);
+        assert_eq!(
+            extract_includes(content),
+            vec!["test1.xml", "test2.xml", "test3.xml"]
+        );
     }
 
     #[test]

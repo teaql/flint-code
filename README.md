@@ -103,7 +103,7 @@ the only execution plane.
 - [ ] Use pinned SSH host identities and short-lived, task-scoped credentials;
   never bake long-lived credentials into an image.
 - [ ] Install all required toolchains in the remote image, including exactly
-  `cargo-teaql` 2.0.8, and validate image capabilities before cloning code.
+  `cargo-teaql` 2.0.11, and validate image capabilities before cloning code.
 - [ ] Confirm that the resulting commit exists in the enterprise Git service
   before the remote environment is destroyed.
 - [ ] Destroy the environment on success, failure, cancellation, or TTL expiry,
@@ -223,9 +223,9 @@ deployment model tracked in the checklist above.
 
 - Local LLM inference endpoint (NIM, vLLM, Ollama, etc.)
 - Rust 1.75+ with cargo
-- `cargo-teaql` 2.0.8:
+- `cargo-teaql` 2.0.11:
   ```bash
-  cargo install cargo-teaql --version 2.0.8
+  cargo install cargo-teaql --version 2.0.11
   cargo-teaql install-links
   ```
 
@@ -256,10 +256,31 @@ MIMO_API_KEY="<key>" \
     --repeat 2 \
     --follow-up "Add backend tests for the generated services" \
     --follow-up "Run cargo check and fix remaining warnings" \
+    --allow-unverified-follow-up \
+    --output runs/
+
+# Evaluation-grade continuation with a typed, machine-verifiable contract
+MIMO_API_KEY="<key>" \
+MOVING_COMPANY_SERVICE_CORE_DATABASE_URL="sqlite://data.db" \
+  ./target/release/klintcode run \
+    --task benchmarks/tasks/moving-company-platform \
+    --profile profiles/mimo-v2.5-pro.toml \
+    --build-target rust-lib-core \
+    --follow-up benchmarks/tasks/moving-company-platform/followup.md \
+    --follow-up-acceptance benchmarks/tasks/moving-company-platform/followup-acceptance.json \
     --output runs/
 
 # Interactive TUI
 ./target/release/klintcode-tui
+# In the composer: /task benchmarks/tasks/moving-company-platform
+
+# The moving-company suite runs its declared follow-up and strict contract
+MIMO_API_KEY="<key>" \
+MOVING_COMPANY_SERVICE_CORE_DATABASE_URL="sqlite://data.db" \
+  ./target/release/klintcode evaluate \
+    --plan benchmarks/moving-company-suite.toml \
+    --profile profiles/mimo-v2.5-pro.toml \
+    --output runs/evaluations
 ```
 
 Each repeated `--task` adds a fresh primary run to the queue. `--repeat N`
@@ -268,6 +289,18 @@ workspace and bounded session history created by each primary run. A follow-up
 may be literal instruction text or a path to a text file. Queued primary runs
 continue after failures by default; add `--fail-fast` to stop at the first
 failure. `--skill` applies an explicit modeling skill to every primary task.
+The CLI requires one `--follow-up-acceptance` JSON file per `--follow-up` by
+default. For a task package with a standard `followup-acceptance.json` sidecar,
+the first continuation loads that contract automatically in both CLI and TUI.
+The contract checks exact changed files, Rust Q/E expression
+chains through the parsed AST, test counts, runtime exit status, and required or
+forbidden output markers. Environment values are referenced by name and are
+redacted from acceptance evidence; unrelated parent variables such as
+`MIMO_API_KEY` are not inherited by generated build/test/runtime processes.
+`--allow-unverified-follow-up` is an explicit
+escape hatch for ad-hoc work and should never be used for evaluations. Without
+an explicit contract, a follow-up that reaches its iteration limit is always a
+failure.
 
 ### Backend Interface Checks
 
@@ -429,7 +462,7 @@ KlintCode follows the [TeaQL Agent Kit](https://github.com/teaql/teaql-agent-kit
 - Never edit generated files in `rust-lib-core/`
 - Every query: `.purpose("why")` and `.comment("what")`
 - Every save: `.audit_as("description")`
-- Required: `cargo-teaql` 2.0.8
+- Required: `cargo-teaql` 2.0.11
 
 ## License
 

@@ -64,19 +64,29 @@ fn build_context_block(task: &TaskPackageData) -> String {
 
     // Grammar example (from task package)
     if let Some(example) = &task.grammar_example {
-        parts.push(format!("## Grammar Example\n\nFollow this structure exactly:\n\n```xml\n{example}\n```"));
+        parts.push(format!(
+            "## Grammar Example\n\nFollow this structure exactly:\n\n```xml\n{example}\n```"
+        ));
     }
 
     // Value whitelist (from task package)
     if let Some(whitelist) = &task.value_whitelist {
-        parts.push(format!("## Allowed Value Forms\n\nUse only these value patterns:\n\n{whitelist}"));
+        parts.push(format!(
+            "## Allowed Value Forms\n\nUse only these value patterns:\n\n{whitelist}"
+        ));
+    }
+
+    if let Some(acceptance) = &task.acceptance_spec {
+        let serialized =
+            serde_json::to_string_pretty(acceptance).unwrap_or_else(|_| acceptance.to_string());
+        parts.push(format!(
+            "## Machine Acceptance Contract\n\nThese conditions are enforced deterministically after generation; satisfy all of them exactly:\n\n```json\n{serialized}\n```"
+        ));
     }
 
     // Any additional context files from prompts/context.d/ directory
     if let Ok(entries) = std::fs::read_dir("prompts/context.d") {
-        let mut files: Vec<_> = entries.flatten()
-            .filter(|e| e.path().is_file())
-            .collect();
+        let mut files: Vec<_> = entries.flatten().filter(|e| e.path().is_file()).collect();
         files.sort_by_key(|e| e.file_name());
         for entry in files {
             if let Ok(content) = std::fs::read_to_string(entry.path()) {
@@ -89,7 +99,10 @@ fn build_context_block(task: &TaskPackageData) -> String {
     if parts.is_empty() {
         String::new()
     } else {
-        format!("# Reference Context\n\nThe following are reference documents loaded from local files.\n\n{}", parts.join("\n\n---\n\n"))
+        format!(
+            "# Reference Context\n\nThe following are reference documents loaded from local files.\n\n{}",
+            parts.join("\n\n---\n\n")
+        )
     }
 }
 
@@ -205,13 +218,34 @@ mod tests {
         let messages = build_generation_messages(&task);
 
         assert_eq!(messages[0].0, "system");
-        assert!(messages[0].1.contains("You are a KSML model generation expert."));
+        assert!(
+            messages[0]
+                .1
+                .contains("You are a KSML model generation expert.")
+        );
         assert!(messages[0].1.contains("Output only raw XML"));
         assert_eq!(messages.last().expect("user message").0, "user");
         assert_eq!(
             messages.last().expect("user message").1,
             "Build a small library system with about five objects."
         );
+    }
+
+    #[test]
+    fn generation_prompt_includes_machine_acceptance_contract() {
+        let mut task =
+            TaskPackageData::from_prompt("contract", "Build the model", PathBuf::from("."));
+        task.acceptance_spec = Some(serde_json::json!({
+            "min_object_count": 30,
+            "forbidden_errors": ["KSML-DOMAIN-ROOT-002"]
+        }));
+
+        let messages = build_generation_messages(&task);
+        let user = &messages.last().expect("user message").1;
+
+        assert!(user.contains("Machine Acceptance Contract"));
+        assert!(user.contains("\"min_object_count\": 30"));
+        assert!(user.contains("KSML-DOMAIN-ROOT-002"));
     }
 
     #[test]

@@ -62,6 +62,12 @@ enum Commands {
         /// Continue on the generated workspace. Repeat to enqueue follow-ups.
         #[arg(long, num_args = 1)]
         follow_up: Vec<PathBuf>,
+        /// Machine-verifiable acceptance contract for each follow-up, in queue order.
+        #[arg(long, num_args = 1, requires = "follow_up")]
+        follow_up_acceptance: Vec<PathBuf>,
+        /// Permit ad-hoc follow-ups without machine acceptance (never for evaluations).
+        #[arg(long)]
+        allow_unverified_follow_up: bool,
         /// Stop the primary-task queue after its first failed run.
         #[arg(long)]
         fail_fast: bool,
@@ -150,6 +156,8 @@ async fn main() -> Result<()> {
             build_target,
             repeat,
             follow_up,
+            follow_up_acceptance,
+            allow_unverified_follow_up,
             fail_fast,
         } => {
             run_queue(RunQueueOptions {
@@ -160,6 +168,8 @@ async fn main() -> Result<()> {
                 build_target,
                 repeat,
                 follow_ups: follow_up,
+                follow_up_acceptance,
+                allow_unverified_follow_up,
                 fail_fast,
             })
             .await?;
@@ -176,6 +186,8 @@ struct RunQueueOptions {
     build_target: Option<String>,
     repeat: u32,
     follow_ups: Vec<PathBuf>,
+    follow_up_acceptance: Vec<PathBuf>,
+    allow_unverified_follow_up: bool,
     fail_fast: bool,
 }
 
@@ -253,6 +265,22 @@ async fn run_queue(options: RunQueueOptions) -> Result<()> {
         .iter()
         .map(|path| read_instruction(path))
         .collect::<Result<Vec<_>>>()?;
+    let follow_up_acceptance = options
+        .follow_up_acceptance
+        .iter()
+        .map(|path| read_followup_acceptance(path))
+        .collect::<Result<Vec<_>>>()?;
+    let task_sidecars_available = follow_ups.len() == 1
+        && options
+            .tasks
+            .iter()
+            .all(|task| followup_sidecar_path(task).is_file());
+    validate_followup_contract_count(
+        follow_ups.len(),
+        follow_up_acceptance.len(),
+        options.allow_unverified_follow_up,
+        task_sidecars_available,
+    )?;
     let jobs = build_run_queue(&options.tasks, options.repeat);
     let total = jobs.len();
     let mut failures = Vec::new();
@@ -273,6 +301,7 @@ async fn run_queue(options: RunQueueOptions) -> Result<()> {
             options.skill.as_deref(),
             options.build_target.as_deref(),
             &follow_ups,
+            &follow_up_acceptance,
         )
         .await?;
 
@@ -316,6 +345,7 @@ async fn run_session(
     skill: Option<&Path>,
     build_target: Option<&str>,
     follow_ups: &[String],
+    follow_up_acceptance: &[pipeline::followup_acceptance::FollowUpAcceptanceSpec],
 ) -> Result<SessionOutcome> {
     tracing::info!(task = %task.display(), "Pipeline starting");
     let run_id = format!(
@@ -344,6 +374,7 @@ async fn run_session(
     if let Some(skill_path) = skill {
         executor.set_modeling_skill_path(skill_path.to_path_buf());
     }
+    executor.set_followup_acceptance_specs(follow_up_acceptance.to_vec());
 
     load_primary_task(&mut executor, task).await;
 
@@ -495,6 +526,45 @@ fn read_instruction(path_or_text: &Path) -> Result<String> {
     }
 }
 
+fn read_followup_acceptance(
+    path: &Path,
+) -> Result<pipeline::followup_acceptance::FollowUpAcceptanceSpec> {
+    let content = std::fs::read_to_string(path)
+        .with_context(|| format!("Failed to read follow-up acceptance: {}", path.display()))?;
+    let spec: pipeline::followup_acceptance::FollowUpAcceptanceSpec =
+        serde_json::from_str(&content)
+            .with_context(|| format!("Invalid follow-up acceptance JSON: {}", path.display()))?;
+    spec.validate().map_err(anyhow::Error::msg)?;
+    Ok(spec)
+}
+
+fn validate_followup_contract_count(
+    follow_ups: usize,
+    contracts: usize,
+    allow_unverified: bool,
+    task_sidecars_available: bool,
+) -> Result<()> {
+    if contracts == follow_ups
+        || (contracts == 0 && allow_unverified)
+        || (contracts == 0 && follow_ups == 1 && task_sidecars_available)
+    {
+        return Ok(());
+    }
+    bail!(
+        "provide one --follow-up-acceptance per --follow-up ({follow_ups} follow-up(s), {contracts} contract(s)); use --allow-unverified-follow-up only for ad-hoc, non-evaluation work"
+    )
+}
+
+fn followup_sidecar_path(task: &Path) -> PathBuf {
+    if task.is_dir() {
+        task.join("followup-acceptance.json")
+    } else {
+        task.parent()
+            .unwrap_or_else(|| Path::new("."))
+            .join("followup-acceptance.json")
+    }
+}
+
 fn one_line(text: &str) -> String {
     const LIMIT: usize = 120;
     let compact = text.split_whitespace().collect::<Vec<_>>().join(" ");
@@ -588,6 +658,10 @@ mod tests {
             "add-tests.md",
             "--follow-up",
             "fix warnings",
+            "--follow-up-acceptance",
+            "add-tests.acceptance.json",
+            "--follow-up-acceptance",
+            "fix-warnings.acceptance.json",
             "--output",
             "custom-runs",
             "--skill",
@@ -599,6 +673,7 @@ mod tests {
             task,
             repeat,
             follow_up,
+            follow_up_acceptance,
             output,
             skill,
             ..
@@ -611,6 +686,13 @@ mod tests {
         assert_eq!(
             follow_up,
             vec![PathBuf::from("add-tests.md"), PathBuf::from("fix warnings")]
+        );
+        assert_eq!(
+            follow_up_acceptance,
+            vec![
+                PathBuf::from("add-tests.acceptance.json"),
+                PathBuf::from("fix-warnings.acceptance.json")
+            ]
         );
         assert_eq!(output, PathBuf::from("custom-runs"));
         assert_eq!(skill, Some(PathBuf::from("SKILL.md")));
@@ -649,6 +731,15 @@ mod tests {
         assert!(!compact.contains('\n'));
         assert!(compact.ends_with('…'));
         assert_eq!(compact.chars().count(), 121);
+    }
+
+    #[test]
+    fn cli_followups_require_aligned_contracts_unless_explicitly_unverified() {
+        assert!(validate_followup_contract_count(2, 2, false, false).is_ok());
+        assert!(validate_followup_contract_count(2, 0, false, false).is_err());
+        assert!(validate_followup_contract_count(2, 0, true, false).is_ok());
+        assert!(validate_followup_contract_count(2, 1, true, false).is_err());
+        assert!(validate_followup_contract_count(1, 0, false, true).is_ok());
     }
 
     #[test]

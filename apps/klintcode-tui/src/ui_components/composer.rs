@@ -1,3 +1,4 @@
+use crate::app::{App, InputMode};
 use ratatui::{
     Frame,
     layout::Rect,
@@ -5,7 +6,6 @@ use ratatui::{
     text::{Line, Span, Text},
     widgets::{Block, Borders, Padding, Paragraph},
 };
-use crate::app::{App, InputMode};
 
 pub fn draw_composer(f: &mut Frame, app: &App, area: Rect) {
     let editing = app.input_mode == InputMode::Editing;
@@ -138,88 +138,86 @@ pub fn draw_bottom_hint(f: &mut Frame, app: &App, area: Rect) {
     f.render_widget(Paragraph::new(Line::from(spans)), area);
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::app::View;
     use crate::ui::tests::rendered_screen;
-        #[test]
-        fn composer_grows_to_eight_lines_then_shows_only_the_latest_eight() {
-            let mut app = App::new(None).expect("app");
-            app.input_buffer = [
-                "hidden-alpha",
-                "hidden-beta",
-                "visible-charlie",
-                "visible-delta",
-                "visible-echo",
-                "visible-foxtrot",
-                "visible-golf",
-                "visible-hotel",
-                "visible-india",
-                "visible-juliet",
-            ]
-            .join("\n");
-            app.input_cursor = app.input_buffer.chars().count();
-    
-            assert_eq!(visible_composer_lines(&app), 8);
-            assert_eq!(composer_scroll(&app), 2);
-    
-            let screen = rendered_screen(&app, 120, 36);
-            assert!(!screen.contains("hidden-alpha"));
-            assert!(!screen.contains("hidden-beta"));
-            assert!(screen.contains("visible-charlie"));
-            assert!(screen.contains("visible-juliet"));
-            let rows = screen.lines().collect::<Vec<_>>();
-            assert!(rows[25].starts_with('─'));
-            assert!(rows[34].starts_with('─'));
+    #[test]
+    fn composer_grows_to_eight_lines_then_shows_only_the_latest_eight() {
+        let mut app = App::new(None).expect("app");
+        app.input_buffer = [
+            "hidden-alpha",
+            "hidden-beta",
+            "visible-charlie",
+            "visible-delta",
+            "visible-echo",
+            "visible-foxtrot",
+            "visible-golf",
+            "visible-hotel",
+            "visible-india",
+            "visible-juliet",
+        ]
+        .join("\n");
+        app.input_cursor = app.input_buffer.chars().count();
+
+        assert_eq!(visible_composer_lines(&app), 8);
+        assert_eq!(composer_scroll(&app), 2);
+
+        let screen = rendered_screen(&mut app, 120, 36);
+        assert!(!screen.contains("hidden-alpha"));
+        assert!(!screen.contains("hidden-beta"));
+        assert!(screen.contains("visible-charlie"));
+        assert!(screen.contains("visible-juliet"));
+        let rows = screen.lines().collect::<Vec<_>>();
+        assert!(rows[25].starts_with('─'));
+        assert!(rows[34].starts_with('─'));
+    }
+
+    #[test]
+    fn composer_height_tracks_explicit_new_lines() {
+        let mut app = App::new(None).expect("app");
+        assert_eq!(visible_composer_lines(&app), 1);
+
+        app.input_buffer = "first\nsecond".to_string();
+        app.input_cursor = app.input_buffer.chars().count();
+        assert_eq!(visible_composer_lines(&app), 2);
+
+        let screen = rendered_screen(&mut app, 120, 36);
+        let rows = screen.lines().collect::<Vec<_>>();
+        assert!(rows[31].starts_with('─'));
+        assert!(rows[34].starts_with('─'));
+        assert!(screen.contains("first"));
+        assert!(screen.contains("second"));
+    }
+
+    #[test]
+    fn composer_only_shows_tools_that_are_still_running() {
+        let mut app = App::new(None).expect("app");
+        for id in 1..=5 {
+            app.dummy_run
+                .start_tool_process(id, format!("klint-test-command-{id}"));
         }
-    
-        #[test]
-        fn composer_height_tracks_explicit_new_lines() {
-            let mut app = App::new(None).expect("app");
-            assert_eq!(visible_composer_lines(&app), 1);
-    
-            app.input_buffer = "first\nsecond".to_string();
-            app.input_cursor = app.input_buffer.chars().count();
-            assert_eq!(visible_composer_lines(&app), 2);
-    
-            let screen = rendered_screen(&app, 120, 36);
-            let rows = screen.lines().collect::<Vec<_>>();
-            assert!(rows[31].starts_with('─'));
-            assert!(rows[34].starts_with('─'));
-            assert!(screen.contains("first"));
-            assert!(screen.contains("second"));
+        app.dummy_run.finish_tool_process(1, true, Some(0));
+        app.dummy_run.finish_tool_process(2, false, Some(9));
+        app.dummy_run.finish_tool_process(5, false, Some(17));
+
+        let main = rendered_screen(&mut app, 120, 36);
+        if !main.contains("klint-test-command-3") {
+            panic!("main does not contain klint-test-command-3: \n{}", main);
         }
-    
-        #[test]
-        fn composer_only_shows_tools_that_are_still_running() {
-            let mut app = App::new(None).expect("app");
-            for id in 1..=5 {
-                app.dummy_run
-                    .start_tool_process(id, format!("klint-test-command-{id}"));
-            }
-            app.dummy_run.finish_tool_process(1, true, Some(0));
-            app.dummy_run.finish_tool_process(2, false, Some(9));
-            app.dummy_run.finish_tool_process(5, false, Some(17));
-    
-            let main = rendered_screen(&app, 120, 36);
-            if !main.contains("klint-test-command-3") {
-                panic!("main does not contain klint-test-command-3: \n{}", main);
-            }
-            assert!(!main.contains("klint-test-command-1"));
-            assert!(!main.contains("klint-test-command-2"));
-            assert!(main.contains("klint-test-command-3"));
-            assert!(main.contains("klint-test-command-4"));
-            assert!(!main.contains("klint-test-command-5"));
-            assert!(!main.contains("exit 17"));
-    
-            app.view = View::Stats;
-            let stats = rendered_screen(&app, 120, 36);
-            assert!(stats.contains(" Tools"));
-            assert!(stats.contains("klint-test-command-1"));
-            assert!(stats.contains("klint-test-command-5"));
-            assert!(!stats.contains("exit 17"));
-        }
-    
+        assert!(!main.contains("klint-test-command-1"));
+        assert!(!main.contains("klint-test-command-2"));
+        assert!(main.contains("klint-test-command-3"));
+        assert!(main.contains("klint-test-command-4"));
+        assert!(!main.contains("klint-test-command-5"));
+        assert!(!main.contains("exit 17"));
+
+        app.view = View::Stats;
+        let stats = rendered_screen(&mut app, 120, 36);
+        assert!(stats.contains(" Tools"));
+        assert!(stats.contains("klint-test-command-1"));
+        assert!(stats.contains("klint-test-command-5"));
+        assert!(!stats.contains("exit 17"));
+    }
 }

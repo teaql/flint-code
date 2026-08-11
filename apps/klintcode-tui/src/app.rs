@@ -19,6 +19,7 @@ pub enum View {
     Stats,
     Candidate,
     Diagnostics,
+    TranscriptDetail,
     Help,
 }
 
@@ -35,6 +36,14 @@ pub enum TimelineRole {
 pub struct TimelineEntry {
     pub role: TimelineRole,
     pub content: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TranscriptHitbox {
+    pub id: usize,
+    pub row: u16,
+    pub left: u16,
+    pub right: u16,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -101,10 +110,15 @@ pub struct App {
     pub plan_pulse_phase: u8,
     pub input_notice: Option<String>,
     pub timeline: Vec<TimelineEntry>,
-    pub service_health: ServiceHealth,
+    pub transcript_detail_id: Option<usize>,
+    pub transcript_hitboxes: Vec<TranscriptHitbox>,
+    pub llm_service_health: ServiceHealth,
+    pub rag_service_health: ServiceHealth,
     pub show_right_panel: bool,
-    pub last_context_tokens: u64,
-    pub max_context_tokens: u64,
+    /// Prompt tokens reported by the most recent model call.
+    pub latest_prompt_tokens: u64,
+    /// Largest prompt-token count actually observed during this TUI session.
+    pub max_observed_prompt_tokens: u64,
     pub global_input_tokens: u64,
     pub global_output_tokens: u64,
     pub global_model_calls: u64,
@@ -123,10 +137,8 @@ impl App {
             if default_profile.exists() {
                 ModelProfile::load(&default_profile)?
             } else {
-                toml::from_str(include_str!(
-                    "../../../profiles/local-qwen.toml"
-                ))
-                .expect("failed to load fallback profile")
+                toml::from_str(include_str!("../../../profiles/local-qwen.toml"))
+                    .expect("failed to load fallback profile")
             }
         };
 
@@ -159,10 +171,13 @@ impl App {
             plan_pulse_phase: 0,
             input_notice: None,
             timeline: Vec::new(),
-            service_health: ServiceHealth::Checking,
+            transcript_detail_id: None,
+            transcript_hitboxes: Vec::new(),
+            llm_service_health: ServiceHealth::Checking,
+            rag_service_health: ServiceHealth::Checking,
             show_right_panel: true,
-            last_context_tokens: 0,
-            max_context_tokens: 64000,
+            latest_prompt_tokens: 0,
+            max_observed_prompt_tokens: 0,
             global_input_tokens: 0,
             global_output_tokens: 0,
             global_model_calls: 0,
@@ -190,6 +205,27 @@ impl App {
                 .map(|check| check.detail)
                 .unwrap_or_else(|| "health check failed".to_string());
             ServiceHealth::Unavailable(detail)
+        }
+    }
+
+    /// Probe the local Weaviate service used for RAG retrieval.
+    pub async fn probe_rag_service() -> ServiceHealth {
+        let client = match reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(5))
+            .build()
+        {
+            Ok(client) => client,
+            Err(error) => return ServiceHealth::Unavailable(error.to_string()),
+        };
+
+        match client
+            .get("http://127.0.0.1:8085/v1/.well-known/ready")
+            .send()
+            .await
+        {
+            Ok(response) if response.status().is_success() => ServiceHealth::Healthy,
+            Ok(response) => ServiceHealth::Unavailable(format!("HTTP {}", response.status())),
+            Err(error) => ServiceHealth::Unavailable(error.to_string()),
         }
     }
 
@@ -303,16 +339,20 @@ impl App {
                 }
 
                 let mut executor = self.initialize_run().await?;
-                
-                // Determine build target from user intent
-                let lower_task = task.to_lowercase();
-                if lower_task.contains("rust") {
-                    executor.set_build_target("rust-lib-core".to_string());
-                } else if lower_task.contains("java") {
-                    executor.set_build_target("java-spring-boot-lib-core".to_string());
-                }
 
-                executor.load_task_from_text(&task).await;
+                if let Some(task_package) = existing_task_package(&task) {
+                    executor.load_task_from_path(&task_package).await;
+                } else {
+                    // Determine build target from user intent. Task packages
+                    // derive and enforce this from acceptance.json instead.
+                    let lower_task = task.to_lowercase();
+                    if lower_task.contains("rust") {
+                        executor.set_build_target("rust-lib-core".to_string());
+                    } else if lower_task.contains("java") {
+                        executor.set_build_target("java-spring-boot-lib-core".to_string());
+                    }
+                    executor.load_task_from_text(&task).await;
+                }
                 self.start_executor_worker(executor);
                 self.clear_input("Task submitted");
             }
@@ -334,18 +374,28 @@ impl App {
                 format!("Current endpoint: {}", self.profile.resolve_endpoint())
             }
             LocalQuery::Service => format!(
-                "Model service: {}",
-                match &self.service_health {
+                "LLM service: {}\nRAG service: {}",
+                match &self.llm_service_health {
+                    ServiceHealth::Checking => "checking".to_string(),
+                    ServiceHealth::Healthy => "healthy".to_string(),
+                    ServiceHealth::Unavailable(detail) => format!("unavailable · {detail}"),
+                },
+                match &self.rag_service_health {
                     ServiceHealth::Checking => "checking".to_string(),
                     ServiceHealth::Healthy => "healthy".to_string(),
                     ServiceHealth::Unavailable(detail) => format!("unavailable · {detail}"),
                 }
             ),
             LocalQuery::Status => format!(
-                "Model: {}\nEndpoint: {}\nService: {}",
+                "Model: {}\nEndpoint: {}\nLLM service: {}\nRAG service: {}",
                 self.profile.model.name,
                 self.profile.resolve_endpoint(),
-                match &self.service_health {
+                match &self.llm_service_health {
+                    ServiceHealth::Checking => "checking".to_string(),
+                    ServiceHealth::Healthy => "healthy".to_string(),
+                    ServiceHealth::Unavailable(detail) => format!("unavailable · {detail}"),
+                },
+                match &self.rag_service_health {
                     ServiceHealth::Checking => "checking".to_string(),
                     ServiceHealth::Healthy => "healthy".to_string(),
                     ServiceHealth::Unavailable(detail) => format!("unavailable · {detail}"),
@@ -397,7 +447,7 @@ impl App {
                     .global_output_tokens
                     .saturating_add(u64::from(result.usage.completion_tokens));
                 self.global_model_calls = self.global_model_calls.saturating_add(1);
-                self.last_context_tokens = u64::from(result.usage.prompt_tokens);
+                self.record_prompt_observation(u64::from(result.usage.prompt_tokens));
                 if let Some(controller) = self.controller.as_mut() {
                     controller.state.record_model_usage(result.usage);
                 } else {
@@ -422,6 +472,19 @@ impl App {
 
     fn execute_slash_command(&mut self, command: &str) {
         let normalized = command.trim().to_ascii_lowercase();
+        if let Some(raw_id) = normalized
+            .strip_prefix("/show ")
+            .or_else(|| normalized.strip_prefix("/view "))
+        {
+            let raw_id = raw_id.trim().trim_start_matches('t');
+            match raw_id.parse::<usize>() {
+                Ok(id) if self.open_timeline_entry(id) => {
+                    self.clear_input(&format!("Opened transcript T{id:03}"));
+                }
+                _ => self.clear_input("Transcript ID not found"),
+            }
+            return;
+        }
         let notice = match normalized.as_str() {
             "/q" | "/exit" => {
                 self.should_quit = true;
@@ -433,6 +496,7 @@ impl App {
             }
             "/main" | "/chat" => {
                 self.view = View::Main;
+                self.transcript_detail_id = None;
                 "Returned to main"
             }
             "/candidate" => {
@@ -450,6 +514,8 @@ impl App {
             "/clear" => {
                 self.timeline.clear();
                 self.transcript_scroll_back = 0;
+                self.transcript_detail_id = None;
+                self.transcript_hitboxes.clear();
                 "Main timeline cleared"
             }
             "/new" => {
@@ -465,11 +531,15 @@ impl App {
             }
             "/panel" => {
                 self.show_right_panel = !self.show_right_panel;
-                if self.show_right_panel { "Panel opened" } else { "Panel closed" }
+                if self.show_right_panel {
+                    "Panel opened"
+                } else {
+                    "Panel closed"
+                }
             }
             _ => {
                 self.input_notice = Some(
-                    "Unknown command; use /task … /ask … /new /main /stats /panel /candidate /diagnostics /help"
+                    "Unknown command; use /show T### /task … /ask … /new /main /stats /panel /candidate /diagnostics /help"
                         .to_string(),
                 );
                 return;
@@ -487,8 +557,7 @@ impl App {
             RunEvent::ModelCompleted(result) => {
                 self.candidate = result.content.clone();
                 let prompt = u64::from(result.usage.prompt_tokens);
-                self.last_context_tokens = prompt;
-                self.max_context_tokens = self.max_context_tokens.max(prompt);
+                self.record_prompt_observation(prompt);
                 self.global_input_tokens = self.global_input_tokens.saturating_add(prompt);
                 self.global_output_tokens = self
                     .global_output_tokens
@@ -496,6 +565,7 @@ impl App {
                 self.global_model_calls = self.global_model_calls.saturating_add(1);
             }
             RunEvent::ModelUsageRecorded(usage) => {
+                self.record_prompt_observation(u64::from(usage.prompt_tokens));
                 self.global_input_tokens = self
                     .global_input_tokens
                     .saturating_add(u64::from(usage.prompt_tokens));
@@ -544,12 +614,12 @@ impl App {
                             content: format!("  ▸ {err}"),
                         });
                     }
-                    // Show first part of diagnostic if present
+                    // Preserve the complete diagnostic; the transcript renderer
+                    // keeps it to one line and exposes the full text by ID.
                     if !result.diagnostic.is_empty() {
-                        let diag: String = result.diagnostic.chars().take(300).collect();
                         self.timeline.push(TimelineEntry {
                             role: TimelineRole::Error,
-                            content: format!("  diagnostic: {diag}"),
+                            content: format!("  diagnostic: {}", result.diagnostic),
                         });
                     }
                 }
@@ -563,10 +633,9 @@ impl App {
                 TimelineRole::Activity,
                 format!("Awaiting consent: {action}"),
             )),
-            RunEvent::ToolProcessStarted { command, .. } => Some((
-                TimelineRole::Activity,
-                format!("$ {}", command),
-            )),
+            RunEvent::ToolProcessStarted { command, .. } => {
+                Some((TimelineRole::Activity, format!("$ {}", command)))
+            }
             RunEvent::ToolProcessFinished { id, success, .. } => self
                 .run_state()
                 .tool_processes
@@ -593,23 +662,25 @@ impl App {
                     budget.estimated_prompt, budget.prompt_limit
                 ),
             )),
-            RunEvent::PreflightFailed(reason) => Some((
-                TimelineRole::Error,
-                format!("Preflight failed · {reason}"),
-            )),
-            RunEvent::TaskLoadFailed(reason) => Some((
-                TimelineRole::Error,
-                format!("Task load failed · {reason}"),
-            )),
-            RunEvent::ConsentDenied(reason) => Some((
-                TimelineRole::Error,
-                format!("Consent denied · {reason}"),
-            )),
+            RunEvent::PreflightFailed(reason) => {
+                Some((TimelineRole::Error, format!("Preflight failed · {reason}")))
+            }
+            RunEvent::TaskLoadFailed(reason) => {
+                Some((TimelineRole::Error, format!("Task load failed · {reason}")))
+            }
+            RunEvent::ConsentDenied(reason) => {
+                Some((TimelineRole::Error, format!("Consent denied · {reason}")))
+            }
             _ => None,
         };
         if let Some((role, content)) = entry {
             self.timeline.push(TimelineEntry { role, content });
         }
+    }
+
+    fn record_prompt_observation(&mut self, prompt_tokens: u64) {
+        self.latest_prompt_tokens = prompt_tokens;
+        self.max_observed_prompt_tokens = self.max_observed_prompt_tokens.max(prompt_tokens);
     }
 
     pub fn insert_input_char(&mut self, character: char) {
@@ -687,6 +758,45 @@ impl App {
             .unwrap_or(&self.dummy_run)
     }
 
+    pub fn open_timeline_entry(&mut self, id: usize) -> bool {
+        if id == 0 || id > self.timeline.len() {
+            return false;
+        }
+        self.transcript_detail_id = Some(id);
+        self.view = View::TranscriptDetail;
+        self.scroll_offset = 0;
+        true
+    }
+
+    pub fn open_timeline_entry_at(&mut self, column: u16, row: u16) -> bool {
+        let Some(id) = self
+            .transcript_hitboxes
+            .iter()
+            .find(|hitbox| hitbox.row == row && column >= hitbox.left && column < hitbox.right)
+            .map(|hitbox| hitbox.id)
+        else {
+            return false;
+        };
+        self.open_timeline_entry(id)
+    }
+
+    pub fn close_transcript_detail(&mut self) -> bool {
+        if self.view != View::TranscriptDetail {
+            return false;
+        }
+        self.view = View::Main;
+        self.transcript_detail_id = None;
+        self.scroll_offset = 0;
+        true
+    }
+
+    pub fn timeline_detail(&self) -> Option<(usize, &TimelineEntry)> {
+        let id = self.transcript_detail_id?;
+        self.timeline
+            .get(id.checked_sub(1)?)
+            .map(|entry| (id, entry))
+    }
+
     /// Completed steps and total steps in the first-class run plan.
     pub fn plan_progress(&self) -> (usize, usize) {
         let run = self.run_state();
@@ -700,25 +810,11 @@ impl App {
 }
 
 fn compact_candidate_message(content: &str) -> String {
-    const PREVIEW_LINES: usize = 6;
     let lines = content.lines().collect::<Vec<_>>();
     let mut message = format!("Generated candidate · {} lines", lines.len());
-    if !lines.is_empty() {
+    if !content.is_empty() {
         message.push('\n');
-        message.push_str(
-            &lines
-                .iter()
-                .take(PREVIEW_LINES)
-                .copied()
-                .collect::<Vec<_>>()
-                .join("\n"),
-        );
-    }
-    if lines.len() > PREVIEW_LINES {
-        message.push_str(&format!(
-            "\n… {} more lines · /candidate for full content",
-            lines.len() - PREVIEW_LINES
-        ));
+        message.push_str(content);
     }
     message
 }
@@ -817,13 +913,34 @@ fn classify_input(prompt: &str) -> InputIntent {
     }
 
     let task_keywords = ["teaql", "rust", "java"];
-    let task_openers = ["fix ", "implement ", "create ", "add ", "update ", "remove ", "修复", "添加", "实现", "创建", "更新", "删除"];
-    
-    if contains_any(&lower, &task_keywords) || task_openers.iter().any(|opener| lower.starts_with(opener)) {
+    let task_openers = [
+        "fix ",
+        "implement ",
+        "create ",
+        "add ",
+        "update ",
+        "remove ",
+        "修复",
+        "添加",
+        "实现",
+        "创建",
+        "更新",
+        "删除",
+    ];
+
+    if contains_any(&lower, &task_keywords)
+        || task_openers.iter().any(|opener| lower.starts_with(opener))
+    {
         InputIntent::Task(trimmed.to_string())
     } else {
         InputIntent::Chat(trimmed.to_string())
     }
+}
+
+fn existing_task_package(input: &str) -> Option<std::path::PathBuf> {
+    let input = input.trim().strip_prefix('@').unwrap_or(input.trim());
+    let path = std::path::PathBuf::from(input);
+    (path.is_dir() && path.join("task.md").is_file()).then_some(path)
 }
 
 fn contains_any(content: &str, needles: &[&str]) -> bool {
@@ -881,10 +998,31 @@ mod tests {
 
         assert!(compact.contains("Generated candidate · 20 lines"));
         assert!(compact.contains("candidate-line-1"));
-        assert!(compact.contains("candidate-line-6"));
-        assert!(!compact.contains("candidate-line-7"));
-        assert!(compact.contains("/candidate"));
-        assert_eq!(compact.lines().count(), 8);
+        assert!(compact.contains("candidate-line-20"));
+        assert_eq!(compact.lines().count(), 21);
+    }
+
+    #[tokio::test]
+    async fn show_command_opens_full_transcript_entry_by_id() {
+        let mut app = App::new(None).expect("app");
+        app.timeline.push(TimelineEntry {
+            role: TimelineRole::Agent,
+            content: "line one\nline two".to_string(),
+        });
+        app.input_buffer = "/show T001".to_string();
+        app.input_cursor = app.input_buffer.chars().count();
+
+        app.submit_input().await.expect("open transcript entry");
+
+        assert_eq!(app.view, View::TranscriptDetail);
+        assert_eq!(
+            app.timeline_detail().unwrap().1.content,
+            "line one\nline two"
+        );
+        app.scroll_offset = 7;
+        assert!(app.close_transcript_detail());
+        assert_eq!(app.view, View::Main);
+        assert_eq!(app.scroll_offset, 0);
     }
 
     #[test]
@@ -930,7 +1068,8 @@ mod tests {
         assert_eq!(app.global_input_tokens, 300);
         assert_eq!(app.global_output_tokens, 60);
         assert_eq!(app.global_model_calls, 2);
-        assert_eq!(app.last_context_tokens, 100);
+        assert_eq!(app.latest_prompt_tokens, 200);
+        assert_eq!(app.max_observed_prompt_tokens, 200);
     }
 
     #[tokio::test]
@@ -987,6 +1126,17 @@ mod tests {
         assert_eq!(app.run_state().run_id, "existing-run");
         assert!(app.executor_effect_tx.is_some());
         assert!(app.input_buffer.is_empty());
+    }
+
+    #[test]
+    fn task_package_path_requires_a_directory_with_task_markdown() {
+        let package = tempfile::tempdir().expect("task package");
+        assert!(existing_task_package(package.path().to_str().unwrap()).is_none());
+        std::fs::write(package.path().join("task.md"), "task").unwrap();
+        assert_eq!(
+            existing_task_package(&format!("@{}", package.path().display())),
+            Some(package.path().to_path_buf())
+        );
     }
 
     #[test]
@@ -1110,6 +1260,14 @@ mod tests {
     #[tokio::test]
     async fn submitted_text_enters_the_normal_pipeline_as_an_inline_task() {
         let mut app = App::new(None).expect("app");
+        let mut profile: ModelProfile =
+            toml::from_str(include_str!("../../../profiles/simulator.toml"))
+                .expect("simulator profile");
+        profile.simulator.scenario = Some(
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("../../simulator/scenarios/happy-path.toml"),
+        );
+        app.profile = profile;
         app.input_buffer = "add a school entity".to_string();
         app.input_cursor = app.input_buffer.chars().count();
 
@@ -1136,14 +1294,8 @@ mod tests {
             .await
             .expect("task-loaded effect");
 
-        assert_eq!(
-            format!("{:?}", effect),
-            "RunPreflight"
-        );
-        assert_eq!(
-            app.run_state().task_name.as_deref(),
-            Some("inline-task")
-        );
+        assert_eq!(format!("{:?}", effect), "RunPreflight");
+        assert_eq!(app.run_state().task_name.as_deref(), Some("inline-task"));
         assert!(matches!(app.run_state().state, PipelineState::Preflight));
         assert!(app.input_buffer.is_empty());
     }
