@@ -398,7 +398,13 @@ fn validate_teaql_assist_args(args: &[String], sandbox_dir: &Path) -> Result<(),
             character.is_ascii_alphanumeric() || matches!(character, '-' | '_' | '/')
         })
     {
-        return Err("only rust-assist-<action>/<entity> TeaQL operations are allowed".to_string());
+        return Err(format!(
+            "Invalid TeaQL action `{action}`. \
+             Only `rust-assist-<action>/<entity>` operations are allowed. \
+             Valid actions: rust-assist-query, rust-assist-create, rust-assist-update, rust-assist-delete. \
+             Example: `cargo teaql --input model/main.xml rust-assist-query/school`. \
+             Do NOT invent action names like 'runtime-custom' or 'build'."
+        ));
     }
     Ok(())
 }

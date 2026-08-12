@@ -242,24 +242,40 @@ pub async fn run_agent_loop(
                             iterations_without_progress += 1;
                         }
 
-                        // Nudge once, then stop early if diagnostics/exploration do not
-                        // produce a successful edit or build.
-                        if iterations_without_progress == 3 {
+                        // Start nudging after 2 idle iterations and repeat every
+                        // round with an escalating message and a hard countdown.
+                        // Weaker models often ignore a single nudge; repeating it
+                        // with a visible remaining-chance counter significantly
+                        // improves the chance they take the required action.
+                        const NUDGE_AFTER: usize = 2;
+                        const FAIL_AFTER: usize = 5;
+                        if iterations_without_progress >= NUDGE_AFTER
+                            && iterations_without_progress < FAIL_AFTER
+                        {
+                            let remaining = FAIL_AFTER - iterations_without_progress;
                             warn!(
                                 iteration,
                                 iterations_without_progress,
-                                "Agent stuck in exploration — injecting nudge"
+                                remaining,
+                                "Agent stuck in exploration — injecting escalating nudge"
                             );
-                            messages.push(ChatMessage::user(
-                                "STOP exploring. You have read enough files. Now take action:\n\
-                                 1. If there is a pom.xml, run: run_command({\"command\": \"mvn compile -f pom.xml\"})\n\
-                                 2. If there is a Cargo.toml, run: run_command({\"command\": \"cargo check\"})\n\
-                                 3. If business logic code is missing, use write_file to create it.\n\
-                                 Never read or modify generated library source such as lib/src.\n\
-                                 DO NOT call list_directory or read_file again until you have tried compiling."
-                            ));
+                            let urgency = if iterations_without_progress >= NUDGE_AFTER + 2 {
+                                "⛔ FINAL WARNING"
+                            } else {
+                                "⚠️ WARNING"
+                            };
+                            messages.push(ChatMessage::user(format!(
+                                "{urgency}: You have made no build progress for {iterations_without_progress} consecutive iterations. \
+                                 You have {remaining} attempt(s) remaining before this task is aborted.\n\
+                                 STOP reading files. Take immediate action:\n\
+                                 1. If Cargo.toml exists → run_command({{\"command\": \"cargo check\"}})\n\
+                                 2. If pom.xml exists    → run_command({{\"command\": \"mvn compile -f pom.xml\"}})\n\
+                                 3. If business logic is missing → use write_file to create it NOW.\n\
+                                 RULES: Never read or modify lib/src or other generated library source.\n\
+                                 DO NOT call list_directory or read_file again. Compile immediately."
+                            )));
                         }
-                        if iterations_without_progress >= 6 {
+                        if iterations_without_progress >= FAIL_AFTER {
                             let diagnostic = last_failed_build
                                 .as_deref()
                                 .or(last_failed_tool.as_deref())
