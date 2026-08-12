@@ -57,3 +57,25 @@ The following shows correct API usage patterns for the entities in this project:
 
 This applies to every field on every entity returned by a `Q::` query.
 Always use the method-call form `entity.field_name()`, never `entity.field_name`.
+
+## TeaQL Query Execution Pattern
+
+Every query chain **must** end with `.purpose(...)`, `.comment(...)`, then `.execute_for_list(ctx)` or `.execute(ctx)`:
+
+```rust
+// ✅ CORRECT
+let rows = Q::platforms_minimal()
+    .select_name()
+    .purpose("why this query is needed")
+    .comment("what this query loads")
+    .execute_for_list(ctx)
+    .await?;
+
+// ❌ WRONG — these methods do not exist in TeaQL
+// .limit(20)   ← not a terminal method
+// .fetch(ctx)  ← does not exist
+// .get(ctx)    ← does not exist
+// .all(ctx)    ← does not exist
+```
+
+Do NOT invent terminal methods. The only valid terminals are `.execute_for_list(ctx).await?` and `.execute(ctx).await?`.

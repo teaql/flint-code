@@ -696,6 +696,23 @@ impl PipelineExecutor {
                         .to_string(),
                 );
             }
+            if errors_joined.contains("no method named")
+                && (errors_joined.contains("E0599")
+                    || errors_joined.contains("PurposedQuery")
+                    || ["limit", "fetch", "get", "all", "query", "run", "find"]
+                        .iter()
+                        .any(|m| errors_joined.contains(&format!("method named `{m}`"))))
+            {
+                errors.push(
+                    "HINT: Do not invent TeaQL query terminal methods. \
+                     The ONLY valid way to execute a query is: \
+                     `.purpose(\"why\").comment(\"what\").execute_for_list(ctx).await?` \
+                     or `.purpose(\"why\").comment(\"what\").execute(ctx).await?`. \
+                     Methods like .limit(), .fetch(), .get(), .all(), .run() do NOT exist in TeaQL. \
+                     Copy the exact pattern from the assist output."
+                        .to_string(),
+                );
+            }
 
             // RAG Retrieval for error diagnosis
             if let Some(retriever) = &self.retriever {
@@ -1383,7 +1400,7 @@ impl PipelineExecutor {
             }
             assist_outputs.push_str(&format!(
                 "### Assist: query/{entity}\nFull response: `{assist_relative}`\n\n{}\n\n",
-                bounded_text(&stdout, 2_400)
+                bounded_text(&stdout, 3_500)
             ));
         }
 
