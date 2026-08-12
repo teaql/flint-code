@@ -28,6 +28,8 @@ model.
   it with the complete command diagnostic and stop attempting application edits.
 - Do not invent API names or builder patterns.
 - When writing a file, provide complete file content without ellipses.
+- **TeaQL entity fields are PRIVATE** — always use `entity.field_name()` (method call),
+  never `entity.field_name` (dot-field). Applies to every field: id, name, timestamps, etc.
 
 ## Available Context
 

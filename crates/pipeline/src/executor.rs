@@ -683,6 +683,20 @@ impl PipelineExecutor {
                 self.last_actionable_errors.clone()
             };
 
+            // Inject targeted hints for well-known error patterns before RAG.
+            let errors_joined = errors.join("\n");
+            if errors_joined.contains("is private")
+                && (errors_joined.contains("field `") || errors_joined.contains("E0616"))
+            {
+                errors.push(
+                    "HINT: TeaQL entity fields are PRIVATE. \
+                     Replace `entity.field_name` with `entity.field_name()` (add parentheses). \
+                     Example: `p.id` → `p.id()`, `p.name` → `p.name()`. \
+                     This applies to every field on every entity."
+                        .to_string(),
+                );
+            }
+
             // RAG Retrieval for error diagnosis
             if let Some(retriever) = &self.retriever {
                 let _ = self.event_tx.send(RunEvent::RagStarted).await;

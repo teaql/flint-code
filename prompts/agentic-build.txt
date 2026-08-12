@@ -44,3 +44,16 @@ The following shows correct API usage patterns for the entities in this project:
 - Read error messages carefully — they often tell you exactly what import or type is missing.
 - If the AGENTS.md specifies particular imports or patterns, follow them exactly.
 - Do NOT invent method names or types — use only what is documented in AGENTS.md and the assist outputs.
+
+## TeaQL Field Access Rules
+
+**All fields on TeaQL entity structs are PRIVATE.** You CANNOT access them with dot-field syntax.
+
+| ❌ WRONG (will not compile) | ✅ CORRECT |
+|-----------------------------|-----------|
+| `entity.id`                 | `entity.id()` |
+| `entity.name`               | `entity.name()` |
+| `entity.created_at`         | `entity.created_at()` |
+
+This applies to every field on every entity returned by a `Q::` query.
+Always use the method-call form `entity.field_name()`, never `entity.field_name`.
