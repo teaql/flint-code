@@ -1275,8 +1275,44 @@ impl PipelineExecutor {
             self.send(RunEvent::ValidationCompleted(result)).await;
             return;
         }
-        let mut assist_outputs = String::from(
-            "Complete TeaQL assist responses are saved under `.klintcode/assist/`. Read the relevant file before writing TeaQL business code. The canonical model path is `model/main.xml`.\n\n",
+        // Prepend the generated AGENTS.md so the model has workspace-specific
+        // rules (correct cargo teaql format, banned frameworks, etc.) directly
+        // in context. Strip the phase_modeling discard block which is only
+        // relevant during modeling, not during the build phase.
+        let agents_md_for_context = if !agents_md.is_empty() {
+            let stripped = agents_md
+                .lines()
+                .skip_while(|line| line.trim() == "<!-- DISCARD_BLOCK: phase_modeling -->")
+                .collect::<Vec<_>>()
+                .join("\n");
+            // Remove any remaining DISCARD_BLOCK sections
+            let stripped = {
+                let mut out = String::new();
+                let mut in_discard = false;
+                for line in stripped.lines() {
+                    if line.trim().starts_with("<!-- DISCARD_BLOCK:") {
+                        in_discard = true;
+                    } else if line.trim() == "<!-- END_DISCARD_BLOCK -->" {
+                        in_discard = false;
+                        continue;
+                    }
+                    if !in_discard {
+                        out.push_str(line);
+                        out.push('\n');
+                    }
+                }
+                out
+            };
+            format!(
+                "## Workspace Rules (AGENTS.md)\n{}\n\n",
+                bounded_text(&stripped, 3_000)
+            )
+        } else {
+            String::new()
+        };
+
+        let mut assist_outputs = format!(
+            "{agents_md_for_context}Complete TeaQL assist responses are saved under `.klintcode/assist/`. Read the relevant file before writing TeaQL business code. The canonical model path is `model/main.xml`.\n\n",
         );
         for entity in &assist_entities {
             let assist_target = format!("{}/{}", assist_target_base, entity);
