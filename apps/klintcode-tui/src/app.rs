@@ -256,7 +256,12 @@ impl App {
 
         let (proxy_event_tx, proxy_event_rx) = mpsc::channel(64);
 
-        let runs_root = PathBuf::from("runs");
+        // cargo teaql resolves --input paths relative to its own cwd, which may
+        // differ from the TUI process cwd. Always pass an absolute path to avoid
+        // "input does not exist" failures when the server resolves the path.
+        let runs_root = std::env::current_dir()
+            .unwrap_or_else(|_| PathBuf::from("."))
+            .join("runs");
         let executor =
             PipelineExecutor::new(self.profile.clone(), proxy_event_tx, runs_root, run_id)?;
 
