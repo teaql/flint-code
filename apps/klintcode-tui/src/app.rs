@@ -606,7 +606,7 @@ impl App {
                         result.warning_count
                     ),
                 });
-                // Show actionable errors
+                // Show actionable errors (up to 5 bullet points)
                 if !result.passed {
                     for err in result.actionable_errors.iter().take(5) {
                         self.timeline.push(TimelineEntry {
@@ -614,12 +614,18 @@ impl App {
                             content: format!("  ▸ {err}"),
                         });
                     }
-                    // Preserve the complete diagnostic; the transcript renderer
-                    // keeps it to one line and exposes the full text by ID.
+                    // Push the full diagnostic as a separate, clearly-labelled entry
+                    // so the user knows exactly where to look. The transcript renderer
+                    // will compress it to one line, but the ID is shown — the user
+                    // can run /show T### (or click) to read the complete report.
                     if !result.diagnostic.is_empty() {
+                        let entry_id = self.timeline.len() + 1;
                         self.timeline.push(TimelineEntry {
                             role: TimelineRole::Error,
-                            content: format!("  diagnostic: {}", result.diagnostic),
+                            content: format!(
+                                "  Full diagnostic [T{entry_id:03}] — use /show T{entry_id:03} to expand\n{}",
+                                result.diagnostic
+                            ),
                         });
                     }
                 }

@@ -2470,11 +2470,23 @@ fn bounded_text(text: &str, max_bytes: usize) -> String {
 }
 
 fn render_agentic_system_prompt(template: &str, workspace: &Path, assist: &str) -> String {
-    template
+    let rendered = template
         .replace("{{project_dir}}", &workspace.display().to_string())
         .replace("{{#if assist_outputs}}", "")
         .replace("{{/if}}", "")
-        .replace("{{assist_outputs}}", assist)
+        .replace("{{assist_outputs}}", assist);
+    // Detect un-substituted template variables that would mislead the model.
+    // This is a hard invariant: if the template gains a new variable and the
+    // renderer is not updated, we want an immediate loud failure instead of a
+    // silently broken prompt that is hard to debug.
+    if let Some(pos) = rendered.find("{{") {
+        let fragment = &rendered[pos..][..rendered[pos..].find("}}").map(|e| e + 2).unwrap_or(40).min(rendered[pos..].len())];
+        panic!(
+            "render_agentic_system_prompt: un-substituted template variable in rendered prompt: '{fragment}'. \
+             Add the replacement to this function."
+        );
+    }
+    rendered
 }
 
 fn missing_followup_environment<'a>(
@@ -2928,5 +2940,61 @@ mod tests {
         let output = "running 3 tests\n\ntest result: ok\n\nrunning 2 tests\n";
         assert_eq!(observed_test_count(output), 5);
         assert_eq!(observed_test_count("no test summary"), 0);
+    }
+
+    #[test]
+    fn render_system_prompt_panics_on_unsubstituted_template_variable() {
+        // A template that still contains an unknown placeholder must fail loudly
+        // rather than silently pass a broken prompt to the model.
+        let result = std::panic::catch_unwind(|| {
+            render_agentic_system_prompt(
+                "workspace={{project_dir}} unknown={{unknown_var}}",
+                Path::new("/workspace"),
+                "",
+            )
+        });
+        assert!(result.is_err(), "should panic on unknown template variable");
+    }
+
+    #[test]
+    fn render_system_prompt_succeeds_with_all_known_variables() {
+        // Must NOT panic when all variables are substituted.
+        let result = std::panic::catch_unwind(|| {
+            render_agentic_system_prompt(
+                "dir={{project_dir}}\n{{#if assist_outputs}}{{assist_outputs}}{{/if}}",
+                Path::new("/workspace/build"),
+                "Q::school()",
+            )
+        });
+        assert!(result.is_ok());
+        let rendered = result.unwrap();
+        assert!(rendered.contains("/workspace/build"));
+        assert!(rendered.contains("Q::school()"));
+    }
+
+    #[test]
+    fn requires_workspace_change_is_true_when_no_acceptance_spec_is_present() {
+        // Without a spec the guard must default to requiring a change,
+        // so a no-op follow-up can never silently pass.
+        let requires_change = None::<crate::followup_acceptance::FollowUpAcceptanceSpec>
+            .as_ref()
+            .map(|spec| spec.files.iter().any(|f| f.must_change))
+            .unwrap_or(true);
+        assert!(requires_change);
+    }
+
+    #[test]
+    fn requires_workspace_change_is_false_when_spec_has_only_read_only_files() {
+        // A spec whose files are all must_change=false (e.g. a query-only
+        // verification) must NOT block acceptance just because source files
+        // were not modified.
+        let json = format!(
+            r#"{{"schema":"{}","files":[{{"path":"src/main.rs","must_change":false}}],"commands":[{{"program":"cargo","args":["check"]}}]}}"#,
+            crate::followup_acceptance::FOLLOWUP_ACCEPTANCE_SCHEMA
+        );
+        let spec = crate::followup_acceptance::FollowUpAcceptanceSpec::parse_json(&json)
+            .expect("valid spec");
+        let requires_change = spec.files.iter().any(|f| f.must_change);
+        assert!(!requires_change, "read-only spec should not require workspace modification");
     }
 }
