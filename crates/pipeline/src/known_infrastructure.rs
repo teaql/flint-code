@@ -11,6 +11,10 @@ use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
 /// Stable identifier for the TeaQL 4.2.5 SQLite boolean decoding defect.
+/// Fixed in teaql-provider-sqlite 4.2.7. The TUI automatically patches
+/// generated workspaces to 4.2.7 via set_patches(), so this detector only
+/// fires when a workspace still resolves 4.2.5 (pinned lockfile, un-patched
+/// benchmark case, etc.).
 pub const SQLITE_BOOL_PROVIDER_425_CODE: &str = "TEAQL-SQLITE-BOOL-4.2.5";
 
 const AFFECTED_SQLITE_PROVIDER_VERSION: &str = "4.2.5";

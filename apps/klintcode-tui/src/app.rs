@@ -262,8 +262,24 @@ impl App {
         let runs_root = std::env::current_dir()
             .unwrap_or_else(|_| PathBuf::from("."))
             .join("runs");
-        let executor =
+        let mut executor =
             PipelineExecutor::new(self.profile.clone(), proxy_event_tx, runs_root, run_id)?;
+
+        // Upgrade generated workspaces from teaql 4.2.5 (has SQLite boolean bug)
+        // to 4.2.7 which fixes the issue. Applied as a string patch on every
+        // Cargo.toml found in the generated workspace before the build step.
+        executor.set_patches({
+            let mut p = std::collections::HashMap::new();
+            p.insert("teaql-core = \"4.2.5\"".to_string(),       "teaql-core = \"4.2.7\"".to_string());
+            p.insert("teaql-macros = \"4.2.5\"".to_string(),     "teaql-macros = \"4.2.7\"".to_string());
+            p.insert("teaql-runtime = \"4.2.5\"".to_string(),    "teaql-runtime = \"4.2.7\"".to_string());
+            p.insert("teaql-sql = \"4.2.5\"".to_string(),        "teaql-sql = \"4.2.7\"".to_string());
+            p.insert("teaql-data-service = \"4.2.5\"".to_string(), "teaql-data-service = \"4.2.7\"".to_string());
+            p.insert("teaql-provider-sqlite = \"4.2.5\"".to_string(), "teaql-provider-sqlite = \"4.2.7\"".to_string());
+            // pinned exact-version form: =4.2.5
+            p.insert("= \"=4.2.5\"".to_string(), "= \"=4.2.7\"".to_string());
+            p
+        });
 
         self.proxy_event_rx = Some(proxy_event_rx);
         self.controller_event_tx = Some(controller_event_tx);
