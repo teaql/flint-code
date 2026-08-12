@@ -490,6 +490,14 @@ pub mod tests {
         rendered
     }
 
+    /// Find the first screen row (0-indexed) that contains `needle` as a substring.
+    /// Returns `None` if not found. Using line numbers avoids the byte-offset
+    /// ambiguity where a label that appears inside timeline content would
+    /// produce a false-positive ordering result.
+    fn label_row(screen: &str, needle: &str) -> Option<usize> {
+        screen.lines().position(|line| line.contains(needle))
+    }
+
     #[test]
     fn right_sidebar_keeps_plan_above_active_tools() {
         let mut app = crate::app::App::new(None).expect("app");
@@ -500,16 +508,18 @@ pub mod tests {
         assert!(screen.contains("LLM service:"));
         assert!(screen.contains("RAG service:"));
         assert!(screen.contains("window:"));
-        let flint = screen.find("Flint").expect("Flint panel");
-        let tokens = screen.find("Tokens").expect("Tokens panel");
-        let context = screen.find("Context").expect("Context panel");
-        let plan = screen.find("Plan").expect("Plan panel");
-        let tools = screen.find("Active Tools").expect("Active Tools panel");
 
-        assert!(flint < tokens);
-        assert!(tokens < context);
-        assert!(context < plan);
-        assert!(plan < tools);
+        let flint   = label_row(&screen, "Flint").expect("Flint panel");
+        let tokens  = label_row(&screen, "Tokens").expect("Tokens panel");
+        let context = label_row(&screen, "Context").expect("Context panel");
+        // "Plan" could appear in timeline text; match the bordered panel title " Plan "
+        let plan    = label_row(&screen, " Plan ").expect("Plan panel");
+        let tools   = label_row(&screen, "Active Tools").expect("Active Tools panel");
+
+        assert!(flint   < tokens,  "Tokens must be below Flint");
+        assert!(tokens  < context, "Context must be below Tokens");
+        assert!(context < plan,    "Plan must be below Context");
+        assert!(plan    < tools,   "Active Tools must be at the bottom, below Plan");
     }
 
     #[test]
