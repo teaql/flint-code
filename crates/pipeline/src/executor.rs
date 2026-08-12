@@ -1399,8 +1399,7 @@ impl PipelineExecutor {
                 return;
             }
             assist_outputs.push_str(&format!(
-                "### Assist: query/{entity}\nFull response: `{assist_relative}`\n\n{}\n\n",
-                bounded_text(&stdout, 3_500)
+                "### Assist: query/{entity}\nFull response: `{assist_relative}`\n\n{stdout}\n\n",
             ));
         }
 
@@ -1414,7 +1413,7 @@ impl PipelineExecutor {
         }
 
         if !assist_outputs.is_empty() {
-            self.assist_context = bounded_text(&assist_outputs, 20_000);
+            self.assist_context = bounded_text(&assist_outputs, 40_000);
             if let Some(artifacts) = &self.artifacts {
                 artifacts
                     .save_attempt_raw(attempt, "assist-output.md", &assist_outputs)
