@@ -40,7 +40,7 @@ impl RunController {
     /// Returns the side effect produced, or None if the channel closed.
     pub async fn process_next(&mut self) -> Option<SideEffect> {
         let event = self.event_rx.recv().await?;
-        let effect = reduce(&mut self.state, event);
+        let effect = self.reduce_event(event);
 
         // Forward the side effect
         if !matches!(effect, SideEffect::None) {
@@ -48,6 +48,35 @@ impl RunController {
         }
 
         Some(effect)
+    }
+
+    /// Reduce an already-delivered event synchronously.
+    ///
+    /// Interactive event loops should use this when they are themselves the
+    /// sole consumer of executor events. It avoids sending into a bounded
+    /// channel that the same task would then have to drain. Unlike
+    /// [`Self::process_next`], this method does not forward the returned effect;
+    /// the caller owns effect dispatch.
+    pub fn reduce_event(&mut self, event: RunEvent) -> SideEffect {
+        reduce(&mut self.state, event)
+    }
+
+    /// Cancel the active run immediately and discard events queued by the
+    /// effect that is being cancelled.
+    ///
+    /// Interactive clients use this after their executor worker has
+    /// acknowledged cancellation. Processing cancellation out of band keeps
+    /// already-buffered executor events from advancing the state machine
+    /// before `CancelRequested` reaches the front of the normal event queue.
+    pub fn cancel_current(&mut self) -> bool {
+        if !self.state.state.is_active() {
+            return false;
+        }
+
+        while self.event_rx.try_recv().is_ok() {}
+        let effect = reduce(&mut self.state, RunEvent::CancelRequested);
+        debug_assert!(matches!(effect, SideEffect::None));
+        true
     }
 
     /// Run the event loop until a terminal state is reached.
@@ -135,5 +164,30 @@ mod tests {
             }
             _ => panic!("Expected RunEvent::Failed"),
         }
+    }
+
+    #[tokio::test]
+    async fn immediate_cancel_discards_buffered_executor_events() {
+        let (side_effect_tx, _side_effect_rx) = tokio::sync::mpsc::channel(32);
+        let (mut controller, tx) = RunController::new("test-run".to_string(), 3, side_effect_tx);
+        controller.state.state = PipelineState::Generating { attempt: 1 };
+
+        tx.send(RunEvent::ModelFailed(
+            crate::error::AgentError::InfrastructureError {
+                detail: "late worker failure".to_string(),
+            },
+        ))
+        .await
+        .unwrap();
+
+        assert!(controller.cancel_current());
+        assert_eq!(controller.state.state, PipelineState::Cancelled);
+
+        let no_event = tokio::time::timeout(
+            std::time::Duration::from_millis(10),
+            controller.process_next(),
+        )
+        .await;
+        assert!(no_event.is_err(), "queued executor event must be drained");
     }
 }

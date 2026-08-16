@@ -119,6 +119,27 @@ pub async fn run_suite(
     output_root: &Path,
     base_dir: &Path, // base directory for resolving task paths
 ) -> Result<SuiteResult> {
+    run_suite_inner(plan, profile, output_root, base_dir, None).await
+}
+
+/// Run a complete suite with one new SSH runner session per case.
+pub async fn run_suite_remote(
+    plan: &SuitePlan,
+    profile: &ModelProfile,
+    output_root: &Path,
+    base_dir: &Path,
+    remote_target: &crate::remote_config::ResolvedRemoteTarget,
+) -> Result<SuiteResult> {
+    run_suite_inner(plan, profile, output_root, base_dir, Some(remote_target)).await
+}
+
+async fn run_suite_inner(
+    plan: &SuitePlan,
+    profile: &ModelProfile,
+    output_root: &Path,
+    base_dir: &Path,
+    remote_target: Option<&crate::remote_config::ResolvedRemoteTarget>,
+) -> Result<SuiteResult> {
     let suite_start = Utc::now();
     let mut case_results = Vec::new();
     let mut pass_count = 0;
@@ -188,13 +209,57 @@ pub async fn run_suite(
         let (mut controller, event_tx) =
             RunController::new(run_id.clone(), profile.run.max_repairs, side_effect_tx);
 
-        // Create executor
-        let mut executor = PipelineExecutor::new(
-            profile.clone(),
-            event_tx.clone(),
-            output_root.to_path_buf(),
-            run_id.clone(),
-        )?;
+        // Production evaluation creates one isolated SSH session per case.
+        // The legacy local branch remains only for direct library tests and is
+        // never selected by the CLI.
+        let remote_execution = if let Some(target) = remote_target {
+            if let Some((_, contract)) = &follow_up {
+                for name in contract
+                    .commands
+                    .iter()
+                    .flat_map(|command| command.env_ref.iter())
+                {
+                    if !target.environment_refs.contains_key(name) {
+                        anyhow::bail!(
+                            "remote target `{}` does not declare suite environment reference `{name}`",
+                            target.name
+                        );
+                    }
+                }
+            }
+            Some(std::sync::Arc::new(
+                crate::execution::RemoteExecution::create_with_environment(
+                    target.ssh.clone(),
+                    target.client_policy.clone(),
+                    target.environment_refs.clone(),
+                    &run_id,
+                )
+                .await
+                .map_err(|error| {
+                    anyhow::anyhow!(
+                        "[infrastructure] failed to establish SSH target {}: {error}",
+                        target.name
+                    )
+                })?,
+            ))
+        } else {
+            None
+        };
+        let mut executor = match &remote_execution {
+            Some(execution) => PipelineExecutor::new_remote(
+                profile.clone(),
+                event_tx.clone(),
+                output_root.to_path_buf(),
+                run_id.clone(),
+                execution.clone(),
+            )?,
+            None => PipelineExecutor::new(
+                profile.clone(),
+                event_tx.clone(),
+                output_root.to_path_buf(),
+                run_id.clone(),
+            )?,
+        };
 
         if let Some(ref target) = case.build_target {
             executor.set_build_target(target.clone());
@@ -215,7 +280,10 @@ pub async fn run_suite(
             executor.set_patches(patches.clone());
         }
 
-        let case_execution = async move {
+        // Keep the large executor/controller state machine on the heap. The
+        // suite timeout test runs on Tokio's test thread, whose stack is much
+        // smaller than a normal CLI worker stack.
+        let case_execution = Box::pin(async move {
             while !controller.state.state.is_terminal() {
                 match controller.process_next().await {
                     Some(SideEffect::None) => {}
@@ -250,7 +318,7 @@ pub async fn run_suite(
                 }
             }
             Ok::<_, anyhow::Error>((controller, primary_attempts))
-        };
+        });
         let execution = tokio::time::timeout(
             std::time::Duration::from_secs(case.timeout_secs),
             case_execution,
@@ -258,12 +326,28 @@ pub async fn run_suite(
         .await
         .ok()
         .transpose()?;
+        if let Some(remote) = &remote_execution {
+            remote.detach().await.map_err(|error| {
+                anyhow::anyhow!("[infrastructure] failed to detach suite SSH session: {error}")
+            })?;
+        }
         let controller = execution.as_ref().map(|(controller, _)| controller);
         let primary_attempts = execution
             .as_ref()
             .map_or(0, |(_, primary_attempts)| *primary_attempts);
 
         let elapsed = case_start.elapsed().as_secs_f64();
+
+        if let Some(controller) = controller
+            && let PipelineState::Failed { error } = &controller.state.state
+            && is_infrastructure_failure_message(error)
+        {
+            anyhow::bail!(
+                "infrastructure failure stopped suite case `{}`: {}",
+                case.name,
+                error
+            );
+        }
 
         // Determine result
         let actual_state = match controller
@@ -361,6 +445,11 @@ pub async fn run_suite(
     );
 
     Ok(result)
+}
+
+fn is_infrastructure_failure_message(message: &str) -> bool {
+    message.contains(agent_core::event::INFRASTRUCTURE_FAILURE_PREFIX)
+        || message.contains("Infrastructure error (not model-repairable)")
 }
 
 /// Generate a markdown report from suite results

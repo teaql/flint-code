@@ -11,18 +11,45 @@ use model_vllm::chat::ChatMessage;
 use model_vllm::profile::ModelProfile;
 use model_vllm::tokenizer;
 use rag_remote::WeaviateRetriever;
+use std::collections::BTreeMap;
 use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::sync::mpsc;
+use tool_runner::remote_protocol::{ExecResult, FileKind};
 use tracing::{error, info, warn};
 use validation;
 
-#[derive(Debug, Clone, serde::Serialize)]
-struct FollowUpRecord {
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum SessionRecordPhase {
+    InitialBuild,
+    #[default]
+    FollowUp,
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+struct SessionLedgerRecord {
+    /// Defaults to `follow_up` so ledgers written before the phase field was
+    /// introduced remain readable.
+    #[serde(default)]
+    phase: SessionRecordPhase,
     attempt: u8,
     instruction: String,
     summary: String,
+    /// Independent verifier passes performed for this successful interaction.
+    #[serde(default)]
+    verification_rounds: usize,
+    /// LLM round-trips observed directly by the agent loop.
+    #[serde(default)]
+    model_iterations: usize,
+    /// Tool invocations observed directly by the agent loop.
+    #[serde(default)]
+    tool_calls: usize,
+    /// Wall-clock duration measured by the executor, including verification.
+    #[serde(default)]
+    elapsed_secs: f64,
 }
 
 /// PipelineExecutor processes SideEffects and sends RunEvents back.
@@ -45,10 +72,19 @@ pub struct PipelineExecutor {
     patches: Option<std::collections::HashMap<String, String>>,
     /// Exact application workspace generated for build and follow-up coding.
     workspace_dir: Option<PathBuf>,
+    /// Authoritative remote runner used by production SSH execution.
+    ///
+    /// `None` exists only for the legacy/local constructor and unit tests. A
+    /// remote run never falls back to that path after it has been selected.
+    remote_execution: Option<Arc<crate::execution::RemoteExecution>>,
+    /// Workspace-relative cwd inside the attached runner session.
+    remote_workspace_dir: Option<String>,
     /// Bounded TeaQL API examples gathered during initial workspace generation.
     assist_context: String,
     /// Compact summaries of deterministically verified continuation turns.
-    followup_history: Vec<FollowUpRecord>,
+    followup_history: Vec<SessionLedgerRecord>,
+    /// Cumulative structured interaction metrics persisted after each success.
+    session_ledger: Vec<SessionLedgerRecord>,
     /// Explicit machine-verifiable contracts, aligned with queued follow-ups.
     followup_acceptance_specs: VecDeque<crate::followup_acceptance::FollowUpAcceptanceSpec>,
     /// Actionable errors from the most recent failed validation, fed into repair prompts.
@@ -57,16 +93,56 @@ pub struct PipelineExecutor {
     last_domain_validation: Option<ValidationResult>,
     /// RAG retriever for skills and error troubleshooting.
     retriever: Option<Arc<dyn KnowledgeRetriever>>,
+    /// Stable SQLite database namespace for the legacy local path only.
+    /// Remote sessions resolve isolated database references inside the runner.
+    sqlite_isolation: Option<crate::process_env::SqliteDatabaseIsolation>,
 }
 
 impl PipelineExecutor {
+    /// Legacy local constructor retained for unit tests and migration callers.
+    /// Production CLI/TUI execution must use [`Self::new_remote`].
     pub fn new(
         profile: ModelProfile,
         event_tx: mpsc::Sender<RunEvent>,
         runs_root: PathBuf,
         run_id: String,
     ) -> Result<Self, AgentError> {
+        Self::new_inner(profile, event_tx, runs_root, run_id, None)
+    }
+
+    /// Construct a pipeline whose project filesystem and every project
+    /// process are owned by one SSH runner session.
+    pub fn new_remote(
+        profile: ModelProfile,
+        event_tx: mpsc::Sender<RunEvent>,
+        runs_root: PathBuf,
+        run_id: String,
+        execution: Arc<crate::execution::RemoteExecution>,
+    ) -> Result<Self, AgentError> {
+        Self::new_inner(profile, event_tx, runs_root, run_id, Some(execution))
+    }
+
+    fn new_inner(
+        profile: ModelProfile,
+        event_tx: mpsc::Sender<RunEvent>,
+        runs_root: PathBuf,
+        run_id: String,
+        remote_execution: Option<Arc<crate::execution::RemoteExecution>>,
+    ) -> Result<Self, AgentError> {
         let client = ModelClient::from_profile(profile.clone())?;
+        let sqlite_isolation = if remote_execution.is_none() {
+            Some(
+                crate::process_env::SqliteDatabaseIsolation::new().map_err(|error| {
+                    AgentError::InfrastructureError {
+                        detail: format!(
+                            "Failed to create isolated SQLite runtime directory: {error}"
+                        ),
+                    }
+                })?,
+            )
+        } else {
+            None
+        };
         Ok(Self {
             profile,
             client,
@@ -81,12 +157,16 @@ impl PipelineExecutor {
             modeling_skill_path: None,
             patches: None,
             workspace_dir: None,
+            remote_execution,
+            remote_workspace_dir: None,
             assist_context: String::new(),
             followup_history: Vec::new(),
+            session_ledger: Vec::new(),
             followup_acceptance_specs: VecDeque::new(),
             last_actionable_errors: Vec::new(),
             last_domain_validation: None,
             retriever: None,
+            sqlite_isolation,
         })
     }
 
@@ -102,7 +182,10 @@ impl PipelineExecutor {
     async fn retrieve_modeling_skill(&mut self, task_text: &str) -> Result<String, String> {
         self.init_retriever().await;
         let Some(retriever) = &self.retriever else {
-            return Err("RAG retriever is not configured".to_string());
+            return Err(format!(
+                "{} RAG retriever is not configured",
+                INFRASTRUCTURE_FAILURE_PREFIX
+            ));
         };
 
         let _ = self.event_tx.send(RunEvent::RagStarted).await;
@@ -126,7 +209,10 @@ impl PipelineExecutor {
             }
             Err(error) => {
                 let _ = self.event_tx.send(RunEvent::RagCompleted(0)).await;
-                Err(format!("RAG skill retrieval failed: {error}"))
+                Err(format!(
+                    "{} RAG skill retrieval failed: {error}",
+                    INFRASTRUCTURE_FAILURE_PREFIX
+                ))
             }
         }
     }
@@ -154,33 +240,99 @@ impl PipelineExecutor {
         self.followup_acceptance_specs = specs.into();
     }
 
+    /// Borrow the contract for the current follow-up without consuming it.
+    ///
+    /// A failed or interrupted follow-up can then be retried against exactly
+    /// the same deterministic contract. The queue advances only after the
+    /// independent verifier accepts the turn.
+    fn current_followup_acceptance_spec(
+        &self,
+    ) -> Option<crate::followup_acceptance::FollowUpAcceptanceSpec> {
+        self.followup_acceptance_specs.front().cloned()
+    }
+
+    fn settle_followup_acceptance_spec(&mut self, deterministically_verified: bool) {
+        if deterministically_verified {
+            self.followup_acceptance_specs.pop_front();
+        }
+    }
+
+    /// Persist a cumulative, machine-readable ledger before announcing that an
+    /// interaction succeeded. Replacing the same phase/attempt makes retries
+    /// idempotent without losing earlier successful turns.
+    async fn persist_session_record(&mut self, record: SessionLedgerRecord) -> Result<(), String> {
+        let artifacts = self.artifacts.clone().ok_or_else(|| {
+            format!(
+                "{} Run artifact store is unavailable; session metrics cannot be persisted",
+                INFRASTRUCTURE_FAILURE_PREFIX
+            )
+        })?;
+        let mut ledger = self.session_ledger.clone();
+        if let Some(existing) = ledger
+            .iter_mut()
+            .find(|existing| existing.attempt == record.attempt && existing.phase == record.phase)
+        {
+            *existing = record.clone();
+        } else {
+            ledger.push(record.clone());
+        }
+        ledger.sort_by_key(|entry| entry.attempt);
+        artifacts
+            .save_attempt_file(record.attempt, "session-ledger.json", &ledger)
+            .await
+            .map_err(|error| {
+                format!(
+                    "{} Failed to persist structured session metrics for attempt {}: {error}",
+                    INFRASTRUCTURE_FAILURE_PREFIX, record.attempt
+                )
+            })?;
+        self.session_ledger = ledger;
+        Ok(())
+    }
+
     /// Process a side effect. This is the main dispatch loop.
     pub async fn handle(&mut self, effect: SideEffect) {
-        match effect {
-            SideEffect::RunPreflight => self.run_preflight().await,
-            SideEffect::Generate { attempt } => self.generate(attempt).await,
-            SideEffect::RunLocalValidation { attempt } => self.local_validate(attempt).await,
-            SideEffect::RunDomainValidation { attempt } => self.domain_validate(attempt).await,
-            SideEffect::RunBuildValidation { attempt } => self.build_validate(attempt).await,
-            SideEffect::Repair { attempt } => self.repair(attempt).await,
-            SideEffect::WriteFinalArtifact => self.write_final().await,
-            SideEffect::RecordFailure { error } => self.record_failure(&error).await,
-            SideEffect::RunFollowUp { task, attempt } => self.run_followup(task, attempt).await,
-            SideEffect::LoadTask { path } => self.load_task(&path).await,
-            SideEffect::RequestConsent { action, .. } => {
-                // In TUI mode: the TUI will handle this
-                self.send(RunEvent::ConsentDenied(format!(
-                    "Auto-denied in headless: {action}"
-                )))
-                .await;
+        // The local and remote orchestration futures are intentionally large.
+        // Keep the dispatch frame heap-backed so callers with ordinary Tokio
+        // worker stacks do not reserve the maximum branch size on every turn.
+        self.handle_boxed(effect).await;
+    }
+
+    fn handle_boxed(
+        &mut self,
+        effect: SideEffect,
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send + '_>> {
+        Box::pin(async move {
+            match effect {
+                SideEffect::RunPreflight => self.run_preflight().await,
+                SideEffect::Generate { attempt } => self.generate(attempt).await,
+                SideEffect::RunLocalValidation { attempt } => self.local_validate(attempt).await,
+                SideEffect::RunDomainValidation { attempt } => self.domain_validate(attempt).await,
+                SideEffect::RunBuildValidation { attempt } => self.build_validate(attempt).await,
+                SideEffect::Repair { attempt } => self.repair(attempt).await,
+                SideEffect::WriteFinalArtifact => self.write_final().await,
+                SideEffect::RecordFailure { error } => self.record_failure(&error).await,
+                SideEffect::RunFollowUp { task, attempt } => self.run_followup(task, attempt).await,
+                SideEffect::LoadTask { path } => self.load_task(&path).await,
+                SideEffect::RequestConsent { action, .. } => {
+                    // In TUI mode: the TUI will handle this
+                    self.send(RunEvent::ConsentDenied(format!(
+                        "Auto-denied in headless: {action}"
+                    )))
+                    .await;
+                }
+                SideEffect::None => {}
             }
-            SideEffect::None => {}
-        }
+        })
     }
 
     /// Run follow-up task on the existing workspace
     async fn run_followup(&mut self, task: String, attempt: u8) {
-        let acceptance_spec = self.followup_acceptance_specs.pop_front();
+        if let Some(execution) = self.remote_execution.clone() {
+            self.run_followup_remote(execution, task, attempt).await;
+            return;
+        }
+        let acceptance_spec = self.current_followup_acceptance_spec();
         if let Some(spec) = acceptance_spec.as_ref() {
             let missing = missing_followup_environment(std::iter::once(spec));
             if !missing.is_empty() {
@@ -193,6 +345,32 @@ impl PipelineExecutor {
                 return;
             }
         }
+        let Some(sqlite_isolation) = self.sqlite_isolation.as_ref() else {
+            let result = infrastructure_validation_failure(
+                "Local follow-up runtime isolation is unavailable",
+                format!(
+                    "{} A local execution path was selected without its local SQLite isolation; refusing to continue.",
+                    INFRASTRUCTURE_FAILURE_PREFIX
+                ),
+                0.0,
+            );
+            self.send(RunEvent::ValidationCompleted(result)).await;
+            return;
+        };
+        let command_environment =
+            match declared_followup_command_environment(acceptance_spec.as_ref(), sqlite_isolation)
+            {
+                Ok(environment) => environment,
+                Err(error) => {
+                    let result = infrastructure_validation_failure(
+                        "Required follow-up environment is unavailable",
+                        error,
+                        0.0,
+                    );
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
+                }
+            };
         let build_dir = match self.followup_workspace() {
             Ok(path) => path,
             Err(error) => {
@@ -266,13 +444,14 @@ impl PipelineExecutor {
         let verification_target = self.build_target.as_deref().unwrap_or("rust-lib-core");
 
         for verification_round in 1..=MAX_VERIFICATION_ROUNDS {
-            let loop_result = crate::agent_loop::run_agent_loop(
+            let loop_result = crate::agent_loop::run_agent_loop_with_environment(
                 &self.client,
                 &build_dir,
                 &system_prompt,
                 &next_prompt,
                 ITERATIONS_PER_ROUND,
                 Some(self.event_tx.clone()),
+                &command_environment,
             )
             .await;
 
@@ -287,8 +466,13 @@ impl PipelineExecutor {
                     last_summary = summary;
                     (true, None)
                 }
-                crate::agent_loop::AgentLoopResult::Failed { error, iterations } => {
+                crate::agent_loop::AgentLoopResult::Failed {
+                    error,
+                    iterations,
+                    total_tool_calls: tool_calls,
+                } => {
                     total_iterations += iterations;
+                    total_tool_calls += tool_calls;
                     if is_infrastructure_diagnostic(&error) {
                         let mut result = infrastructure_validation_failure(
                             "Follow-up agent stopped on an infrastructure failure",
@@ -352,6 +536,10 @@ impl PipelineExecutor {
                     &workspace_before,
                     acceptance_spec.as_ref(),
                     verification_target,
+                    &command_environment,
+                    self.artifacts.as_ref(),
+                    attempt,
+                    verification_round,
                 )
                 .await
             };
@@ -366,22 +554,28 @@ impl PipelineExecutor {
                             last_summary
                         )
                     };
-                    self.followup_history.push(FollowUpRecord {
+                    let total_elapsed = start.elapsed().as_secs_f64();
+                    let record = SessionLedgerRecord {
+                        phase: SessionRecordPhase::FollowUp,
                         attempt,
                         instruction: bounded_text(&task, 4_000),
                         summary: bounded_text(&summary, 2_000),
-                    });
-                    if let Some(artifacts) = &self.artifacts {
-                        artifacts
-                            .save_attempt_file(
-                                attempt,
-                                "session-ledger.json",
-                                &self.followup_history,
-                            )
-                            .await
-                            .ok();
+                        verification_rounds: verification_round,
+                        model_iterations: total_iterations,
+                        tool_calls: total_tool_calls,
+                        elapsed_secs: total_elapsed,
+                    };
+                    if let Err(error) = self.persist_session_record(record.clone()).await {
+                        let result = infrastructure_validation_failure(
+                            "Successful follow-up metrics could not be persisted",
+                            error,
+                            total_elapsed,
+                        );
+                        self.send(RunEvent::ValidationCompleted(result)).await;
+                        return;
                     }
-                    let total_elapsed = start.elapsed().as_secs_f64();
+                    self.followup_history.push(record);
+                    self.settle_followup_acceptance_spec(true);
                     info!(
                         attempt,
                         verification_round,
@@ -432,6 +626,312 @@ impl PipelineExecutor {
                     if let Some(round_error) = round_diagnostic {
                         result.diagnostic = format!(
                             "Last agent-loop error: {round_error}\n\n{}",
+                            result.diagnostic
+                        );
+                    }
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
+                }
+            }
+        }
+    }
+
+    /// Continue coding inside the authoritative runner workspace. Once a
+    /// remote session has been selected, this path never observes a local
+    /// project directory or executes a local project command.
+    async fn run_followup_remote(
+        &mut self,
+        execution: Arc<crate::execution::RemoteExecution>,
+        task: String,
+        attempt: u8,
+    ) {
+        let start = std::time::Instant::now();
+        let acceptance_spec = self.current_followup_acceptance_spec();
+        if let Some(spec) = acceptance_spec.as_ref()
+            && let Err(error) = spec.validate()
+        {
+            let result = infrastructure_validation_failure(
+                "Remote follow-up acceptance contract is invalid",
+                format!("{INFRASTRUCTURE_FAILURE_PREFIX} {error}"),
+                start.elapsed().as_secs_f64(),
+            );
+            self.send(RunEvent::ValidationCompleted(result)).await;
+            return;
+        }
+        let command_environment = declared_remote_command_environment(acceptance_spec.iter());
+        let build_dir = match require_authoritative_remote_workspace(
+            self.remote_workspace_dir.as_deref(),
+            self.workspace_dir.as_deref(),
+        ) {
+            Ok(workspace) => workspace.to_string(),
+            Err(error) => {
+                let result = infrastructure_validation_failure(
+                    "Remote follow-up workspace is unavailable",
+                    error,
+                    start.elapsed().as_secs_f64(),
+                );
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+        };
+
+        match crate::known_infrastructure::detect_generated_workspace_infrastructure_failure_remote(
+            execution.as_ref(),
+            &build_dir,
+        )
+        .await
+        {
+            Ok(Some(failure)) => {
+                let result = validation::fail(
+                    5,
+                    "follow-up infrastructure",
+                    vec![failure.actionable_error()],
+                    failure.diagnostic(),
+                    start.elapsed().as_secs_f64(),
+                );
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+            Ok(None) => {}
+            Err(error) => {
+                let result = infrastructure_validation_failure(
+                    "Failed to inspect the remote follow-up workspace",
+                    format!("{INFRASTRUCTURE_FAILURE_PREFIX} {error}"),
+                    start.elapsed().as_secs_f64(),
+                );
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+        }
+
+        let workspace_before = match crate::followup_acceptance::snapshot_remote_workspace(
+            execution.as_ref(),
+            &build_dir,
+        )
+        .await
+        {
+            Ok(snapshot) => snapshot,
+            Err(error) => {
+                let result = infrastructure_validation_failure(
+                    "Failed to snapshot the remote follow-up workspace",
+                    error,
+                    start.elapsed().as_secs_f64(),
+                );
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+        };
+
+        let system_template = std::fs::read_to_string("prompts/agentic-followup.txt")
+            .unwrap_or_else(|_| include_str!("../../../prompts/agentic-followup.txt").to_string());
+        let system_prompt =
+            render_agentic_system_prompt_remote(&system_template, &build_dir, &self.assist_context);
+        let original_task = self
+            .task
+            .as_ref()
+            .map(|task| task.task_content.as_str())
+            .unwrap_or("");
+        let user_prompt = build_followup_prompt_remote(
+            &build_dir,
+            &task,
+            original_task,
+            &self.followup_history,
+            acceptance_spec.as_ref(),
+        );
+
+        info!(remote_cwd = %build_dir, "Launching remote agentic follow-up loop");
+        const MAX_VERIFICATION_ROUNDS: usize = 3;
+        const ITERATIONS_PER_ROUND: usize = 10;
+        let mut next_prompt = user_prompt.clone();
+        let mut total_iterations = 0usize;
+        let mut total_tool_calls = 0usize;
+        let mut last_summary = String::new();
+        let requires_workspace_change = acceptance_spec
+            .as_ref()
+            .map(|spec| spec.files.iter().any(|file| file.must_change))
+            .unwrap_or(true);
+        let verification_target = self.build_target.as_deref().unwrap_or("rust-lib-core");
+
+        for verification_round in 1..=MAX_VERIFICATION_ROUNDS {
+            let loop_result = crate::agent_loop::run_agent_loop_remote_with_environment(
+                &self.client,
+                execution.clone(),
+                &build_dir,
+                &system_prompt,
+                &next_prompt,
+                ITERATIONS_PER_ROUND,
+                Some(self.event_tx.clone()),
+                &command_environment.tool_environment,
+            )
+            .await;
+
+            let (yielded, round_diagnostic) = match loop_result {
+                crate::agent_loop::AgentLoopResult::Completed {
+                    summary,
+                    iterations,
+                    total_tool_calls: tool_calls,
+                } => {
+                    total_iterations += iterations;
+                    total_tool_calls += tool_calls;
+                    last_summary = summary;
+                    (true, None)
+                }
+                crate::agent_loop::AgentLoopResult::Failed {
+                    error,
+                    iterations,
+                    total_tool_calls: tool_calls,
+                } => {
+                    total_iterations += iterations;
+                    total_tool_calls += tool_calls;
+                    if is_infrastructure_diagnostic(&error) {
+                        let mut result = infrastructure_validation_failure(
+                            "Remote follow-up agent stopped on an infrastructure failure",
+                            error.clone(),
+                            start.elapsed().as_secs_f64(),
+                        );
+                        result.diagnostic = format!(
+                            "Remote agentic follow-up stopped after {total_iterations} iteration(s): {error}"
+                        );
+                        self.send(RunEvent::ValidationCompleted(result)).await;
+                        return;
+                    }
+                    if acceptance_spec.is_none() {
+                        let result = validation::fail(
+                            5,
+                            "follow-up acceptance",
+                            vec!["Unverified remote follow-up agent loop failed".to_string()],
+                            error,
+                            start.elapsed().as_secs_f64(),
+                        );
+                        self.send(RunEvent::ValidationCompleted(result)).await;
+                        return;
+                    }
+                    (false, Some(error))
+                }
+                crate::agent_loop::AgentLoopResult::MaxIterationsReached {
+                    iterations,
+                    total_tool_calls: tool_calls,
+                    last_failed_build,
+                } => {
+                    total_iterations += iterations;
+                    total_tool_calls += tool_calls;
+                    if acceptance_spec.is_none() {
+                        let result = validation::fail(
+                            5,
+                            "follow-up acceptance",
+                            vec!["Remote agent reached its iteration limit without an explicit, verifiable acceptance contract".to_string()],
+                            "The model did not yield completion. Provide a typed follow-up acceptance contract; compilation alone is not accepted at the iteration limit.".to_string(),
+                            start.elapsed().as_secs_f64(),
+                        );
+                        self.send(RunEvent::ValidationCompleted(result)).await;
+                        return;
+                    }
+                    last_summary = format!(
+                        "Round {verification_round} reached its iteration limit; deterministic remote verification was still required. Last failed build: {}",
+                        last_failed_build
+                            .as_deref()
+                            .unwrap_or("no compiler diagnostic captured")
+                    );
+                    (false, None)
+                }
+            };
+
+            let verification = match crate::followup_acceptance::snapshot_remote_workspace(
+                execution.as_ref(),
+                &build_dir,
+            )
+            .await
+            {
+                Err(error) => Err(error),
+                Ok(after) if requires_workspace_change && after == workspace_before => Err(
+                    "The follow-up has not changed any application-owned file required by the acceptance contract."
+                        .to_string(),
+                ),
+                Ok(_) => {
+                    verify_followup_outcome_remote(
+                        &execution,
+                        &build_dir,
+                        &workspace_before,
+                        acceptance_spec.as_ref(),
+                        verification_target,
+                        &command_environment,
+                        self.artifacts.as_ref(),
+                        attempt,
+                        verification_round,
+                    )
+                    .await
+                }
+            };
+
+            match verification {
+                Ok(acceptance_diagnostic) => {
+                    let summary = if yielded {
+                        last_summary.clone()
+                    } else {
+                        format!(
+                            "The agent did not explicitly yield in verification round {verification_round}, but every item in the explicit machine contract passed independently. {}",
+                            last_summary
+                        )
+                    };
+                    let total_elapsed = start.elapsed().as_secs_f64();
+                    let record = SessionLedgerRecord {
+                        phase: SessionRecordPhase::FollowUp,
+                        attempt,
+                        instruction: bounded_text(&task, 4_000),
+                        summary: bounded_text(&summary, 2_000),
+                        verification_rounds: verification_round,
+                        model_iterations: total_iterations,
+                        tool_calls: total_tool_calls,
+                        elapsed_secs: total_elapsed,
+                    };
+                    if let Err(error) = self.persist_session_record(record.clone()).await {
+                        let result = infrastructure_validation_failure(
+                            "Successful remote follow-up metrics could not be persisted",
+                            error,
+                            total_elapsed,
+                        );
+                        self.send(RunEvent::ValidationCompleted(result)).await;
+                        return;
+                    }
+                    self.followup_history.push(record);
+                    self.settle_followup_acceptance_spec(true);
+                    let mut result = validation::pass(5, "build", total_elapsed);
+                    result.diagnostic = format!(
+                        "Remote follow-up: ✓ ({verification_round} verification round(s), {total_iterations} model iteration(s), {total_tool_calls} tool call(s))\n\nAgent summary: {summary}\n\n{acceptance_diagnostic}"
+                    );
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
+                }
+                Err(diagnostic) if is_infrastructure_diagnostic(&diagnostic) => {
+                    let result = infrastructure_validation_failure(
+                        "Deterministic remote follow-up verification hit an infrastructure failure",
+                        diagnostic,
+                        start.elapsed().as_secs_f64(),
+                    );
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
+                }
+                Err(diagnostic) if verification_round < MAX_VERIFICATION_ROUNDS => {
+                    next_prompt = format!(
+                        "{user_prompt}\n\n# Independent Remote Acceptance Feedback (round {verification_round})\nThe previous attempt did not pass. Fix every failed check below, rerun the relevant commands, and only then yield. Do not regenerate or modify the model or validation evidence.\n\n{}\n\nPrevious agent summary:\n{}",
+                        bounded_text(&diagnostic, 12_000),
+                        bounded_text(&last_summary, 2_000)
+                    );
+                }
+                Err(diagnostic) => {
+                    let total_elapsed = start.elapsed().as_secs_f64();
+                    let mut result = validation::fail(
+                        5,
+                        "follow-up acceptance",
+                        vec![format!(
+                            "Deterministic remote follow-up acceptance failed after {MAX_VERIFICATION_ROUNDS} verification rounds"
+                        )],
+                        diagnostic,
+                        total_elapsed,
+                    );
+                    if let Some(round_error) = round_diagnostic {
+                        result.diagnostic = format!(
+                            "Last remote agent-loop error: {round_error}\n\n{}",
                             result.diagnostic
                         );
                     }
@@ -589,16 +1089,34 @@ impl PipelineExecutor {
             }
         };
 
-        let missing_environment =
-            missing_followup_environment(self.followup_acceptance_specs.iter());
-        if !missing_environment.is_empty() {
-            self.send(RunEvent::PreflightFailed(format!(
-                "{} Required follow-up environment is unavailable: {}",
-                INFRASTRUCTURE_FAILURE_PREFIX,
-                missing_environment.join(", ")
-            )))
-            .await;
-            return;
+        if self.remote_execution.is_some() {
+            for spec in &self.followup_acceptance_specs {
+                if let Err(error) = spec.validate() {
+                    self.send(RunEvent::PreflightFailed(format!(
+                        "{} Invalid remote follow-up environment contract: {error}",
+                        INFRASTRUCTURE_FAILURE_PREFIX
+                    )))
+                    .await;
+                    return;
+                }
+            }
+        }
+
+        // Local mode resolves legacy `env_ref` values from the parent process.
+        // Remote mode resolves session-declared references inside the runner;
+        // it must never require or read those values on the control host.
+        if self.remote_execution.is_none() {
+            let missing_environment =
+                missing_followup_environment(self.followup_acceptance_specs.iter());
+            if !missing_environment.is_empty() {
+                self.send(RunEvent::PreflightFailed(format!(
+                    "{} Required follow-up environment is unavailable: {}",
+                    INFRASTRUCTURE_FAILURE_PREFIX,
+                    missing_environment.join(", ")
+                )))
+                .await;
+                return;
+            }
         }
 
         // Estimate token usage
@@ -629,7 +1147,12 @@ impl PipelineExecutor {
         }
 
         if !self.profile.simulator.enabled {
-            if let Err(error) = verify_cargo_teaql_version().await {
+            let version_result = if let Some(execution) = &self.remote_execution {
+                verify_cargo_teaql_version_remote(execution).await
+            } else {
+                verify_cargo_teaql_version().await
+            };
+            if let Err(error) = version_result {
                 self.send(RunEvent::PreflightFailed(format!(
                     "[infrastructure] {error}"
                 )))
@@ -945,7 +1468,26 @@ impl PipelineExecutor {
     }
 
     async fn domain_validate(&mut self, attempt: u8) {
-        let result = if let Some(artifacts) = &self.artifacts {
+        let result = if let Some(execution) = &self.remote_execution {
+            match upload_remote_model_files(
+                execution,
+                attempt,
+                &self.candidate_files,
+                self.candidate.as_deref(),
+            )
+            .await
+            {
+                Ok(model_dir) => {
+                    info!(attempt, path = %model_dir, "Running remote domain validation");
+                    run_domain_validation_remote(execution, &model_dir).await
+                }
+                Err(error) => infrastructure_validation_failure(
+                    "Failed to prepare remote domain validation input",
+                    format!("{} {error}", INFRASTRUCTURE_FAILURE_PREFIX),
+                    0.0,
+                ),
+            }
+        } else if let Some(artifacts) = &self.artifacts {
             match prepare_domain_model_files(
                 artifacts,
                 attempt,
@@ -1024,6 +1566,12 @@ impl PipelineExecutor {
                 return;
             }
         };
+
+        if let Some(execution) = self.remote_execution.clone() {
+            self.build_validate_remote(execution, attempt, build_target)
+                .await;
+            return;
+        }
 
         let attempt_dir = match &self.artifacts {
             Some(a) => match a.create_attempt(attempt).await {
@@ -1538,6 +2086,26 @@ impl PipelineExecutor {
                             return;
                         }
                     };
+                    let total_elapsed = start.elapsed().as_secs_f64();
+                    let ledger_record = SessionLedgerRecord {
+                        phase: SessionRecordPhase::InitialBuild,
+                        attempt,
+                        instruction: "Initial application build".to_string(),
+                        summary: bounded_text(summary, 2_000),
+                        verification_rounds: 1,
+                        model_iterations: *iterations,
+                        tool_calls: *total_tool_calls,
+                        elapsed_secs: total_elapsed,
+                    };
+                    if let Err(error) = self.persist_session_record(ledger_record).await {
+                        let result = infrastructure_validation_failure(
+                            "Successful initial-build metrics could not be persisted",
+                            error,
+                            total_elapsed,
+                        );
+                        self.send(RunEvent::ValidationCompleted(result)).await;
+                        return;
+                    }
                     info!(
                         attempt,
                         iterations,
@@ -1568,7 +2136,9 @@ impl PipelineExecutor {
                     self.send(RunEvent::ValidationCompleted(r)).await;
                     return;
                 }
-                crate::agent_loop::AgentLoopResult::Failed { error, iterations } => {
+                crate::agent_loop::AgentLoopResult::Failed {
+                    error, iterations, ..
+                } => {
                     let total_elapsed = start.elapsed().as_secs_f64();
                     warn!(attempt, iterations, %error, "Agentic build loop failed");
                     let result = if is_infrastructure_diagnostic(error) {
@@ -1659,7 +2229,7 @@ impl PipelineExecutor {
             attempt,
             total_elapsed, "No entities for agentic build; lib-only validation"
         );
-        let r = match verify_generated_build(&build_dir, &build_target).await {
+        let mut r = match verify_generated_build(&build_dir, &build_target).await {
             Ok(build_diagnostic) => match verify_generated_tests(&build_dir, &build_target).await {
                 Ok((test_diagnostic, observed_tests)) => {
                     let mut result = validation::pass(5, "build", total_elapsed);
@@ -1698,6 +2268,30 @@ impl PipelineExecutor {
                 total_elapsed,
             ),
         };
+        if r.passed {
+            let total_elapsed = start.elapsed().as_secs_f64();
+            r.elapsed_secs = total_elapsed;
+            let ledger_record = SessionLedgerRecord {
+                phase: SessionRecordPhase::InitialBuild,
+                attempt,
+                instruction: "Initial application build".to_string(),
+                summary: "No agent loop was needed; deterministic lib-only verification passed."
+                    .to_string(),
+                verification_rounds: 1,
+                model_iterations: 0,
+                tool_calls: 0,
+                elapsed_secs: total_elapsed,
+            };
+            if let Err(error) = self.persist_session_record(ledger_record).await {
+                let result = infrastructure_validation_failure(
+                    "Successful initial-build metrics could not be persisted",
+                    error,
+                    total_elapsed,
+                );
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+        }
         if let Some(artifacts) = &self.artifacts {
             artifacts
                 .save_attempt_file(attempt, "build-validation.json", &r)
@@ -1705,6 +2299,596 @@ impl PipelineExecutor {
                 .ok();
         }
         self.send(RunEvent::ValidationCompleted(r)).await;
+    }
+
+    /// Initial build pipeline whose project state is authoritative only in the
+    /// attached runner session. No operation in this method probes or executes
+    /// against a local project workspace.
+    async fn build_validate_remote(
+        &mut self,
+        execution: Arc<crate::execution::RemoteExecution>,
+        attempt: u8,
+        build_target: String,
+    ) {
+        let started = std::time::Instant::now();
+        let attempt_root = remote_attempt_root(attempt);
+        let remote_command_environment =
+            declared_remote_command_environment(self.followup_acceptance_specs.iter());
+        if let Err(error) = upload_remote_model_files(
+            &execution,
+            attempt,
+            &self.candidate_files,
+            self.candidate.as_deref(),
+        )
+        .await
+        {
+            self.send_remote_infrastructure_failure(
+                attempt,
+                "Failed to upload the validated model to the SSH workspace",
+                error,
+                started.elapsed().as_secs_f64(),
+            )
+            .await;
+            return;
+        }
+
+        info!(attempt, target = %build_target, cwd = %attempt_root, "Running remote code generation");
+        let generation = match remote_exec(
+            &execution,
+            "cargo",
+            vec![
+                "teaql".into(),
+                "--input".into(),
+                "model".into(),
+                build_target.clone(),
+            ],
+            &attempt_root,
+            BTreeMap::new(),
+            Duration::from_secs(300),
+            512 * 1024,
+        )
+        .await
+        {
+            Ok(result) => result,
+            Err(error) => {
+                self.send_remote_infrastructure_failure(
+                    attempt,
+                    "Failed to execute remote cargo teaql generation",
+                    error,
+                    started.elapsed().as_secs_f64(),
+                )
+                .await;
+                return;
+            }
+        };
+        if generation.exit_code != Some(0) {
+            let diagnostic = remote_command_diagnostic(&generation);
+            let result = generation_validation_failure(
+                format!("cargo teaql {build_target} failed on the SSH runner"),
+                diagnostic,
+                started.elapsed().as_secs_f64(),
+            );
+            self.persist_build_result(attempt, &result).await;
+            self.send(RunEvent::ValidationCompleted(result)).await;
+            return;
+        }
+
+        self.send(RunEvent::WorkspaceGenerationStarted).await;
+        let app_target = if build_target.contains("-lib-core") {
+            let app = if build_target.starts_with("java") {
+                build_target.replace("-lib-core", "-web-spring-boot")
+            } else {
+                build_target.replace("-lib-core", "-app-console")
+            };
+            let app_generation = match remote_exec(
+                &execution,
+                "cargo",
+                vec![
+                    "teaql".into(),
+                    "--input".into(),
+                    "model".into(),
+                    app.clone(),
+                ],
+                &attempt_root,
+                BTreeMap::new(),
+                Duration::from_secs(300),
+                512 * 1024,
+            )
+            .await
+            {
+                Ok(result) => result,
+                Err(error) => {
+                    self.send_remote_infrastructure_failure(
+                        attempt,
+                        format!("Failed to execute remote cargo teaql {app}"),
+                        error,
+                        started.elapsed().as_secs_f64(),
+                    )
+                    .await;
+                    return;
+                }
+            };
+            if app_generation.exit_code != Some(0) {
+                let result = generation_validation_failure(
+                    format!("cargo teaql {app} failed on the SSH runner"),
+                    remote_command_diagnostic(&app_generation),
+                    started.elapsed().as_secs_f64(),
+                );
+                self.persist_build_result(attempt, &result).await;
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+            Some(app)
+        } else {
+            None
+        };
+
+        let build_dir = remote_join(&attempt_root, "build");
+        self.remote_workspace_dir = Some(build_dir.clone());
+        if let Err(error) = prepare_remote_workspace_context(
+            &execution,
+            &build_dir,
+            &self.candidate_files,
+            self.candidate.as_deref(),
+        )
+        .await
+        {
+            self.send_remote_infrastructure_failure(
+                attempt,
+                "Failed to prepare model and agent context in the remote workspace",
+                error,
+                started.elapsed().as_secs_f64(),
+            )
+            .await;
+            return;
+        }
+        if let Err(error) = self
+            .write_remote_workspace_validation_evidence(&execution, &build_dir)
+            .await
+        {
+            self.send_remote_infrastructure_failure(
+                attempt,
+                "Failed to write deterministic evidence to the remote workspace",
+                error,
+                started.elapsed().as_secs_f64(),
+            )
+            .await;
+            return;
+        }
+        if let Err(error) =
+            apply_remote_manifest_patches(&execution, &build_dir, self.patches.as_ref()).await
+        {
+            self.send_remote_infrastructure_failure(
+                attempt,
+                "Failed to patch generated remote manifests",
+                error,
+                started.elapsed().as_secs_f64(),
+            )
+            .await;
+            return;
+        }
+        if app_target.is_some()
+            && let Err(error) =
+                normalize_remote_app_manifest(&execution, &build_dir, &build_target).await
+        {
+            self.send_remote_infrastructure_failure(
+                attempt,
+                "Failed to normalize the remote application manifest",
+                error,
+                started.elapsed().as_secs_f64(),
+            )
+            .await;
+            return;
+        }
+
+        match crate::known_infrastructure::detect_generated_workspace_infrastructure_failure_remote(
+            &execution, &build_dir,
+        )
+        .await
+        {
+            Ok(Some(failure)) => {
+                let result = validation::fail(
+                    5,
+                    "build infrastructure",
+                    vec![failure.actionable_error()],
+                    failure.diagnostic(),
+                    started.elapsed().as_secs_f64(),
+                );
+                self.persist_build_result(attempt, &result).await;
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+            Ok(None) => {}
+            Err(error) => {
+                self.send_remote_infrastructure_failure(
+                    attempt,
+                    "Failed to inspect the remote workspace for known incompatibilities",
+                    error.to_string(),
+                    started.elapsed().as_secs_f64(),
+                )
+                .await;
+                return;
+            }
+        }
+
+        let agents_path = remote_join(&build_dir, "AGENTS.md");
+        let agents_md = match execution.read_text(agents_path).await {
+            Ok(content) => content,
+            Err(error) => {
+                self.send_remote_infrastructure_failure(
+                    attempt,
+                    "Generated remote AGENTS.md is unavailable",
+                    error.to_string(),
+                    started.elapsed().as_secs_f64(),
+                )
+                .await;
+                return;
+            }
+        };
+        let entity_names = parse_entity_names_from_agents_md(&agents_md);
+        const MAX_ASSIST_ENTITIES: usize = 8;
+        let assist_entities: Vec<&String> = if entity_names.len() > MAX_ASSIST_ENTITIES {
+            let step = entity_names.len() as f64 / MAX_ASSIST_ENTITIES as f64;
+            (0..MAX_ASSIST_ENTITIES)
+                .map(|index| &entity_names[(index as f64 * step) as usize])
+                .collect()
+        } else {
+            entity_names.iter().collect()
+        };
+
+        let agents_context = remote_agents_context(&agents_md);
+        let mut assist_outputs = format!(
+            "{agents_context}Complete TeaQL assist responses are saved under `.klintcode/assist/`. Read the relevant file before writing TeaQL business code. The canonical model path is `model/main.xml`.\n\n"
+        );
+        let assist_target_base = build_target.replace("-lib-core", "-assist-query");
+        for entity in assist_entities {
+            let assist_target = format!("{assist_target_base}/{entity}");
+            let output = match remote_exec(
+                &execution,
+                "cargo",
+                vec![
+                    "teaql".into(),
+                    "--input".into(),
+                    "model".into(),
+                    assist_target,
+                ],
+                &attempt_root,
+                BTreeMap::new(),
+                Duration::from_secs(120),
+                256 * 1024,
+            )
+            .await
+            {
+                Ok(output) => output,
+                Err(error) => {
+                    self.send_remote_infrastructure_failure(
+                        attempt,
+                        format!("Failed to execute remote TeaQL assist for `{entity}`"),
+                        error,
+                        started.elapsed().as_secs_f64(),
+                    )
+                    .await;
+                    return;
+                }
+            };
+            if output.exit_code != Some(0) {
+                let result = generation_validation_failure(
+                    format!("Remote TeaQL assist failed for `{entity}`"),
+                    remote_command_diagnostic(&output),
+                    started.elapsed().as_secs_f64(),
+                );
+                self.persist_build_result(attempt, &result).await;
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+            let assist_relative = format!(".klintcode/assist/query-{entity}.md");
+            if let Err(error) = execution
+                .write_text(
+                    remote_join(&build_dir, &assist_relative),
+                    output.stdout.clone(),
+                    true,
+                )
+                .await
+            {
+                self.send_remote_infrastructure_failure(
+                    attempt,
+                    format!("Failed to store remote assist output for `{entity}`"),
+                    error.to_string(),
+                    started.elapsed().as_secs_f64(),
+                )
+                .await;
+                return;
+            }
+            assist_outputs.push_str(&format!(
+                "### Assist: query/{entity}\nFull response: `{assist_relative}`\n\n{}\n\n",
+                output.stdout
+            ));
+        }
+        if entity_names.len() > MAX_ASSIST_ENTITIES {
+            assist_outputs.push_str(&format!(
+                "### All entity names ({})\n{}\n\n",
+                entity_names.len(),
+                entity_names.join(", ")
+            ));
+        }
+        self.assist_context = bounded_text(&assist_outputs, 40_000);
+        if let Some(artifacts) = &self.artifacts {
+            let _ = artifacts
+                .save_attempt_raw(attempt, "assist-output.md", &assist_outputs)
+                .await;
+        }
+
+        if !entity_names.is_empty() {
+            let system_template = std::fs::read_to_string("prompts/agentic-build.txt")
+                .unwrap_or_else(|_| include_str!("../../../prompts/agentic-build.txt").to_string());
+            let system_prompt =
+                render_agentic_system_prompt_remote(&system_template, &build_dir, &assist_outputs);
+            let compile_hint = if build_target.starts_with("java") {
+                "This is a Java/Maven project. Your FIRST action must be: run_command({\"command\": \"mvn compile -f pom.xml\"})"
+            } else {
+                "This is a Rust/Cargo project. Your FIRST action must be: run_command({\"command\": \"cargo check\"})"
+            };
+            let original_task = self
+                .task
+                .as_ref()
+                .map(|task| bounded_text(&task.task_content, 8_000))
+                .unwrap_or_default();
+            let model_acceptance = self
+                .task
+                .as_ref()
+                .and_then(|task| task.acceptance_spec.as_ref())
+                .and_then(|spec| serde_json::to_string_pretty(spec).ok())
+                .map(|spec| bounded_text(&spec, 4_000))
+                .unwrap_or_else(|| "No model acceptance sidecar was supplied.".to_string());
+            let user_prompt = format!(
+                "You are already operating at the remote project workspace root `{build_dir}`. Do not use an absolute host path. {compile_hint}\n\n# Original User Task\n{original_task}\n\n# Model Acceptance Context\n{model_acceptance}\n\nCompile first. Fix only application code or workspace configuration. Never read, search, or modify generated library source such as lib/src. Complete every requested API example, test, review, report, and runtime check before yielding."
+            );
+            let loop_result = crate::agent_loop::run_agent_loop_remote_with_environment(
+                &self.client,
+                Arc::clone(&execution),
+                &build_dir,
+                &system_prompt,
+                &user_prompt,
+                20,
+                Some(self.event_tx.clone()),
+                &remote_command_environment.tool_environment,
+            )
+            .await;
+
+            match loop_result {
+                crate::agent_loop::AgentLoopResult::Completed {
+                    summary,
+                    iterations,
+                    total_tool_calls,
+                } => {
+                    let build_diagnostic =
+                        match verify_generated_build_remote(&execution, &build_dir, &build_target)
+                            .await
+                        {
+                            Ok(diagnostic) => diagnostic,
+                            Err(error) => {
+                                let result = remote_verification_failure(
+                                    "Deterministic remote build verification failed",
+                                    error,
+                                    started.elapsed().as_secs_f64(),
+                                );
+                                self.persist_build_result(attempt, &result).await;
+                                self.send(RunEvent::ValidationCompleted(result)).await;
+                                return;
+                            }
+                        };
+                    let (test_diagnostic, observed_tests) = match verify_generated_tests_remote(
+                        &execution,
+                        &build_dir,
+                        &build_target,
+                        &remote_command_environment.cargo_test_refs,
+                    )
+                    .await
+                    {
+                        Ok(result) => result,
+                        Err(error) => {
+                            let result = remote_verification_failure(
+                                "Deterministic remote test verification failed",
+                                error,
+                                started.elapsed().as_secs_f64(),
+                            );
+                            self.persist_build_result(attempt, &result).await;
+                            self.send(RunEvent::ValidationCompleted(result)).await;
+                            return;
+                        }
+                    };
+                    let elapsed = started.elapsed().as_secs_f64();
+                    let ledger = SessionLedgerRecord {
+                        phase: SessionRecordPhase::InitialBuild,
+                        attempt,
+                        instruction: "Initial remote application build".to_string(),
+                        summary: bounded_text(&summary, 2_000),
+                        verification_rounds: 1,
+                        model_iterations: iterations,
+                        tool_calls: total_tool_calls,
+                        elapsed_secs: elapsed,
+                    };
+                    if let Err(error) = self.persist_session_record(ledger).await {
+                        let result = infrastructure_validation_failure(
+                            "Successful remote build metrics could not be persisted",
+                            error,
+                            elapsed,
+                        );
+                        self.send(RunEvent::ValidationCompleted(result)).await;
+                        return;
+                    }
+                    let mut result = validation::pass(5, "build", elapsed);
+                    result.diagnostic = format!(
+                        "Remote agentic build: ✓ ({iterations} iterations, {total_tool_calls} tool calls; {observed_tests} tests observed)\n\nAgent summary: {summary}\n\n{build_diagnostic}\n\n{test_diagnostic}"
+                    );
+                    self.persist_build_result(attempt, &result).await;
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
+                }
+                crate::agent_loop::AgentLoopResult::Failed {
+                    error, iterations, ..
+                } => {
+                    let result = if is_infrastructure_diagnostic(&error) {
+                        infrastructure_validation_failure(
+                            "Remote agentic build stopped on an infrastructure failure",
+                            error,
+                            started.elapsed().as_secs_f64(),
+                        )
+                    } else {
+                        validation::fail(
+                            5,
+                            "build",
+                            vec![format!(
+                                "Remote agent loop failed after {iterations} iterations"
+                            )],
+                            error,
+                            started.elapsed().as_secs_f64(),
+                        )
+                    };
+                    self.persist_build_result(attempt, &result).await;
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
+                }
+                crate::agent_loop::AgentLoopResult::MaxIterationsReached {
+                    iterations,
+                    total_tool_calls,
+                    last_failed_build,
+                } => {
+                    let result = validation::fail(
+                        5,
+                        "build",
+                        vec![format!(
+                            "Remote agent loop exhausted {iterations} iterations"
+                        )],
+                        format!(
+                            "Remote agentic build did not complete ({total_tool_calls} tool calls). Last failed build:\n{}",
+                            last_failed_build.as_deref().unwrap_or("none captured")
+                        ),
+                        started.elapsed().as_secs_f64(),
+                    );
+                    self.persist_build_result(attempt, &result).await;
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
+                }
+            }
+        }
+
+        let build_diagnostic =
+            match verify_generated_build_remote(&execution, &build_dir, &build_target).await {
+                Ok(diagnostic) => diagnostic,
+                Err(error) => {
+                    let result = remote_verification_failure(
+                        "Generated remote project failed build verification",
+                        error,
+                        started.elapsed().as_secs_f64(),
+                    );
+                    self.persist_build_result(attempt, &result).await;
+                    self.send(RunEvent::ValidationCompleted(result)).await;
+                    return;
+                }
+            };
+        let (test_diagnostic, observed_tests) = match verify_generated_tests_remote(
+            &execution,
+            &build_dir,
+            &build_target,
+            &remote_command_environment.cargo_test_refs,
+        )
+        .await
+        {
+            Ok(result) => result,
+            Err(error) => {
+                let result = remote_verification_failure(
+                    "Generated remote project failed test verification",
+                    error,
+                    started.elapsed().as_secs_f64(),
+                );
+                self.persist_build_result(attempt, &result).await;
+                self.send(RunEvent::ValidationCompleted(result)).await;
+                return;
+            }
+        };
+        let elapsed = started.elapsed().as_secs_f64();
+        let ledger = SessionLedgerRecord {
+            phase: SessionRecordPhase::InitialBuild,
+            attempt,
+            instruction: "Initial remote application build".to_string(),
+            summary:
+                "No agent loop was needed; deterministic remote build and test verification passed."
+                    .to_string(),
+            verification_rounds: 1,
+            model_iterations: 0,
+            tool_calls: 0,
+            elapsed_secs: elapsed,
+        };
+        if let Err(error) = self.persist_session_record(ledger).await {
+            let result = infrastructure_validation_failure(
+                "Successful remote build metrics could not be persisted",
+                error,
+                elapsed,
+            );
+            self.persist_build_result(attempt, &result).await;
+            self.send(RunEvent::ValidationCompleted(result)).await;
+            return;
+        }
+        let mut result = validation::pass(5, "build", elapsed);
+        result.diagnostic = format!(
+            "Remote lib-only deterministic verification passed ({observed_tests} tests observed).\n\n{build_diagnostic}\n\n{test_diagnostic}"
+        );
+        self.persist_build_result(attempt, &result).await;
+        self.send(RunEvent::ValidationCompleted(result)).await;
+    }
+
+    async fn write_remote_workspace_validation_evidence(
+        &self,
+        execution: &crate::execution::RemoteExecution,
+        workspace: &str,
+    ) -> Result<(), String> {
+        let model_files = if self.candidate_files.is_empty() {
+            self.candidate
+                .as_ref()
+                .map(|content| vec![("main.xml".to_string(), content.clone())])
+                .unwrap_or_default()
+        } else {
+            self.candidate_files.clone()
+        };
+        let evidence = serde_json::json!({
+            "schema": "klintcode-validation-evidence-v1",
+            "model_files": model_files.iter().map(|(name, _)| name).collect::<Vec<_>>(),
+            "object_count": validation::count_model_objects(&model_files),
+            "acceptance_spec": self.task.as_ref().and_then(|task| task.acceptance_spec.as_ref()),
+            "domain_validation": self.last_domain_validation.as_ref(),
+        });
+        let content = serde_json::to_string_pretty(&evidence)
+            .map_err(|error| format!("Failed to serialize validation evidence: {error}"))?;
+        execution
+            .write_text(
+                remote_join(workspace, ".klintcode/validation-evidence.json"),
+                content,
+                true,
+            )
+            .await
+            .map_err(|error| error.to_string())?;
+        Ok(())
+    }
+
+    async fn send_remote_infrastructure_failure(
+        &mut self,
+        attempt: u8,
+        summary: impl Into<String>,
+        diagnostic: impl Into<String>,
+        elapsed: f64,
+    ) {
+        let result = infrastructure_validation_failure(summary, diagnostic.into(), elapsed);
+        self.persist_build_result(attempt, &result).await;
+        self.send(RunEvent::ValidationCompleted(result)).await;
+    }
+
+    async fn persist_build_result(&self, attempt: u8, result: &ValidationResult) {
+        if let Some(artifacts) = &self.artifacts {
+            let _ = artifacts
+                .save_attempt_file(attempt, "build-validation.json", result)
+                .await;
+        }
     }
 
     async fn repair(&mut self, attempt: u8) {
@@ -1756,6 +2940,79 @@ impl PipelineExecutor {
     }
 
     async fn write_final(&mut self) {
+        if let Some(execution) = self.remote_execution.clone() {
+            let Some(artifacts) = self.artifacts.clone() else {
+                self.send(RunEvent::Failed(AgentError::InfrastructureError {
+                    detail: format!(
+                        "{} Run artifact store is unavailable; the remote workspace locator cannot be persisted",
+                        INFRASTRUCTURE_FAILURE_PREFIX
+                    ),
+                }))
+                .await;
+                return;
+            };
+            let workspace = if self.build_target.is_none() && self.candidate.is_some() {
+                // A valid model-only task never creates an application cwd.
+                // The durable runner session root still owns the uploaded
+                // attempt/model files and is therefore the correct locator.
+                ".".to_string()
+            } else {
+                match require_authoritative_remote_workspace(
+                    self.remote_workspace_dir.as_deref(),
+                    self.workspace_dir.as_deref(),
+                ) {
+                    Ok(workspace) => workspace.to_string(),
+                    Err(error) => {
+                        self.send(RunEvent::Failed(AgentError::InfrastructureError {
+                            detail: error,
+                        }))
+                        .await;
+                        return;
+                    }
+                }
+            };
+            let session_id = execution.session_id().await;
+            let manifest = serde_json::json!({
+                "schema": "klintcode-remote-workspace-v1",
+                "authority": "tool-runner-session",
+                "session_id": session_id,
+                "workspace": workspace,
+                "build_target": self.build_target,
+                "model_files": self.candidate_files.iter().map(|(name, _)| name).collect::<Vec<_>>(),
+                "verified_interactions": self.session_ledger.len(),
+                "exported": false,
+                "note": "The verified workspace remains authoritative in the durable runner session; this control-plane artifact is a locator manifest, not a local project copy."
+            });
+            let content = match serde_json::to_string_pretty(&manifest) {
+                Ok(content) => content,
+                Err(error) => {
+                    self.send(RunEvent::Failed(AgentError::InfrastructureError {
+                        detail: format!(
+                            "{} Failed to serialize the remote workspace manifest: {error}",
+                            INFRASTRUCTURE_FAILURE_PREFIX
+                        ),
+                    }))
+                    .await;
+                    return;
+                }
+            };
+            match artifacts.save_final_artifact(&content).await {
+                Ok(path) => {
+                    info!(path = %path.display(), "Remote workspace locator manifest saved");
+                    self.send(RunEvent::FinalArtifactWritten(path)).await;
+                }
+                Err(error) => {
+                    self.send(RunEvent::Failed(AgentError::InfrastructureError {
+                        detail: format!(
+                            "{} Failed to persist the remote workspace manifest: {error}",
+                            INFRASTRUCTURE_FAILURE_PREFIX
+                        ),
+                    }))
+                    .await;
+                }
+            }
+            return;
+        }
         if let Some(candidate) = &self.candidate {
             if let Some(artifacts) = &self.artifacts {
                 match artifacts.save_final_artifact(candidate).await {
@@ -1851,6 +3108,11 @@ impl PipelineExecutor {
         self.workspace_dir.as_deref()
     }
 
+    /// Return the logical cwd inside the authoritative SSH runner session.
+    pub fn remote_workspace_dir(&self) -> Option<&str> {
+        self.remote_workspace_dir.as_deref()
+    }
+
     fn write_workspace_validation_evidence(&self, workspace: &Path) -> Result<(), String> {
         let model_files = if self.candidate_files.is_empty() {
             self.candidate
@@ -1894,6 +3156,527 @@ impl PipelineExecutor {
     pub fn set_last_errors(&mut self, _errors: Vec<String>) {
         // Will be used when building repair messages
         // For now this is a placeholder for richer repair context
+    }
+}
+
+fn remote_attempt_root(attempt: u8) -> String {
+    format!("attempt-{attempt:02}")
+}
+
+/// Resolve the authoritative project cwd after SSH mode has been selected.
+/// The legacy path is accepted only to make the fail-stop invariant explicit:
+/// it is never returned as a fallback.
+fn require_authoritative_remote_workspace<'a>(
+    remote_workspace: Option<&'a str>,
+    legacy_workspace: Option<&Path>,
+) -> Result<&'a str, String> {
+    let Some(workspace) = remote_workspace else {
+        return Err(format!(
+            "{} The runner session has no generated application cwd{}; local fallback is forbidden.",
+            INFRASTRUCTURE_FAILURE_PREFIX,
+            if legacy_workspace.is_some() {
+                " even though a legacy local workspace is present"
+            } else {
+                ""
+            }
+        ));
+    };
+    let path = Path::new(workspace);
+    if workspace.is_empty()
+        || workspace.contains('\\')
+        || path.is_absolute()
+        || path.components().any(|component| {
+            !matches!(
+                component,
+                std::path::Component::Normal(_) | std::path::Component::CurDir
+            )
+        })
+    {
+        return Err(format!(
+            "{} Remote application cwd must remain runner-relative: `{workspace}`",
+            INFRASTRUCTURE_FAILURE_PREFIX
+        ));
+    }
+    Ok(workspace)
+}
+
+fn remote_join(root: &str, relative: &str) -> String {
+    let root = root.trim_end_matches('/');
+    let relative = relative.trim_start_matches('/');
+    if root.is_empty() || root == "." {
+        relative.to_string()
+    } else if relative.is_empty() || relative == "." {
+        root.to_string()
+    } else {
+        format!("{root}/{relative}")
+    }
+}
+
+fn remote_parent(path: &str) -> &str {
+    path.rsplit_once('/').map_or(".", |(parent, _)| parent)
+}
+
+fn normalized_candidate_model_files(
+    candidate_files: &[(String, String)],
+    candidate: Option<&str>,
+) -> Result<Vec<(String, String)>, String> {
+    let files = if candidate_files.is_empty() {
+        vec![(
+            "main.xml".to_string(),
+            candidate
+                .ok_or_else(|| "No candidate model is available".to_string())?
+                .to_string(),
+        )]
+    } else {
+        candidate_files.to_vec()
+    };
+    for (name, _) in &files {
+        let relative = Path::new(name);
+        if relative.is_absolute()
+            || relative
+                .components()
+                .any(|component| !matches!(component, std::path::Component::Normal(_)))
+        {
+            return Err(format!("Unsafe generated model file name `{name}`"));
+        }
+        if !matches!(
+            relative
+                .extension()
+                .and_then(|extension| extension.to_str()),
+            Some("xml" | "ksml")
+        ) {
+            return Err(format!("Generated model include is not XML/KSML: `{name}`"));
+        }
+    }
+    Ok(files)
+}
+
+async fn upload_remote_model_files(
+    execution: &crate::execution::RemoteExecution,
+    attempt: u8,
+    candidate_files: &[(String, String)],
+    candidate: Option<&str>,
+) -> Result<String, String> {
+    let model_dir = remote_join(&remote_attempt_root(attempt), "model");
+    for (name, content) in normalized_candidate_model_files(candidate_files, candidate)? {
+        execution
+            .write_text(
+                remote_join(&model_dir, &name),
+                strip_markdown_fences(&content),
+                true,
+            )
+            .await
+            .map_err(|error| format!("Remote model upload failed for `{name}`: {error}"))?;
+    }
+    Ok(model_dir)
+}
+
+async fn remote_exec(
+    execution: &crate::execution::RemoteExecution,
+    program: &str,
+    argv: Vec<String>,
+    cwd: &str,
+    env: BTreeMap<String, String>,
+    timeout: Duration,
+    max_output_bytes: u64,
+) -> Result<ExecResult, String> {
+    execution
+        .exec(
+            program.to_string(),
+            argv,
+            cwd.to_string(),
+            env,
+            timeout,
+            max_output_bytes,
+        )
+        .await
+        .map_err(|error| {
+            format!(
+                "{} Remote runner operation failed: {error}",
+                INFRASTRUCTURE_FAILURE_PREFIX
+            )
+        })
+}
+
+async fn remote_exec_with_environment_refs(
+    execution: &crate::execution::RemoteExecution,
+    program: &str,
+    argv: Vec<String>,
+    cwd: &str,
+    env_refs: Vec<String>,
+    timeout: Duration,
+    max_output_bytes: u64,
+) -> Result<ExecResult, String> {
+    execution
+        .exec_with_environment_refs(
+            program.to_string(),
+            argv,
+            cwd.to_string(),
+            BTreeMap::new(),
+            env_refs,
+            timeout,
+            max_output_bytes,
+        )
+        .await
+        .map_err(|error| {
+            format!(
+                "{} Remote runner operation failed: {error}",
+                INFRASTRUCTURE_FAILURE_PREFIX
+            )
+        })
+}
+
+fn remote_command_diagnostic(output: &ExecResult) -> String {
+    format!(
+        "Exit code: {:?}; signal: {:?}; elapsed: {}ms\nSTDOUT:\n{}\nSTDERR:\n{}{}{}",
+        output.exit_code,
+        output.signal,
+        output.elapsed_ms,
+        output.stdout,
+        output.stderr,
+        if output.stdout_truncated {
+            "\n[remote stdout truncated]"
+        } else {
+            ""
+        },
+        if output.stderr_truncated {
+            "\n[remote stderr truncated]"
+        } else {
+            ""
+        }
+    )
+}
+
+async fn run_domain_validation_remote(
+    execution: &crate::execution::RemoteExecution,
+    model_dir: &str,
+) -> ValidationResult {
+    let started = std::time::Instant::now();
+    let workspace = remote_parent(model_dir);
+    let input = model_dir
+        .rsplit_once('/')
+        .map_or(model_dir, |(_, name)| name)
+        .to_string();
+    let output = match remote_exec(
+        execution,
+        "cargo",
+        vec!["teaql".into(), "--input".into(), input, "evaluate".into()],
+        workspace,
+        BTreeMap::new(),
+        Duration::from_secs(120),
+        512 * 1024,
+    )
+    .await
+    {
+        Ok(output) => output,
+        Err(error) => {
+            return validation::fail(
+                3,
+                "domain",
+                vec![format!(
+                    "{} TeaQL domain validator is unavailable on the SSH runner",
+                    INFRASTRUCTURE_FAILURE_PREFIX
+                )],
+                error,
+                started.elapsed().as_secs_f64(),
+            );
+        }
+    };
+    let combined = format!("{}\n{}", output.stdout, output.stderr);
+    if output.exit_code.is_none() {
+        return validation::fail(
+            3,
+            "domain",
+            vec![format!(
+                "{} Remote TeaQL domain validator ended without an exit code",
+                INFRASTRUCTURE_FAILURE_PREFIX
+            )],
+            remote_command_diagnostic(&output),
+            started.elapsed().as_secs_f64(),
+        );
+    }
+    if output.exit_code != Some(0) && is_infrastructure_diagnostic(&combined) {
+        return validation::fail(
+            3,
+            "domain",
+            vec![format!(
+                "{} TeaQL domain validator is unavailable on the SSH runner",
+                INFRASTRUCTURE_FAILURE_PREFIX
+            )],
+            combined,
+            started.elapsed().as_secs_f64(),
+        );
+    }
+    let mut result = validation::domain::parse_teaql_output(&combined);
+    result.elapsed_secs = started.elapsed().as_secs_f64();
+    if output.exit_code != Some(0) && result.error_count == 0 {
+        result.passed = false;
+        result.error_count = 1;
+        result.actionable_errors.push(format!(
+            "Remote TeaQL evaluate failed with exit code {:?}:\n{}",
+            output.exit_code,
+            bounded_text(combined.trim(), 12_000)
+        ));
+    }
+    result
+}
+
+async fn prepare_remote_workspace_context(
+    execution: &crate::execution::RemoteExecution,
+    build_dir: &str,
+    candidate_files: &[(String, String)],
+    candidate: Option<&str>,
+) -> Result<(), String> {
+    for (name, content) in normalized_candidate_model_files(candidate_files, candidate)? {
+        execution
+            .write_text(
+                remote_join(build_dir, &format!("model/{name}")),
+                strip_markdown_fences(&content),
+                true,
+            )
+            .await
+            .map_err(|error| format!("Failed to copy model `{name}` into remote build: {error}"))?;
+    }
+    let agents_path = remote_join(build_dir, "AGENTS.md");
+    let agents = execution
+        .read_text(agents_path.clone())
+        .await
+        .map_err(|error| format!("Failed to read remote {agents_path}: {error}"))?;
+    let mut normalized = canonicalize_teaql_input_paths(&agents);
+    normalized.push_str(
+        "\n\n## KlintCode Remote Workspace Context\n\n\
+         All agent tools run at this remote workspace root. Use relative paths and never use host filesystem paths.\n\
+         The validated model is `model/main.xml`. Every TeaQL command must use the exact form\n\
+         `cargo teaql --input model/main.xml rust-assist-[action]/[entity-name]`.\n\
+         Complete pre-fetched responses are stored under `.klintcode/assist/`.\n\
+         Deterministic facts are stored in `.klintcode/validation-evidence.json`.\n\
+         Never read, search, or modify generated library source under `lib/src`.\n",
+    );
+    execution
+        .write_text(agents_path, normalized, false)
+        .await
+        .map_err(|error| format!("Failed to update remote AGENTS.md: {error}"))?;
+    Ok(())
+}
+
+fn should_skip_remote_manifest_directory(name: &str) -> bool {
+    matches!(name, "src" | "target" | ".git" | ".klintcode" | "model")
+}
+
+async fn remote_manifest_files(
+    execution: &crate::execution::RemoteExecution,
+    root: &str,
+) -> Result<Vec<String>, String> {
+    let mut directories = vec![root.to_string()];
+    let mut manifests = Vec::new();
+    while let Some(directory) = directories.pop() {
+        let listing = execution
+            .list(directory.clone(), None)
+            .await
+            .map_err(|error| format!("Failed to list remote directory `{directory}`: {error}"))?;
+        if listing.truncated {
+            return Err(format!(
+                "Remote directory listing was truncated for `{directory}`"
+            ));
+        }
+        for entry in listing.entries {
+            let path = remote_join(&directory, &entry.name);
+            match entry.kind {
+                FileKind::Directory if !should_skip_remote_manifest_directory(&entry.name) => {
+                    directories.push(path);
+                }
+                FileKind::File
+                    if matches!(
+                        entry.name.as_str(),
+                        "Cargo.toml" | "pom.xml" | "build.gradle"
+                    ) =>
+                {
+                    manifests.push(path);
+                }
+                FileKind::Symlink => {
+                    return Err(format!(
+                        "Remote manifest discovery encountered a symlink at `{path}`"
+                    ));
+                }
+                _ => {}
+            }
+        }
+    }
+    manifests.sort();
+    Ok(manifests)
+}
+
+async fn apply_remote_manifest_patches(
+    execution: &crate::execution::RemoteExecution,
+    build_dir: &str,
+    patches: Option<&std::collections::HashMap<String, String>>,
+) -> Result<(), String> {
+    let Some(patches) = patches else {
+        return Ok(());
+    };
+    for path in remote_manifest_files(execution, build_dir).await? {
+        let content = execution
+            .read_text(path.clone())
+            .await
+            .map_err(|error| format!("Failed to read remote manifest `{path}`: {error}"))?;
+        let mut fixed = content.clone();
+        for (find, replace) in patches {
+            fixed = fixed.replace(find, replace);
+        }
+        if fixed != content {
+            execution
+                .write_text(path.clone(), fixed, false)
+                .await
+                .map_err(|error| format!("Failed to patch remote manifest `{path}`: {error}"))?;
+        }
+    }
+    Ok(())
+}
+
+async fn normalize_remote_app_manifest(
+    execution: &crate::execution::RemoteExecution,
+    build_dir: &str,
+    build_target: &str,
+) -> Result<(), String> {
+    let path = remote_join(build_dir, "Cargo.toml");
+    let content = execution
+        .read_text(path.clone())
+        .await
+        .map_err(|error| format!("Failed to read remote app manifest: {error}"))?;
+    let old_path = format!(r#"path = "../{build_target}/lib""#);
+    let fixed = ensure_standalone_cargo_workspace(&content.replace(&old_path, r#"path = "./lib""#));
+    if fixed != content {
+        execution
+            .write_text(path, fixed, false)
+            .await
+            .map_err(|error| format!("Failed to write remote app manifest: {error}"))?;
+    }
+    Ok(())
+}
+
+fn remote_agents_context(agents_md: &str) -> String {
+    if agents_md.is_empty() {
+        return String::new();
+    }
+    let mut output = String::new();
+    let mut in_discard = false;
+    for line in agents_md.lines() {
+        if line.trim().starts_with("<!-- DISCARD_BLOCK:") {
+            in_discard = true;
+        } else if line.trim() == "<!-- END_DISCARD_BLOCK -->" {
+            in_discard = false;
+            continue;
+        }
+        if !in_discard {
+            output.push_str(line);
+            output.push('\n');
+        }
+    }
+    format!(
+        "## Workspace Rules (AGENTS.md)\n{}\n\n",
+        bounded_text(&output, 3_000)
+    )
+}
+
+fn render_agentic_system_prompt_remote(template: &str, workspace: &str, assist: &str) -> String {
+    let rendered = template
+        .replace("{{project_dir}}", workspace)
+        .replace("{{#if assist_outputs}}", "")
+        .replace("{{/if}}", "")
+        .replace("{{assist_outputs}}", assist);
+    if let Some(position) = rendered.find("{{") {
+        let remaining = &rendered[position..];
+        let end = remaining
+            .find("}}")
+            .map(|index| index + 2)
+            .unwrap_or(40)
+            .min(remaining.len());
+        panic!(
+            "render_agentic_system_prompt_remote: un-substituted template variable '{}'",
+            &remaining[..end]
+        );
+    }
+    rendered
+}
+
+async fn verify_generated_build_remote(
+    execution: &crate::execution::RemoteExecution,
+    build_dir: &str,
+    build_target: &str,
+) -> Result<String, String> {
+    let (program, argv) = if build_target.starts_with("java") {
+        ("mvn", vec!["compile".into(), "-f".into(), "pom.xml".into()])
+    } else {
+        ("cargo", vec!["check".into()])
+    };
+    let output = remote_exec(
+        execution,
+        program,
+        argv,
+        build_dir,
+        BTreeMap::new(),
+        Duration::from_secs(300),
+        512 * 1024,
+    )
+    .await?;
+    let diagnostic = remote_command_diagnostic(&output);
+    match output.exit_code {
+        Some(0) => Ok(diagnostic),
+        Some(_) => Err(diagnostic),
+        None => Err(format!(
+            "{} Remote build ended without an exit code.\n{diagnostic}",
+            INFRASTRUCTURE_FAILURE_PREFIX
+        )),
+    }
+}
+
+async fn verify_generated_tests_remote(
+    execution: &crate::execution::RemoteExecution,
+    build_dir: &str,
+    build_target: &str,
+    environment_refs: &[String],
+) -> Result<(String, usize), String> {
+    let (program, argv) = if build_target.starts_with("java") {
+        ("mvn", vec!["test".into(), "-f".into(), "pom.xml".into()])
+    } else {
+        (
+            "cargo",
+            vec!["test".into(), "--".into(), "--test-threads=1".into()],
+        )
+    };
+    let output = remote_exec_with_environment_refs(
+        execution,
+        program,
+        argv,
+        build_dir,
+        environment_refs.to_vec(),
+        Duration::from_secs(300),
+        512 * 1024,
+    )
+    .await?;
+    let diagnostic = remote_command_diagnostic(&output);
+    match output.exit_code {
+        Some(0) => {
+            let combined = format!("{}\n{}", output.stdout, output.stderr);
+            Ok((diagnostic, observed_test_count(&combined)))
+        }
+        Some(_) => Err(diagnostic),
+        None => Err(format!(
+            "{} Remote tests ended without an exit code.\n{diagnostic}",
+            INFRASTRUCTURE_FAILURE_PREFIX
+        )),
+    }
+}
+
+fn remote_verification_failure(
+    summary: &str,
+    diagnostic: String,
+    elapsed: f64,
+) -> ValidationResult {
+    if is_infrastructure_diagnostic(&diagnostic) {
+        infrastructure_validation_failure(summary, diagnostic, elapsed)
+    } else {
+        validation::fail(5, "build", vec![summary.to_string()], diagnostic, elapsed)
     }
 }
 
@@ -1957,12 +3740,26 @@ async fn prepare_domain_model_files(
 
 async fn run_domain_validation(model_dir: &Path) -> ValidationResult {
     let started = std::time::Instant::now();
-    let workspace = model_dir.parent().unwrap_or(model_dir);
+    let model_dir = match resolve_domain_model_dir(model_dir) {
+        Ok(path) => path,
+        Err(error) => {
+            return infrastructure_validation_failure(
+                "Failed to resolve TeaQL domain validation input",
+                format!(
+                    "{} Cannot canonicalize model input {}: {error}",
+                    INFRASTRUCTURE_FAILURE_PREFIX,
+                    model_dir.display()
+                ),
+                started.elapsed().as_secs_f64(),
+            );
+        }
+    };
+    let workspace = model_dir.parent().unwrap_or(&model_dir);
     let mut command = tokio::process::Command::new("cargo");
     crate::process_env::apply_safe_environment(&mut command, workspace);
     command
         .args(["teaql", "--input"])
-        .arg(model_dir)
+        .arg(&model_dir)
         .arg("evaluate")
         .current_dir(workspace);
     let output = match crate::process_output::run_bounded_output(
@@ -2008,12 +3805,25 @@ async fn run_domain_validation(model_dir: &Path) -> ValidationResult {
     if !output.status.success() && result.error_count == 0 {
         result.passed = false;
         result.error_count = 1;
-        result.actionable_errors.push(format!(
-            "TeaQL evaluate failed with exit code {:?}",
-            output.status.code()
-        ));
+        let output_detail = combined.trim();
+        result.actionable_errors.push(if output_detail.is_empty() {
+            format!(
+                "TeaQL evaluate failed with exit code {:?} and produced no diagnostic output",
+                output.status.code()
+            )
+        } else {
+            format!(
+                "TeaQL evaluate failed with exit code {:?}:\n{}",
+                output.status.code(),
+                bounded_text(output_detail, 12_000)
+            )
+        });
     }
     result
+}
+
+fn resolve_domain_model_dir(model_dir: &Path) -> std::io::Result<PathBuf> {
+    std::fs::canonicalize(model_dir)
 }
 
 async fn verify_generated_build(build_dir: &Path, build_target: &str) -> Result<String, String> {
@@ -2056,17 +3866,22 @@ async fn verify_followup_outcome(
     before: &crate::followup_acceptance::WorkspaceSnapshot,
     acceptance: Option<&crate::followup_acceptance::FollowUpAcceptanceSpec>,
     build_target: &str,
+    command_environment: &crate::tools::DeclaredCommandEnvironment,
+    artifacts: Option<&RunArtifacts>,
+    attempt: u8,
+    verification_round: usize,
 ) -> Result<String, String> {
     let build_diagnostic = verify_generated_build(workspace, build_target)
         .await
         .map_err(|diagnostic| {
             format!("Independent follow-up build verification failed:\n{diagnostic}")
         })?;
-    let (test_diagnostic, test_count) = verify_generated_tests(workspace, build_target)
-        .await
-        .map_err(|diagnostic| {
-            format!("Independent follow-up test verification failed:\n{diagnostic}")
-        })?;
+    let (test_diagnostic, test_count) =
+        verify_generated_tests_with_environment(workspace, build_target, command_environment)
+            .await
+            .map_err(|diagnostic| {
+                format!("Independent follow-up test verification failed:\n{diagnostic}")
+            })?;
 
     let default_evidence = format!(
         "Independent build and test verification passed ({test_count} tests observed).\n\n{}\n\n{}",
@@ -2079,20 +3894,11 @@ async fn verify_followup_outcome(
         ));
     };
 
-    let report = acceptance.verify(workspace, before).await?;
-    let report_path = workspace.join(".klintcode/followup-acceptance-report.json");
-    if let Some(parent) = report_path.parent() {
-        std::fs::create_dir_all(parent)
-            .map_err(|error| format!("Failed to create follow-up evidence directory: {error}"))?;
-    }
-    let report_content = serde_json::to_vec_pretty(&report)
-        .map_err(|error| format!("Failed to serialize follow-up acceptance report: {error}"))?;
-    std::fs::write(&report_path, report_content).map_err(|error| {
-        format!(
-            "Failed to write follow-up acceptance report {}: {error}",
-            report_path.display()
-        )
-    })?;
+    let report = acceptance
+        .verify_with_environment(workspace, before, command_environment)
+        .await?;
+    persist_followup_acceptance_report(workspace, artifacts, attempt, verification_round, &report)
+        .await?;
 
     if report.passed {
         Ok(format!("{default_evidence}\n\n{}", report.diagnostic()))
@@ -2101,9 +3907,185 @@ async fn verify_followup_outcome(
     }
 }
 
+async fn verify_followup_outcome_remote(
+    execution: &Arc<crate::execution::RemoteExecution>,
+    workspace: &str,
+    before: &crate::followup_acceptance::RemoteWorkspaceSnapshot,
+    acceptance: Option<&crate::followup_acceptance::FollowUpAcceptanceSpec>,
+    build_target: &str,
+    command_environment: &RemoteDeclaredCommandEnvironment,
+    artifacts: Option<&RunArtifacts>,
+    attempt: u8,
+    verification_round: usize,
+) -> Result<String, String> {
+    let build_diagnostic = verify_generated_build_remote(execution, workspace, build_target)
+        .await
+        .map_err(|diagnostic| {
+            format!("Independent remote follow-up build verification failed:\n{diagnostic}")
+        })?;
+    let (test_diagnostic, test_count) = verify_generated_tests_remote(
+        execution,
+        workspace,
+        build_target,
+        &command_environment.cargo_test_refs,
+    )
+    .await
+    .map_err(|diagnostic| {
+        format!("Independent remote follow-up test verification failed:\n{diagnostic}")
+    })?;
+
+    let default_evidence = format!(
+        "Independent remote build and test verification passed ({test_count} tests observed).\n\n{}\n\n{}",
+        bounded_text(&build_diagnostic, 8_000),
+        bounded_text(&test_diagnostic, 8_000)
+    );
+    let Some(acceptance) = acceptance else {
+        return Ok(format!(
+            "{default_evidence}\n\nNo explicit machine acceptance contract was supplied; this yielded result is verified only for remote workspace change, build, and test command success."
+        ));
+    };
+
+    let report = acceptance
+        .verify_remote_with_environment(execution, workspace, before, &command_environment.all_refs)
+        .await?;
+    persist_followup_acceptance_report_remote(
+        execution,
+        workspace,
+        artifacts,
+        attempt,
+        verification_round,
+        &report,
+    )
+    .await?;
+
+    if report.passed {
+        Ok(format!("{default_evidence}\n\n{}", report.diagnostic()))
+    } else {
+        Err(format!("{default_evidence}\n\n{}", report.diagnostic()))
+    }
+}
+
+async fn persist_followup_acceptance_report_remote(
+    execution: &crate::execution::RemoteExecution,
+    workspace: &str,
+    artifacts: Option<&RunArtifacts>,
+    attempt: u8,
+    verification_round: usize,
+    report: &crate::followup_acceptance::FollowUpAcceptanceReport,
+) -> Result<(), String> {
+    let report_content = serde_json::to_string_pretty(report).map_err(|error| {
+        format!(
+            "{} Failed to serialize remote follow-up acceptance report: {error}",
+            INFRASTRUCTURE_FAILURE_PREFIX
+        )
+    })?;
+    execution
+        .write_text(
+            remote_join(workspace, ".klintcode/followup-acceptance-report.json"),
+            report_content.clone(),
+            true,
+        )
+        .await
+        .map_err(|error| {
+            format!(
+                "{} Failed to persist acceptance evidence in the remote workspace: {error}",
+                INFRASTRUCTURE_FAILURE_PREFIX
+            )
+        })?;
+
+    let artifacts = artifacts.ok_or_else(|| {
+        format!(
+            "{} Run artifact store is unavailable; remote acceptance evidence cannot be persisted",
+            INFRASTRUCTURE_FAILURE_PREFIX
+        )
+    })?;
+    let versioned_name = format!("followup-acceptance-report-round-{verification_round:02}.json");
+    artifacts
+        .save_attempt_raw(attempt, &versioned_name, &report_content)
+        .await
+        .map_err(|error| {
+            format!(
+                "{} Failed to persist remote acceptance evidence for attempt {attempt}, verification round {verification_round}: {error}",
+                INFRASTRUCTURE_FAILURE_PREFIX
+            )
+        })?;
+    artifacts
+        .save_attempt_raw(attempt, "followup-acceptance-report.json", &report_content)
+        .await
+        .map_err(|error| {
+            format!(
+                "{} Failed to refresh remote acceptance evidence for attempt {attempt}: {error}",
+                INFRASTRUCTURE_FAILURE_PREFIX
+            )
+        })?;
+    Ok(())
+}
+
+async fn persist_followup_acceptance_report(
+    workspace: &Path,
+    artifacts: Option<&RunArtifacts>,
+    attempt: u8,
+    verification_round: usize,
+    report: &crate::followup_acceptance::FollowUpAcceptanceReport,
+) -> Result<(), String> {
+    let report_path = workspace.join(".klintcode/followup-acceptance-report.json");
+    if let Some(parent) = report_path.parent() {
+        std::fs::create_dir_all(parent)
+            .map_err(|error| format!("Failed to create follow-up evidence directory: {error}"))?;
+    }
+    let report_content = serde_json::to_string_pretty(report)
+        .map_err(|error| format!("Failed to serialize follow-up acceptance report: {error}"))?;
+    std::fs::write(&report_path, &report_content).map_err(|error| {
+        format!(
+            "Failed to write follow-up acceptance report {}: {error}",
+            report_path.display()
+        )
+    })?;
+
+    let artifacts = artifacts.ok_or_else(|| {
+        format!(
+            "{} Run artifact store is unavailable; acceptance evidence cannot be persisted",
+            INFRASTRUCTURE_FAILURE_PREFIX
+        )
+    })?;
+    let versioned_name = format!("followup-acceptance-report-round-{verification_round:02}.json");
+    artifacts
+        .save_attempt_raw(attempt, &versioned_name, &report_content)
+        .await
+        .map_err(|error| {
+            format!(
+                "{} Failed to persist acceptance evidence for attempt {attempt}, verification round {verification_round}: {error}",
+                INFRASTRUCTURE_FAILURE_PREFIX
+            )
+        })?;
+    artifacts
+        .save_attempt_raw(attempt, "followup-acceptance-report.json", &report_content)
+        .await
+        .map_err(|error| {
+            format!(
+                "{} Failed to refresh acceptance evidence for attempt {attempt}: {error}",
+                INFRASTRUCTURE_FAILURE_PREFIX
+            )
+        })?;
+    Ok(())
+}
+
 async fn verify_generated_tests(
     build_dir: &Path,
     build_target: &str,
+) -> Result<(String, usize), String> {
+    verify_generated_tests_with_environment(
+        build_dir,
+        build_target,
+        &crate::tools::DeclaredCommandEnvironment::default(),
+    )
+    .await
+}
+
+async fn verify_generated_tests_with_environment(
+    build_dir: &Path,
+    build_target: &str,
+    command_environment: &crate::tools::DeclaredCommandEnvironment,
 ) -> Result<(String, usize), String> {
     let mut command = if build_target.starts_with("java") {
         let mut command = tokio::process::Command::new("mvn");
@@ -2111,10 +4093,13 @@ async fn verify_generated_tests(
         command
     } else {
         let mut command = tokio::process::Command::new("cargo");
-        command.arg("test");
+        command.args(["test", "--", "--test-threads=1"]);
         command
     };
     crate::process_env::apply_safe_environment(&mut command, build_dir);
+    if !build_target.starts_with("java") {
+        command_environment.apply_to_cargo_test(&mut command);
+    }
     command.current_dir(build_dir);
     let output = crate::process_output::run_bounded_output(
         &mut command,
@@ -2123,12 +4108,12 @@ async fn verify_generated_tests(
     )
     .await
     .map_err(|error| format!("Deterministic test verification failed: {error}"))?;
-    let diagnostic = format!(
+    let diagnostic = command_environment.redact_cargo_test_output(&format!(
         "Exit status: {}\nSTDOUT:\n{}\nSTDERR:\n{}",
         output.status,
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
-    );
+    ));
     if !output.status.success() {
         return Err(diagnostic);
     }
@@ -2409,6 +4394,39 @@ fn walkdir_toml_xml(dir: &Path) -> Vec<PathBuf> {
 
 const REQUIRED_CARGO_TEAQL_VERSION: &str = "2.0.11";
 
+async fn verify_cargo_teaql_version_remote(
+    execution: &crate::execution::RemoteExecution,
+) -> Result<(), String> {
+    let output = remote_exec(
+        execution,
+        "cargo",
+        vec!["teaql".into(), "--version".into()],
+        ".",
+        BTreeMap::new(),
+        Duration::from_secs(10),
+        16 * 1024,
+    )
+    .await?;
+    if output.exit_code != Some(0) {
+        return Err(format!(
+            "remote `cargo teaql --version` failed. {}",
+            remote_command_diagnostic(&output)
+        ));
+    }
+    let observed = parse_cargo_teaql_version(&output.stdout).ok_or_else(|| {
+        format!(
+            "Could not parse remote cargo-teaql version from `{}`; required exactly {REQUIRED_CARGO_TEAQL_VERSION}",
+            bounded_text(output.stdout.trim(), 1_000)
+        )
+    })?;
+    if observed != REQUIRED_CARGO_TEAQL_VERSION {
+        return Err(format!(
+            "remote cargo-teaql version {observed} is installed; required exactly {REQUIRED_CARGO_TEAQL_VERSION}"
+        ));
+    }
+    Ok(())
+}
+
 async fn verify_cargo_teaql_version() -> Result<(), String> {
     let mut command = tokio::process::Command::new("cargo");
     crate::process_env::apply_safe_environment(&mut command, Path::new("."));
@@ -2497,6 +4515,7 @@ pub(crate) fn is_infrastructure_diagnostic(diagnostic: &str) -> bool {
     let normalized = diagnostic.to_ascii_lowercase();
     [
         "[infrastructure]",
+        "infrastructure error (not model-repairable)",
         "internal server error",
         "http 500",
         "http 502",
@@ -2546,7 +4565,11 @@ fn render_agentic_system_prompt(template: &str, workspace: &Path, assist: &str) 
     // renderer is not updated, we want an immediate loud failure instead of a
     // silently broken prompt that is hard to debug.
     if let Some(pos) = rendered.find("{{") {
-        let fragment = &rendered[pos..][..rendered[pos..].find("}}").map(|e| e + 2).unwrap_or(40).min(rendered[pos..].len())];
+        let fragment = &rendered[pos..][..rendered[pos..]
+            .find("}}")
+            .map(|e| e + 2)
+            .unwrap_or(40)
+            .min(rendered[pos..].len())];
         panic!(
             "render_agentic_system_prompt: un-substituted template variable in rendered prompt: '{fragment}'. \
              Add the replacement to this function."
@@ -2570,33 +4593,127 @@ fn missing_followup_environment<'a>(
     missing
 }
 
+struct RemoteDeclaredCommandEnvironment {
+    tool_environment: crate::tools::DeclaredCommandEnvironment,
+    all_refs: std::collections::BTreeSet<String>,
+    cargo_test_refs: Vec<String>,
+}
+
+/// Build a name-only environment selection for the runner. Placeholder values
+/// never reach a remote command; the remote tool adapter forwards only their
+/// keys through `ExecRequest.env_refs`, whose values were fixed at session
+/// attach time.
+fn declared_remote_command_environment<'a>(
+    specs: impl IntoIterator<Item = &'a crate::followup_acceptance::FollowUpAcceptanceSpec>,
+) -> RemoteDeclaredCommandEnvironment {
+    let mut all_names = std::collections::BTreeSet::new();
+    let mut cargo_test_names = std::collections::BTreeSet::new();
+    let mut cargo_run_names = std::collections::BTreeSet::new();
+    for requirement in specs.into_iter().flat_map(|spec| &spec.commands) {
+        all_names.extend(requirement.env_ref.iter().cloned());
+        if requirement.program == crate::followup_acceptance::CommandProgram::Cargo {
+            match requirement.args.first().map(String::as_str) {
+                Some("test") => cargo_test_names.extend(requirement.env_ref.iter().cloned()),
+                Some("run") => cargo_run_names.extend(requirement.env_ref.iter().cloned()),
+                _ => {}
+            }
+        }
+    }
+    let placeholders = |names: &std::collections::BTreeSet<String>| {
+        names
+            .iter()
+            .cloned()
+            .map(|name| (name, String::new()))
+            .collect::<BTreeMap<_, _>>()
+    };
+    RemoteDeclaredCommandEnvironment {
+        tool_environment: crate::tools::DeclaredCommandEnvironment::new_with_all(
+            placeholders(&all_names),
+            placeholders(&cargo_test_names),
+            placeholders(&cargo_run_names),
+        ),
+        all_refs: all_names,
+        cargo_test_refs: cargo_test_names.into_iter().collect(),
+    }
+}
+
+fn declared_followup_command_environment(
+    spec: Option<&crate::followup_acceptance::FollowUpAcceptanceSpec>,
+    sqlite_isolation: &crate::process_env::SqliteDatabaseIsolation,
+) -> Result<crate::tools::DeclaredCommandEnvironment, String> {
+    declared_followup_command_environment_with(spec, sqlite_isolation, |name| {
+        std::env::var(name).ok()
+    })
+}
+
+fn declared_followup_command_environment_with(
+    spec: Option<&crate::followup_acceptance::FollowUpAcceptanceSpec>,
+    sqlite_isolation: &crate::process_env::SqliteDatabaseIsolation,
+    mut lookup: impl FnMut(&str) -> Option<String>,
+) -> Result<crate::tools::DeclaredCommandEnvironment, String> {
+    let Some(spec) = spec else {
+        return Ok(crate::tools::DeclaredCommandEnvironment::default());
+    };
+
+    let mut cargo_test_names = std::collections::BTreeSet::new();
+    let mut cargo_run_names = std::collections::BTreeSet::new();
+    let mut all_names = std::collections::BTreeSet::new();
+    for requirement in &spec.commands {
+        all_names.extend(requirement.env_ref.iter().cloned());
+        if requirement.program != crate::followup_acceptance::CommandProgram::Cargo {
+            continue;
+        }
+        let names = match requirement.args.first().map(String::as_str) {
+            Some("test") => &mut cargo_test_names,
+            Some("run") => &mut cargo_run_names,
+            _ => continue,
+        };
+        names.extend(requirement.env_ref.iter().cloned());
+    }
+
+    let mut missing = Vec::new();
+    let all = all_names
+        .into_iter()
+        .filter_map(|name| match lookup(&name) {
+            Some(value) => Some((name.clone(), sqlite_isolation.isolate_value(&name, &value))),
+            None => {
+                missing.push(name);
+                None
+            }
+        })
+        .collect::<std::collections::BTreeMap<_, _>>();
+    if !missing.is_empty() {
+        missing.sort();
+        missing.dedup();
+        return Err(format!(
+            "Missing or non-Unicode environment variable(s): {}",
+            missing.join(", ")
+        ));
+    }
+
+    let select = |names: std::collections::BTreeSet<String>| {
+        names
+            .into_iter()
+            .filter_map(|name| all.get(&name).cloned().map(|value| (name, value)))
+            .collect::<std::collections::BTreeMap<_, _>>()
+    };
+    let cargo_test = select(cargo_test_names);
+    let cargo_run = select(cargo_run_names);
+
+    Ok(crate::tools::DeclaredCommandEnvironment::new_with_all(
+        all, cargo_test, cargo_run,
+    ))
+}
+
 fn build_followup_prompt(
     workspace: &Path,
     instruction: &str,
     original_task: &str,
-    history: &[FollowUpRecord],
+    history: &[SessionLedgerRecord],
     acceptance: Option<&crate::followup_acceptance::FollowUpAcceptanceSpec>,
 ) -> String {
-    let previous_changes = history
-        .iter()
-        .rev()
-        .take(5)
-        .rev()
-        .map(|record| {
-            format!(
-                "- Attempt {}: {}\n  Result: {}",
-                record.attempt,
-                bounded_text(&record.instruction, 1_000),
-                bounded_text(&record.summary, 2_000)
-            )
-        })
-        .collect::<Vec<_>>()
-        .join("\n");
-    let previous_changes = if previous_changes.is_empty() {
-        "- No previous follow-up changes.".to_string()
-    } else {
-        previous_changes
-    };
+    const FOLLOWUP_HISTORY_BUDGET_BYTES: usize = 6_000;
+    let previous_changes = render_followup_history(history, FOLLOWUP_HISTORY_BUDGET_BYTES);
     let acceptance = acceptance.map_or_else(
         || {
             "No explicit machine acceptance contract was supplied. You must still complete the requested change, run the independent build and test commands, and yield only after both pass. A max-iteration result will be rejected."
@@ -2617,6 +4734,96 @@ fn build_followup_prompt(
         instruction = bounded_text(instruction, 6_000),
         acceptance = bounded_text(&acceptance, 6_000),
     )
+}
+
+fn build_followup_prompt_remote(
+    workspace: &str,
+    instruction: &str,
+    original_task: &str,
+    history: &[SessionLedgerRecord],
+    acceptance: Option<&crate::followup_acceptance::FollowUpAcceptanceSpec>,
+) -> String {
+    const FOLLOWUP_HISTORY_BUDGET_BYTES: usize = 6_000;
+    let previous_changes = render_followup_history(history, FOLLOWUP_HISTORY_BUDGET_BYTES);
+    let acceptance = acceptance.map_or_else(
+        || {
+            "No explicit machine acceptance contract was supplied. You must still complete the requested change, run the independent build and test commands, and yield only after both pass. A max-iteration result will be rejected."
+                .to_string()
+        },
+        crate::followup_acceptance::FollowUpAcceptanceSpec::render_checklist,
+    );
+
+    format!(
+        "You are already operating at the remote workspace root `{workspace}`. Do not `cd` to this path and do not prefix tool paths with it; use `.` for the root. The validated TeaQL model is `model/main.xml`, and complete cached assist responses are under `.klintcode/assist/`. All project files and commands are authoritative only in the attached runner session.\n\n\
+         # Original Task\n{original_task}\n\n\
+         # Previously Verified Follow-ups\n{previous_changes}\n\n\
+         # Current Follow-up\n{instruction}\n\n\
+         # Machine Acceptance\n{acceptance}\n\n\
+         Inspect only the application code and workspace configuration and apply the requested changes using write_file/run_command. Compilation alone does not complete this follow-up. Run every required build, test, runtime, and artifact check. Respond with a concise summary only after the full acceptance checklist passes; otherwise keep fixing the remote application workspace.",
+        original_task = bounded_text(original_task, 6_000),
+        instruction = bounded_text(instruction, 6_000),
+        acceptance = bounded_text(&acceptance, 6_000),
+    )
+}
+
+/// Render every verified follow-up as one compact line under a fixed budget.
+///
+/// The attempt counter is a `u8`, so even the maximum possible history leaves
+/// enough room for every line's stable identifier. Remaining bytes are shared
+/// across all instructions and summaries instead of dropping older turns.
+fn render_followup_history(history: &[SessionLedgerRecord], max_bytes: usize) -> String {
+    if history.is_empty() {
+        return "- No previous follow-up changes.".to_string();
+    }
+
+    let fixed_bytes = history
+        .iter()
+        .map(|record| format!("- A{}:  => ", record.attempt).len())
+        .sum::<usize>()
+        + history.len().saturating_sub(1);
+    debug_assert!(
+        fixed_bytes <= max_bytes,
+        "follow-up identifiers must fit inside the history budget"
+    );
+    let shared_bytes = max_bytes.saturating_sub(fixed_bytes);
+    let bytes_per_record = shared_bytes / history.len();
+    let extra_bytes = shared_bytes % history.len();
+
+    history
+        .iter()
+        .enumerate()
+        .map(|(index, record)| {
+            let content_budget = bytes_per_record + usize::from(index < extra_bytes);
+            let instruction_budget = content_budget / 3;
+            let summary_budget = content_budget.saturating_sub(instruction_budget);
+            format!(
+                "- A{}: {} => {}",
+                record.attempt,
+                bounded_inline(&record.instruction, instruction_budget),
+                bounded_inline(&record.summary, summary_budget)
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn bounded_inline(text: &str, max_bytes: usize) -> String {
+    let compact = text.split_whitespace().collect::<Vec<_>>().join(" ");
+    if compact.len() <= max_bytes {
+        return compact;
+    }
+    if max_bytes == 0 {
+        return String::new();
+    }
+    const ELLIPSIS: &str = "…";
+    if max_bytes < ELLIPSIS.len() {
+        return ".".repeat(max_bytes);
+    }
+    let mut boundary = max_bytes - ELLIPSIS.len();
+    while boundary > 0 && !compact.is_char_boundary(boundary) {
+        boundary -= 1;
+    }
+    format!("{}{}", &compact[..boundary], ELLIPSIS)
 }
 
 /// Strip markdown code fences from LLM output (e.g. ```xml ... ```)
@@ -2797,6 +5004,157 @@ mod tests {
     }
 
     #[test]
+    fn followup_acceptance_contract_is_retained_until_deterministic_success() {
+        let first = crate::followup_acceptance::FollowUpAcceptanceSpec::parse_json(&format!(
+            r#"{{"schema":"{}","files":[{{"path":"src/first.rs","contains":["FIRST_CONTRACT"]}}]}}"#,
+            crate::followup_acceptance::FOLLOWUP_ACCEPTANCE_SCHEMA
+        ))
+        .unwrap();
+        let second = crate::followup_acceptance::FollowUpAcceptanceSpec::parse_json(&format!(
+            r#"{{"schema":"{}","files":[{{"path":"src/second.rs","contains":["SECOND_CONTRACT"]}}]}}"#,
+            crate::followup_acceptance::FOLLOWUP_ACCEPTANCE_SCHEMA
+        ))
+        .unwrap();
+        let mut executor = test_executor();
+        executor.set_followup_acceptance_specs(vec![first.clone(), second.clone()]);
+
+        assert_eq!(
+            executor.current_followup_acceptance_spec(),
+            Some(first.clone())
+        );
+        executor.settle_followup_acceptance_spec(false);
+        assert_eq!(
+            executor.current_followup_acceptance_spec(),
+            Some(first),
+            "infrastructure and verification failures must retain the current contract for retry"
+        );
+
+        executor.settle_followup_acceptance_spec(true);
+        assert_eq!(
+            executor.current_followup_acceptance_spec(),
+            Some(second),
+            "only deterministic success may advance the contract queue"
+        );
+    }
+
+    #[test]
+    fn legacy_session_ledger_defaults_new_metrics_without_parsing_summary() {
+        let legacy = r#"[{"attempt":2,"instruction":"continue","summary":"free-form text"}]"#;
+        let records: Vec<SessionLedgerRecord> = serde_json::from_str(legacy).unwrap();
+
+        assert_eq!(records.len(), 1);
+        assert_eq!(records[0].phase, SessionRecordPhase::FollowUp);
+        assert_eq!(records[0].verification_rounds, 0);
+        assert_eq!(records[0].model_iterations, 0);
+        assert_eq!(records[0].tool_calls, 0);
+        assert_eq!(records[0].elapsed_secs, 0.0);
+    }
+
+    #[tokio::test]
+    async fn structured_session_ledger_is_cumulative_and_retry_safe() {
+        let test_root = tempfile::tempdir().unwrap();
+        let artifacts = RunArtifacts::create(test_root.path(), "metrics-run")
+            .await
+            .unwrap();
+        let mut executor = test_executor();
+        executor.artifacts = Some(artifacts);
+
+        let first = SessionLedgerRecord {
+            phase: SessionRecordPhase::InitialBuild,
+            attempt: 1,
+            instruction: "initial".to_string(),
+            summary: "passed".to_string(),
+            verification_rounds: 1,
+            model_iterations: 4,
+            tool_calls: 7,
+            elapsed_secs: 2.5,
+        };
+        executor
+            .persist_session_record(first.clone())
+            .await
+            .unwrap();
+        let followup = SessionLedgerRecord {
+            phase: SessionRecordPhase::FollowUp,
+            attempt: 2,
+            instruction: "change".to_string(),
+            summary: "passed".to_string(),
+            verification_rounds: 2,
+            model_iterations: 13,
+            tool_calls: 21,
+            elapsed_secs: 8.75,
+        };
+        executor
+            .persist_session_record(followup.clone())
+            .await
+            .unwrap();
+        let mut retried = followup;
+        retried.verification_rounds = 3;
+        retried.model_iterations = 19;
+        executor
+            .persist_session_record(retried.clone())
+            .await
+            .unwrap();
+
+        let ledger_path = test_root
+            .path()
+            .join("metrics-run/attempt-02/session-ledger.json");
+        let records: Vec<SessionLedgerRecord> =
+            serde_json::from_str(&std::fs::read_to_string(ledger_path).unwrap()).unwrap();
+        assert_eq!(records, vec![first, retried]);
+    }
+
+    #[tokio::test]
+    async fn acceptance_reports_keep_each_verification_round() {
+        let test_root = tempfile::tempdir().unwrap();
+        let artifacts = RunArtifacts::create(test_root.path(), "evidence-run")
+            .await
+            .unwrap();
+        let workspace = test_root.path().join("workspace");
+        std::fs::create_dir_all(&workspace).unwrap();
+        let first = crate::followup_acceptance::FollowUpAcceptanceReport {
+            schema: crate::followup_acceptance::FOLLOWUP_ACCEPTANCE_SCHEMA.to_string(),
+            passed: false,
+            checks: vec![],
+        };
+        let second = crate::followup_acceptance::FollowUpAcceptanceReport {
+            schema: crate::followup_acceptance::FOLLOWUP_ACCEPTANCE_SCHEMA.to_string(),
+            passed: true,
+            checks: vec![],
+        };
+
+        persist_followup_acceptance_report(&workspace, Some(&artifacts), 2, 1, &first)
+            .await
+            .unwrap();
+        persist_followup_acceptance_report(&workspace, Some(&artifacts), 2, 2, &second)
+            .await
+            .unwrap();
+
+        let attempt = test_root.path().join("evidence-run/attempt-02");
+        let round_one: crate::followup_acceptance::FollowUpAcceptanceReport = serde_json::from_str(
+            &std::fs::read_to_string(attempt.join("followup-acceptance-report-round-01.json"))
+                .unwrap(),
+        )
+        .unwrap();
+        let round_two: crate::followup_acceptance::FollowUpAcceptanceReport = serde_json::from_str(
+            &std::fs::read_to_string(attempt.join("followup-acceptance-report-round-02.json"))
+                .unwrap(),
+        )
+        .unwrap();
+        let latest: crate::followup_acceptance::FollowUpAcceptanceReport = serde_json::from_str(
+            &std::fs::read_to_string(attempt.join("followup-acceptance-report.json")).unwrap(),
+        )
+        .unwrap();
+        assert!(!round_one.passed);
+        assert!(round_two.passed);
+        assert_eq!(latest, second);
+        assert!(
+            workspace
+                .join(".klintcode/followup-acceptance-report.json")
+                .is_file()
+        );
+    }
+
+    #[test]
     fn followups_reuse_the_recorded_generated_workspace() {
         let mut executor = test_executor();
         assert!(executor.followup_workspace().is_err());
@@ -2812,6 +5170,24 @@ mod tests {
         assert_eq!(executor.followup_workspace().unwrap(), workspace);
 
         std::fs::remove_dir_all(workspace).expect("remove test workspace");
+    }
+
+    #[test]
+    fn remote_workspace_selection_fails_closed_instead_of_using_legacy_local_state() {
+        let legacy = Path::new("/tmp/legacy-workspace-must-not-run");
+        let error = require_authoritative_remote_workspace(None, Some(legacy)).unwrap_err();
+
+        assert!(error.contains(INFRASTRUCTURE_FAILURE_PREFIX));
+        assert!(error.contains("local fallback is forbidden"));
+        assert_eq!(
+            require_authoritative_remote_workspace(Some("attempt-01/build"), Some(legacy),)
+                .unwrap(),
+            "attempt-01/build"
+        );
+        assert!(
+            require_authoritative_remote_workspace(Some("/local/absolute/path"), None).is_err(),
+            "runner cwd must remain logical and relative"
+        );
     }
 
     #[tokio::test]
@@ -2837,10 +5213,15 @@ mod tests {
 
     #[test]
     fn followup_prompt_carries_original_intent_and_bounded_history() {
-        let history = vec![FollowUpRecord {
+        let history = vec![SessionLedgerRecord {
+            phase: SessionRecordPhase::FollowUp,
             attempt: 2,
             instruction: "add a query".to_string(),
             summary: "implemented the query".to_string(),
+            verification_rounds: 1,
+            model_iterations: 3,
+            tool_calls: 4,
+            elapsed_secs: 1.25,
         }];
 
         let prompt = build_followup_prompt(
@@ -2857,6 +5238,49 @@ mod tests {
         assert!(prompt.contains("[context truncated]"));
         assert!(prompt.contains("Compilation alone"));
         assert!(prompt.len() < 16_000);
+    }
+
+    #[test]
+    fn seventh_followup_prompt_retains_all_six_prior_turns_within_history_budget() {
+        let history = (1_u8..=6)
+            .map(|ordinal| SessionLedgerRecord {
+                phase: SessionRecordPhase::FollowUp,
+                attempt: ordinal + 1,
+                instruction: format!(
+                    "TURN_{ordinal}_REQUEST {}",
+                    "long request details\n".repeat(300)
+                ),
+                summary: format!(
+                    "TURN_{ordinal}_RESULT {}",
+                    "long verified result details\n".repeat(300)
+                ),
+                verification_rounds: 1,
+                model_iterations: 2,
+                tool_calls: 3,
+                elapsed_secs: 1.0,
+            })
+            .collect::<Vec<_>>();
+
+        let rendered = render_followup_history(&history, 6_000);
+        assert!(rendered.len() <= 6_000);
+        assert_eq!(rendered.lines().count(), 6);
+        for ordinal in 1_u8..=6 {
+            assert!(rendered.contains(&format!("- A{}:", ordinal + 1)));
+            assert!(rendered.contains(&format!("TURN_{ordinal}_REQUEST")));
+            assert!(rendered.contains(&format!("TURN_{ordinal}_RESULT")));
+        }
+
+        let prompt = build_followup_prompt(
+            Path::new("/workspace/build"),
+            "perform the seventh follow-up",
+            "build a school service",
+            &history,
+            None,
+        );
+        for ordinal in 1_u8..=6 {
+            assert!(prompt.contains(&format!("TURN_{ordinal}_REQUEST")));
+            assert!(prompt.contains(&format!("TURN_{ordinal}_RESULT")));
+        }
     }
 
     #[test]
@@ -2926,6 +5350,150 @@ mod tests {
         assert_eq!(
             missing_followup_environment(std::iter::once(&spec)),
             vec!["KLINTCODE_DEFINITELY_MISSING_ENV_91827"]
+        );
+    }
+
+    #[test]
+    fn missing_followup_environment_checks_non_agent_commands_too() {
+        let spec = crate::followup_acceptance::FollowUpAcceptanceSpec::parse_json(&format!(
+            r#"{{"schema":"{}","commands":[{{"program":"mvn","args":["test"],"env_ref":["KLINTCODE_DEFINITELY_MISSING_MAVEN_ENV_91827"]}}]}}"#,
+            crate::followup_acceptance::FOLLOWUP_ACCEPTANCE_SCHEMA
+        ))
+        .unwrap();
+
+        assert_eq!(
+            missing_followup_environment(std::iter::once(&spec)),
+            vec!["KLINTCODE_DEFINITELY_MISSING_MAVEN_ENV_91827"]
+        );
+    }
+
+    #[test]
+    fn typed_followup_environment_resolves_names_without_exposing_values() {
+        let spec = crate::followup_acceptance::FollowUpAcceptanceSpec::parse_json(&format!(
+            r#"{{"schema":"{}","commands":[{{"program":"cargo","args":["test"],"env_ref":["KLINTCODE_TEST_DATABASE_URL"]}},{{"program":"cargo","args":["run"],"env_ref":["KLINTCODE_RUN_DATABASE_URL"]}}]}}"#,
+            crate::followup_acceptance::FOLLOWUP_ACCEPTANCE_SCHEMA
+        ))
+        .unwrap();
+        let isolation = crate::process_env::SqliteDatabaseIsolation::new().unwrap();
+        let environment =
+            declared_followup_command_environment_with(Some(&spec), &isolation, |name| {
+                Some(format!("opaque-value-for-{name}"))
+            })
+            .unwrap();
+        let debug = format!("{environment:?}");
+
+        assert!(debug.contains("KLINTCODE_TEST_DATABASE_URL"));
+        assert!(debug.contains("KLINTCODE_RUN_DATABASE_URL"));
+        assert!(!debug.contains("opaque-value"));
+    }
+
+    #[test]
+    fn remote_followup_environment_is_name_only_and_ignores_local_values() {
+        let spec = crate::followup_acceptance::FollowUpAcceptanceSpec::parse_json(&format!(
+            r#"{{"schema":"{}","commands":[{{"program":"cargo","args":["test"],"env_ref":["PATH"]}}]}}"#,
+            crate::followup_acceptance::FOLLOWUP_ACCEPTANCE_SCHEMA
+        ))
+        .unwrap();
+        let environment = declared_remote_command_environment(std::iter::once(&spec));
+
+        assert!(environment.all_refs.contains("PATH"));
+        assert_eq!(environment.cargo_test_refs, vec!["PATH"]);
+        assert_eq!(
+            environment
+                .tool_environment
+                .values_for_names(&["PATH".to_string()])
+                .unwrap()["PATH"],
+            "",
+            "the controller's PATH value must never cross into a remote request"
+        );
+    }
+
+    #[test]
+    fn sqlite_followup_environment_is_stable_per_executor_and_not_shared() {
+        const NAME: &str = "KLINTCODE_SHARED_DATABASE_URL";
+        let spec = crate::followup_acceptance::FollowUpAcceptanceSpec::parse_json(&format!(
+            r#"{{"schema":"{}","commands":[{{"program":"cargo","args":["test"],"env_ref":["{NAME}"]}},{{"program":"cargo","args":["run"],"env_ref":["{NAME}"]}}]}}"#,
+            crate::followup_acceptance::FOLLOWUP_ACCEPTANCE_SCHEMA
+        ))
+        .unwrap();
+        let isolation = crate::process_env::SqliteDatabaseIsolation::new().unwrap();
+        let resolve = |isolation| {
+            declared_followup_command_environment_with(Some(&spec), isolation, |_| {
+                Some("sqlite://caller-shared.db?mode=ro".to_string())
+            })
+            .unwrap()
+            .values_for_names(&[NAME.to_string()])
+            .unwrap()[NAME]
+                .clone()
+        };
+
+        let first = resolve(&isolation);
+        let retry = resolve(&isolation);
+        let other = resolve(&crate::process_env::SqliteDatabaseIsolation::new().unwrap());
+
+        assert_eq!(first, retry);
+        assert_ne!(first, other);
+        assert!(first.starts_with("sqlite:///"));
+        assert!(!first.contains("caller-shared.db"));
+        assert!(!first.contains("mode=ro"));
+    }
+
+    #[tokio::test]
+    async fn deterministic_followup_tests_receive_declared_environment_and_redact_it() {
+        const NAME: &str = "KLINTCODE_VERIFY_DATABASE_URL";
+        const VALUE: &str = "sqlite://opaque-verifier-runtime.db";
+
+        let workspace = tempfile::tempdir().expect("temporary workspace");
+        std::fs::create_dir_all(workspace.path().join("src")).unwrap();
+        std::fs::write(
+            workspace.path().join("Cargo.toml"),
+            "[package]\nname = \"verify-env-smoke\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[workspace]\n",
+        )
+        .unwrap();
+        std::fs::write(
+            workspace.path().join("src/lib.rs"),
+            format!(
+                r#"#[test]
+fn declared_runtime_is_available() {{
+    assert_eq!(std::env::var("{NAME}").as_deref(), Ok("{VALUE}"));
+    assert!(std::env::var("MIMO_API_KEY").is_err());
+    println!("verifier-runtime={{}}", std::env::var("{NAME}").unwrap());
+}}
+"#
+            ),
+        )
+        .unwrap();
+        std::fs::write(
+            workspace.path().join("build.rs"),
+            format!(
+                r#"fn main() {{
+    println!("cargo:rerun-if-env-changed={NAME}");
+    println!("cargo:warning=verifier-runtime={{}}", std::env::var("{NAME}").unwrap());
+}}
+"#
+            ),
+        )
+        .unwrap();
+        let environment = crate::tools::DeclaredCommandEnvironment::new(
+            std::collections::BTreeMap::from([(NAME.to_string(), VALUE.to_string())]),
+            std::collections::BTreeMap::new(),
+        );
+
+        let (diagnostic, _observed) = verify_generated_tests_with_environment(
+            workspace.path(),
+            "rust-lib-core",
+            &environment,
+        )
+        .await
+        .expect("declared environment should reach deterministic cargo test");
+
+        assert!(diagnostic.contains(&format!("[REDACTED:{NAME}]")));
+        assert!(!diagnostic.contains(VALUE));
+        assert!(
+            verify_generated_tests(workspace.path(), "rust-lib-core")
+                .await
+                .is_err(),
+            "the default initial/no-contract verifier must not inherit follow-up runtime inputs"
         );
     }
 
@@ -3061,6 +5629,25 @@ mod tests {
         let spec = crate::followup_acceptance::FollowUpAcceptanceSpec::parse_json(&json)
             .expect("valid spec");
         let requires_change = spec.files.iter().any(|f| f.must_change);
-        assert!(!requires_change, "read-only spec should not require workspace modification");
+        assert!(
+            !requires_change,
+            "read-only spec should not require workspace modification"
+        );
+    }
+
+    #[test]
+    fn domain_validation_resolves_relative_model_input_before_changing_directory() {
+        let current = std::env::current_dir().expect("current directory");
+        let attempt = tempfile::tempdir_in(&current).expect("attempt directory");
+        let model = attempt.path().join("model");
+        std::fs::create_dir(&model).expect("model directory");
+        let relative = model
+            .strip_prefix(&current)
+            .expect("model beneath current directory");
+
+        let resolved = resolve_domain_model_dir(relative).expect("resolve relative model input");
+
+        assert!(resolved.is_absolute());
+        assert_eq!(resolved, std::fs::canonicalize(model).unwrap());
     }
 }

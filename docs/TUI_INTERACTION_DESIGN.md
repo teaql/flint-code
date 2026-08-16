@@ -1,9 +1,9 @@
-# KlintCode TUI 人机交互设计
+# FlintCode TUI Legacy 人机交互设计
 
 ## 1. 文档目的
 
-本文档定义 KlintCode 交互式 TUI 的产品与交互基线。设计参考了
-OpenCode 等 Coding Agent 的优点，但针对 KlintCode 的特点做了调整：
+本文档记录 FlintCode TUI Legacy 的维护基线。它不再是主要 Agent 入口；新的
+Agent 体验由各 Agent adapter 提供，而此 TUI 仅保留观察、兼容和回归用途。
 
 - 完全离线、面向隔离网络环境；
 - 使用 64K–128K 上下文窗口的本地模型；
@@ -40,7 +40,7 @@ TUI 应持续、明确地回答用户以下问题：
 
 ### 2.4 验证过程可见
 
-KlintCode 的核心价值是确定性验证。L1–L8 的执行状态、失败原因、修复次数和最终
+FlintCode 的核心价值是确定性验证。L1–L8 的执行状态、失败原因、修复次数和最终
 结论不能隐藏在日志中。
 
 ### 2.5 复杂内容结构化渲染
@@ -53,13 +53,42 @@ KlintCode 的核心价值是确定性验证。L1–L8 的执行状态、失败�
 框架限制、TeaQL 规则、工作区边界和命令权限必须在工具执行或文件落盘前检查。
 最终输出还需要再次检查，防止流式生成或跨步骤操作绕过规则。
 
+### 2.7 项目执行面固定为 SSH Runner
+
+TUI 启动时必须传入 `--execution-config`，可用 `--execution-target` 选择命名目标，
+也可用 `--resume-session` 重新连接一个已存在的耐久会话。配置解析、目标选择或 SSH
+握手失败都属于基础设施错误：当前任务立即停止，不允许回退到本机执行项目命令。
+
+一个任务的建模、代码生成、文件读写、TeaQL 命令、编译、测试和所有 follow-up
+共用同一个远程 Runner session 与工作区。模型 API 和本机 TUI 日志不属于项目执行面；
+最终报告在本机只保存远程 target、session、workspace 与摘要清单，不把远程工作区
+伪装成本地目录。
+
+`/new` 只允许在当前操作停止后执行：它先中止并回收 executor worker，再 detach
+当前 SSH transport，然后为下一条任务准备一个新 session。退出 TUI 采用相同顺序。
+detach 不删除远程耐久会话，界面必须显示 session ID，用户之后可显式使用
+`--resume-session` 恢复。普通后续输入不得创建新 session，而应复用已有 executor。
+
+```bash
+cargo run -p flintcode-tui-legacy -- \
+  --profile profiles/mimo-v2.5-pro.toml \
+  --execution-config /path/to/remote-execution.toml \
+  --execution-target ca-mini
+
+# 恢复已有远程工作区；不会在 attach 失败时偷偷创建替代 session。
+cargo run -p flintcode-tui-legacy -- \
+  --profile profiles/mimo-v2.5-pro.toml \
+  --execution-config /path/to/remote-execution.toml \
+  --resume-session SESSION_ID
+```
+
 ## 3. 主界面
 
 默认主界面采用内容流优先的极简布局。统计组件不常驻，不使用边框切割整个画面：
 
 ```text
- KlintCode  coding agent                              ┌───────────────┐
- local-model · /workspace                            │ ● GENERATING  │
+ FlintCode TUI Legacy                                 ┌───────────────┐
+ local-model · SSH ca-mini · session 7b91c204        │ ● GENERATING  │
                                                      │ Plan 2/6      │
  ❯ 用户消息                                          │ 生成领域模型  │
                                                      └───────────────┘
@@ -92,15 +121,20 @@ KlintCode 的核心价值是确定性验证。L1–L8 的执行状态、失败�
 计划、Validation、Context 和 Token 统一放入独立统计界面，通过 `/stats`
 打开，通过 `/main` 返回。发送普通任务和切换画面使用同一个命令输入区。
 
-交互输入必须在创建 Run 之前完成路由：
+TUI 使用显式任务会话，不根据“修复”“解释”“Rust”等词语猜测用户意图：
 
-- 模型名称、Endpoint 和服务健康状态从本地配置直接回答；
-- 普通问题使用轻量 Klint 问答，不创建计划、Artifact 或 TeaQL 验证任务；
-- 只有带明确执行动作的开发请求进入完整计划和验证流水线；
-- `/task <request>` 强制进入任务流水线，`/ask <question>` 强制进入轻量问答。
+- 启动时默认处于 `Attached`，第一条普通输入创建任务；
+- 当前 Run 完成、失败或取消后，后续普通输入仍属于同一任务，并复用工作区；
+- `/ask <question>` 与 `/chat <question>` 执行一次轻量问答，但不改变会话状态；
+- `/done` 明确切换到 `Detached`；任务仍在执行时拒绝退出，并提示用户先取消；
+- `Detached` 下普通输入是轻量问答，使用 `/new` 创建干净的 `Attached` 会话；
+- `/new` 清除旧 Run，保留整个 TUI 的对话与全局 Token 统计；
+- `/new` 同时 detach 旧 SSH transport；下一条开发任务创建新的远程 session；
+- `/task <request>` 保持兼容，在任何非执行状态下重新 `Attached`；目录参数仍加载
+  `task.md` 及 acceptance sidecar。
 
-轻量问答时主界面不继续展示上一个任务的计划；历史计划、验证和 Tool 信息仍可
-通过 `/stats` 查看。
+`Detached` 时主界面不继续展示上一个任务的计划；历史对话仍保留。一次性的
+`/ask` 不会隐藏当前计划，也不会使下一条普通输入脱离任务。
 
 Stats 页面沿用主界面的轻量视觉语言：组件之间只画横向分隔线，不画左右边框
 或贯穿页面的竖线。宽屏双栏之间保留三格空白沟槽，以留白形成竖向分区。
@@ -442,7 +476,7 @@ Context 31.8K/48K · ↑84K ↓7.2K
 [允许一次] [本任务允许] [拒绝]
 ```
 
-### 8.2 KlintCode 验证流水线
+### 8.2 FlintCode 验证流水线
 
 L1–L8 应作为专用 Progress/Timeline 组件呈现：
 
@@ -615,7 +649,7 @@ Chart 必须可以切换为 Table，以便查看精确数据和兼容低能力�
 
 不能只检查最终回复。安装被禁止依赖、修改生成目录等行为必须在工具执行前阻止。
 
-### 10.2 KlintCode 强制规则
+### 10.2 FlintCode 强制规则
 
 至少内置以下不可绕过规则：
 
@@ -768,7 +802,7 @@ teaql.query-requires-purpose · 计划 4/6 · 已自动修复
 - 保存计划版本、规则命中、验证报告、Chart/Table 原始数据和导出文件；
 - 支持从 UI 结果定位到可复现 Artifact。
 
-### `apps/klintcode-tui`
+### `apps/flintcode-tui-legacy`
 
 - 只消费结构化状态与事件；
 - 实现 Plan、Context、Token、Validation 和 Rich Block Widget；
@@ -823,6 +857,9 @@ teaql.query-requires-purpose · 计划 4/6 · 已自动修复
 
 核心交互达到以下标准，才可认为 TUI 基线完整：
 
+- 缺少 `--execution-config` 时 TUI 拒绝启动，SSH/Runner 基础设施失败时停止任务；
+- 首次任务 create、`--resume-session` attach、普通 follow-up 复用和 `/new` detach
+  都能从 session ID 追踪，任何路径都不会执行本地项目命令；
 - 用户无需阅读聊天历史即可知道当前目标、步骤和下一步；
 - 等待用户时，界面不再表现为 Agent 运行中；
 - 用户可以解释当前 Context 的主要组成和剩余预算；

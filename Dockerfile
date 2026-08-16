@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy binaries from builder
-COPY --from=builder /app/target/release/klintcode-tui /usr/local/bin/
+COPY --from=builder /app/target/release/flintcode-tui-legacy /usr/local/bin/
 COPY --from=builder /app/target/release/klintcode-cli /usr/local/bin/
 
 # Copy skills and profiles
@@ -44,4 +44,4 @@ VOLUME ["/workspace"]
 
 # Default entrypoint to the TUI.
 # Users can run the CLI directly with `docker run ... klintcode-cli ...`
-ENTRYPOINT ["klintcode-tui", "--profile", "/app/profiles/docker.toml"]
+ENTRYPOINT ["flintcode-tui-legacy", "--profile", "/app/profiles/docker.toml"]

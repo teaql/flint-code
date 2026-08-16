@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch KlintCode TUI (interactive terminal interface)
+# Launch FlintCode TUI Legacy (maintenance-only terminal interface)
 #
 # Usage:
 #   ./start-tui.sh                          # default profile
@@ -10,4 +10,4 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-cargo run --release -p klintcode-tui -- "$@"
+cargo run --release -p flintcode-tui-legacy -- "$@"

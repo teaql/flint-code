@@ -1,0 +1,14 @@
+[package]
+name = "agent-bridge-core"
+description = "Agent-independent JSONL bridge to the FlintCode SSH Runner"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+execution-policy = { workspace = true }
+tool-runner = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+thiserror = { workspace = true }

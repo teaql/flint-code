@@ -493,17 +493,29 @@ pub fn reduce(state: &mut RunState, event: RunEvent) -> SideEffect {
             SideEffect::None
         }
 
-        // ── Terminal Completed → Resume the existing workspace ──
-        (PipelineState::Completed, RunEvent::ContinueTask(task)) => {
+        // ── Resumable terminal state → Resume the existing workspace ──
+        // Failures and cancellation remain terminal until a client emits ContinueTask for
+        // explicit new user input. In particular, infrastructure failures never retry here.
+        (
+            PipelineState::Completed | PipelineState::Failed { .. } | PipelineState::Cancelled,
+            RunEvent::ContinueTask(task),
+        ) => {
             info!("Resuming workspace with follow-up task");
+            let Some(next) = state.current_attempt.checked_add(1) else {
+                let error =
+                    "Cannot continue task: follow-up attempt counter is exhausted".to_string();
+                state.state = PipelineState::Failed {
+                    error: error.clone(),
+                };
+                return SideEffect::RecordFailure { error };
+            };
             // Add a new plan step
             state.plan.push(crate::shared::PlanStep {
-                id: format!("follow_up_{}", state.current_attempt + 1),
+                id: format!("follow_up_{next}"),
                 title: "Follow-up Task".to_string(),
                 status: PlanStepStatus::Pending,
                 detail: None,
             });
-            let next = state.current_attempt + 1;
             state.current_attempt = next;
             state.state = PipelineState::FollowUpValidation { attempt: next };
             state.start_stage(format!("followup_{next}"));
@@ -893,6 +905,79 @@ mod tests {
             run.current_plan_step().map(|(_, step)| step.id.as_str()),
             Some("follow_up_2")
         );
+    }
+
+    #[test]
+    fn failed_run_requires_explicit_input_before_follow_up() {
+        let mut run = new_run();
+        run.state = PipelineState::FollowUpValidation { attempt: 2 };
+        run.current_attempt = 2;
+
+        let failure = AgentError::InfrastructureError {
+            detail: "model endpoint unavailable".to_string(),
+        };
+        let effect = reduce(&mut run, RunEvent::Failed(failure));
+
+        assert!(matches!(effect, SideEffect::RecordFailure { .. }));
+        assert!(matches!(run.state, PipelineState::Failed { .. }));
+        assert_eq!(run.current_attempt, 2);
+
+        let effect = reduce(
+            &mut run,
+            RunEvent::ContinueTask("retry the school registration change".to_string()),
+        );
+
+        assert!(matches!(
+            effect,
+            SideEffect::RunFollowUp { ref task, attempt: 3 }
+                if task == "retry the school registration change"
+        ));
+        assert_eq!(run.state, PipelineState::FollowUpValidation { attempt: 3 });
+        assert_eq!(run.current_attempt, 3);
+    }
+
+    #[test]
+    fn cancelled_run_resumes_only_with_new_user_input() {
+        let mut run = new_run();
+        run.state = PipelineState::FollowUpValidation { attempt: 2 };
+        run.current_attempt = 2;
+
+        let effect = reduce(&mut run, RunEvent::CancelRequested);
+
+        assert!(matches!(effect, SideEffect::None));
+        assert_eq!(run.state, PipelineState::Cancelled);
+        assert_eq!(run.current_attempt, 2);
+
+        let effect = reduce(
+            &mut run,
+            RunEvent::ContinueTask("change the school address".to_string()),
+        );
+
+        assert!(matches!(
+            effect,
+            SideEffect::RunFollowUp { ref task, attempt: 3 }
+                if task == "change the school address"
+        ));
+        assert_eq!(run.state, PipelineState::FollowUpValidation { attempt: 3 });
+        assert_eq!(run.current_attempt, 3);
+    }
+
+    #[test]
+    fn exhausted_follow_up_counter_fails_explicitly_without_overflow() {
+        let mut run = new_run();
+        run.state = PipelineState::Completed;
+        run.current_attempt = u8::MAX;
+
+        let effect = reduce(
+            &mut run,
+            RunEvent::ContinueTask("one task too many".to_string()),
+        );
+
+        assert!(matches!(effect, SideEffect::RecordFailure { ref error }
+            if error.contains("counter is exhausted")));
+        assert!(matches!(run.state, PipelineState::Failed { ref error }
+            if error.contains("counter is exhausted")));
+        assert_eq!(run.current_attempt, u8::MAX);
     }
 
     #[test]

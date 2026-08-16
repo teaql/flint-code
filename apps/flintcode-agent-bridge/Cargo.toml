@@ -1,0 +1,17 @@
+[package]
+name = "flintcode-agent-bridge"
+description = "Agent-independent local bridge to the FlintCode SSH Runner"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "flintcode-agent-bridge"
+path = "src/main.rs"
+
+[dependencies]
+agent-bridge-core = { workspace = true }
+tool-runner = { workspace = true }
+clap = { workspace = true }
+tokio = { workspace = true }
+anyhow = { workspace = true }

@@ -179,7 +179,7 @@ pub enum RunEvent {
     CancelRequested,
     /// Unrecoverable error
     Failed(AgentError),
-    /// Follow up instruction to continue on the current workspace
+    /// Explicit user instruction to continue on the current workspace after a terminal run
     ContinueTask(String),
 }
 

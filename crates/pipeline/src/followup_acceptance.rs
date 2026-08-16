@@ -7,14 +7,57 @@
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Component, Path, PathBuf};
+use std::sync::Arc;
 use syn::parse::Parser;
 use syn::visit::{self, Visit};
+use tool_runner::remote_protocol::{ErrorCode, FileKind};
+use tool_runner::ssh_backend::SshBackendError;
 
 /// Current on-disk schema identifier.
 pub const FOLLOWUP_ACCEPTANCE_SCHEMA: &str = "klintcode-followup-acceptance-v1";
 
 /// Snapshot of user-editable workspace files before a follow-up starts.
 pub type WorkspaceSnapshot = BTreeMap<PathBuf, Vec<u8>>;
+
+const REMOTE_LIST_LIMIT: u32 = 10_000;
+const MAX_REMOTE_SNAPSHOT_FILES: usize = 20_000;
+const MAX_REMOTE_UTF8_FILE_BYTES: u64 = 4 * 1024 * 1024;
+const REMOTE_COMMAND_OUTPUT_BYTES: u64 = 256 * 1024;
+
+/// Digest-complete application snapshot captured from one remote task session.
+///
+/// Binary and oversized files retain their digest for integrity checks but are
+/// never copied to the local control plane. Only bounded UTF-8 content is
+/// available to file-marker and Rust-AST checks.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RemoteWorkspaceSnapshot {
+    workspace: String,
+    files: BTreeMap<PathBuf, RemoteSnapshotFile>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct RemoteSnapshotFile {
+    bytes: u64,
+    sha256: String,
+    utf8_content: Option<String>,
+}
+
+impl RemoteWorkspaceSnapshot {
+    /// Normalized runner workspace path represented by this snapshot.
+    pub fn workspace(&self) -> &str {
+        &self.workspace
+    }
+
+    /// Number of application-owned files represented by this snapshot.
+    pub fn len(&self) -> usize {
+        self.files.len()
+    }
+
+    /// Whether the snapshot contains no application-owned files.
+    pub fn is_empty(&self) -> bool {
+        self.files.is_empty()
+    }
+}
 
 /// Complete acceptance contract for one follow-up.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -92,7 +135,7 @@ pub enum CommandProgram {
 }
 
 impl CommandProgram {
-    fn as_str(self) -> &'static str {
+    pub(crate) fn as_str(self) -> &'static str {
         match self {
             Self::Cargo => "cargo",
             Self::Mvn => "mvn",
@@ -110,6 +153,11 @@ pub struct CommandRequirement {
     pub args: Vec<String>,
     #[serde(default)]
     pub env_ref: Vec<String>,
+    /// Number of independent executions required for this command. Repetition
+    /// is intentionally part of the typed contract so stress checks do not
+    /// need shell loops or scripts.
+    #[serde(default = "default_repeat")]
+    pub repeat: usize,
     #[serde(default = "default_timeout_secs")]
     pub timeout_secs: u64,
     #[serde(default)]
@@ -118,6 +166,10 @@ pub struct CommandRequirement {
 
 fn default_timeout_secs() -> u64 {
     120
+}
+
+fn default_repeat() -> usize {
+    1
 }
 
 /// Observable command outcome.
@@ -181,6 +233,279 @@ impl FollowUpAcceptanceReport {
         }
         lines.join("\n")
     }
+}
+
+/// Capture an application-only remote snapshot without reading generated
+/// libraries, local environment values, or any local project workspace.
+pub async fn snapshot_remote_workspace(
+    execution: &crate::execution::RemoteExecution,
+    workspace: &str,
+) -> Result<RemoteWorkspaceSnapshot, String> {
+    let workspace = normalize_remote_workspace(workspace)?;
+    let mut pending = vec![(PathBuf::new(), workspace.clone())];
+    let mut files = BTreeMap::new();
+
+    while let Some((relative_directory, remote_directory)) = pending.pop() {
+        let listing = execution
+            .list(remote_directory.clone(), Some(REMOTE_LIST_LIMIT))
+            .await
+            .map_err(|error| {
+                remote_infrastructure_error("failed to list remote acceptance workspace", error)
+            })?;
+        if listing.path != remote_directory {
+            return Err(remote_infrastructure_error(
+                "remote directory listing returned a mismatched path",
+                "protocol result rejected",
+            ));
+        }
+        if listing.truncated {
+            return Err(remote_infrastructure_error(
+                "remote acceptance snapshot exceeded the per-directory entry limit",
+                "raise the host policy only after reviewing the workspace",
+            ));
+        }
+
+        for entry in listing.entries {
+            if !is_safe_remote_component(&entry.name) {
+                return Err(remote_infrastructure_error(
+                    "remote acceptance snapshot contained an unsafe path component",
+                    "protocol result rejected",
+                ));
+            }
+            let relative = relative_directory.join(&entry.name);
+            if remote_snapshot_path_is_excluded(&relative, entry.kind == FileKind::Directory) {
+                continue;
+            }
+            let remote_path = join_remote_workspace_path(&workspace, &relative)?;
+            match entry.kind {
+                FileKind::Directory => pending.push((relative, remote_path)),
+                FileKind::Symlink | FileKind::Other => continue,
+                FileKind::File => {
+                    if files.len() == MAX_REMOTE_SNAPSHOT_FILES {
+                        return Err(remote_infrastructure_error(
+                            "remote acceptance snapshot exceeded its total file limit",
+                            "workspace is too large for deterministic acceptance",
+                        ));
+                    }
+                    let before =
+                        execution
+                            .stat(remote_path.clone(), true)
+                            .await
+                            .map_err(|error| {
+                                remote_infrastructure_error(
+                                    "failed to hash a remote acceptance file",
+                                    error,
+                                )
+                            })?;
+                    let (bytes, sha256) =
+                        validated_remote_file_stat(&remote_path, entry.bytes, &before)?;
+                    let utf8_content = if bytes <= MAX_REMOTE_UTF8_FILE_BYTES {
+                        match execution.read_text(remote_path.clone()).await {
+                            Ok(content) => Some(content),
+                            Err(error) if is_remote_invalid_utf8(&error) => None,
+                            Err(error) => {
+                                return Err(remote_infrastructure_error(
+                                    "failed to read a remote acceptance file",
+                                    error,
+                                ));
+                            }
+                        }
+                    } else {
+                        None
+                    };
+                    let after =
+                        execution
+                            .stat(remote_path.clone(), true)
+                            .await
+                            .map_err(|error| {
+                                remote_infrastructure_error(
+                                    "failed to re-hash a remote acceptance file",
+                                    error,
+                                )
+                            })?;
+                    if before != after
+                        || utf8_content
+                            .as_ref()
+                            .is_some_and(|content| content.len() as u64 != bytes)
+                    {
+                        return Err(remote_infrastructure_error(
+                            "remote acceptance file changed while its snapshot was captured",
+                            "retry after concurrent workspace activity stops",
+                        ));
+                    }
+                    files.insert(
+                        relative,
+                        RemoteSnapshotFile {
+                            bytes,
+                            sha256,
+                            utf8_content,
+                        },
+                    );
+                }
+            }
+        }
+    }
+
+    Ok(RemoteWorkspaceSnapshot { workspace, files })
+}
+
+fn normalize_remote_workspace(workspace: &str) -> Result<String, String> {
+    if workspace.is_empty() || workspace.contains('\0') || workspace.contains('\\') {
+        return Err(remote_infrastructure_error(
+            "invalid remote acceptance workspace",
+            "path must be a non-empty runner-relative UTF-8 path",
+        ));
+    }
+    let path = Path::new(workspace);
+    if path.is_absolute()
+        || path.components().any(|component| {
+            matches!(
+                component,
+                Component::ParentDir | Component::RootDir | Component::Prefix(_)
+            )
+        })
+    {
+        return Err(remote_infrastructure_error(
+            "invalid remote acceptance workspace",
+            "absolute paths and parent traversal are forbidden",
+        ));
+    }
+    let normalized = path
+        .components()
+        .filter_map(|component| match component {
+            Component::Normal(value) => value.to_str(),
+            Component::CurDir => None,
+            _ => None,
+        })
+        .collect::<Vec<_>>()
+        .join("/");
+    if normalized.is_empty() {
+        return Ok(".".to_string());
+    }
+    // The generated application workspace itself is conventionally named
+    // `build`; only child build-output directories are excluded below.
+    if remote_snapshot_path_is_excluded(Path::new(&normalized), false) {
+        return Err(remote_infrastructure_error(
+            "invalid remote acceptance workspace",
+            "generated, internal, and secret paths are forbidden",
+        ));
+    }
+    Ok(normalized)
+}
+
+fn is_safe_remote_component(name: &str) -> bool {
+    !name.is_empty()
+        && name != "."
+        && name != ".."
+        && !name.contains('\0')
+        && !name.contains('/')
+        && !name.contains('\\')
+        && !name.chars().any(char::is_control)
+        && Path::new(name)
+            .components()
+            .all(|component| matches!(component, Component::Normal(_)))
+}
+
+fn join_remote_workspace_path(workspace: &str, relative: &Path) -> Result<String, String> {
+    let relative = relative.to_str().ok_or_else(|| {
+        remote_infrastructure_error(
+            "remote acceptance path is not UTF-8",
+            "protocol result rejected",
+        )
+    })?;
+    let relative = relative.replace(std::path::MAIN_SEPARATOR, "/");
+    Ok(if workspace == "." {
+        relative
+    } else {
+        format!("{workspace}/{relative}")
+    })
+}
+
+fn remote_snapshot_path_is_excluded(path: &Path, is_directory: bool) -> bool {
+    let names = path
+        .components()
+        .filter_map(|component| component.as_os_str().to_str())
+        .map(str::to_ascii_lowercase)
+        .collect::<Vec<_>>();
+    if names.is_empty()
+        || names.first().is_some_and(|name| {
+            matches!(
+                name.as_str(),
+                "lib" | "rust-lib-core" | "java-lib-core" | "java-web-spring-boot" | "model"
+            )
+        })
+        || names.iter().any(|name| {
+            matches!(
+                name.as_str(),
+                "target" | ".gradle" | ".git" | ".klintcode" | "secrets"
+            )
+        })
+        || (is_directory && names.last().is_some_and(|name| name == "build"))
+        || names
+            .windows(2)
+            .any(|parts| parts[0] == "lib" && parts[1] == "src")
+    {
+        return true;
+    }
+    if is_directory {
+        return false;
+    }
+    let file_name = names.last().map(String::as_str).unwrap_or_default();
+    let extension = Path::new(file_name)
+        .extension()
+        .and_then(|value| value.to_str());
+    file_name == "cargo.lock"
+        || file_name == ".env"
+        || file_name.starts_with(".env.")
+        || matches!(
+            extension,
+            Some("db" | "sqlite" | "sqlite3" | "log" | "key" | "pem")
+        )
+}
+
+fn validated_remote_file_stat(
+    requested_path: &str,
+    listed_bytes: u64,
+    stat: &tool_runner::remote_protocol::StatResponse,
+) -> Result<(u64, String), String> {
+    let bytes = stat.bytes;
+    let sha256 = stat.sha256.as_deref();
+    if stat.path != requested_path
+        || !stat.exists
+        || stat.kind != Some(FileKind::File)
+        || bytes != Some(listed_bytes)
+        || !sha256.is_some_and(is_sha256)
+    {
+        return Err(remote_infrastructure_error(
+            "remote acceptance file metadata was inconsistent",
+            "workspace changed or the protocol result was invalid",
+        ));
+    }
+    Ok((
+        bytes.unwrap_or_default(),
+        sha256.unwrap_or_default().to_owned(),
+    ))
+}
+
+fn is_sha256(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+}
+
+fn is_remote_invalid_utf8(error: &crate::execution::RemoteExecutionError) -> bool {
+    matches!(
+        error,
+        crate::execution::RemoteExecutionError::Backend(SshBackendError::RemoteRejected {
+            code: ErrorCode::InvalidUtf8,
+            ..
+        })
+    )
+}
+
+fn remote_infrastructure_error(stage: &str, error: impl std::fmt::Display) -> String {
+    format!("[infrastructure] {stage}: {error}")
 }
 
 impl FollowUpAcceptanceSpec {
@@ -298,6 +623,9 @@ impl FollowUpAcceptanceSpec {
             }
         }
         for requirement in &self.commands {
+            if requirement.repeat == 0 || requirement.repeat > 20 {
+                return Err("Command repeat must be between 1 and 20".to_string());
+            }
             if requirement.timeout_secs == 0 || requirement.timeout_secs > 3_600 {
                 return Err("Command timeout_secs must be between 1 and 3600".to_string());
             }
@@ -308,6 +636,8 @@ impl FollowUpAcceptanceSpec {
             {
                 return Err("Command arguments cannot contain NUL bytes".to_string());
             }
+            crate::tools::validate_remote_command(requirement.program.as_str(), &requirement.args)
+                .map_err(|error| format!("Unsafe acceptance command: {error}"))?;
             for name in &requirement.env_ref {
                 if !is_environment_name(name) {
                     return Err(format!("Invalid environment variable name `{name}`"));
@@ -383,14 +713,15 @@ impl FollowUpAcceptanceSpec {
                 String::new()
             } else {
                 format!(
-                    "; environment references [{}]",
+                    "; runner-injected environment references [{}] (invoke the command exactly as shown; do not prefix shell assignments)",
                     requirement.env_ref.join(", ")
                 )
             };
             lines.push(format!(
-                "- command (no shell): `{} {}`; timeout {}s; expect exit {}{}",
+                "- command (no shell): `{} {}`; repeat {} time(s); timeout {}s per execution; expect exit {}{}",
                 requirement.program.as_str(),
                 requirement.args.join(" "),
+                requirement.repeat,
                 requirement.timeout_secs,
                 requirement.expect.exit_code,
                 env
@@ -421,6 +752,49 @@ impl FollowUpAcceptanceSpec {
         &self,
         workspace: &Path,
         before: &WorkspaceSnapshot,
+    ) -> Result<FollowUpAcceptanceReport, String> {
+        let sqlite_isolation = crate::process_env::SqliteDatabaseIsolation::new()
+            .map_err(|error| format!("Failed to create isolated SQLite runtime: {error}"))?;
+        let mut all = BTreeMap::new();
+        let mut cargo_test_names = BTreeSet::new();
+        let mut cargo_run_names = BTreeSet::new();
+        for requirement in &self.commands {
+            for name in &requirement.env_ref {
+                if let Ok(value) = std::env::var(name) {
+                    all.entry(name.clone())
+                        .or_insert_with(|| sqlite_isolation.isolate_value(name, &value));
+                }
+            }
+            if requirement.program == CommandProgram::Cargo {
+                match requirement.args.first().map(String::as_str) {
+                    Some("test") => cargo_test_names.extend(requirement.env_ref.iter().cloned()),
+                    Some("run") => cargo_run_names.extend(requirement.env_ref.iter().cloned()),
+                    _ => {}
+                }
+            }
+        }
+        let select = |names: BTreeSet<String>| {
+            names
+                .into_iter()
+                .filter_map(|name| all.get(&name).cloned().map(|value| (name, value)))
+                .collect::<BTreeMap<_, _>>()
+        };
+        let cargo_test = select(cargo_test_names);
+        let cargo_run = select(cargo_run_names);
+        let environment =
+            crate::tools::DeclaredCommandEnvironment::new_with_all(all, cargo_test, cargo_run);
+        self.verify_with_environment(workspace, before, &environment)
+            .await
+    }
+
+    /// Verify with runtime inputs already resolved and isolated by the owning
+    /// pipeline executor. This deliberately never reads the parent process
+    /// environment, preventing acceptance commands from bypassing isolation.
+    pub(crate) async fn verify_with_environment(
+        &self,
+        workspace: &Path,
+        before: &WorkspaceSnapshot,
+        command_environment: &crate::tools::DeclaredCommandEnvironment,
     ) -> Result<FollowUpAcceptanceReport, String> {
         self.validate()?;
         let mut checks = Vec::new();
@@ -490,7 +864,16 @@ impl FollowUpAcceptanceSpec {
             .map(String::as_str)
             .collect::<BTreeSet<_>>();
         for (index, requirement) in self.commands.iter().enumerate() {
-            checks.push(run_command_check(workspace, index, requirement, &runtime_markers).await);
+            checks.push(
+                run_command_check(
+                    workspace,
+                    index,
+                    requirement,
+                    &runtime_markers,
+                    command_environment,
+                )
+                .await,
+            );
         }
         let after_commands = crate::executor::application_workspace_snapshot(workspace);
         checks.push(FollowUpAcceptanceCheck {
@@ -501,6 +884,131 @@ impl FollowUpAcceptanceSpec {
                 "acceptance commands did not change application-owned workspace files".to_string()
             } else {
                 "acceptance commands changed application-owned workspace files; command-side mutations are not accepted"
+                    .to_string()
+            },
+        });
+
+        Ok(FollowUpAcceptanceReport {
+            schema: FOLLOWUP_ACCEPTANCE_SCHEMA.to_string(),
+            passed: checks.iter().all(|check| check.passed),
+            checks,
+        })
+    }
+
+    /// Verify the same typed contract against the authoritative SSH workspace.
+    ///
+    /// File and AST checks use a digest-stable, application-only snapshot.
+    /// Commands execute through the structured runner protocol with named
+    /// session environment references; this path never reads parent process
+    /// environment values and never runs a command in a local project.
+    pub async fn verify_remote_with_environment(
+        &self,
+        execution: &Arc<crate::execution::RemoteExecution>,
+        workspace: &str,
+        before: &RemoteWorkspaceSnapshot,
+        env_ref_names: &BTreeSet<String>,
+    ) -> Result<FollowUpAcceptanceReport, String> {
+        self.validate()?;
+        let workspace = normalize_remote_workspace(workspace)?;
+        if before.workspace != workspace {
+            return Err(remote_infrastructure_error(
+                "remote acceptance baseline belongs to a different workspace",
+                "snapshot identity mismatch",
+            ));
+        }
+
+        let current = snapshot_remote_workspace(execution.as_ref(), &workspace).await?;
+        let mut checks = self
+            .files
+            .iter()
+            .enumerate()
+            .map(|(index, requirement)| check_remote_file(&current, before, index, requirement))
+            .collect::<Vec<_>>();
+
+        let materialized = materialize_remote_snapshot(&current)?;
+        let rust_observation = collect_rust_api_chains(materialized.path());
+        for (index, requirement) in self.rust_api.iter().enumerate() {
+            checks.push(match &rust_observation {
+                Ok(observation) => {
+                    let matching_chains = observation
+                        .chains
+                        .iter()
+                        .filter(|chain| {
+                            chain.receiver == requirement.receiver
+                                && requirement
+                                    .terminal
+                                    .iter()
+                                    .any(|terminal| terminal == &chain.terminal)
+                        })
+                        .collect::<Vec<_>>();
+                    let count = matching_chains.len();
+                    let marker_failures = runtime_marker_binding_failures(
+                        observation,
+                        &matching_chains,
+                        &requirement.runtime_markers,
+                    );
+                    let marker_detail = if requirement.runtime_markers.is_empty() {
+                        String::new()
+                    } else if marker_failures.is_empty() {
+                        format!(
+                            "; all {} runtime marker(s) uniquely bound to matching compiled scopes",
+                            requirement.runtime_markers.len()
+                        )
+                    } else {
+                        format!("; runtime binding failed: {}", marker_failures.join("; "))
+                    };
+                    FollowUpAcceptanceCheck {
+                        id: format!("rust-api-{index}"),
+                        kind: "rust-api".to_string(),
+                        passed: count >= requirement.min && marker_failures.is_empty(),
+                        detail: format!(
+                            "observed {count}, required {} {} chain(s) ending in [{}]{}",
+                            requirement.min,
+                            requirement.receiver.as_str(),
+                            requirement.terminal.join(", "),
+                            marker_detail
+                        ),
+                    }
+                }
+                Err(error) => FollowUpAcceptanceCheck {
+                    id: format!("rust-api-{index}"),
+                    kind: "rust-api".to_string(),
+                    passed: false,
+                    detail: error.clone(),
+                },
+            });
+        }
+
+        let before_commands = snapshot_remote_workspace(execution.as_ref(), &workspace).await?;
+        let runtime_markers = self
+            .rust_api
+            .iter()
+            .flat_map(|requirement| requirement.runtime_markers.iter())
+            .map(String::as_str)
+            .collect::<BTreeSet<_>>();
+        for (index, requirement) in self.commands.iter().enumerate() {
+            checks.push(
+                run_remote_command_check(
+                    execution.as_ref(),
+                    &workspace,
+                    index,
+                    requirement,
+                    &runtime_markers,
+                    env_ref_names,
+                )
+                .await?,
+            );
+        }
+        let after_commands = snapshot_remote_workspace(execution.as_ref(), &workspace).await?;
+        checks.push(FollowUpAcceptanceCheck {
+            id: "command-workspace-integrity".to_string(),
+            kind: "integrity".to_string(),
+            passed: before_commands == after_commands,
+            detail: if before_commands == after_commands {
+                "acceptance commands did not change application-owned remote workspace files"
+                    .to_string()
+            } else {
+                "acceptance commands changed application-owned remote workspace files; command-side mutations are not accepted"
                     .to_string()
             },
         });
@@ -679,6 +1187,137 @@ fn check_file(
             }
         ),
     }
+}
+
+fn check_remote_file(
+    current: &RemoteWorkspaceSnapshot,
+    before: &RemoteWorkspaceSnapshot,
+    index: usize,
+    requirement: &FileRequirement,
+) -> FollowUpAcceptanceCheck {
+    let id = format!("file-{index}:{}", requirement.path.display());
+    let failure = |detail: String| FollowUpAcceptanceCheck {
+        id: id.clone(),
+        kind: "file".to_string(),
+        passed: false,
+        detail,
+    };
+    let Some(file) = current.files.get(&requirement.path) else {
+        return failure(format!(
+            "cannot read {} from the application-only remote snapshot",
+            requirement.path.display()
+        ));
+    };
+    if file.bytes < requirement.min_bytes {
+        return failure(format!(
+            "{} has {} bytes; requires at least {}",
+            requirement.path.display(),
+            file.bytes,
+            requirement.min_bytes
+        ));
+    }
+    let Some(text) = &file.utf8_content else {
+        return failure(format!(
+            "{} is not a bounded UTF-8 application file",
+            requirement.path.display()
+        ));
+    };
+    if !text.bytes().any(|byte| !byte.is_ascii_whitespace()) {
+        return failure(format!(
+            "{} contains only whitespace",
+            requirement.path.display()
+        ));
+    }
+    for marker in &requirement.contains {
+        if !text.contains(marker) {
+            return failure(format!(
+                "{} is missing required text marker `{marker}`",
+                requirement.path.display()
+            ));
+        }
+    }
+    for marker in &requirement.not_contains {
+        if text.contains(marker) {
+            return failure(format!(
+                "{} contains forbidden text marker `{marker}`",
+                requirement.path.display()
+            ));
+        }
+    }
+    if requirement.must_change
+        && before
+            .files
+            .get(&requirement.path)
+            .is_some_and(|old| old.bytes == file.bytes && old.sha256 == file.sha256)
+    {
+        return failure(format!(
+            "{} was not changed by this follow-up",
+            requirement.path.display()
+        ));
+    }
+
+    FollowUpAcceptanceCheck {
+        id,
+        kind: "file".to_string(),
+        passed: true,
+        detail: format!(
+            "{} exists remotely with {} bytes{}",
+            requirement.path.display(),
+            file.bytes,
+            if requirement.must_change {
+                " and changed"
+            } else {
+                ""
+            }
+        ),
+    }
+}
+
+fn materialize_remote_snapshot(
+    snapshot: &RemoteWorkspaceSnapshot,
+) -> Result<tempfile::TempDir, String> {
+    let directory = tempfile::Builder::new()
+        .prefix("klintcode-remote-acceptance-")
+        .tempdir()
+        .map_err(|error| {
+            remote_infrastructure_error(
+                "failed to create remote acceptance control-plane directory",
+                error,
+            )
+        })?;
+    for (relative, file) in &snapshot.files {
+        let Some(content) = &file.utf8_content else {
+            continue;
+        };
+        validate_relative_path(relative).map_err(|error| {
+            remote_infrastructure_error(
+                "remote acceptance snapshot contained a protected path",
+                error,
+            )
+        })?;
+        if remote_snapshot_path_is_excluded(relative, false) {
+            return Err(remote_infrastructure_error(
+                "remote acceptance snapshot contained excluded content",
+                "snapshot rejected before materialization",
+            ));
+        }
+        let destination = directory.path().join(relative);
+        if let Some(parent) = destination.parent() {
+            std::fs::create_dir_all(parent).map_err(|error| {
+                remote_infrastructure_error(
+                    "failed to create remote acceptance control-plane directory",
+                    error,
+                )
+            })?;
+        }
+        std::fs::write(&destination, content).map_err(|error| {
+            remote_infrastructure_error(
+                "failed to materialize a remote acceptance UTF-8 file",
+                error,
+            )
+        })?;
+    }
+    Ok(directory)
 }
 
 fn is_protected_acceptance_target(workspace: &Path, path: &Path) -> bool {
@@ -1167,11 +1806,11 @@ impl<'ast> Visit<'ast> for ApiChainVisitor {
         ) {
             let methods = receiver_method_names(&expression.receiver);
             let query_has_metadata = receiver != RustApiReceiver::Q
-                || !matches!(terminal.as_str(), "execute" | "execute_for_list")
+                || !is_query_execution_terminal(&terminal)
                 || (methods.iter().any(|method| method == "purpose")
                     && methods.iter().any(|method| method == "comment"));
-            let is_query_execution = receiver == RustApiReceiver::Q
-                && matches!(terminal.as_str(), "execute" | "execute_for_list");
+            let is_query_execution =
+                receiver == RustApiReceiver::Q && is_query_execution_terminal(&terminal);
             if query_has_metadata && !is_query_execution {
                 self.observation.chains.push(ObservedApiChain {
                     receiver,
@@ -1234,10 +1873,8 @@ fn awaited_query_execution(expression: &syn::Expr) -> Option<&syn::ExprMethodCal
     let syn::Expr::MethodCall(call) = unwrap_expression(&awaited.base) else {
         return None;
     };
-    if !matches!(
-        call.method.to_string().as_str(),
-        "execute" | "execute_for_list"
-    ) || root_receiver(&call.receiver) != Some(RustApiReceiver::Q)
+    if !is_query_execution_terminal(&call.method.to_string())
+        || root_receiver(&call.receiver) != Some(RustApiReceiver::Q)
     {
         return None;
     }
@@ -1245,6 +1882,10 @@ fn awaited_query_execution(expression: &syn::Expr) -> Option<&syn::ExprMethodCal
     (methods.iter().any(|method| method == "purpose")
         && methods.iter().any(|method| method == "comment"))
     .then_some(call)
+}
+
+fn is_query_execution_terminal(method: &str) -> bool {
+    matches!(method, "execute" | "execute_for_list" | "execute_for_one")
 }
 
 fn unwrap_expression(mut expression: &syn::Expr) -> &syn::Expr {
@@ -1340,11 +1981,134 @@ fn receiver_method_names(expression: &syn::Expr) -> Vec<String> {
     methods
 }
 
+async fn run_remote_command_check(
+    execution: &crate::execution::RemoteExecution,
+    workspace: &str,
+    index: usize,
+    requirement: &CommandRequirement,
+    exact_stdout_lines: &BTreeSet<&str>,
+    env_ref_names: &BTreeSet<String>,
+) -> Result<FollowUpAcceptanceCheck, String> {
+    let id = format!(
+        "command-{index}:{} {}",
+        requirement.program.as_str(),
+        requirement.args.join(" ")
+    );
+    let failure = |detail: String| FollowUpAcceptanceCheck {
+        id: id.clone(),
+        kind: "command".to_string(),
+        passed: false,
+        detail,
+    };
+    let missing_refs = requirement
+        .env_ref
+        .iter()
+        .filter(|name| !env_ref_names.contains(*name))
+        .cloned()
+        .collect::<Vec<_>>();
+    if !missing_refs.is_empty() {
+        return Err(remote_infrastructure_error(
+            "remote acceptance command requested unbound environment references",
+            missing_refs.join(", "),
+        ));
+    }
+
+    let mut last_exit = None;
+    let mut last_stdout_bytes = 0;
+    let mut last_stderr_bytes = 0;
+    for attempt in 1..=requirement.repeat {
+        // `RemoteExecution` allocates a fresh operation ID for every call, so
+        // typed repetition never aliases an earlier persisted execution.
+        let result = execution
+            .exec_with_environment_refs(
+                requirement.program.as_str(),
+                requirement.args.clone(),
+                workspace.to_owned(),
+                BTreeMap::new(),
+                requirement.env_ref.clone(),
+                std::time::Duration::from_secs(requirement.timeout_secs),
+                REMOTE_COMMAND_OUTPUT_BYTES,
+            )
+            .await
+            .map_err(|error| {
+                remote_infrastructure_error(
+                    "remote acceptance command transport or runner failed",
+                    error,
+                )
+            })?;
+        let combined = format!("{}\n{}", result.stdout, result.stderr);
+        let mut failures = Vec::new();
+        if result.exit_code != Some(requirement.expect.exit_code) {
+            failures.push(match result.exit_code {
+                Some(actual) => format!(
+                    "exit code {actual}, expected {}",
+                    requirement.expect.exit_code
+                ),
+                None => format!("no exit code, expected {}", requirement.expect.exit_code),
+            });
+        }
+        if result.stdout_truncated || result.stderr_truncated {
+            failures.push("runner output was truncated before acceptance could observe it".into());
+        }
+        if let Some(minimum) = requirement.expect.min_tests {
+            let observed = observed_test_count(&combined);
+            if observed < minimum {
+                failures.push(format!(
+                    "observed {observed} tests, expected at least {minimum}"
+                ));
+            }
+        }
+        for marker in &requirement.expect.stdout_contains {
+            if !required_output_is_present(
+                &result.stdout,
+                &combined,
+                marker,
+                exact_stdout_lines.contains(marker.as_str()),
+            ) {
+                failures.push(format!("missing required output marker `{marker}`"));
+            }
+        }
+        for marker in &requirement.expect.stdout_not_contains {
+            if combined.contains(marker) {
+                failures.push(format!("forbidden output marker was present: `{marker}`"));
+            }
+        }
+
+        if !failures.is_empty() {
+            return Ok(failure(format!(
+                "execution {attempt}/{}: {}; output retained only as {} stdout byte(s) and {} stderr byte(s)",
+                requirement.repeat,
+                failures.join("; "),
+                result.stdout.len(),
+                result.stderr.len()
+            )));
+        }
+        last_exit = result.exit_code;
+        last_stdout_bytes = result.stdout.len();
+        last_stderr_bytes = result.stderr.len();
+    }
+
+    Ok(FollowUpAcceptanceCheck {
+        id,
+        kind: "command".to_string(),
+        passed: true,
+        detail: format!(
+            "{}/{} distinct remote execution(s) passed; final exit code {}; output retained only as {last_stdout_bytes} stdout byte(s) and {last_stderr_bytes} stderr byte(s)",
+            requirement.repeat,
+            requirement.repeat,
+            last_exit
+                .map(|value| value.to_string())
+                .unwrap_or_else(|| "none".to_string())
+        ),
+    })
+}
+
 async fn run_command_check(
     workspace: &Path,
     index: usize,
     requirement: &CommandRequirement,
     exact_stdout_lines: &BTreeSet<&str>,
+    command_environment: &crate::tools::DeclaredCommandEnvironment,
 ) -> FollowUpAcceptanceCheck {
     let id = format!(
         "command-{index}:{} {}",
@@ -1358,87 +2122,109 @@ async fn run_command_check(
         detail,
     };
 
-    let mut secrets = Vec::new();
-    for name in &requirement.env_ref {
-        match std::env::var(name) {
-            Ok(value) => secrets.push((name.clone(), value)),
-            Err(_) => {
-                return failure(format!(
-                    "Required environment variable `{name}` is unavailable"
-                ));
-            }
-        }
-    }
-
-    let mut command = tokio::process::Command::new(requirement.program.as_str());
-    crate::process_env::apply_safe_environment(&mut command, workspace);
-    command
-        .args(&requirement.args)
-        .current_dir(workspace)
-        .kill_on_drop(true);
-    for (name, value) in &secrets {
-        command.env(name, value);
-    }
-    let output = match crate::process_output::run_bounded_output(
-        &mut command,
-        std::time::Duration::from_secs(requirement.timeout_secs),
-        256 * 1024,
-    )
-    .await
-    {
-        Ok(output) => output,
+    let declared_values = match command_environment.values_for_names(&requirement.env_ref) {
+        Ok(values) => values,
         Err(error) => return failure(error),
     };
 
-    let stdout_raw = String::from_utf8_lossy(&output.stdout);
-    let combined_raw = format!(
-        "{}\n{}",
-        stdout_raw,
-        String::from_utf8_lossy(&output.stderr)
-    );
-    let actual_exit = output.status.code().unwrap_or(-1);
-    let mut failures = Vec::new();
-    if actual_exit != requirement.expect.exit_code {
-        failures.push(format!(
-            "exit code {actual_exit}, expected {}",
-            requirement.expect.exit_code
-        ));
-    }
-    if let Some(minimum) = requirement.expect.min_tests {
-        let observed = observed_test_count(&combined_raw);
-        if observed < minimum {
+    let mut last_exit = -1;
+    let mut last_output = String::new();
+    for attempt in 1..=requirement.repeat {
+        let mut command = tokio::process::Command::new(requirement.program.as_str());
+        crate::process_env::apply_safe_environment(&mut command, workspace);
+        command
+            .args(&requirement.args)
+            .current_dir(workspace)
+            .kill_on_drop(true);
+        for (name, value) in &declared_values {
+            command.env(name, value);
+        }
+        if requirement.program == CommandProgram::Cargo
+            && requirement.args.first().is_some_and(|arg| arg == "test")
+            && !requirement.args.iter().any(|argument| {
+                argument == "--test-threads" || argument.starts_with("--test-threads=")
+            })
+        {
+            command.env("RUST_TEST_THREADS", "1");
+        }
+        let output = match crate::process_output::run_bounded_output(
+            &mut command,
+            std::time::Duration::from_secs(requirement.timeout_secs),
+            256 * 1024,
+        )
+        .await
+        {
+            Ok(output) => output,
+            Err(error) => {
+                return failure(format!(
+                    "execution {attempt}/{} failed: {error}",
+                    requirement.repeat
+                ));
+            }
+        };
+
+        let stdout_raw = String::from_utf8_lossy(&output.stdout);
+        let combined_raw = format!(
+            "{}\n{}",
+            stdout_raw,
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let actual_exit = output.status.code().unwrap_or(-1);
+        let mut failures = Vec::new();
+        if actual_exit != requirement.expect.exit_code {
             failures.push(format!(
-                "observed {observed} tests, expected at least {minimum}"
+                "exit code {actual_exit}, expected {}",
+                requirement.expect.exit_code
             ));
         }
-    }
-    for marker in &requirement.expect.stdout_contains {
-        let present = required_output_is_present(
-            &stdout_raw,
-            &combined_raw,
-            marker,
-            exact_stdout_lines.contains(marker.as_str()),
+        if let Some(minimum) = requirement.expect.min_tests {
+            let observed = observed_test_count(&combined_raw);
+            if observed < minimum {
+                failures.push(format!(
+                    "observed {observed} tests, expected at least {minimum}"
+                ));
+            }
+        }
+        for marker in &requirement.expect.stdout_contains {
+            let present = required_output_is_present(
+                &stdout_raw,
+                &combined_raw,
+                marker,
+                exact_stdout_lines.contains(marker.as_str()),
+            );
+            if !present {
+                failures.push(format!("missing required output marker `{marker}`"));
+            }
+        }
+        for marker in &requirement.expect.stdout_not_contains {
+            if combined_raw.contains(marker) {
+                failures.push(format!("forbidden output marker was present: `{marker}`"));
+            }
+        }
+
+        let redacted_output = bound_text(
+            &command_environment.redact_values(&combined_raw, &declared_values),
+            12_000,
         );
-        if !present {
-            failures.push(format!("missing required output marker `{marker}`"));
+        if !failures.is_empty() {
+            return failure(format!(
+                "execution {attempt}/{}: {}\nOutput:\n{redacted_output}",
+                requirement.repeat,
+                failures.join("; ")
+            ));
         }
-    }
-    for marker in &requirement.expect.stdout_not_contains {
-        if combined_raw.contains(marker) {
-            failures.push(format!("forbidden output marker was present: `{marker}`"));
-        }
+        last_exit = actual_exit;
+        last_output = redacted_output;
     }
 
-    let output = bound_text(&redact_secrets(&combined_raw, &secrets), 12_000);
-    if failures.is_empty() {
-        FollowUpAcceptanceCheck {
-            id,
-            kind: "command".to_string(),
-            passed: true,
-            detail: format!("exit code {actual_exit}; output:\n{output}"),
-        }
-    } else {
-        failure(format!("{}\nOutput:\n{output}", failures.join("; ")))
+    FollowUpAcceptanceCheck {
+        id,
+        kind: "command".to_string(),
+        passed: true,
+        detail: format!(
+            "{}/{} execution(s) passed; final exit code {last_exit}; final output:\n{last_output}",
+            requirement.repeat, requirement.repeat
+        ),
     }
 }
 
@@ -1453,19 +2239,6 @@ fn required_output_is_present(
     } else {
         combined.contains(marker)
     }
-}
-
-fn redact_secrets(content: &str, secrets: &[(String, String)]) -> String {
-    let mut result = content.to_string();
-    let mut ordered = secrets
-        .iter()
-        .filter(|(_, value)| !value.is_empty())
-        .collect::<Vec<_>>();
-    ordered.sort_by_key(|(_, value)| std::cmp::Reverse(value.len()));
-    for (name, value) in ordered {
-        result = result.replace(value, &format!("[REDACTED:{name}]"));
-    }
-    result
 }
 
 fn bound_text(content: &str, max_bytes: usize) -> String {
@@ -1554,6 +2327,95 @@ mod tests {
         assert!(checklist.contains("KLINTCODE_RUN_OK"));
         assert!(checklist.contains("minimum observed tests: 2"));
         assert!(checklist.contains("timeout 180s"));
+    }
+
+    #[test]
+    fn school_continuation_contracts_are_valid_and_cumulative() {
+        let contracts = [
+            include_str!(
+                "../../../benchmarks/tasks/school-continuous-rust/01-school-registration.acceptance.json"
+            ),
+            include_str!(
+                "../../../benchmarks/tasks/school-continuous-rust/02-school-information-change.acceptance.json"
+            ),
+            include_str!(
+                "../../../benchmarks/tasks/school-continuous-rust/03-teacher-registration.acceptance.json"
+            ),
+            include_str!(
+                "../../../benchmarks/tasks/school-continuous-rust/04-student-enrollment.acceptance.json"
+            ),
+            include_str!(
+                "../../../benchmarks/tasks/school-continuous-rust/05-teacher-information-change.acceptance.json"
+            ),
+            include_str!(
+                "../../../benchmarks/tasks/school-continuous-rust/06-student-grade-promotion.acceptance.json"
+            ),
+        ]
+        .into_iter()
+        .map(FollowUpAcceptanceSpec::parse_json)
+        .collect::<Result<Vec<_>, _>>()
+        .expect("all six school continuation contracts");
+        let registration = &contracts[0];
+        let information_change = &contracts[1];
+
+        assert_eq!(registration.rust_api[0].min, 1);
+        assert_eq!(information_change.rust_api[0].min, 2);
+        assert_eq!(contracts.len(), 6);
+        assert_eq!(
+            contracts
+                .iter()
+                .map(|contract| contract.rust_api[0].min)
+                .collect::<Vec<_>>(),
+            vec![1, 2, 3, 4, 5, 6]
+        );
+        assert_eq!(contracts.last().unwrap().files.len(), 4);
+        assert_eq!(
+            contracts.last().unwrap().rust_api[0].runtime_markers.len(),
+            6
+        );
+        assert!(
+            registration.rust_api[0]
+                .terminal
+                .iter()
+                .any(|value| value == "execute_for_one")
+        );
+        assert!(
+            information_change.files[0]
+                .contains
+                .iter()
+                .any(|value| value == "Klint Synthetic Test School")
+        );
+        assert!(
+            information_change.files[0]
+                .contains
+                .iter()
+                .any(|value| value == "Klint Synthetic Future School")
+        );
+        assert!(
+            contracts
+                .iter()
+                .all(|contract| contract.commands.iter().all(|command| command
+                    .env_ref
+                    .iter()
+                    .any(|name| name == "SCHOOL_REGISTRY_SERVICE_CORE_DATABASE_URL")))
+        );
+        for contract in &contracts {
+            let test_command = contract
+                .commands
+                .iter()
+                .find(|command| command.args.first().is_some_and(|arg| arg == "test"))
+                .expect("school contract cargo test command");
+            assert_eq!(test_command.repeat, 5);
+            assert_eq!(
+                test_command.args,
+                ["test", "--quiet", "--", "--test-threads=1"]
+            );
+        }
+        assert!(
+            registration
+                .render_checklist()
+                .contains("invoke the command exactly as shown; do not prefix shell assignments")
+        );
     }
 
     #[test]
@@ -1662,6 +2524,94 @@ mod tests {
         let observation = collect_rust_api_chains(workspace.path()).unwrap();
         assert!(!observation.chains.iter().any(|chain| {
             chain.receiver == RustApiReceiver::Q && chain.terminal == "execute_for_list"
+        }));
+    }
+
+    #[test]
+    fn execute_for_one_with_metadata_and_await_try_binds_runtime_marker() {
+        let workspace = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(workspace.path().join("src")).unwrap();
+        std::fs::write(
+            workspace.path().join("src/lib.rs"),
+            r#"async fn query(ctx: &Ctx) {
+                let _ = Q::school()
+                    .purpose("load one school")
+                    .comment("school lookup")
+                    .execute_for_one(ctx)
+                    .await?;
+                println!("ONE_SCHOOL_LOADED");
+            }"#,
+        )
+        .unwrap();
+
+        let observation = collect_rust_api_chains(workspace.path()).unwrap();
+        let matching = observation
+            .chains
+            .iter()
+            .filter(|chain| {
+                chain.receiver == RustApiReceiver::Q && chain.terminal == "execute_for_one"
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(matching.len(), 1);
+        assert!(
+            runtime_marker_binding_failures(
+                &observation,
+                &matching,
+                &["ONE_SCHOOL_LOADED".to_string()]
+            )
+            .is_empty()
+        );
+    }
+
+    #[test]
+    fn execute_for_one_missing_either_metadata_method_does_not_count() {
+        let workspace = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(workspace.path().join("src")).unwrap();
+        std::fs::write(
+            workspace.path().join("src/lib.rs"),
+            r#"async fn no_metadata(ctx: &Ctx) {
+                let _ = Q::school().execute_for_one(ctx).await?;
+            }
+            async fn purpose_only(ctx: &Ctx) {
+                let _ = Q::school()
+                    .purpose("load one school")
+                    .execute_for_one(ctx)
+                    .await?;
+            }
+            async fn comment_only(ctx: &Ctx) {
+                let _ = Q::school()
+                    .comment("school lookup")
+                    .execute_for_one(ctx)
+                    .await?;
+            }"#,
+        )
+        .unwrap();
+
+        let observation = collect_rust_api_chains(workspace.path()).unwrap();
+        assert!(!observation.chains.iter().any(|chain| {
+            chain.receiver == RustApiReceiver::Q && chain.terminal == "execute_for_one"
+        }));
+    }
+
+    #[test]
+    fn execute_for_one_without_direct_await_try_does_not_count() {
+        let workspace = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(workspace.path().join("src")).unwrap();
+        std::fs::write(
+            workspace.path().join("src/lib.rs"),
+            r#"async fn query(ctx: &Ctx) {
+                let _ = Q::school()
+                    .purpose("load one school")
+                    .comment("school lookup")
+                    .execute_for_one(ctx)
+                    .await;
+            }"#,
+        )
+        .unwrap();
+
+        let observation = collect_rust_api_chains(workspace.path()).unwrap();
+        assert!(!observation.chains.iter().any(|chain| {
+            chain.receiver == RustApiReceiver::Q && chain.terminal == "execute_for_one"
         }));
     }
 
@@ -1802,6 +2752,29 @@ mod tests {
     }
 
     #[test]
+    fn schema_validates_and_renders_shell_free_command_repetition() {
+        let repeated = spec_json(
+            r#""commands":[{"program":"cargo","args":["test","--quiet","--","--test-threads=6"],"repeat":8}]"#,
+        );
+        let spec = FollowUpAcceptanceSpec::parse_json(&repeated).expect("repeated command");
+        assert_eq!(spec.commands[0].repeat, 8);
+        assert!(
+            spec.render_checklist()
+                .contains("repeat 8 time(s); timeout 120s per execution")
+        );
+
+        let omitted = spec_json(r#""commands":[{"program":"cargo","args":["test"]}]"#);
+        let spec = FollowUpAcceptanceSpec::parse_json(&omitted).expect("default repetition");
+        assert_eq!(spec.commands[0].repeat, 1);
+
+        let zero = spec_json(r#""commands":[{"program":"cargo","args":["test"],"repeat":0}]"#);
+        assert!(FollowUpAcceptanceSpec::parse_json(&zero).is_err());
+        let excessive =
+            spec_json(r#""commands":[{"program":"cargo","args":["test"],"repeat":21}]"#);
+        assert!(FollowUpAcceptanceSpec::parse_json(&excessive).is_err());
+    }
+
+    #[test]
     fn test_count_supports_rust_maven_and_gradle_summaries() {
         assert_eq!(observed_test_count("running 3 tests\nrunning 2 tests"), 5);
         assert_eq!(observed_test_count("Tests run: 7, Failures: 0"), 7);
@@ -1851,6 +2824,7 @@ mod tests {
                 "--nocapture".to_string(),
             ],
             env_ref: Vec::new(),
+            repeat: 1,
             timeout_secs: 60,
             expect: CommandExpectation {
                 exit_code: 0,
@@ -1859,11 +2833,238 @@ mod tests {
                 stdout_not_contains: vec!["should-not-appear".to_string()],
             },
         };
-        let check = run_command_check(workspace.path(), 0, &requirement, &BTreeSet::new()).await;
+        let check = run_command_check(
+            workspace.path(),
+            0,
+            &requirement,
+            &BTreeSet::new(),
+            &crate::tools::DeclaredCommandEnvironment::default(),
+        )
+        .await;
         // SAFETY: paired with the serialized set_var above.
         unsafe {
             std::env::remove_var("KLINTCODE_PARENT_SECRET_TEST");
         }
         assert!(check.passed, "{}", check.detail);
+    }
+
+    #[tokio::test]
+    async fn command_check_uses_resolved_environment_without_parent_lookup() {
+        const NAME: &str = "KLINTCODE_ACCEPTANCE_DATABASE_URL";
+        const VALUE: &str = "sqlite:///isolated/acceptance.sqlite3";
+        let workspace = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(workspace.path().join("src")).unwrap();
+        std::fs::write(
+            workspace.path().join("Cargo.toml"),
+            "[package]\nname='acceptance-env-fixture'\nversion='0.1.0'\nedition='2024'\n[workspace]\n",
+        )
+        .unwrap();
+        std::fs::write(
+            workspace.path().join("src/main.rs"),
+            format!(
+                r#"fn main() {{
+    assert!(std::env::var("MIMO_API_KEY").is_err());
+    println!("KLINT_ENV_OK:{{}}", std::env::var("{NAME}").unwrap());
+}}"#
+            ),
+        )
+        .unwrap();
+        let requirement = CommandRequirement {
+            program: CommandProgram::Cargo,
+            args: vec!["run".to_string(), "--quiet".to_string()],
+            env_ref: vec![NAME.to_string()],
+            repeat: 2,
+            timeout_secs: 60,
+            expect: CommandExpectation {
+                exit_code: 0,
+                min_tests: None,
+                stdout_contains: vec!["KLINT_ENV_OK:".to_string()],
+                stdout_not_contains: Vec::new(),
+            },
+        };
+        let environment = crate::tools::DeclaredCommandEnvironment::new(
+            BTreeMap::new(),
+            BTreeMap::from([(NAME.to_string(), VALUE.to_string())]),
+        );
+
+        let check = run_command_check(
+            workspace.path(),
+            0,
+            &requirement,
+            &BTreeSet::new(),
+            &environment,
+        )
+        .await;
+
+        assert!(check.passed, "{}", check.detail);
+        assert!(!check.detail.contains(VALUE));
+        assert!(check.detail.contains(&format!("[REDACTED:{NAME}]")));
+    }
+
+    #[tokio::test]
+    async fn command_check_executes_every_typed_repetition_without_a_shell() {
+        let workspace = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(workspace.path().join("src")).unwrap();
+        std::fs::write(
+            workspace.path().join("Cargo.toml"),
+            "[package]\nname='repeat-fixture'\nversion='0.1.0'\nedition='2024'\n[workspace]\n",
+        )
+        .unwrap();
+        std::fs::write(
+            workspace.path().join("src/lib.rs"),
+            r#"#[test]
+fn records_each_process() {
+    std::fs::create_dir_all("target").unwrap();
+    use std::io::Write;
+    writeln!(
+        std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open("target/repetition-count")
+            .unwrap(),
+        "run"
+    )
+    .unwrap();
+}"#,
+        )
+        .unwrap();
+        let requirement = CommandRequirement {
+            program: CommandProgram::Cargo,
+            args: vec!["test".to_string(), "--quiet".to_string()],
+            env_ref: Vec::new(),
+            repeat: 3,
+            timeout_secs: 60,
+            expect: CommandExpectation {
+                exit_code: 0,
+                min_tests: Some(1),
+                stdout_contains: Vec::new(),
+                stdout_not_contains: Vec::new(),
+            },
+        };
+
+        let check = run_command_check(
+            workspace.path(),
+            0,
+            &requirement,
+            &BTreeSet::new(),
+            &crate::tools::DeclaredCommandEnvironment::default(),
+        )
+        .await;
+        assert!(check.passed, "{}", check.detail);
+        let count = std::fs::read_to_string(workspace.path().join("target/repetition-count"))
+            .unwrap()
+            .lines()
+            .count();
+        assert_eq!(count, 3);
+        assert!(check.detail.contains("3/3 execution(s) passed"));
+    }
+
+    #[test]
+    fn remote_snapshot_filter_never_admits_generated_or_sensitive_content() {
+        for (path, directory) in [
+            ("rust-lib-core", true),
+            ("rust-lib-core/lib/src/entity.rs", false),
+            ("nested/lib/src/entity.rs", false),
+            ("target/debug/app", false),
+            (".klintcode/evidence.json", false),
+            ("secrets/token.txt", false),
+            (".env", false),
+            ("keys/server.pem", false),
+        ] {
+            assert!(
+                remote_snapshot_path_is_excluded(Path::new(path), directory),
+                "{path}"
+            );
+        }
+        for path in ["Cargo.toml", "src/lib.rs", "tests/api.rs", "README.md"] {
+            assert!(
+                !remote_snapshot_path_is_excluded(Path::new(path), false),
+                "{path}"
+            );
+        }
+    }
+
+    #[test]
+    fn remote_file_requirement_uses_digest_for_change_and_utf8_for_markers() {
+        let path = PathBuf::from("REPORT.md");
+        let old = RemoteSnapshotFile {
+            bytes: 10,
+            sha256: "a".repeat(64),
+            utf8_content: Some("old report".to_string()),
+        };
+        let new = RemoteSnapshotFile {
+            bytes: 19,
+            sha256: "b".repeat(64),
+            utf8_content: Some("new verified report".to_string()),
+        };
+        let before = RemoteWorkspaceSnapshot {
+            workspace: "attempt-01/build".to_string(),
+            files: BTreeMap::from([(path.clone(), old.clone())]),
+        };
+        let unchanged = RemoteWorkspaceSnapshot {
+            workspace: before.workspace.clone(),
+            files: BTreeMap::from([(path.clone(), old)]),
+        };
+        let changed = RemoteWorkspaceSnapshot {
+            workspace: before.workspace.clone(),
+            files: BTreeMap::from([(path.clone(), new)]),
+        };
+        let requirement = FileRequirement {
+            path,
+            must_change: true,
+            min_bytes: 5,
+            contains: vec!["verified".to_string()],
+            not_contains: vec!["forbidden".to_string()],
+        };
+        assert!(!check_remote_file(&unchanged, &before, 0, &requirement).passed);
+        assert!(check_remote_file(&changed, &before, 0, &requirement).passed);
+    }
+
+    #[test]
+    fn remote_utf8_snapshot_is_materialized_only_for_control_plane_ast() {
+        let source = r#"async fn query(ctx: &Ctx) {
+            Q::school().purpose("live").comment("query").execute_for_list(ctx).await?;
+        }"#;
+        let snapshot = RemoteWorkspaceSnapshot {
+            workspace: "attempt-01/build".to_string(),
+            files: BTreeMap::from([(
+                PathBuf::from("src/lib.rs"),
+                RemoteSnapshotFile {
+                    bytes: source.len() as u64,
+                    sha256: "c".repeat(64),
+                    utf8_content: Some(source.to_string()),
+                },
+            )]),
+        };
+        let materialized = materialize_remote_snapshot(&snapshot).unwrap();
+        let observation = collect_rust_api_chains(materialized.path()).unwrap();
+        assert!(observation.chains.iter().any(|chain| {
+            chain.receiver == RustApiReceiver::Q && chain.terminal == "execute_for_list"
+        }));
+
+        let protected = RemoteWorkspaceSnapshot {
+            workspace: snapshot.workspace.clone(),
+            files: BTreeMap::from([(
+                PathBuf::from("nested/lib/src/entity.rs"),
+                RemoteSnapshotFile {
+                    bytes: 1,
+                    sha256: "d".repeat(64),
+                    utf8_content: Some("x".to_string()),
+                },
+            )]),
+        };
+        assert!(materialize_remote_snapshot(&protected).is_err());
+    }
+
+    #[test]
+    fn remote_workspace_paths_are_runner_relative_and_normalized() {
+        assert_eq!(
+            normalize_remote_workspace("./attempt-01/build").unwrap(),
+            "attempt-01/build"
+        );
+        assert_eq!(normalize_remote_workspace(".").unwrap(), ".");
+        for path in ["", "../outside", "/absolute", "windows\\path"] {
+            assert!(normalize_remote_workspace(path).is_err(), "{path}");
+        }
     }
 }

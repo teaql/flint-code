@@ -6,9 +6,13 @@
 //! determines the appropriate build commands based on the project structure.
 
 use std::path::Path;
+use std::sync::Arc;
 use tracing::{error, info, warn};
 
-use crate::tools::{build_tool_definitions, execute_tool};
+use crate::tools::{
+    DeclaredCommandEnvironment, build_tool_definitions, execute_tool_remote_with_environment,
+    execute_tool_with_environment,
+};
 use agent_core::loop_guard::LoopGuard;
 use model_vllm::backend::ModelClient;
 use model_vllm::chat::{ChatMessage, FunctionCall, ToolCall};
@@ -26,7 +30,11 @@ pub enum AgentLoopResult {
         total_tool_calls: usize,
     },
     /// Agent failed with an unrecoverable error
-    Failed { error: String, iterations: usize },
+    Failed {
+        error: String,
+        iterations: usize,
+        total_tool_calls: usize,
+    },
     /// Agent hit the maximum iteration limit without completing
     MaxIterationsReached {
         iterations: usize,
@@ -56,6 +64,85 @@ pub async fn run_agent_loop(
     max_iterations: usize,
     event_tx: Option<tokio::sync::mpsc::Sender<agent_core::RunEvent>>,
 ) -> AgentLoopResult {
+    run_agent_loop_with_environment(
+        client,
+        sandbox_dir,
+        system_prompt,
+        user_prompt,
+        max_iterations,
+        event_tx,
+        &DeclaredCommandEnvironment::default(),
+    )
+    .await
+}
+
+/// Run an agent loop whose allowlisted runtime commands receive only the
+/// opaque environment declared by the current typed follow-up contract.
+pub(crate) async fn run_agent_loop_with_environment(
+    client: &ModelClient,
+    sandbox_dir: &Path,
+    system_prompt: &str,
+    user_prompt: &str,
+    max_iterations: usize,
+    event_tx: Option<tokio::sync::mpsc::Sender<agent_core::RunEvent>>,
+    command_environment: &DeclaredCommandEnvironment,
+) -> AgentLoopResult {
+    run_agent_loop_in_workspace(
+        client,
+        AgentWorkspace::Local(sandbox_dir),
+        system_prompt,
+        user_prompt,
+        max_iterations,
+        event_tx,
+        command_environment,
+    )
+    .await
+}
+
+/// Run an agent loop whose only project I/O and command surface is one remote
+/// runner session. There is deliberately no local fallback in this path.
+pub(crate) async fn run_agent_loop_remote_with_environment(
+    client: &ModelClient,
+    execution: Arc<crate::execution::RemoteExecution>,
+    remote_cwd: &str,
+    system_prompt: &str,
+    user_prompt: &str,
+    max_iterations: usize,
+    event_tx: Option<tokio::sync::mpsc::Sender<agent_core::RunEvent>>,
+    command_environment: &DeclaredCommandEnvironment,
+) -> AgentLoopResult {
+    run_agent_loop_in_workspace(
+        client,
+        AgentWorkspace::Remote {
+            execution,
+            cwd: remote_cwd,
+        },
+        system_prompt,
+        user_prompt,
+        max_iterations,
+        event_tx,
+        command_environment,
+    )
+    .await
+}
+
+enum AgentWorkspace<'a> {
+    Local(&'a Path),
+    Remote {
+        execution: Arc<crate::execution::RemoteExecution>,
+        cwd: &'a str,
+    },
+}
+
+async fn run_agent_loop_in_workspace(
+    client: &ModelClient,
+    workspace: AgentWorkspace<'_>,
+    system_prompt: &str,
+    user_prompt: &str,
+    max_iterations: usize,
+    event_tx: Option<tokio::sync::mpsc::Sender<agent_core::RunEvent>>,
+    command_environment: &DeclaredCommandEnvironment,
+) -> AgentLoopResult {
     let tools = build_tool_definitions();
 
     let mut messages = vec![
@@ -76,6 +163,7 @@ pub async fn run_agent_loop(
             return AgentLoopResult::Failed {
                 error: format!("Agent conversation loop detected: {detection}"),
                 iterations: iteration + 1,
+                total_tool_calls,
             };
         }
         info!(
@@ -167,12 +255,27 @@ pub async fn run_agent_loop(
                                 .ok();
                             }
 
-                            let tool_result = execute_tool(
-                                &tc.function.name,
-                                &tc.function.arguments,
-                                sandbox_dir,
-                            )
-                            .await;
+                            let tool_result = match &workspace {
+                                AgentWorkspace::Local(sandbox_dir) => {
+                                    execute_tool_with_environment(
+                                        &tc.function.name,
+                                        &tc.function.arguments,
+                                        sandbox_dir,
+                                        command_environment,
+                                    )
+                                    .await
+                                }
+                                AgentWorkspace::Remote { execution, cwd } => {
+                                    execute_tool_remote_with_environment(
+                                        &tc.function.name,
+                                        &tc.function.arguments,
+                                        execution,
+                                        cwd,
+                                        command_environment,
+                                    )
+                                    .await
+                                }
+                            };
 
                             if !tool_result.success {
                                 last_failed_tool = Some(format!(
@@ -190,6 +293,7 @@ pub async fn run_agent_loop(
                                             tool_result.output
                                         ),
                                         iterations: iteration + 1,
+                                        total_tool_calls,
                                     };
                                 }
                             }
@@ -220,6 +324,7 @@ pub async fn run_agent_loop(
                                 return AgentLoopResult::Failed {
                                     error: format!("Repeated tool loop detected: {detection}"),
                                     iterations: iteration + 1,
+                                    total_tool_calls,
                                 };
                             }
 
@@ -285,6 +390,7 @@ pub async fn run_agent_loop(
                                     "Agent made no build progress for {iterations_without_progress} consecutive iterations. Last failed build:\n{diagnostic}"
                                 ),
                                 iterations: iteration + 1,
+                                total_tool_calls,
                             };
                         }
                     }
@@ -314,8 +420,12 @@ pub async fn run_agent_loop(
                 }
                 error!(iteration, %e, "Model call failed in agent loop");
                 return AgentLoopResult::Failed {
-                    error: e.to_string(),
+                    error: format!(
+                        "{} Agent-loop model transport failed: {e}",
+                        agent_core::event::INFRASTRUCTURE_FAILURE_PREFIX
+                    ),
                     iterations: iteration + 1,
+                    total_tool_calls,
                 };
             }
         }

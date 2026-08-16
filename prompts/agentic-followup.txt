@@ -15,8 +15,11 @@ model.
    rust-assist-[action]/[entity]` command and copy its example literally.
 5. Every query execution chain must include `purpose("why")` and
    `comment("what")`. Every save or update must include `audit_as("description")`.
-6. Run the required build, tests, and runtime self-test. Propagate runtime
-   errors; never convert a failed query into a successful note or exit code 0.
+6. Run the required build, tests, and runtime self-test. Environment references
+   in the typed checklist are injected automatically into the matching command:
+   invoke `cargo test` or `cargo run` exactly as shown, without `NAME=value`
+   prefixes or other shell syntax. Propagate runtime errors; never convert a
+   failed query into a successful note or exit code 0.
 7. Compilation alone is not completion. Yield a concise summary only after
    every required file, API, test, runtime, and output-marker check passes.
 

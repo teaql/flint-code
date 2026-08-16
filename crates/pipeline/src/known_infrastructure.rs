@@ -9,6 +9,8 @@ use quick_xml::Reader;
 use quick_xml::events::{BytesStart, Event};
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
+use tool_runner::remote_protocol::{ErrorCode, FileKind};
+use tool_runner::ssh_backend::SshBackendError;
 
 /// Stable identifier for the TeaQL 4.2.5 SQLite boolean decoding defect.
 /// Fixed in teaql-provider-sqlite 4.2.7. The TUI automatically patches
@@ -122,6 +124,117 @@ pub fn detect_generated_workspace_infrastructure_failure(
         .collect();
 
     detect_known_infrastructure_failure_from_sources(lock_source, &manifest_sources, &model_sources)
+}
+
+/// Inspect an authoritative SSH workspace without reading generated library
+/// source. Only explicit manifests, the lockfile, and copied model XML are
+/// transferred to the control plane for pure content analysis.
+pub async fn detect_generated_workspace_infrastructure_failure_remote(
+    execution: &crate::execution::RemoteExecution,
+    workspace_root: &str,
+) -> Result<Option<KnownInfrastructureFailure>> {
+    let lock_path = remote_join(workspace_root, "Cargo.lock");
+    let lock_content = remote_read_optional(execution, &lock_path).await?;
+    let lock_source = lock_content
+        .as_deref()
+        .map(|content| TextSource::new("Cargo.lock", content));
+
+    let manifest_paths = [
+        remote_join(workspace_root, "Cargo.toml"),
+        remote_join(workspace_root, "lib/Cargo.toml"),
+    ];
+    let mut manifest_contents = Vec::new();
+    for path in manifest_paths {
+        if let Some(content) = remote_read_optional(execution, &path).await? {
+            manifest_contents.push((path, content));
+        }
+    }
+    let manifest_sources = manifest_contents
+        .iter()
+        .map(|(path, content)| TextSource::new(path, content))
+        .collect::<Vec<_>>();
+
+    let model_root = remote_join(workspace_root, "model");
+    let model_paths = collect_remote_xml_files(execution, &model_root).await?;
+    let mut model_contents = Vec::with_capacity(model_paths.len());
+    for path in model_paths {
+        let content = execution
+            .read_text(path.clone())
+            .await
+            .map_err(|error| anyhow::anyhow!("failed to read remote KSML model {path}: {error}"))?;
+        model_contents.push((path, content));
+    }
+    let model_sources = model_contents
+        .iter()
+        .map(|(path, content)| TextSource::new(path, content))
+        .collect::<Vec<_>>();
+
+    detect_known_infrastructure_failure_from_sources(lock_source, &manifest_sources, &model_sources)
+}
+
+async fn remote_read_optional(
+    execution: &crate::execution::RemoteExecution,
+    path: &str,
+) -> Result<Option<String>> {
+    match execution.read_text(path.to_string()).await {
+        Ok(content) => Ok(Some(content)),
+        Err(crate::execution::RemoteExecutionError::Backend(SshBackendError::RemoteRejected {
+            code: ErrorCode::NotFound,
+            ..
+        })) => Ok(None),
+        Err(error) => Err(anyhow::anyhow!(
+            "failed to read remote workspace file {path}: {error}"
+        )),
+    }
+}
+
+async fn collect_remote_xml_files(
+    execution: &crate::execution::RemoteExecution,
+    model_root: &str,
+) -> Result<Vec<String>> {
+    let mut directories = vec![model_root.to_string()];
+    let mut files = Vec::new();
+    while let Some(directory) = directories.pop() {
+        let listing = execution
+            .list(directory.clone(), None)
+            .await
+            .map_err(|error| {
+                anyhow::anyhow!("failed to list remote model directory {directory}: {error}")
+            })?;
+        if listing.truncated {
+            bail!("remote model directory listing was truncated: {directory}");
+        }
+        for entry in listing.entries {
+            let path = remote_join(&directory, &entry.name);
+            match entry.kind {
+                FileKind::Directory => directories.push(path),
+                FileKind::File
+                    if entry
+                        .name
+                        .rsplit_once('.')
+                        .is_some_and(|(_, extension)| extension.eq_ignore_ascii_case("xml")) =>
+                {
+                    files.push(path);
+                }
+                FileKind::Symlink => {
+                    bail!("remote model directory contains a symlink: {path}")
+                }
+                _ => {}
+            }
+        }
+    }
+    files.sort();
+    Ok(files)
+}
+
+fn remote_join(root: &str, relative: &str) -> String {
+    let root = root.trim_end_matches('/');
+    let relative = relative.trim_start_matches('/');
+    if root.is_empty() || root == "." {
+        relative.to_string()
+    } else {
+        format!("{root}/{relative}")
+    }
 }
 
 /// Content-level detector for callers that already hold generated artifacts.

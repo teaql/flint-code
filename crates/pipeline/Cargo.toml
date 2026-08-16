@@ -10,12 +10,14 @@ agent-core = { workspace = true }
 model-vllm = { workspace = true }
 context-builder = { workspace = true }
 workspace-guard = { workspace = true }
+execution-policy = { workspace = true }
 tool-runner = { workspace = true }
 validation = { workspace = true }
 artifact-store = { workspace = true }
 tokio = { workspace = true }
 anyhow = { workspace = true }
 tracing = { workspace = true }
+thiserror = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 chrono = { workspace = true }
@@ -23,6 +25,6 @@ toml = { workspace = true }
 syn = { workspace = true }
 quick-xml = { workspace = true }
 rag-remote = { version = "0.1.0", path = "../rag-remote" }
+tempfile = { workspace = true }
 
 [dev-dependencies]
-tempfile = { workspace = true }

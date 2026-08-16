@@ -1,14 +1,17 @@
 [workspace]
 resolver = "3"
 members = [
+    "apps/flintcode-agent-bridge",
     "apps/klintcode-cli",
-    "apps/klintcode-tui",
+    "apps/flintcode-tui-legacy",
     "apps/moving-company-platform/rust-lib-core/lib",
     "crates/agent-core",
     "crates/model-vllm",
     "crates/context-builder",
     "crates/workspace-guard",
-    "crates/tool-runner",
+    "crates/execution-policy",
+    "crates/agent-bridge-core",
+    "runner",
     "crates/artifact-store",
     "crates/pipeline",
     "crates/validation",
@@ -19,7 +22,7 @@ members = [
 version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/teaql/klint-code"
+repository = "https://github.com/teaql/flint-code"
 
 [workspace.dependencies]
 # Internal crates
@@ -27,7 +30,9 @@ agent-core = { path = "crates/agent-core" }
 model-vllm = { path = "crates/model-vllm" }
 context-builder = { path = "crates/context-builder" }
 workspace-guard = { path = "crates/workspace-guard" }
-tool-runner = { path = "crates/tool-runner" }
+execution-policy = { path = "crates/execution-policy" }
+agent-bridge-core = { path = "crates/agent-bridge-core" }
+tool-runner = { path = "runner" }
 artifact-store = { path = "crates/artifact-store" }
 pipeline = { path = "crates/pipeline" }
 validation = { path = "crates/validation" }

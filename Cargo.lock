@@ -3,6 +3,18 @@
 version = 4
 
 [[package]]
+name = "agent-bridge-core"
+version = "0.1.0"
+dependencies = [
+ "execution-policy",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tool-runner",
+]
+
+[[package]]
 name = "agent-core"
 version = "0.1.0"
 dependencies = [
@@ -572,6 +584,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "execution-policy"
+version = "0.1.0"
+
+[[package]]
 name = "fallible-iterator"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -594,6 +610,45 @@ name = "find-msvc-tools"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5baebc0774151f905a1a2cc41989300b1e6fbb29aff0ceffa1064fdd3088d582"
+
+[[package]]
+name = "flintcode-agent-bridge"
+version = "0.1.0"
+dependencies = [
+ "agent-bridge-core",
+ "anyhow",
+ "clap",
+ "tokio",
+ "tool-runner",
+]
+
+[[package]]
+name = "flintcode-tui-legacy"
+version = "0.1.0"
+dependencies = [
+ "agent-core",
+ "anyhow",
+ "artifact-store",
+ "chrono",
+ "clap",
+ "context-builder",
+ "crossterm",
+ "dirs",
+ "futures",
+ "model-vllm",
+ "pipeline",
+ "ratatui",
+ "reqwest",
+ "tempfile",
+ "tokio",
+ "toml",
+ "tool-runner",
+ "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
+ "validation",
+ "workspace-guard",
+]
 
 [[package]]
 name = "fnv"
@@ -1183,34 +1238,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "klintcode-tui"
-version = "0.1.0"
-dependencies = [
- "agent-core",
- "anyhow",
- "artifact-store",
- "chrono",
- "clap",
- "context-builder",
- "crossterm",
- "dirs",
- "futures",
- "model-vllm",
- "pipeline",
- "ratatui",
- "reqwest",
- "tempfile",
- "tokio",
- "toml",
- "tool-runner",
- "tracing",
- "tracing-appender",
- "tracing-subscriber",
- "validation",
- "workspace-guard",
-]
-
-[[package]]
 name = "lazy_static"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1507,6 +1534,7 @@ dependencies = [
  "artifact-store",
  "chrono",
  "context-builder",
+ "execution-policy",
  "model-vllm",
  "quick-xml",
  "rag-remote",
@@ -1514,6 +1542,7 @@ dependencies = [
  "serde_json",
  "syn 2.0.119",
  "tempfile",
+ "thiserror",
  "tokio",
  "toml",
  "tool-runner",
@@ -2505,6 +2534,7 @@ dependencies = [
  "bytes",
  "futures-core",
  "futures-sink",
+ "futures-util",
  "libc",
  "pin-project-lite",
  "tokio",
@@ -2588,11 +2618,18 @@ dependencies = [
  "agent-core",
  "anyhow",
  "async-trait",
+ "glob",
+ "libc",
  "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
  "thiserror",
  "tokio",
+ "tokio-util",
  "toml",
  "tracing",
+ "uuid",
  "workspace-guard",
 ]
 

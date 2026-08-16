@@ -22,6 +22,6 @@ rsync -avz --exclude 'target' \
            $REMOTE:$DEST/
 
 echo "Source code synced! Starting remote compilation..."
-ssh -p $PORT $REMOTE "source ~/.cargo/env && cd $DEST && cargo build --release -p klintcode-tui -p klintcode-cli"
+ssh -p $PORT $REMOTE "source ~/.cargo/env && cd $DEST && cargo build --release -p flintcode-tui-legacy -p klintcode-cli"
 
 echo "Remote compilation finished!"

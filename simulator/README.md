@@ -26,7 +26,7 @@ Run the TUI with the simulator and automatically load a task:
 ```bash
 FLINTCODE_PROFILE=profiles/simulator.toml \
 FLINTCODE_TASK=benchmarks/tasks/simple-greeting \
-cargo run -p klintcode-tui
+cargo run -p flintcode-tui-legacy
 ```
 
 Omit `FLINTCODE_TASK` to start with the interactive prompt composer. Type a

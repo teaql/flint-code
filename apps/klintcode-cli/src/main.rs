@@ -42,6 +42,12 @@ enum Commands {
         profile: PathBuf,
         #[arg(long, default_value = "runs")]
         output: PathBuf,
+        /// Strict SSH execution target configuration. Project work never falls back locally.
+        #[arg(long)]
+        execution_config: PathBuf,
+        /// Named target from the execution configuration (defaults to its default_target).
+        #[arg(long)]
+        execution_target: Option<String>,
     },
     Run {
         /// Primary tasks to run as an ordered queue. Repeat --task to add entries.
@@ -71,6 +77,15 @@ enum Commands {
         /// Stop the primary-task queue after its first failed run.
         #[arg(long)]
         fail_fast: bool,
+        /// Strict SSH execution target configuration. Project work never falls back locally.
+        #[arg(long)]
+        execution_config: PathBuf,
+        /// Named target from the execution configuration (defaults to its default_target).
+        #[arg(long)]
+        execution_target: Option<String>,
+        /// Reattach one existing runner session. Only valid for one task with repeat=1.
+        #[arg(long)]
+        resume_session: Option<String>,
     },
 }
 
@@ -95,8 +110,18 @@ struct SessionOutcome {
     error: Option<String>,
 }
 
-#[tokio::main]
-async fn main() -> Result<()> {
+const PIPELINE_WORKER_STACK_BYTES: usize = 16 * 1024 * 1024;
+
+fn main() -> Result<()> {
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .thread_stack_size(PIPELINE_WORKER_STACK_BYTES)
+        .build()
+        .context("failed to create KlintCode async runtime")?
+        .block_on(async_main())
+}
+
+async fn async_main() -> Result<()> {
     let subscriber = FmtSubscriber::builder()
         .with_env_filter(EnvFilter::from_default_env().add_directive(tracing::Level::INFO.into()))
         .with_target(true)
@@ -145,8 +170,17 @@ async fn main() -> Result<()> {
             plan,
             profile,
             output,
+            execution_config,
+            execution_target,
         } => {
-            run_evaluation(&plan, &profile, &output).await?;
+            run_evaluation(
+                &plan,
+                &profile,
+                &output,
+                &execution_config,
+                execution_target.as_deref(),
+            )
+            .await?;
         }
         Commands::Run {
             task,
@@ -159,6 +193,9 @@ async fn main() -> Result<()> {
             follow_up_acceptance,
             allow_unverified_follow_up,
             fail_fast,
+            execution_config,
+            execution_target,
+            resume_session,
         } => {
             run_queue(RunQueueOptions {
                 tasks: task,
@@ -171,6 +208,9 @@ async fn main() -> Result<()> {
                 follow_up_acceptance,
                 allow_unverified_follow_up,
                 fail_fast,
+                execution_config,
+                execution_target,
+                resume_session,
             })
             .await?;
         }
@@ -189,6 +229,9 @@ struct RunQueueOptions {
     follow_up_acceptance: Vec<PathBuf>,
     allow_unverified_follow_up: bool,
     fail_fast: bool,
+    execution_config: PathBuf,
+    execution_target: Option<String>,
+    resume_session: Option<String>,
 }
 
 fn print_probe_report(report: &model_vllm::backend::BackendProbeReport, json: bool) -> Result<()> {
@@ -213,13 +256,24 @@ fn print_probe_report(report: &model_vllm::backend::BackendProbeReport, json: bo
     Ok(())
 }
 
-async fn run_evaluation(plan_path: &Path, profile_path: &Path, output: &Path) -> Result<()> {
+async fn run_evaluation(
+    plan_path: &Path,
+    profile_path: &Path,
+    output: &Path,
+    execution_config_path: &Path,
+    execution_target: Option<&str>,
+) -> Result<()> {
+    let execution_config =
+        pipeline::remote_config::RemoteExecutionConfig::load(execution_config_path)?;
+    let selected_target = execution_config.build(execution_target)?;
     let plan = pipeline::suite::SuitePlan::load(plan_path)?;
     let profile = model_vllm::profile::ModelProfile::load(profile_path)?;
     let base_dir = plan_path.parent().unwrap_or_else(|| Path::new("."));
     tokio::fs::create_dir_all(output).await?;
 
-    let result = pipeline::suite::run_suite(&plan, &profile, output, base_dir).await?;
+    let result =
+        pipeline::suite::run_suite_remote(&plan, &profile, output, base_dir, &selected_target)
+            .await?;
     let safe_name = plan
         .suite
         .name
@@ -260,6 +314,9 @@ async fn run_queue(options: RunQueueOptions) -> Result<()> {
     }
 
     let model_profile = model_vllm::profile::ModelProfile::load(&options.profile)?;
+    let remote_config =
+        pipeline::remote_config::RemoteExecutionConfig::load(&options.execution_config)?;
+    let remote_target = remote_config.build(options.execution_target.as_deref())?;
     let follow_ups = options
         .follow_ups
         .iter()
@@ -282,6 +339,10 @@ async fn run_queue(options: RunQueueOptions) -> Result<()> {
         task_sidecars_available,
     )?;
     let jobs = build_run_queue(&options.tasks, options.repeat);
+    if options.resume_session.is_some() && jobs.len() != 1 {
+        bail!("--resume-session requires exactly one task and --repeat 1");
+    }
+    validate_remote_environment_refs(&follow_up_acceptance, &remote_target)?;
     let total = jobs.len();
     let mut failures = Vec::new();
 
@@ -302,15 +363,23 @@ async fn run_queue(options: RunQueueOptions) -> Result<()> {
             options.build_target.as_deref(),
             &follow_ups,
             &follow_up_acceptance,
+            &remote_target,
+            options.resume_session.as_deref(),
         )
         .await?;
 
         if outcome.completed {
+            let latest = outcome
+                .final_artifacts
+                .last()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "<none>".to_string());
             eprintln!(
-                "✓ Run {}/{} completed ({} artifact snapshot(s))",
+                "✓ Run {}/{} completed ({} successful finalization(s); latest workspace: {})",
                 index + 1,
                 total,
-                outcome.final_artifacts.len()
+                outcome.final_artifacts.len(),
+                latest
             );
         } else {
             let error = outcome
@@ -318,6 +387,14 @@ async fn run_queue(options: RunQueueOptions) -> Result<()> {
                 .unwrap_or_else(|| "pipeline did not reach Completed".to_string());
             eprintln!("✗ Run {}/{} failed: {}", index + 1, total, error);
             failures.push(format!("{}: {}", job.task.display(), error));
+            if is_infrastructure_failure_message(&error) {
+                bail!(
+                    "infrastructure failure stopped the queue after run {}/{}: {}",
+                    index + 1,
+                    total,
+                    error
+                );
+            }
             if options.fail_fast {
                 break;
             }
@@ -336,6 +413,11 @@ async fn run_queue(options: RunQueueOptions) -> Result<()> {
     }
 }
 
+fn is_infrastructure_failure_message(message: &str) -> bool {
+    message.contains(agent_core::event::INFRASTRUCTURE_FAILURE_PREFIX)
+        || message.contains("Infrastructure error (not model-repairable)")
+}
+
 #[allow(clippy::too_many_arguments)]
 async fn run_session(
     sequence: usize,
@@ -346,11 +428,45 @@ async fn run_session(
     build_target: Option<&str>,
     follow_ups: &[String],
     follow_up_acceptance: &[pipeline::followup_acceptance::FollowUpAcceptanceSpec],
+    remote_target: &pipeline::remote_config::ResolvedRemoteTarget,
+    resume_session: Option<&str>,
 ) -> Result<SessionOutcome> {
     tracing::info!(task = %task.display(), "Pipeline starting");
     let run_id = format!(
         "run-{}-{sequence:03}",
         chrono::Utc::now().format("%Y%m%d-%H%M%S-%3f")
+    );
+
+    let execution = if let Some(session_id) = resume_session {
+        pipeline::execution::RemoteExecution::attach_with_environment(
+            remote_target.ssh.clone(),
+            session_id,
+            remote_target.client_policy.clone(),
+            remote_target.environment_refs.clone(),
+            &run_id,
+        )
+        .await
+    } else {
+        pipeline::execution::RemoteExecution::create_with_environment(
+            remote_target.ssh.clone(),
+            remote_target.client_policy.clone(),
+            remote_target.environment_refs.clone(),
+            &run_id,
+        )
+        .await
+    }
+    .with_context(|| {
+        format!(
+            "[infrastructure] failed to establish SSH execution target {}",
+            remote_target.name
+        )
+    })?;
+    let execution = std::sync::Arc::new(execution);
+    let remote_session_id = execution.session_id().await;
+    eprintln!(
+        "✓ SSH execution attached: target={} session={}",
+        remote_target.name,
+        short_session_id(&remote_session_id)
     );
 
     let (discard_effect_tx, discard_effect_rx) = tokio::sync::mpsc::channel(32);
@@ -362,11 +478,12 @@ async fn run_session(
     );
 
     let (proxy_event_tx, mut proxy_event_rx) = tokio::sync::mpsc::channel(64);
-    let mut executor = pipeline::executor::PipelineExecutor::new(
+    let mut executor = pipeline::executor::PipelineExecutor::new_remote(
         model_profile.clone(),
         proxy_event_tx,
         output.to_path_buf(),
         run_id,
+        execution.clone(),
     )?;
     if let Some(target) = build_target {
         executor.set_build_target(target.to_string());
@@ -474,6 +591,10 @@ async fn run_session(
 
     drop(effect_tx);
     worker.await.context("Pipeline executor worker failed")?;
+    execution
+        .detach()
+        .await
+        .context("[infrastructure] failed to detach SSH execution session")?;
 
     let completed = matches!(
         controller.pipeline_state(),
@@ -492,6 +613,35 @@ async fn run_session(
         final_artifacts,
         error,
     })
+}
+
+fn validate_remote_environment_refs(
+    contracts: &[pipeline::followup_acceptance::FollowUpAcceptanceSpec],
+    target: &pipeline::remote_config::ResolvedRemoteTarget,
+) -> Result<()> {
+    let mut missing = std::collections::BTreeSet::new();
+    for name in contracts
+        .iter()
+        .flat_map(|contract| contract.commands.iter())
+        .flat_map(|command| command.env_ref.iter())
+    {
+        if !target.environment_refs.contains_key(name) {
+            missing.insert(name.clone());
+        }
+    }
+    if missing.is_empty() {
+        Ok(())
+    } else {
+        bail!(
+            "remote target `{}` does not declare required environment reference(s): {}",
+            target.name,
+            missing.into_iter().collect::<Vec<_>>().join(", ")
+        )
+    }
+}
+
+fn short_session_id(session_id: &str) -> &str {
+    session_id.get(..8).unwrap_or(session_id)
 }
 
 async fn load_primary_task(executor: &mut pipeline::executor::PipelineExecutor, task: &Path) {
@@ -652,6 +802,8 @@ mod tests {
             "task-a",
             "--task",
             "task-b",
+            "--execution-config",
+            "/tmp/remote-execution.toml",
             "--repeat",
             "2",
             "--follow-up",
@@ -696,6 +848,49 @@ mod tests {
         );
         assert_eq!(output, PathBuf::from("custom-runs"));
         assert_eq!(skill, Some(PathBuf::from("SKILL.md")));
+    }
+
+    #[test]
+    fn run_command_preserves_six_ordered_followup_contract_pairs() {
+        let mut args = vec![
+            "klintcode".to_string(),
+            "run".to_string(),
+            "--task".to_string(),
+            "school-task".to_string(),
+            "--execution-config".to_string(),
+            "/tmp/remote-execution.toml".to_string(),
+        ];
+        for ordinal in 1..=6 {
+            args.extend([
+                "--follow-up".to_string(),
+                format!("{ordinal:02}-task.md"),
+                "--follow-up-acceptance".to_string(),
+                format!("{ordinal:02}-task.acceptance.json"),
+            ]);
+        }
+
+        let cli = Cli::try_parse_from(args).expect("six follow-up pairs should parse");
+        let Commands::Run {
+            follow_up,
+            follow_up_acceptance,
+            ..
+        } = cli.command
+        else {
+            panic!("expected run command");
+        };
+
+        assert_eq!(follow_up.len(), 6);
+        assert_eq!(follow_up_acceptance.len(), 6);
+        for (index, (instruction, contract)) in
+            follow_up.iter().zip(&follow_up_acceptance).enumerate()
+        {
+            let ordinal = index + 1;
+            assert_eq!(instruction, &PathBuf::from(format!("{ordinal:02}-task.md")));
+            assert_eq!(
+                contract,
+                &PathBuf::from(format!("{ordinal:02}-task.acceptance.json"))
+            );
+        }
     }
 
     #[test]
@@ -765,9 +960,20 @@ mod tests {
                 if checks == vec![ProbeKind::Models, ProbeKind::Tools]
         ));
 
-        let evaluate =
-            Cli::try_parse_from(["klintcode", "evaluate", "--plan", "benchmarks/suite.toml"])
-                .expect("evaluate command");
+        let evaluate = Cli::try_parse_from([
+            "klintcode",
+            "evaluate",
+            "--plan",
+            "benchmarks/suite.toml",
+            "--execution-config",
+            "/tmp/remote-execution.toml",
+        ])
+        .expect("evaluate command");
         assert!(matches!(evaluate.command, Commands::Evaluate { .. }));
+
+        assert!(
+            Cli::try_parse_from(["klintcode", "run", "--task", "task-a"]).is_err(),
+            "project runs must never silently fall back to local execution"
+        );
     }
 }

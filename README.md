@@ -1,27 +1,30 @@
-# KlintCode
+# FlintCode
 
 > [!WARNING]
-> **Active development:** KlintCode is under active development. APIs,
+> **Active development:** FlintCode is under active development. APIs,
 > configuration, workflows, and the TUI may change without notice. It is not
 > yet recommended for production use.
 
 > *Strike code without the cloud.* — 燧石取火，离线生码。
 
-**KlintCode** is an AI coding agent designed for **air-gapped and compliance-restricted environments**. It runs entirely inside customer-controlled infrastructure, requires no public internet connection, and produces **compiler-verified** production code. The target architecture keeps the Agent, memory, Skills, and enterprise knowledge access on the local control plane while all project file operations and tool execution happen on a disposable remote machine.
+**FlintCode** is a secure harness for AI coding agents in **air-gapped and compliance-restricted environments**. It keeps Agent choice separate from the trusted TeaQL validation and remote execution boundary: Agent-specific extensions are thin adapters, while all project operations pass through the policy-enforcing Runner.
 
 Built with Rust. Powered by [TeaQL](https://teaql.io).
 
+See [the component layout](docs/COMPONENT_LAYOUT.md) for the Runner, generic
+Agent Bridge, thin Agent integrations, pipeline, and legacy TUI boundaries.
+
 ## TUI Preview
 
-![KlintCode interactive TUI showing the validated execution plan](docs/images/klintcode-tui.png)
+![FlintCode TUI Legacy showing the validated execution plan](docs/images/klintcode-tui.png)
 
-## Why KlintCode?
+## Why FlintCode?
 
 Every major AI coding tool today — Cursor, Copilot, Devin, Windsurf — requires cloud connectivity. For organizations bound by regulatory, security, or data sovereignty constraints, **none of them are usable**.
 
-KlintCode fills this gap:
+FlintCode fills this gap:
 
-| | Cloud Coding Agents | KlintCode |
+| | Cloud Coding Agents | FlintCode |
 |--|---------------------|-----------|
 | **Network** | Requires internet | Air-gapped / offline |
 | **Data privacy** | Code sent to cloud | Data never leaves premises |
@@ -31,7 +34,7 @@ KlintCode fills this gap:
 
 ## How It Works
 
-KlintCode doesn't try to be a general-purpose coding agent. Instead, it combines a **small local model** with a **deterministic validation pipeline** to guarantee correct output:
+FlintCode doesn't try to replace every general-purpose coding agent. Instead, it wraps compatible Agents with a **deterministic validation pipeline** and a policy-enforcing remote Runner:
 
 ```
 Business Requirements
@@ -71,7 +74,7 @@ Status legend:
 
 ### Isolation environment setup
 
-The intended trust boundary is strict: the local KlintCode process is a control
+The intended trust boundary is strict: the local FlintCode process is a control
 plane, not a code execution environment. It may persist Agent memory, task
 state, Skills, RAG results, and audit metadata, but it must not read or write a
 project workspace or execute project commands. A disposable remote machine is
@@ -83,15 +86,18 @@ the only execution plane.
   application.
 - [x] Continuous follow-up tasks retain bounded context, validation summaries,
   and a session ledger.
-- [x] Deterministic Cargo/Maven verification and real command exit status are
-  available in the current local pipeline.
-- [ ] Remove local project file tools and local command execution from the
-  production Agent path. There must be no automatic local fallback.
-- [ ] Replace the current SSH prototype, which invokes the host `ssh` process,
-  with a production remote execution backend and authenticated runner protocol.
-- [ ] Provide structured remote operations for ranged file reads, directory
-  listing, search, patch application, validation, cancellation, Git status,
-  commit, and push.
+- [x] A versioned SSH runner MVP now provides content-addressed bootstrap
+  upload, persistent remote sessions, structured file/process operations,
+  monotonic policy narrowing, cancellation, and reconnect by operation ID.
+- [x] Deterministic Cargo/Maven verification and real command exit status run
+  through the durable SSH execution session.
+- [x] CLI and TUI project work require a strict SSH execution profile and stop
+  on infrastructure failure; there is no automatic local project fallback.
+- [x] The production Pipeline uses one durable SSH runner workspace for initial
+  generation, repair, validation, and continuous follow-ups.
+- [x] Structured remote operations cover stat/hash, ranged reads, directory
+  list/walk, literal search, snapshots, atomic/CAS writes, artifact chunks,
+  structured execution, replay, and cancellation.
 - [ ] Provision every task into a fresh VM or microVM with a fixed TTL. Containers
   may be supported where the customer accepts the weaker isolation boundary.
 - [ ] Run the remote workspace as an unprivileged user under a fixed root such as
@@ -108,6 +114,11 @@ the only execution plane.
   before the remote environment is destroyed.
 - [ ] Destroy the environment on success, failure, cancellation, or TTL expiry,
   and retain only approved audit metadata and result identifiers locally.
+
+CLI `run`/`evaluate` and the TUI require `--execution-config`; select a named
+target with `--execution-target` and reattach a durable workspace with
+`--resume-session`. See [SSH Runner MVP](docs/SSH_RUNNER_MVP.md) for the full
+configuration schema and the `ca-mini` deploy/probe/run procedure.
 
 ### System design
 
@@ -167,15 +178,15 @@ the only execution plane.
   broad access to enterprise knowledge and allows context to be filtered before
   it reaches the model.
 - Prebuilt images avoid shipping multi-gigabyte Rust, Java, Maven, TeaQL, and
-  dependency caches with the KlintCode application.
+  dependency caches with the FlintCode application.
 - Commit-and-push before destruction produces an auditable, reproducible result
   that survives the temporary machine.
-- A versioned environment contract separates KlintCode from any specific cloud,
+- A versioned environment contract separates FlintCode from any specific cloud,
   hypervisor, container runtime, or physical distribution medium.
 
 ### Future deployment and portable images
 
-KlintCode should consume a capability contract rather than depend on one image
+FlintCode should consume a capability contract rather than depend on one image
 format. The same standard environment may be delivered through several channels:
 
 - [ ] OCI image in an internal registry for Kubernetes or approved container
@@ -217,13 +228,15 @@ replaceable execution image.
 
 ### Prerequisites
 
-The commands below describe the **current developer-mode pipeline**, which still
-executes build and validation tools locally. They are not the final isolated
-deployment model tracked in the checklist above.
+The commands below use the current SSH-only project execution path. The local
+process remains the model/control plane; project files, generation, build, and
+validation stay in the selected durable runner session.
 
 - Local LLM inference endpoint (NIM, vLLM, Ollama, etc.)
-- Rust 1.75+ with cargo
-- `cargo-teaql` 2.0.11:
+- Rust 1.75+ with Cargo for the local control-plane build
+- A configured SSH runner target; see
+  [SSH Runner MVP](docs/SSH_RUNNER_MVP.md)
+- `cargo-teaql` exactly 2.0.11 on the remote execution host:
   ```bash
   cargo install cargo-teaql --version 2.0.11
   cargo-teaql install-links
@@ -244,9 +257,11 @@ LOCAL_API_KEY="<key-if-required>" \
     --task benchmarks/tasks/school-service-rust \
     --profile profiles/local-qwen.toml \
     --build-target rust-lib-core \
-    --output runs/
+    --output runs/ \
+    --execution-config /absolute/path/to/remote-execution.toml \
+    --execution-target ca-mini
 
-# Queue tasks, repeat the queue, and continue on each generated workspace
+# Queue tasks and repeat the queue; each primary queue entry gets its own session
 MIMO_API_KEY="<key>" \
   ./target/release/klintcode run \
     --task benchmarks/tasks/school-service-rust \
@@ -254,33 +269,43 @@ MIMO_API_KEY="<key>" \
     --profile profiles/mimo-v2.5-pro.toml \
     --build-target rust-lib-core \
     --repeat 2 \
-    --follow-up "Add backend tests for the generated services" \
-    --follow-up "Run cargo check and fix remaining warnings" \
-    --allow-unverified-follow-up \
-    --output runs/
+    --output runs/ \
+    --execution-config /absolute/path/to/remote-execution.toml \
+    --execution-target ca-mini
 
 # Evaluation-grade continuation with a typed, machine-verifiable contract
 MIMO_API_KEY="<key>" \
-MOVING_COMPANY_SERVICE_CORE_DATABASE_URL="sqlite://data.db" \
   ./target/release/klintcode run \
     --task benchmarks/tasks/moving-company-platform \
     --profile profiles/mimo-v2.5-pro.toml \
     --build-target rust-lib-core \
     --follow-up benchmarks/tasks/moving-company-platform/followup.md \
     --follow-up-acceptance benchmarks/tasks/moving-company-platform/followup-acceptance.json \
-    --output runs/
+    --output runs/ \
+    --execution-config /absolute/path/to/remote-execution.toml \
+    --execution-target ca-mini
 
-# Interactive TUI
-./target/release/klintcode-tui
-# In the composer: /task benchmarks/tasks/moving-company-platform
+# Legacy interactive TUI
+./target/release/flintcode-tui-legacy \
+  --profile profiles/mimo-v2.5-pro.toml \
+  --execution-config /absolute/path/to/remote-execution.toml \
+  --execution-target ca-mini
+# Ordinary composer input starts a task by default; later input continues it:
+#   Create a small school model
+#   Add school registration
+#   Add school information updates
+# Use /ask <question> for one lightweight answer without leaving the task.
+# Use /done to leave task mode, or /new to detach and start a fresh session.
+# /task benchmarks/tasks/moving-company-platform remains available for packages.
 
 # The moving-company suite runs its declared follow-up and strict contract
 MIMO_API_KEY="<key>" \
-MOVING_COMPANY_SERVICE_CORE_DATABASE_URL="sqlite://data.db" \
   ./target/release/klintcode evaluate \
     --plan benchmarks/moving-company-suite.toml \
     --profile profiles/mimo-v2.5-pro.toml \
-    --output runs/evaluations
+    --output runs/evaluations \
+    --execution-config /absolute/path/to/remote-execution.toml \
+    --execution-target ca-mini
 ```
 
 Each repeated `--task` adds a fresh primary run to the queue. `--repeat N`
@@ -407,18 +432,23 @@ temperature = 0.1
 ## Project Structure
 
 ```
-klintcode/
+flint-code/
 ├── apps/
-│   ├── klintcode-cli/        # Headless CLI for batch evaluation
-│   └── klintcode-tui/        # Interactive TUI (ratatui)
+│   ├── flintcode-agent-bridge/ # Generic Agent-to-Runner bridge
+│   ├── klintcode-cli/          # Headless CLI (compatibility name)
+│   └── flintcode-tui-legacy/   # Maintenance-only Ratatui TUI
+├── runner/                      # Protocol, SSH client, bootstrap, runner server
+├── integrations/
+│   └── pi/extension/            # Thin Pi adapter for the generic bridge
 ├── crates/
 │   ├── agent-core/           # State machine, reducer, event loop
+│   ├── agent-bridge-core/    # Agent-neutral bridge protocol and dispatch
+│   ├── execution-policy/     # Shared command and workspace policy
 │   ├── pipeline/             # Evaluation suite runner, build validation
 │   ├── model-vllm/           # LLM client (OpenAI-compatible)
 │   ├── validation/           # Multi-level validation engine
 │   ├── context-builder/      # Prompt construction, token budgeting
 │   ├── artifact-store/       # Run output and artifact management
-│   ├── tool-runner/          # External tool execution
 │   └── workspace-guard/      # Workspace isolation
 ├── benchmarks/
 │   ├── tasks/                # Test cases (school-service, moving-company, etc.)
@@ -429,7 +459,7 @@ klintcode/
 
 ## Validation Pipeline
 
-KlintCode's multi-level validation is what makes small models reliable:
+FlintCode's multi-level validation is what makes small models reliable:
 
 | Level | What | How |
 |-------|------|-----|
@@ -446,7 +476,7 @@ If any level fails, the pipeline triggers an automatic **repair loop** — the L
 
 ## Target Hardware
 
-KlintCode is hardware-agnostic but optimized for local inference:
+FlintCode is hardware-agnostic but optimized for local inference:
 
 | Device | Model Size | Speed | Context |
 |--------|-----------|-------|---------|
@@ -456,7 +486,7 @@ KlintCode is hardware-agnostic but optimized for local inference:
 
 ## TeaQL Integration
 
-KlintCode follows the [TeaQL Agent Kit](https://github.com/teaql/teaql-agent-kit) rules:
+FlintCode follows the [TeaQL Agent Kit](https://github.com/teaql/teaql-agent-kit) rules:
 
 - Never guess method names — use `assist` output
 - Never edit generated files in `rust-lib-core/`

@@ -1,0 +1,78 @@
+{
+  "schema": "klintcode-followup-acceptance-v1",
+  "files": [
+    {
+      "path": "src/school_workflow.rs",
+      "must_change": true,
+      "min_bytes": 512,
+      "contains": [
+        "TST-001",
+        "Klint Synthetic Test School",
+        "1 Test Campus Way",
+        "0000-00000001",
+        "audit_as(\"Register school TST-001\")",
+        "KLINTCODE_SCHOOL_REGISTRATION_OK"
+      ],
+      "not_contains": [
+        "KLINTCODE_SCHOOL_INFORMATION_UPDATED"
+      ]
+    }
+  ],
+  "rust_api": [
+    {
+      "receiver": "Q",
+      "terminal": [
+        "execute",
+        "execute_for_list",
+        "execute_for_one"
+      ],
+      "min": 1,
+      "runtime_markers": [
+        "KLINTCODE_SCHOOL_REGISTRATION_OK"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "program": "cargo",
+      "args": [
+        "test",
+        "--quiet",
+        "--",
+        "--test-threads=1"
+      ],
+      "env_ref": [
+        "SCHOOL_REGISTRY_SERVICE_CORE_DATABASE_URL"
+      ],
+      "repeat": 5,
+      "timeout_secs": 300,
+      "expect": {
+        "exit_code": 0,
+        "min_tests": 1,
+        "stdout_contains": [],
+        "stdout_not_contains": []
+      }
+    },
+    {
+      "program": "cargo",
+      "args": [
+        "run",
+        "--quiet"
+      ],
+      "env_ref": [
+        "SCHOOL_REGISTRY_SERVICE_CORE_DATABASE_URL"
+      ],
+      "timeout_secs": 180,
+      "expect": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "KLINTCODE_SCHOOL_REGISTRATION_OK"
+        ],
+        "stdout_not_contains": [
+          "query note",
+          "registration failed"
+        ]
+      }
+    }
+  ]
+}

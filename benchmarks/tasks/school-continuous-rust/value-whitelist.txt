@@ -1,0 +1,25 @@
+# TeaQL KSML types are inferred from representative values.
+
+# String fields
+# school_code="TST-001"
+# school_name="Klint Synthetic Test School"
+# school_address="1 Test Campus Way"
+# contact_phone="0000-00000001"
+# teacher_name="Test Teacher"
+# subject_area="Mathematics"
+# email_address="teacher@example.invalid"
+# student_name="Test Student"
+# enrollment_date="2026-09-01"
+
+# Integer field
+# grade_level="6"
+
+# Generated time functions
+# create_time="createTime()"
+# update_time="updateTime()"
+
+# Relationship
+# school="school()"
+
+# Do not declare an id or Boolean field. Do not use empty values or reserved
+# keywords.

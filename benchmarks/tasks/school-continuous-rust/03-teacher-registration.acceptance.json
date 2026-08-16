@@ -1,0 +1,116 @@
+{
+  "schema": "klintcode-followup-acceptance-v1",
+  "files": [
+    {
+      "path": "src/school_workflow.rs",
+      "must_change": false,
+      "min_bytes": 1024,
+      "contains": [
+        "TST-001",
+        "Klint Synthetic Test School",
+        "1 Test Campus Way",
+        "0000-00000001",
+        "Klint Synthetic Future School",
+        "2 Test Campus Way",
+        "0000-00000002",
+        "audit_as(\"Register school TST-001\")",
+        "audit_as(\"Change school TST-001 information\")",
+        "KLINTCODE_SCHOOL_REGISTRATION_OK",
+        "KLINTCODE_SCHOOL_INFORMATION_UPDATED"
+      ],
+      "not_contains": []
+    },
+    {
+      "path": "src/teacher_workflow.rs",
+      "must_change": true,
+      "min_bytes": 512,
+      "contains": [
+        "TST-001",
+        "register_teacher",
+        "Test Teacher",
+        "Mathematics",
+        "teacher@example.invalid",
+        "subject_area",
+        "email_address",
+        "audit_as(\"Register teacher teacher@example.invalid\")",
+        "KLINTCODE_TEACHER_REGISTRATION_OK"
+      ],
+      "not_contains": []
+    },
+    {
+      "path": "src/main.rs",
+      "must_change": true,
+      "min_bytes": 64,
+      "contains": [
+        "school_workflow",
+        "teacher_workflow",
+        "register_teacher"
+      ],
+      "not_contains": []
+    }
+  ],
+  "rust_api": [
+    {
+      "receiver": "Q",
+      "terminal": [
+        "execute",
+        "execute_for_list",
+        "execute_for_one"
+      ],
+      "min": 3,
+      "runtime_markers": [
+        "KLINTCODE_SCHOOL_REGISTRATION_OK",
+        "KLINTCODE_SCHOOL_INFORMATION_UPDATED",
+        "KLINTCODE_TEACHER_REGISTRATION_OK"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "program": "cargo",
+      "args": [
+        "test",
+        "--quiet",
+        "--",
+        "--test-threads=1"
+      ],
+      "env_ref": [
+        "SCHOOL_REGISTRY_SERVICE_CORE_DATABASE_URL"
+      ],
+      "repeat": 5,
+      "timeout_secs": 300,
+      "expect": {
+        "exit_code": 0,
+        "min_tests": 3,
+        "stdout_contains": [],
+        "stdout_not_contains": []
+      }
+    },
+    {
+      "program": "cargo",
+      "args": [
+        "run",
+        "--quiet"
+      ],
+      "env_ref": [
+        "SCHOOL_REGISTRY_SERVICE_CORE_DATABASE_URL"
+      ],
+      "timeout_secs": 180,
+      "expect": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "KLINTCODE_SCHOOL_REGISTRATION_OK",
+          "KLINTCODE_SCHOOL_INFORMATION_UPDATED",
+          "KLINTCODE_TEACHER_REGISTRATION_OK"
+        ],
+        "stdout_not_contains": [
+          "query note",
+          "school missing",
+          "teacher missing",
+          "teacher registration failed",
+          "relationship mismatch"
+        ]
+      }
+    }
+  ]
+}

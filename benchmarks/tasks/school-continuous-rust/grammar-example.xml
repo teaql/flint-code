@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root name="community-center-service"
+      cfg_mask_china_mobile="false"
+      data_service="sqlite"
+      org="example"
+      _module_key="root">
+
+  <community_center _name="Community Center"
+                    _module="Core"
+                    _module_key="core"
+                    center_code="CTR-001"
+                    center_name="Lakeside Community Center"
+                    street_address="1 Example Campus Way"
+                    contact_phone="0000-00000000"
+                    create_time="createTime()"
+                    update_time="updateTime()"/>
+
+  <program_coordinator _name="Program Coordinator"
+                       _module="Core"
+                       _module_key="core"
+                       community_center="community_center()"
+                       coordinator_name="Test Coordinator"
+                       specialty_area="Youth Programs"
+                       email_address="teacher@example.invalid"
+                       create_time="createTime()"
+                       update_time="updateTime()"/>
+
+  <program_member _name="Program Member"
+                  _module="Core"
+                  _module_key="core"
+                  community_center="community_center()"
+                  member_name="Test Member"
+                  group_level="6"
+                  enrollment_date="2026-09-01"
+                  create_time="createTime()"
+                  update_time="updateTime()"/>
+</root>

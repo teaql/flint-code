@@ -1,0 +1,25 @@
+{
+  "schema": "ksml-acceptance-v1",
+  "expected_objects": [
+    "school",
+    "teacher",
+    "student"
+  ],
+  "expected_object_count": 3,
+  "required_root": "school",
+  "required_relationships": [
+    {
+      "from": "school",
+      "to": "teacher",
+      "type": "children"
+    },
+    {
+      "from": "school",
+      "to": "student",
+      "type": "children"
+    }
+  ],
+  "build_targets": [
+    "rust-lib-core"
+  ]
+}

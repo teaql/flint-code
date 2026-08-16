@@ -1,0 +1,134 @@
+{
+  "schema": "klintcode-followup-acceptance-v1",
+  "files": [
+    {
+      "path": "src/school_workflow.rs",
+      "must_change": false,
+      "min_bytes": 1024,
+      "contains": [
+        "TST-001",
+        "Klint Synthetic Test School",
+        "Klint Synthetic Future School",
+        "audit_as(\"Register school TST-001\")",
+        "audit_as(\"Change school TST-001 information\")",
+        "KLINTCODE_SCHOOL_REGISTRATION_OK",
+        "KLINTCODE_SCHOOL_INFORMATION_UPDATED"
+      ],
+      "not_contains": []
+    },
+    {
+      "path": "src/teacher_workflow.rs",
+      "must_change": true,
+      "min_bytes": 1536,
+      "contains": [
+        "Test Teacher",
+        "Mathematics",
+        "teacher@example.invalid",
+        "subject_area",
+        "email_address",
+        "Updated Test Teacher",
+        "Computer Science",
+        "change_teacher_information",
+        "audit_as(\"Register teacher teacher@example.invalid\")",
+        "audit_as(\"Change teacher teacher@example.invalid information\")",
+        "KLINTCODE_TEACHER_REGISTRATION_OK",
+        "KLINTCODE_TEACHER_INFORMATION_UPDATED"
+      ],
+      "not_contains": [
+        "updated.teacher@example.invalid"
+      ]
+    },
+    {
+      "path": "src/student_workflow.rs",
+      "must_change": false,
+      "min_bytes": 1024,
+      "contains": [
+        "Test Student",
+        "2026-09-01",
+        "audit_as(\"Enroll student Test Student\")",
+        "KLINTCODE_STUDENT_ENROLLMENT_OK"
+      ],
+      "not_contains": []
+    },
+    {
+      "path": "src/main.rs",
+      "must_change": true,
+      "min_bytes": 256,
+      "contains": [
+        "school_workflow",
+        "teacher_workflow",
+        "student_workflow",
+        "register_teacher",
+        "enroll_student",
+        "change_teacher_information"
+      ],
+      "not_contains": []
+    }
+  ],
+  "rust_api": [
+    {
+      "receiver": "Q",
+      "terminal": [
+        "execute",
+        "execute_for_list",
+        "execute_for_one"
+      ],
+      "min": 5,
+      "runtime_markers": [
+        "KLINTCODE_SCHOOL_REGISTRATION_OK",
+        "KLINTCODE_SCHOOL_INFORMATION_UPDATED",
+        "KLINTCODE_TEACHER_REGISTRATION_OK",
+        "KLINTCODE_STUDENT_ENROLLMENT_OK",
+        "KLINTCODE_TEACHER_INFORMATION_UPDATED"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "program": "cargo",
+      "args": [
+        "test",
+        "--quiet",
+        "--",
+        "--test-threads=1"
+      ],
+      "env_ref": [
+        "SCHOOL_REGISTRY_SERVICE_CORE_DATABASE_URL"
+      ],
+      "repeat": 5,
+      "timeout_secs": 300,
+      "expect": {
+        "exit_code": 0,
+        "min_tests": 5,
+        "stdout_contains": [],
+        "stdout_not_contains": []
+      }
+    },
+    {
+      "program": "cargo",
+      "args": [
+        "run",
+        "--quiet"
+      ],
+      "env_ref": [
+        "SCHOOL_REGISTRY_SERVICE_CORE_DATABASE_URL"
+      ],
+      "timeout_secs": 180,
+      "expect": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "KLINTCODE_SCHOOL_REGISTRATION_OK",
+          "KLINTCODE_SCHOOL_INFORMATION_UPDATED",
+          "KLINTCODE_TEACHER_REGISTRATION_OK",
+          "KLINTCODE_STUDENT_ENROLLMENT_OK",
+          "KLINTCODE_TEACHER_INFORMATION_UPDATED"
+        ],
+        "stdout_not_contains": [
+          "query note",
+          "teacher missing",
+          "teacher information change failed"
+        ]
+      }
+    }
+  ]
+}

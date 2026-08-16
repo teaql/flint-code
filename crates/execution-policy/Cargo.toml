@@ -1,0 +1,8 @@
+[package]
+name = "execution-policy"
+description = "Agent-independent workspace path and remote command policy for FlintCode"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]

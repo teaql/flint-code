@@ -6,7 +6,9 @@
 use serde_json::json;
 use std::collections::BTreeMap;
 use std::ffi::{OsStr, OsString};
+use std::fmt;
 use std::path::{Component, Path, PathBuf};
+use std::sync::Arc;
 use tracing::{info, warn};
 
 use model_vllm::chat::{Function, Tool};
@@ -14,12 +16,122 @@ use model_vllm::chat::{Function, Tool};
 /// Maximum output length per tool result (chars) to avoid context overflow
 const MAX_OUTPUT_LEN: usize = 4000;
 
+/// Default and hard maximum payload size for one `read_file` page.
+const MAX_READ_FILE_PAGE_BYTES: usize = MAX_OUTPUT_LEN * 2;
+
+/// UTF-8 code points are at most four bytes, so this guarantees that a page
+/// starting on a valid boundary can always make progress.
+const MIN_READ_FILE_PAGE_BYTES: usize = 4;
+
 /// Structured result of an agent tool invocation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ToolExecutionResult {
     pub output: String,
     pub success: bool,
     pub exit_code: Option<i32>,
+}
+
+/// Opaque runtime inputs explicitly declared by a typed follow-up contract.
+///
+/// Values are never included in tool definitions or prompts. They are exposed
+/// only to the matching allowlisted `cargo test` / `cargo run` child process,
+/// and any occurrence in child output is redacted before the model sees it.
+#[derive(Clone, Default)]
+pub(crate) struct DeclaredCommandEnvironment {
+    all: BTreeMap<String, String>,
+    cargo_test: BTreeMap<String, String>,
+    cargo_run: BTreeMap<String, String>,
+}
+
+impl DeclaredCommandEnvironment {
+    #[cfg(test)]
+    pub(crate) fn new(
+        cargo_test: BTreeMap<String, String>,
+        cargo_run: BTreeMap<String, String>,
+    ) -> Self {
+        let mut all = cargo_test.clone();
+        all.extend(cargo_run.clone());
+        Self::new_with_all(all, cargo_test, cargo_run)
+    }
+
+    pub(crate) fn new_with_all(
+        all: BTreeMap<String, String>,
+        cargo_test: BTreeMap<String, String>,
+        cargo_run: BTreeMap<String, String>,
+    ) -> Self {
+        Self {
+            all,
+            cargo_test,
+            cargo_run,
+        }
+    }
+
+    fn for_approved_command(&self, command: &ApprovedCommand) -> &BTreeMap<String, String> {
+        if command.program != "cargo" {
+            return empty_declared_environment();
+        }
+        match command.args.first().map(String::as_str) {
+            Some("test") => &self.cargo_test,
+            Some("run") => &self.cargo_run,
+            _ => empty_declared_environment(),
+        }
+    }
+
+    pub(crate) fn apply_to_cargo_test(&self, command: &mut tokio::process::Command) {
+        for (name, value) in &self.cargo_test {
+            command.env(name, value);
+        }
+    }
+
+    pub(crate) fn redact_cargo_test_output(&self, content: &str) -> String {
+        redact_declared_values(content, &self.cargo_test)
+    }
+
+    pub(crate) fn values_for_names(
+        &self,
+        names: &[String],
+    ) -> Result<BTreeMap<String, String>, String> {
+        let mut values = BTreeMap::new();
+        let mut missing = Vec::new();
+        for name in names {
+            match self.all.get(name) {
+                Some(value) => {
+                    values.insert(name.clone(), value.clone());
+                }
+                None => missing.push(name.clone()),
+            }
+        }
+        if missing.is_empty() {
+            Ok(values)
+        } else {
+            missing.sort();
+            missing.dedup();
+            Err(format!(
+                "Declared runtime environment is unavailable for: {}",
+                missing.join(", ")
+            ))
+        }
+    }
+
+    pub(crate) fn redact_values(&self, content: &str, values: &BTreeMap<String, String>) -> String {
+        redact_declared_values(content, values)
+    }
+}
+
+impl fmt::Debug for DeclaredCommandEnvironment {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("DeclaredCommandEnvironment")
+            .field("all", &self.all.keys().collect::<Vec<_>>())
+            .field("cargo_test", &self.cargo_test.keys().collect::<Vec<_>>())
+            .field("cargo_run", &self.cargo_run.keys().collect::<Vec<_>>())
+            .finish()
+    }
+}
+
+fn empty_declared_environment() -> &'static BTreeMap<String, String> {
+    static EMPTY: std::sync::OnceLock<BTreeMap<String, String>> = std::sync::OnceLock::new();
+    EMPTY.get_or_init(BTreeMap::new)
 }
 
 impl ToolExecutionResult {
@@ -64,13 +176,24 @@ pub fn build_tool_definitions() -> Vec<Tool> {
             r#type: "function".to_string(),
             function: Function {
                 name: "read_file".to_string(),
-                description: Some("Read an application or workspace file. Access to generated library source such as lib/src is denied.".to_string()),
+                description: Some("Read an application or workspace file. Long UTF-8 files can be read page by page: reuse the returned next_offset_bytes as offset_bytes. Omit paging fields for the legacy first-page behavior. Access to generated library source such as lib/src is denied.".to_string()),
                 parameters: Some(json!({
                     "type": "object",
                     "properties": {
                         "path": {
                             "type": "string",
                             "description": "Path to the file, relative to the project root"
+                        },
+                        "offset_bytes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "UTF-8 byte offset at which to start. Use the exact next_offset_bytes returned by the previous page. Defaults to 0."
+                        },
+                        "max_bytes": {
+                            "type": "integer",
+                            "minimum": MIN_READ_FILE_PAGE_BYTES,
+                            "maximum": MAX_READ_FILE_PAGE_BYTES,
+                            "description": "Maximum UTF-8 payload bytes to return in this page. Defaults to 8000 and cannot exceed 8000."
                         }
                     },
                     "required": ["path"]
@@ -127,13 +250,28 @@ pub async fn execute_tool(
     arguments: &str,
     sandbox_dir: &Path,
 ) -> ToolExecutionResult {
+    execute_tool_with_environment(
+        tool_name,
+        arguments,
+        sandbox_dir,
+        &DeclaredCommandEnvironment::default(),
+    )
+    .await
+}
+
+pub(crate) async fn execute_tool_with_environment(
+    tool_name: &str,
+    arguments: &str,
+    sandbox_dir: &Path,
+    command_environment: &DeclaredCommandEnvironment,
+) -> ToolExecutionResult {
     let args: serde_json::Value = match serde_json::from_str(arguments) {
         Ok(v) => v,
         Err(e) => return ToolExecutionResult::failure(format!("Error parsing arguments: {}", e)),
     };
 
     match tool_name {
-        "run_command" => execute_run_command(&args, sandbox_dir).await,
+        "run_command" => execute_run_command(&args, sandbox_dir, command_environment).await,
         "read_file" => execute_read_file(&args, sandbox_dir),
         "write_file" => execute_write_file(&args, sandbox_dir),
         "list_directory" => execute_list_directory(&args, sandbox_dir),
@@ -141,7 +279,225 @@ pub async fn execute_tool(
     }
 }
 
-async fn execute_run_command(args: &serde_json::Value, sandbox_dir: &Path) -> ToolExecutionResult {
+/// Execute an agent tool against the authoritative remote workspace.
+///
+/// This path never probes the local filesystem and never launches a local
+/// project process. The runner independently revalidates paths, argv, and
+/// environment policy before performing the operation.
+pub(crate) async fn execute_tool_remote_with_environment(
+    tool_name: &str,
+    arguments: &str,
+    execution: &Arc<crate::execution::RemoteExecution>,
+    remote_cwd: &str,
+    command_environment: &DeclaredCommandEnvironment,
+) -> ToolExecutionResult {
+    let args: serde_json::Value = match serde_json::from_str(arguments) {
+        Ok(value) => value,
+        Err(error) => {
+            return ToolExecutionResult::failure(format!("Error parsing arguments: {error}"));
+        }
+    };
+
+    match tool_name {
+        "run_command" => {
+            execute_remote_run_command(&args, execution, remote_cwd, command_environment).await
+        }
+        "read_file" => execute_remote_read_file(&args, execution, remote_cwd).await,
+        "write_file" => execute_remote_write_file(&args, execution, remote_cwd).await,
+        "list_directory" => execute_remote_list_directory(&args, execution, remote_cwd).await,
+        _ => ToolExecutionResult::failure(format!("Unknown tool: {tool_name}")),
+    }
+}
+
+async fn execute_remote_run_command(
+    args: &serde_json::Value,
+    execution: &Arc<crate::execution::RemoteExecution>,
+    remote_cwd: &str,
+    command_environment: &DeclaredCommandEnvironment,
+) -> ToolExecutionResult {
+    let command = args["command"].as_str().unwrap_or("");
+    if command.is_empty() {
+        return ToolExecutionResult::failure("Error: empty command");
+    }
+    let approved = match ApprovedCommand::parse_remote(command) {
+        Ok(command) => command,
+        Err(error) => return ToolExecutionResult::failure(format!("Error: {error}")),
+    };
+    let declared = command_environment.for_approved_command(&approved).clone();
+    let environment_refs = declared.keys().cloned().collect::<Vec<_>>();
+    let result = execution
+        .exec_with_environment_refs(
+            approved.program.clone(),
+            approved.args.clone(),
+            remote_cwd,
+            BTreeMap::new(),
+            environment_refs,
+            // A fresh remote session has an isolated Cargo home. Its first
+            // public dependency fetch/build can legitimately take longer than
+            // a warm local command, while the runner still enforces the
+            // host-owned upper bound and process-tree timeout.
+            std::time::Duration::from_secs(300),
+            64 * 1024,
+        )
+        .await;
+    let output = match result {
+        Ok(output) => output,
+        Err(error) => {
+            return ToolExecutionResult::failure(format!(
+                "{} Remote command execution failed: {error}",
+                agent_core::event::INFRASTRUCTURE_FAILURE_PREFIX
+            ));
+        }
+    };
+    // The runner redacts values resolved from environment references before
+    // persisting or returning output. Keep local-value redaction as a defense
+    // for legacy typed environments without sending those values remotely.
+    let stdout = redact_declared_values(&output.stdout, &declared);
+    let stderr = redact_declared_values(&output.stderr, &declared);
+    let exit_code = output.exit_code.unwrap_or(-1);
+    ToolExecutionResult {
+        output: format!(
+            "Exit code: {exit_code}\nStdout:\n{}\nStderr:\n{}",
+            truncate_output(&stdout, MAX_OUTPUT_LEN),
+            truncate_output(&stderr, MAX_OUTPUT_LEN)
+        ),
+        success: output.exit_code == Some(0),
+        exit_code: output.exit_code,
+    }
+}
+
+async fn execute_remote_read_file(
+    args: &serde_json::Value,
+    execution: &Arc<crate::execution::RemoteExecution>,
+    remote_cwd: &str,
+) -> ToolExecutionResult {
+    let path = args["path"].as_str().unwrap_or("");
+    let relative = match checked_remote_workspace_path(path) {
+        Ok(path) => path,
+        Err(error) => return ToolExecutionResult::failure(error),
+    };
+    if is_generated_library_source_relative(&relative) {
+        return ToolExecutionResult::failure(
+            "Error: generated library source is read-protected; rely on compiler output and cargo teaql assist",
+        );
+    }
+    let path = join_remote_workspace_path(remote_cwd, &relative);
+    match execution.read_text(path).await {
+        Ok(content) => paginated_file_content(&content, args),
+        Err(error) => ToolExecutionResult::failure(format!(
+            "{} Remote file read failed: {error}",
+            agent_core::event::INFRASTRUCTURE_FAILURE_PREFIX
+        )),
+    }
+}
+
+async fn execute_remote_write_file(
+    args: &serde_json::Value,
+    execution: &Arc<crate::execution::RemoteExecution>,
+    remote_cwd: &str,
+) -> ToolExecutionResult {
+    let requested = args["path"].as_str().unwrap_or("");
+    let content = args["content"].as_str().unwrap_or("");
+    let relative = match checked_remote_workspace_path(requested) {
+        Ok(path) => path,
+        Err(error) => return ToolExecutionResult::failure(error),
+    };
+    if is_generated_library_source_relative(&relative) {
+        return ToolExecutionResult::failure(
+            "Error: generated library source cannot be modified; edit application code or the KSML model instead",
+        );
+    }
+    if is_read_only_workspace_evidence_relative(&relative) {
+        return ToolExecutionResult::failure(
+            "Error: validated model inputs, cached validation evidence, and the root AGENTS.md are read-only",
+        );
+    }
+    let path = join_remote_workspace_path(remote_cwd, &relative);
+    let expected = match execution.stat(path.clone(), true).await {
+        Ok(stat) if !stat.exists => tool_runner::remote_protocol::ExpectedFileState::Missing,
+        Ok(stat) => match stat.sha256 {
+            Some(value) => tool_runner::remote_protocol::ExpectedFileState::Sha256 { value },
+            None => {
+                return ToolExecutionResult::failure(
+                    "Error: remote write target is not a regular file",
+                );
+            }
+        },
+        Err(error) => {
+            return ToolExecutionResult::failure(format!(
+                "{} Remote file precondition check failed: {error}",
+                agent_core::event::INFRASTRUCTURE_FAILURE_PREFIX
+            ));
+        }
+    };
+    match execution
+        .write_text_cas(path, content, true, expected)
+        .await
+    {
+        Ok(_) => ToolExecutionResult::success(format!(
+            "Successfully wrote {} bytes to {requested}",
+            content.len()
+        )),
+        Err(error) => ToolExecutionResult::failure(format!(
+            "{} Remote file write failed: {error}",
+            agent_core::event::INFRASTRUCTURE_FAILURE_PREFIX
+        )),
+    }
+}
+
+async fn execute_remote_list_directory(
+    args: &serde_json::Value,
+    execution: &Arc<crate::execution::RemoteExecution>,
+    remote_cwd: &str,
+) -> ToolExecutionResult {
+    let requested = args["path"].as_str().unwrap_or(".");
+    let relative = match checked_remote_workspace_path(requested) {
+        Ok(path) => path,
+        Err(error) => return ToolExecutionResult::failure(error),
+    };
+    if is_generated_library_source_relative(&relative) {
+        return ToolExecutionResult::failure(
+            "Error: generated library source directories cannot be listed; use compiler output and cargo teaql assist",
+        );
+    }
+    let path = join_remote_workspace_path(remote_cwd, &relative);
+    match execution.list(path, None).await {
+        Ok(listing) => {
+            let mut entries = listing
+                .entries
+                .into_iter()
+                .filter(|entry| {
+                    let child = if relative == "." {
+                        entry.name.clone()
+                    } else {
+                        format!("{relative}/{}", entry.name)
+                    };
+                    !is_generated_library_source_relative(&child)
+                })
+                .map(|entry| {
+                    let kind = format!("{:?}", entry.kind).to_ascii_lowercase();
+                    format!("  {} ({kind})", entry.name)
+                })
+                .collect::<Vec<_>>();
+            entries.sort();
+            if entries.is_empty() {
+                ToolExecutionResult::success("Directory is empty")
+            } else {
+                ToolExecutionResult::success(entries.join("\n"))
+            }
+        }
+        Err(error) => ToolExecutionResult::failure(format!(
+            "{} Remote directory listing failed: {error}",
+            agent_core::event::INFRASTRUCTURE_FAILURE_PREFIX
+        )),
+    }
+}
+
+async fn execute_run_command(
+    args: &serde_json::Value,
+    sandbox_dir: &Path,
+    command_environment: &DeclaredCommandEnvironment,
+) -> ToolExecutionResult {
     let command = args["command"].as_str().unwrap_or("");
     if command.is_empty() {
         return ToolExecutionResult::failure("Error: empty command");
@@ -154,7 +510,7 @@ async fn execute_run_command(args: &serde_json::Value, sandbox_dir: &Path) -> To
 
     info!(command, dir = %sandbox_dir.display(), "Agent executing command");
 
-    let mut process = approved.process(sandbox_dir);
+    let mut process = approved.process(sandbox_dir, command_environment);
 
     let output = match crate::process_output::run_bounded_output(
         &mut process,
@@ -169,8 +525,9 @@ async fn execute_run_command(args: &serde_json::Value, sandbox_dir: &Path) -> To
         }
     };
 
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let stderr = String::from_utf8_lossy(&output.stderr);
+    let declared = command_environment.for_approved_command(&approved);
+    let stdout = redact_declared_values(&String::from_utf8_lossy(&output.stdout), declared);
+    let stderr = redact_declared_values(&String::from_utf8_lossy(&output.stderr), declared);
     let status = output.status.code().unwrap_or(-1);
 
     let stdout_trunc = truncate_output(&stdout, MAX_OUTPUT_LEN);
@@ -222,7 +579,19 @@ impl ApprovedCommand {
         })
     }
 
-    fn process(&self, sandbox_dir: &Path) -> tokio::process::Command {
+    fn parse_remote(command: &str) -> Result<Self, String> {
+        let approved = execution_policy::approve_remote_command(command)?;
+        Ok(Self {
+            program: approved.program,
+            args: approved.args,
+        })
+    }
+
+    fn process(
+        &self,
+        sandbox_dir: &Path,
+        command_environment: &DeclaredCommandEnvironment,
+    ) -> tokio::process::Command {
         let mut command = tokio::process::Command::new(&self.program);
         command
             .args(&self.args)
@@ -232,8 +601,42 @@ impl ApprovedCommand {
         for (name, value) in minimal_command_environment(sandbox_dir) {
             command.env(name, value);
         }
+        for (name, value) in command_environment.for_approved_command(self) {
+            command.env(name, value);
+        }
+        if self.program == "cargo"
+            && self.args.first().is_some_and(|arg| arg == "test")
+            && !has_explicit_test_threads(&self.args)
+        {
+            // One cargo-test process has one process environment and therefore
+            // one database URL. Keep its test cases serial; parallel pipeline
+            // executors still run concurrently against executor-private DBs.
+            command.env("RUST_TEST_THREADS", "1");
+        }
         command
     }
+}
+
+pub(crate) fn validate_remote_command(program: &str, args: &[String]) -> Result<(), String> {
+    execution_policy::validate_remote_command(program, args)
+}
+
+fn has_explicit_test_threads(args: &[String]) -> bool {
+    args.iter()
+        .any(|argument| argument == "--test-threads" || argument.starts_with("--test-threads="))
+}
+
+fn redact_declared_values(content: &str, environment: &BTreeMap<String, String>) -> String {
+    let mut result = content.to_string();
+    let mut ordered = environment
+        .iter()
+        .filter(|(_, value)| !value.is_empty())
+        .collect::<Vec<_>>();
+    ordered.sort_by_key(|(_, value)| std::cmp::Reverse(value.len()));
+    for (name, value) in ordered {
+        result = result.replace(value, &format!("[REDACTED:{name}]"));
+    }
+    result
 }
 
 fn strict_command_words(command: &str) -> Result<Vec<String>, String> {
@@ -550,9 +953,104 @@ fn execute_read_file(args: &serde_json::Value, sandbox_dir: &Path) -> ToolExecut
     }
 
     match std::fs::read_to_string(&full_path) {
-        Ok(content) => ToolExecutionResult::success(truncate_output(&content, MAX_OUTPUT_LEN * 2)),
+        Ok(content) => paginated_file_content(&content, args),
         Err(e) => ToolExecutionResult::failure(format!("Error reading file '{}': {}", path, e)),
     }
+}
+
+fn paginated_file_content(content: &str, args: &serde_json::Value) -> ToolExecutionResult {
+    let pagination_requested =
+        args.get("offset_bytes").is_some() || args.get("max_bytes").is_some();
+    let offset = match optional_read_file_usize(args, "offset_bytes", 0) {
+        Ok(value) => value,
+        Err(error) => return ToolExecutionResult::failure(error),
+    };
+    let max_bytes = match optional_read_file_usize(args, "max_bytes", MAX_READ_FILE_PAGE_BYTES) {
+        Ok(value) => value,
+        Err(error) => return ToolExecutionResult::failure(error),
+    };
+
+    if !(MIN_READ_FILE_PAGE_BYTES..=MAX_READ_FILE_PAGE_BYTES).contains(&max_bytes) {
+        return ToolExecutionResult::failure(format!(
+            "Error: max_bytes must be between {MIN_READ_FILE_PAGE_BYTES} and {MAX_READ_FILE_PAGE_BYTES}"
+        ));
+    }
+    if offset > content.len() {
+        return ToolExecutionResult::failure(format!(
+            "Error: offset_bytes {offset} exceeds file size {} bytes",
+            content.len()
+        ));
+    }
+    if !content.is_char_boundary(offset) {
+        let previous = previous_char_boundary(content, offset);
+        let next = next_char_boundary(content, offset);
+        return ToolExecutionResult::failure(format!(
+            "Error: offset_bytes {offset} is not a UTF-8 character boundary; use a returned next_offset_bytes value (nearest boundaries: {previous} and {next})"
+        ));
+    }
+
+    let mut end = offset.saturating_add(max_bytes).min(content.len());
+    while end > offset && !content.is_char_boundary(end) {
+        end -= 1;
+    }
+    // With max_bytes >= 4 this is only defensive, but keeping the guard here
+    // makes a repeated next_offset_bytes call unable to get stuck.
+    if end == offset && offset < content.len() {
+        end = next_char_boundary(content, offset + 1);
+    }
+
+    let page = &content[offset..end];
+    let next = (end < content.len()).then_some(end);
+
+    // Preserve the exact legacy result for the overwhelmingly common case of
+    // a complete, unpaged file. Long legacy reads gain the continuation offset
+    // that the old truncation marker was missing.
+    if !pagination_requested && offset == 0 && next.is_none() {
+        return ToolExecutionResult::success(page);
+    }
+    if !pagination_requested {
+        return ToolExecutionResult::success(format!(
+            "{page}...\n[truncated, {} total bytes]\n[read_file range_bytes={offset}..{end}; total_bytes={}; next_offset_bytes={}]",
+            content.len(),
+            content.len(),
+            next.map_or_else(|| "none".to_string(), |value| value.to_string())
+        ));
+    }
+
+    ToolExecutionResult::success(format!(
+        "{page}\n[read_file range_bytes={offset}..{end}; total_bytes={}; next_offset_bytes={}]",
+        content.len(),
+        next.map_or_else(|| "none".to_string(), |value| value.to_string())
+    ))
+}
+
+fn optional_read_file_usize(
+    args: &serde_json::Value,
+    name: &str,
+    default: usize,
+) -> Result<usize, String> {
+    let Some(value) = args.get(name) else {
+        return Ok(default);
+    };
+    let Some(value) = value.as_u64() else {
+        return Err(format!("Error: {name} must be a non-negative integer"));
+    };
+    usize::try_from(value).map_err(|_| format!("Error: {name} is too large"))
+}
+
+fn previous_char_boundary(content: &str, mut offset: usize) -> usize {
+    while offset > 0 && !content.is_char_boundary(offset) {
+        offset -= 1;
+    }
+    offset
+}
+
+fn next_char_boundary(content: &str, mut offset: usize) -> usize {
+    offset = offset.min(content.len());
+    while offset < content.len() && !content.is_char_boundary(offset) {
+        offset += 1;
+    }
+    offset
 }
 
 fn execute_write_file(args: &serde_json::Value, sandbox_dir: &Path) -> ToolExecutionResult {
@@ -650,6 +1148,22 @@ fn resolve_path(sandbox: &Path, relative: &str) -> PathBuf {
     } else {
         sandbox.join(path)
     }
+}
+
+pub(super) fn checked_remote_workspace_path(requested: &str) -> Result<String, String> {
+    execution_policy::checked_remote_workspace_path(requested)
+}
+
+pub(super) fn join_remote_workspace_path(root: &str, relative: &str) -> String {
+    execution_policy::join_remote_workspace_path(root, relative)
+}
+
+pub(super) fn is_generated_library_source_relative(path: &str) -> bool {
+    execution_policy::is_generated_library_source_relative(path)
+}
+
+pub(super) fn is_read_only_workspace_evidence_relative(path: &str) -> bool {
+    execution_policy::is_read_only_workspace_evidence_relative(path)
 }
 
 fn workspace_path_error(requested: &str, sandbox: &Path) -> String {
@@ -828,6 +1342,94 @@ mod tests {
         let text = "你".repeat(2_000);
         let truncated = truncate_output(&text, MAX_OUTPUT_LEN);
         assert!(truncated.contains("[truncated"));
+    }
+
+    #[tokio::test]
+    async fn read_file_preserves_legacy_output_for_a_small_complete_file() {
+        let project = tempfile::tempdir().expect("temporary project");
+        std::fs::write(project.path().join("app.rs"), "fn main() {}\n").unwrap();
+
+        let result = execute_tool("read_file", r#"{"path":"app.rs"}"#, project.path()).await;
+
+        assert!(result.success);
+        assert_eq!(result.output, "fn main() {}\n");
+    }
+
+    #[tokio::test]
+    async fn read_file_pages_long_utf8_content_without_skipping_bytes() {
+        let project = tempfile::tempdir().expect("temporary project");
+        let content = "你".repeat(3_000);
+        std::fs::write(project.path().join("workflow.rs"), &content).unwrap();
+
+        let legacy_first =
+            execute_tool("read_file", r#"{"path":"workflow.rs"}"#, project.path()).await;
+        assert!(legacy_first.success);
+        assert!(
+            legacy_first
+                .output
+                .contains("[truncated, 9000 total bytes]")
+        );
+        assert!(legacy_first.output.contains("range_bytes=0..7998"));
+        assert!(legacy_first.output.contains("next_offset_bytes=7998"));
+
+        let first = execute_tool(
+            "read_file",
+            r#"{"path":"workflow.rs","offset_bytes":0,"max_bytes":7}"#,
+            project.path(),
+        )
+        .await;
+        let second = execute_tool(
+            "read_file",
+            r#"{"path":"workflow.rs","offset_bytes":6,"max_bytes":8000}"#,
+            project.path(),
+        )
+        .await;
+        let third = execute_tool(
+            "read_file",
+            r#"{"path":"workflow.rs","offset_bytes":8004,"max_bytes":8000}"#,
+            project.path(),
+        )
+        .await;
+
+        assert!(first.success);
+        assert!(first.output.starts_with("你你\n"));
+        assert!(first.output.contains("range_bytes=0..6"));
+        assert!(first.output.contains("total_bytes=9000"));
+        assert!(first.output.contains("next_offset_bytes=6"));
+        assert!(second.success);
+        assert!(second.output.contains("range_bytes=6..8004"));
+        assert!(second.output.contains("next_offset_bytes=8004"));
+        assert!(third.success);
+        assert!(third.output.contains("range_bytes=8004..9000"));
+        assert!(third.output.contains("next_offset_bytes=none"));
+    }
+
+    #[tokio::test]
+    async fn read_file_rejects_invalid_pagination_without_weakening_path_protection() {
+        let project = tempfile::tempdir().expect("temporary project");
+        std::fs::write(project.path().join("utf8.txt"), "你好").unwrap();
+        std::fs::create_dir_all(project.path().join("lib/src")).unwrap();
+        std::fs::write(project.path().join("lib/src/entity.rs"), "generated").unwrap();
+
+        for arguments in [
+            r#"{"path":"utf8.txt","offset_bytes":1}"#,
+            r#"{"path":"utf8.txt","offset_bytes":99}"#,
+            r#"{"path":"utf8.txt","max_bytes":3}"#,
+            r#"{"path":"utf8.txt","max_bytes":8001}"#,
+            r#"{"path":"utf8.txt","offset_bytes":"0"}"#,
+        ] {
+            let result = execute_tool("read_file", arguments, project.path()).await;
+            assert!(!result.success, "unexpected read success: {arguments}");
+        }
+
+        let protected = execute_tool(
+            "read_file",
+            r#"{"path":"lib/src/entity.rs","offset_bytes":0,"max_bytes":4}"#,
+            project.path(),
+        )
+        .await;
+        assert!(!protected.success);
+        assert!(protected.output.contains("read-protected"));
     }
 
     #[tokio::test]
@@ -1083,6 +1685,80 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn declared_runtime_environment_reaches_only_cargo_test_and_run_and_is_redacted() {
+        const NAME: &str = "KLINTCODE_TEST_SERVICE_DATABASE_URL";
+        const VALUE: &str = "sqlite://opaque-followup-runtime.db";
+
+        let project = tempfile::tempdir().expect("temporary project");
+        std::fs::create_dir_all(project.path().join("src")).unwrap();
+        std::fs::write(
+            project.path().join("Cargo.toml"),
+            "[package]\nname = \"declared-env-smoke\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[workspace]\n",
+        )
+        .unwrap();
+        std::fs::write(
+            project.path().join("src/main.rs"),
+            format!(
+                r#"fn check_environment() {{
+    assert_eq!(std::env::var("{NAME}").as_deref(), Ok("{VALUE}"));
+    assert!(std::env::var("MIMO_API_KEY").is_err());
+}}
+
+fn main() {{
+    check_environment();
+    println!("runtime={{}}", std::env::var("{NAME}").unwrap());
+}}
+
+#[cfg(test)]
+mod tests {{
+    #[test]
+    fn declared_environment_is_available() {{
+        super::check_environment();
+        println!("test-runtime={{}}", std::env::var("{NAME}").unwrap());
+    }}
+}}
+"#
+            ),
+        )
+        .unwrap();
+
+        let declared = DeclaredCommandEnvironment::new(
+            BTreeMap::from([(NAME.to_string(), VALUE.to_string())]),
+            BTreeMap::from([(NAME.to_string(), VALUE.to_string())]),
+        );
+        let cargo_check = ApprovedCommand::parse("cargo check", project.path()).unwrap();
+        let cargo_run = ApprovedCommand::parse("cargo run", project.path()).unwrap();
+        assert!(declared.for_approved_command(&cargo_check).is_empty());
+        assert!(
+            DeclaredCommandEnvironment::default()
+                .for_approved_command(&cargo_run)
+                .is_empty(),
+            "initial and no-contract loops must not inherit declared follow-up inputs"
+        );
+        let test_result = execute_tool_with_environment(
+            "run_command",
+            r#"{"command":"cargo test -- --nocapture"}"#,
+            project.path(),
+            &declared,
+        )
+        .await;
+        let run_result = execute_tool_with_environment(
+            "run_command",
+            r#"{"command":"cargo run"}"#,
+            project.path(),
+            &declared,
+        )
+        .await;
+
+        assert!(test_result.success, "{}", test_result.output);
+        assert!(run_result.success, "{}", run_result.output);
+        for output in [&test_result.output, &run_result.output] {
+            assert!(!output.contains(VALUE));
+            assert!(output.contains(&format!("[REDACTED:{NAME}]")));
+        }
+    }
+
+    #[tokio::test]
     async fn allowlisted_cargo_check_executes_directly() {
         let project = tempfile::tempdir().expect("temporary project");
         std::fs::create_dir_all(project.path().join("src")).unwrap();
@@ -1117,5 +1793,44 @@ mod tests {
         .await;
 
         assert!(result.success);
+    }
+
+    #[test]
+    fn remote_command_validation_is_lexical_and_keeps_teaql_input_relative() {
+        let approved = ApprovedCommand::parse_remote(
+            "cargo teaql --input model/main.xml rust-assist-query/school",
+        )
+        .expect("valid remote TeaQL assist command");
+        assert_eq!(approved.program, "cargo");
+        assert_eq!(approved.args[0], "teaql");
+
+        for command in [
+            "cargo teaql --input ../model/main.xml rust-assist-query/school",
+            "cargo teaql --input /tmp/model.xml rust-assist-query/school",
+            "cargo check && env",
+            "git status",
+        ] {
+            assert!(
+                ApprovedCommand::parse_remote(command).is_err(),
+                "unexpected remote approval: {command}"
+            );
+        }
+    }
+
+    #[test]
+    fn remote_paths_reject_escape_and_protect_generated_content() {
+        assert_eq!(
+            checked_remote_workspace_path("src/main.rs").unwrap(),
+            "src/main.rs"
+        );
+        assert_eq!(checked_remote_workspace_path(".").unwrap(), ".");
+        for path in ["../secret", "/etc/passwd", "lib\\src\\entity.rs", ""] {
+            assert!(checked_remote_workspace_path(path).is_err(), "{path}");
+        }
+        assert!(is_generated_library_source_relative("LIB/SRC/entity.rs"));
+        assert!(is_read_only_workspace_evidence_relative("Model/main.xml"));
+        assert!(is_read_only_workspace_evidence_relative(
+            ".KLINTCODE/evidence.json"
+        ));
     }
 }
